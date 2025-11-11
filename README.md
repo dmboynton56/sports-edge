@@ -2,6 +2,12 @@
 
 A machine learning pipeline to compute model spreads and home win probabilities for NFL/NBA games, compare against sportsbook lines, and display results on a personal portfolio.
 
+## PROGRESS
+
+We are in a decent spot right now in terms of our models outputted realistic spreads, computed through thoroughly thoughout rolling stats, like strengh of schedule, point differential stats, etc. 
+
+Looking to incorportate situational alterations, like VORP/LEBRON/PVS 
+
 ## Setup
 
 1. Install dependencies:
