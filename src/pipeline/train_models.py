@@ -27,6 +27,7 @@ from pandas.api.types import is_numeric_dtype
 from src.models.link_function import fit_link_function
 from src.pipeline.refresh import build_features
 from src.data import nfl_fetcher
+from src.data.pbp_loader import load_pbp
 
 
 def compute_season_sample_weights(df: pd.DataFrame, season_col: str = 'season',
@@ -111,11 +112,9 @@ def load_play_by_play(seasons: List[int]) -> Optional[pd.DataFrame]:
     """
     Load play-by-play data for seasons (used for form features).
     """
-    try:
-        import nfl_data_py as nfl
-        pbp = nfl.import_pbp_data(seasons)
-    except Exception as exc:
-        print(f"Warning: Failed to load play-by-play data ({exc}). Form features will be skipped.")
+    pbp = load_pbp(seasons)
+    if pbp is None or pbp.empty:
+        print("Warning: Failed to load play-by-play data; form features will be skipped.")
         return None
     
     keep_cols = [col for col in ['game_id', 'posteam', 'defteam', 'epa', 'success', 'game_date']
@@ -125,10 +124,7 @@ def load_play_by_play(seasons: List[int]) -> Optional[pd.DataFrame]:
         return None
     
     pbp = pbp[keep_cols].copy()
-    if 'game_date' in pbp.columns:
-        pbp['game_date'] = pd.to_datetime(pbp['game_date'])
-    elif 'gameday' in pbp.columns:
-        pbp['game_date'] = pd.to_datetime(pbp['gameday'])
+    pbp['game_date'] = pd.to_datetime(pbp['game_date'])
     return pbp
 
 

@@ -1,11 +1,12 @@
 import argparse
 import os
 import sys
-from typing import List
+from typing import List, Optional
 
 import pandas as pd
 
 from src.data import nfl_fetcher
+from src.data.pbp_loader import load_pbp
 from src.models.predictor import GamePredictor
 
 
@@ -76,7 +77,10 @@ def team_has_data(team: str, game_date: pd.Timestamp, completed_games: pd.DataFr
     return len(games_before) > 0
 
 
-def predict_games(games: pd.DataFrame, schedule: pd.DataFrame, completed_games: pd.DataFrame) -> List[dict]:
+def predict_games(games: pd.DataFrame,
+                  schedule: pd.DataFrame,
+                  completed_games: pd.DataFrame,
+                  play_by_play: Optional[pd.DataFrame]) -> List[dict]:
     """Predict a batch of games, skipping any without sufficient data."""
     predictor = GamePredictor('NFL', MODEL_VERSION)
     
@@ -96,7 +100,7 @@ def predict_games(games: pd.DataFrame, schedule: pd.DataFrame, completed_games: 
             continue
         
         game_df = pd.DataFrame([game])
-        result = predictor.predict(game_df, schedule)
+        result = predictor.predict(game_df, schedule, play_by_play=play_by_play)
         predictions.append(result)
     
     return predictions
@@ -161,6 +165,8 @@ def main():
     print(f"\nUsing {season} season data:")
     print(f"  Total games: {len(schedule_df)}")
     print(f"  Date range: {schedule_df['game_date'].min().date()} to {schedule_df['game_date'].max().date()}")
+
+    play_by_play = load_pbp([season])
     
     try:
         week_10_games = collect_week_10_games(schedule_df)
@@ -168,7 +174,7 @@ def main():
         print(f"ERROR: {err}")
         sys.exit(1)
     
-    predictions = predict_games(week_10_games, schedule_df, completed_games)
+    predictions = predict_games(week_10_games, schedule_df, completed_games, play_by_play)
     display_predictions(predictions)
     
     if args.save_path:

@@ -19,6 +19,7 @@ from supabase import create_client, Client
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from src.data import nfl_fetcher, nba_fetcher, odds_fetcher
+from src.data.pbp_loader import load_pbp
 from src.features import rest_schedule, form_metrics, strength
 from src.models.spread_model import SpreadModel
 from src.models.win_prob_model import WinProbModel
@@ -86,29 +87,12 @@ def load_historical_data(league: str, current_season: int, seasons_back: int = 3
     
     # Load play-by-play for NFL
     if league == 'NFL':
-        try:
-            import nfl_data_py as nfl
-            pbp_data = []
-            for season in seasons:
-                try:
-                    pbp = nfl.import_pbp_data([season])
-                    if len(pbp) > 0:
-                        pbp_data.append(pbp)
-                except:
-                    pass
-            
-            if pbp_data:
-                pbp_df = pd.concat(pbp_data, ignore_index=True)
-                if 'game_date' in pbp_df.columns:
-                    pbp_df['game_date'] = pd.to_datetime(pbp_df['game_date'])
-                elif 'gameday' in pbp_df.columns:
-                    pbp_df['game_date'] = pd.to_datetime(pbp_df['gameday'])
-                historical_data['play_by_play'] = pbp_df
-                print(f"  Loaded {len(pbp_df)} play-by-play records")
-        except ImportError:
-            print("  Warning: nfl-data-py not available, skipping form features")
-        except Exception as e:
-            print(f"  Warning: Could not load PBP data: {e}")
+        pbp_df = load_pbp(seasons)
+        if pbp_df is not None and len(pbp_df) > 0:
+            historical_data['play_by_play'] = pbp_df
+            print(f"  Loaded {len(pbp_df)} play-by-play records")
+        else:
+            print("  Warning: Could not load NFL play-by-play; skipping form features")
     
     return historical_data
 

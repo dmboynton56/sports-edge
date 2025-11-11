@@ -6,12 +6,16 @@ import numpy as np
 import pandas as pd
 
 from src.data import nfl_fetcher
+from src.data.pbp_loader import load_pbp
 from src.models.predictor import GamePredictor
 
 
 TARGET_GAMES = [
-    ('LAC', 'PIT'),  # PIT @ LAC
-    ('GB', 'PHI'),   # PHI @ GB
+    ('NE', 'NYJ'),  # PIT @ LAC
+    ('PIT', 'CIN'),
+    ('NYG', 'GB'),
+    ('ARI', 'SF'),
+    ('LA', 'SEA'),  # PHI @ GB
 ]
 
 SEASON = 2025
@@ -96,7 +100,7 @@ def average_feature_importances(win_prob_model, feature_names: List[str]) -> np.
 
 
 def compute_feature_impacts(values: pd.Series, medians: Dict[str, float],
-                            importances: np.ndarray, top_n: int = 8) -> List[Tuple[str, float, float, float]]:
+                            importances: np.ndarray, top_n: int = 12) -> List[Tuple[str, float, float, float]]:
     """Return top features ranked by |delta from median| * importance."""
     rows = []
     for idx, feat in enumerate(values.index):
@@ -115,6 +119,7 @@ def compute_feature_impacts(values: pd.Series, medians: Dict[str, float],
 
 def print_prediction_details(predictor: GamePredictor, game_series: pd.Series,
                              schedule: pd.DataFrame,
+                             play_by_play: Optional[pd.DataFrame],
                              feature_medians: Dict[str, float],
                              win_importances: np.ndarray,
                              spread_importances: np.ndarray):
@@ -126,9 +131,11 @@ def print_prediction_details(predictor: GamePredictor, game_series: pd.Series,
         'season': game_series['season']
     }])
     
-    prediction = predictor.predict(game_row, schedule)
+    prediction = predictor.predict(game_row, schedule, play_by_play=play_by_play)
     
-    engineered_features = predictor.build_features_for_game(game_row, schedule)
+    engineered_features = predictor.build_features_for_game(
+        game_row, schedule, play_by_play=play_by_play
+    )
     spread_feature_names = predictor.spread_feature_names or predictor.feature_names
     win_feature_names = predictor.win_feature_names or predictor.feature_names
     
@@ -171,6 +178,7 @@ def main():
     games = find_games(schedule, TARGET_GAMES)
     
     predictor = GamePredictor('NFL', 'v2')
+    play_by_play = load_pbp([SEASON])
     feature_medians = load_feature_medians(predictor)
     
     win_feature_names = predictor.win_feature_names or predictor.feature_names
@@ -183,6 +191,7 @@ def main():
             predictor,
             game,
             schedule,
+            play_by_play,
             feature_medians,
             win_importances,
             spread_importances
@@ -190,7 +199,6 @@ def main():
     
     print("\n" + "=" * 90)
     print("Analysis complete.")
-
 
 if __name__ == "__main__":
     main()
