@@ -247,6 +247,7 @@ def push_predictions_to_supabase(
         return
     
     creds = load_supabase_credentials()
+    print(f"[DEBUG] SUPABASE_URL: {creds['url']}")
     games_for_db = prepare_games_for_supabase(games_df, schedule_df)
     if games_for_db.empty:
         print("No game metadata available for Supabase; skipping write.")
@@ -274,9 +275,12 @@ def create_pg_connection(supabase_url: str, password: str) -> psycopg.Connection
     host = parsed.netloc.split(':')[0]
     project_ref = host.split('.')[0]
     db_host = f"db.{project_ref}.supabase.co"
+    print(f"[DEBUG] Derived project_ref={project_ref}, db_host={db_host}")
     conn_str = (
         f"postgresql://postgres:{password}@{db_host}:5432/postgres?sslmode=require"
     )
+    safe_conn_str = conn_str.replace(password, "***")
+    print(f"[DEBUG] Connection string (sanitized): {safe_conn_str}")
     return psycopg.connect(conn_str)
 
 
