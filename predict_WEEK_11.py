@@ -1,14 +1,20 @@
+import argparse
+import os
 import sys
-from typing import List, Optional
+from datetime import date
+from typing import List, Optional, Tuple
+from urllib.parse import urlparse
 
 import pandas as pd
+import psycopg
+from dotenv import load_dotenv
 
 from src.data import nfl_fetcher
 from src.data.pbp_loader import load_pbp
 from src.models.predictor import GamePredictor
 
 
-MODEL_VERSION = 'v2'
+MODEL_VERSION = 'v1'
 
 
 def load_season_schedule(season: int) -> pd.DataFrame:
@@ -68,7 +74,12 @@ def collect_week_11_games(schedule: pd.DataFrame) -> pd.DataFrame:
     for _, row in week_11_games.iterrows():
         print(f"  {row['game_date'].date()} - {row['away_team']} @ {row['home_team']}")
     
-    return week_11_games[['home_team', 'away_team', 'game_date', 'season']]
+    base_cols = ['home_team', 'away_team', 'game_date', 'season']
+    optional_cols = [
+        col for col in ['start_time', 'gametime', 'game_time', 'game_time_utc']
+        if col in week_11_games.columns
+    ]
+    return week_11_games[base_cols + optional_cols].copy()
 
 
 def team_has_data(team: str, game_date: pd.Timestamp, completed_games: pd.DataFrame) -> bool:
@@ -132,8 +143,251 @@ def display_predictions(predictions: List[dict]) -> None:
     print("\n" + "=" * 80)
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Predict Week 11 games and optionally push results to Supabase."
+    )
+    parser.add_argument(
+        "--season",
+        type=int,
+        default=2025,
+        help="NFL season to score (default: 2025).",
+    )
+    parser.add_argument(
+        "--push-to-db",
+        action="store_true",
+        help="Persist predictions to Supabase using env credentials.",
+    )
+    return parser.parse_args()
+
+
+def load_supabase_credentials() -> dict:
+    """Ensure required Supabase env vars are available before writes."""
+    load_dotenv()
+    creds = {
+        'url': os.getenv('SUPABASE_URL'),
+        'service_role_key': os.getenv('SUPABASE_SERVICE_ROLE_KEY'),
+        'db_password': os.getenv('supabaseDBpass')
+    }
+    missing = [key for key, value in creds.items() if not value]
+    if missing:
+        raise EnvironmentError(
+            f"Missing Supabase environment variables: {', '.join(missing)}"
+        )
+    os.environ.setdefault('SUPABASE_DB_PASSWORD', creds['db_password'])
+    return creds
+
+
+def _infer_game_time_utc(row: pd.Series) -> pd.Timestamp:
+    """Best-effort conversion to UTC for Supabase games table."""
+    start_time = row.get('start_time')
+    if pd.notna(start_time):
+        ts = pd.to_datetime(start_time, utc=True, errors='coerce')
+        if pd.notna(ts):
+            return ts
+    
+    gametime = row.get('gametime')
+    if pd.notna(gametime):
+        try:
+            base_date = pd.to_datetime(row['game_date']).date()
+            combined = f"{base_date} {gametime}"
+            ts = pd.to_datetime(combined, utc=True, errors='coerce')
+            if pd.notna(ts):
+                return ts
+        except Exception:
+            pass
+    
+    existing = row.get('game_time_utc')
+    if pd.notna(existing):
+        ts = pd.to_datetime(existing, utc=True, errors='coerce')
+        if pd.notna(ts):
+            return ts
+    
+    return pd.to_datetime(row['game_date'], utc=True, errors='coerce')
+
+
+def prepare_games_for_supabase(
+    games_df: pd.DataFrame,
+    schedule_df: pd.DataFrame
+) -> pd.DataFrame:
+    """Enrich Week 11 games with metadata required for Supabase upserts."""
+    if games_df.empty:
+        return games_df
+    
+    games = games_df.copy()
+    games['game_date'] = pd.to_datetime(games['game_date'])
+    games['league'] = 'NFL'
+    
+    schedule = schedule_df.copy()
+    schedule['game_date'] = pd.to_datetime(schedule['game_date'])
+    join_cols = ['home_team', 'away_team', 'game_date', 'season']
+    extra_cols = [
+        col for col in ['start_time', 'gametime', 'game_time_utc']
+        if col in schedule.columns and col not in games.columns
+    ]
+    
+    if extra_cols:
+        schedule_subset = schedule[join_cols + extra_cols].drop_duplicates(subset=join_cols)
+        games = games.merge(schedule_subset, on=join_cols, how='left', suffixes=('', '_schedule'))
+    
+    games['game_time_utc'] = games.apply(_infer_game_time_utc, axis=1)
+    games['game_time_utc'] = pd.to_datetime(games['game_time_utc'], utc=True, errors='coerce')
+    games['season'] = games['season'].astype(int)
+    return games
+
+
+def push_predictions_to_supabase(
+    predictions: List[dict],
+    games_df: pd.DataFrame,
+    schedule_df: pd.DataFrame
+) -> None:
+    """Push predictions and related games to Supabase tables."""
+    if not predictions:
+        print("No predictions to push; skipping Supabase write.")
+        return
+    
+    creds = load_supabase_credentials()
+    games_for_db = prepare_games_for_supabase(games_df, schedule_df)
+    if games_for_db.empty:
+        print("No game metadata available for Supabase; skipping write.")
+        return
+    
+    conn = create_pg_connection(creds['url'], creds['db_password'])
+    try:
+        game_id_map = upsert_games_pg(conn, games_for_db)
+        predictions_df = pd.DataFrame(predictions).rename(columns={
+            'predicted_spread': 'my_spread',
+            'home_win_probability': 'my_home_win_prob'
+        })
+        prediction_payload = predictions_df[
+            ['home_team', 'away_team', 'game_date', 'my_spread', 'my_home_win_prob']
+        ]
+        insert_predictions_pg(conn, prediction_payload, game_id_map)
+        print(f"Pushed {len(prediction_payload)} predictions to Supabase.")
+    finally:
+        conn.close()
+
+
+def create_pg_connection(supabase_url: str, password: str) -> psycopg.Connection:
+    """Build and open a psycopg connection to the Supabase Postgres instance."""
+    parsed = urlparse(supabase_url)
+    host = parsed.netloc.split(':')[0]
+    project_ref = host.split('.')[0]
+    db_host = f"db.{project_ref}.supabase.co"
+    conn_str = (
+        f"postgresql://postgres:{password}@{db_host}:5432/postgres?sslmode=require"
+    )
+    return psycopg.connect(conn_str)
+
+
+def game_map_key(home_team: str, away_team: str, game_date: pd.Timestamp) -> Tuple[str, str, date]:
+    """Consistent tuple key for mapping games to prediction rows."""
+    date_only = pd.to_datetime(game_date).date()
+    return (home_team, away_team, date_only)
+
+
+def upsert_games_pg(conn: psycopg.Connection, games_df: pd.DataFrame) -> dict:
+    """Insert or update games and return a map for downstream prediction inserts."""
+    if games_df.empty:
+        return {}
+    
+    select_sql = """
+        select id
+        from games
+        where league = %s
+          and season = %s
+          and home_team = %s
+          and away_team = %s
+          and game_time_utc::date = %s
+        order by game_time_utc desc
+        limit 1
+    """
+    update_sql = """
+        update games
+        set game_time_utc = %s
+        where id = %s
+    """
+    insert_sql = """
+        insert into games (league, season, game_time_utc, home_team, away_team)
+        values (%s, %s, %s, %s, %s)
+        returning id
+    """
+    
+    game_id_map = {}
+    with conn.cursor() as cur:
+        for _, row in games_df.iterrows():
+            has_game_time = 'game_time_utc' in row.index
+            game_time = pd.to_datetime(row['game_time_utc'], utc=True, errors='coerce') if has_game_time and pd.notna(row['game_time_utc']) else None
+            if pd.isna(game_time):
+                game_time = pd.to_datetime(row['game_date'], utc=True)
+            game_time = game_time.to_pydatetime()
+            game_date = pd.to_datetime(row['game_date']).date()
+            params = (
+                row['league'],
+                int(row['season']),
+                row['home_team'],
+                row['away_team'],
+                game_date
+            )
+            cur.execute(select_sql, params)
+            existing = cur.fetchone()
+            if existing:
+                game_id = existing[0]
+                cur.execute(update_sql, (game_time, game_id))
+            else:
+                cur.execute(
+                    insert_sql,
+                    (row['league'], int(row['season']), game_time, row['home_team'], row['away_team'])
+                )
+                game_id = cur.fetchone()[0]
+            key = game_map_key(row['home_team'], row['away_team'], game_date)
+            game_id_map[key] = game_id
+    conn.commit()
+    return game_id_map
+
+
+def insert_predictions_pg(
+    conn: psycopg.Connection,
+    predictions_df: pd.DataFrame,
+    game_id_map: dict
+) -> None:
+    """Insert prediction rows linked to previously upserted games."""
+    if predictions_df.empty:
+        print("No predictions frame to push; skipping prediction insert.")
+        return
+    
+    insert_sql = """
+        insert into model_predictions
+            (game_id, model_name, model_version, my_spread, my_home_win_prob)
+        values (%s, %s, %s, %s, %s)
+    """
+    inserted = 0
+    with conn.cursor() as cur:
+        for _, row in predictions_df.iterrows():
+            key = game_map_key(row['home_team'], row['away_team'], row['game_date'])
+            game_id = game_id_map.get(key)
+            if not game_id:
+                continue
+            spread = float(row['my_spread']) if pd.notna(row['my_spread']) else None
+            win_prob = float(row['my_home_win_prob']) if pd.notna(row['my_home_win_prob']) else None
+            cur.execute(
+                insert_sql,
+                (
+                    game_id,
+                    'sports_edge_weekly',
+                    MODEL_VERSION,
+                    spread,
+                    win_prob
+                )
+            )
+            inserted += 1
+    conn.commit()
+    print(f"Inserted {inserted} rows into model_predictions.")
+
+
 def main():
-    season = 2025
+    args = parse_args()
+    season = args.season
     try:
         schedule_df = load_season_schedule(season)
     except Exception as err:
@@ -160,6 +414,13 @@ def main():
     
     predictions = predict_games(week_11_games, schedule_df, completed_games, play_by_play)
     display_predictions(predictions)
+    
+    if args.push_to_db:
+        try:
+            push_predictions_to_supabase(predictions, week_11_games, schedule_df)
+        except Exception as err:
+            print(f"ERROR pushing to Supabase: {err}")
+            sys.exit(1)
 
 
 if __name__ == "__main__":
