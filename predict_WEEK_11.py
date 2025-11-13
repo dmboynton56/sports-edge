@@ -74,7 +74,7 @@ def collect_week_11_games(schedule: pd.DataFrame) -> pd.DataFrame:
     for _, row in week_11_games.iterrows():
         print(f"  {row['game_date'].date()} - {row['away_team']} @ {row['home_team']}")
     
-    base_cols = ['home_team', 'away_team', 'game_date', 'season']
+    base_cols = ['home_team', 'away_team', 'game_date', 'season', 'week']
     optional_cols = [
         col for col in ['start_time', 'gametime', 'game_time', 'game_time_utc']
         if col in week_11_games.columns
@@ -167,13 +167,21 @@ def load_supabase_credentials() -> dict:
     creds = {
         'url': os.getenv('SUPABASE_URL'),
         'service_role_key': os.getenv('SUPABASE_SERVICE_ROLE_KEY'),
-        'db_password': os.getenv('supabaseDBpass')
+        'db_password': os.getenv('supabaseDBpass'),
+        'db_host': os.getenv('SUPABASE_DB_HOST'),
+        'db_name': os.getenv('SUPABASE_DB_NAME', 'postgres'),
+        'db_port': os.getenv('SUPABASE_DB_PORT', '5432'),
+        'db_user': os.getenv('SUPABASE_DB_USER', 'postgres')
     }
-    missing = [key for key, value in creds.items() if not value]
+    missing = [key for key in ('url', 'service_role_key', 'db_password') if not creds[key]]
     if missing:
         raise EnvironmentError(
             f"Missing Supabase environment variables: {', '.join(missing)}"
         )
+    try:
+        creds['db_port'] = int(creds['db_port'])
+    except ValueError as exc:
+        raise EnvironmentError("SUPABASE_DB_PORT must be an integer") from exc
     os.environ.setdefault('SUPABASE_DB_PASSWORD', creds['db_password'])
     return creds
 
@@ -217,6 +225,9 @@ def prepare_games_for_supabase(
     games = games_df.copy()
     games['game_date'] = pd.to_datetime(games['game_date'])
     games['league'] = 'NFL'
+    if 'week' not in games.columns:
+        games['week'] = pd.NA
+    games['week'] = games['week'].astype('Int64')
     
     schedule = schedule_df.copy()
     schedule['game_date'] = pd.to_datetime(schedule['game_date'])
@@ -252,7 +263,14 @@ def push_predictions_to_supabase(
         print("No game metadata available for Supabase; skipping write.")
         return
     
-    conn = create_pg_connection(creds['url'], creds['db_password'])
+    conn = create_pg_connection(
+        supabase_url=creds['url'],
+        password=creds['db_password'],
+        host_override=creds.get('db_host'),
+        port=creds['db_port'],
+        database=creds['db_name'],
+        user=creds['db_user']
+    )
     try:
         game_id_map = upsert_games_pg(conn, games_for_db)
         predictions_df = pd.DataFrame(predictions).rename(columns={
@@ -268,16 +286,44 @@ def push_predictions_to_supabase(
         conn.close()
 
 
-def create_pg_connection(supabase_url: str, password: str) -> psycopg.Connection:
+def create_pg_connection(
+    supabase_url: str,
+    password: str,
+    host_override: Optional[str] = None,
+    port: int = 5432,
+    database: str = 'postgres',
+    user: str = 'postgres'
+) -> psycopg.Connection:
     """Build and open a psycopg connection to the Supabase Postgres instance."""
-    parsed = urlparse(supabase_url)
-    host = parsed.netloc.split(':')[0]
-    project_ref = host.split('.')[0]
-    db_host = f"db.{project_ref}.supabase.co"
-    conn_str = (
-        f"postgresql://postgres:{password}@{db_host}:5432/postgres?sslmode=require"
+    if host_override:
+        db_host = host_override
+        host_source = "override (SUPABASE_DB_HOST)"
+    else:
+        if not supabase_url:
+            raise ValueError("Supabase URL is required to derive the database host.")
+        parsed = urlparse(supabase_url)
+        host = parsed.netloc.split(':')[0]
+        if not host:
+            raise ValueError("Supabase URL is missing a hostname.")
+        project_ref = host.split('.')[0]
+        if not project_ref:
+            raise ValueError("Unable to infer Supabase project ref from SUPABASE_URL.")
+        db_host = f"db.{project_ref}.supabase.co"
+        host_source = f"derived (project_ref={project_ref})"
+    print(
+        f"[Supabase] Attempting connection -> host={db_host} ({host_source}), "
+        f"port={port}, database={database}, user={user}"
     )
-    return psycopg.connect(conn_str)
+    conn_str = (
+        f"postgresql://{user}:{password}@{db_host}:{int(port)}/{database}?sslmode=require"
+    )
+    try:
+        return psycopg.connect(conn_str)
+    except OSError as err:
+        raise ConnectionError(
+            f"Unable to resolve or reach Supabase host '{db_host}' on port {port}. "
+            "Set SUPABASE_DB_HOST to override the default if your project uses a custom domain."
+        ) from err
 
 
 def game_map_key(home_team: str, away_team: str, game_date: pd.Timestamp) -> Tuple[str, str, date]:
@@ -304,12 +350,13 @@ def upsert_games_pg(conn: psycopg.Connection, games_df: pd.DataFrame) -> dict:
     """
     update_sql = """
         update games
-        set game_time_utc = %s
+        set game_time_utc = %s,
+            week = coalesce(%s, week)
         where id = %s
     """
     insert_sql = """
-        insert into games (league, season, game_time_utc, home_team, away_team)
-        values (%s, %s, %s, %s, %s)
+        insert into games (league, season, week, game_time_utc, home_team, away_team)
+        values (%s, %s, %s, %s, %s, %s)
         returning id
     """
     
@@ -322,6 +369,7 @@ def upsert_games_pg(conn: psycopg.Connection, games_df: pd.DataFrame) -> dict:
                 game_time = pd.to_datetime(row['game_date'], utc=True)
             game_time = game_time.to_pydatetime()
             game_date = pd.to_datetime(row['game_date']).date()
+            week_val = int(row['week']) if 'week' in row.index and pd.notna(row['week']) else None
             params = (
                 row['league'],
                 int(row['season']),
@@ -333,11 +381,11 @@ def upsert_games_pg(conn: psycopg.Connection, games_df: pd.DataFrame) -> dict:
             existing = cur.fetchone()
             if existing:
                 game_id = existing[0]
-                cur.execute(update_sql, (game_time, game_id))
+                cur.execute(update_sql, (game_time, week_val, game_id))
             else:
                 cur.execute(
                     insert_sql,
-                    (row['league'], int(row['season']), game_time, row['home_team'], row['away_team'])
+                    (row['league'], int(row['season']), week_val, game_time, row['home_team'], row['away_team'])
                 )
                 game_id = cur.fetchone()[0]
             key = game_map_key(row['home_team'], row['away_team'], game_date)

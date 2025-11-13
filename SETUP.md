@@ -26,10 +26,17 @@ cp .env.example .env
 # Edit .env and add your API keys
 ```
 
+Optional overrides:
+
+- `SUPABASE_DB_HOST` – explicitly set your Supabase Postgres host (useful if your project uses a custom domain or the default `db.<ref>.supabase.co` host does not resolve).
+- `SUPABASE_DB_PORT` – custom Postgres port (defaults to `5432`).
+- `SUPABASE_DB_NAME` – database name (defaults to `postgres`).
+- `SUPABASE_DB_USER` – database user/tenant (defaults to `postgres`; some pooler strings require `postgres.<project-ref>`).
+
 ### 3. Set Up Supabase Database
 
 1. Go to your Supabase project SQL editor
-2. Run the migration script: `sql/001_initial_schema.sql`
+2. Run the migration scripts in order (e.g., `sql/001_initial_schema.sql`, `sql/002_add_week_column.sql`, `sql/003_add_book_spread.sql`)
 3. Verify tables and views are created
 
 ### 4. Train Initial Models (Optional)

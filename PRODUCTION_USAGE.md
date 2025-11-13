@@ -142,6 +142,19 @@ const { data } = await supabase
 4. **Automation**: Schedule `refresh.py` to run every 15 minutes
 5. **Display**: Website reads from Supabase view
 
+### Backfill sportsbook odds for existing games
+
+When games already live in Supabase but lack recent sportsbook lines (e.g., after importing schedules), run:
+
+```bash
+python populate_existing_book_odds.py --markets spreads
+```
+
+This script:
+1. Finds future games where `games.book_spread` is still `NULL`.
+2. Calls The Odds API (`ODDS_API_KEY` required) to fetch current spreads/totals (pass `--bookmakers fanduel` etc. to restrict).
+3. Updates each game's `book_spread` column with the bookmaker's home-team spread so downstream queries can use it without joining odds snapshots.
+
 ## Key Files
 
 - **Notebook**: `notebooks/nfl_eda.ipynb` - EDA and model training

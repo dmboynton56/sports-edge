@@ -356,11 +356,13 @@ class GamePredictor:
             disagreement_val = disagreement[idx]
             model_disagreement = disagreement_val > 0.15
             
+            home_margin = float(spread_pred[idx])  # positive => home advantage
+            home_spread = -home_margin  # betting convention: favorite has negative spread
             result = {
                 'home_team': game_row.iloc[idx]['home_team'],
                 'away_team': game_row.iloc[idx]['away_team'],
                 'game_date': pd.to_datetime(game_row.iloc[idx]['game_date']).strftime('%Y-%m-%d'),
-                'predicted_spread': float(spread_pred[idx]),
+                'predicted_spread': home_spread,
                 # Use ensemble probability as primary
                 'home_win_probability': float(final_win_prob[idx]),
                 'away_win_probability': float(1 - final_win_prob[idx]),
@@ -371,9 +373,9 @@ class GamePredictor:
                 'predicted_winner': game_row.iloc[idx]['home_team'] if final_win_prob[idx] > 0.5 else game_row.iloc[idx]['away_team'],
                 'confidence': float(abs(final_win_prob[idx] - 0.5) * 2),
                 'spread_interpretation': (
-                    f"{game_row.iloc[idx]['home_team']} by {abs(spread_pred[idx]):.1f}"
-                    if spread_pred[idx] > 0
-                    else f"{game_row.iloc[idx]['away_team']} by {abs(spread_pred[idx]):.1f}"
+                    f"{game_row.iloc[idx]['home_team']} by {abs(home_spread):.1f}"
+                    if home_spread < 0
+                    else f"{game_row.iloc[idx]['away_team']} by {abs(home_spread):.1f}"
                 )
             }
             results.append(result)

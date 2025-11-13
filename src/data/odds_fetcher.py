@@ -13,7 +13,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
-def fetch_odds(league: str, date: Optional[str] = None, regions: str = 'us', markets: str = 'spreads,totals,moneylines') -> pd.DataFrame:
+def fetch_odds(
+    league: str,
+    date: Optional[str] = None,
+    regions: str = 'us',
+    markets: str = 'spreads,totals,moneylines',
+    bookmakers: Optional[str] = None,
+) -> pd.DataFrame:
     """
     Fetch odds from The Odds API.
     
@@ -41,6 +47,8 @@ def fetch_odds(league: str, date: Optional[str] = None, regions: str = 'us', mar
         'regions': regions,
         'markets': markets,
     }
+    if bookmakers:
+        params['bookmakers'] = bookmakers
     
     if date:
         params['dateFormat'] = 'iso'
