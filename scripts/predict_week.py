@@ -50,36 +50,29 @@ def filter_completed_games(schedule: pd.DataFrame) -> pd.DataFrame:
     return completed
 
 
-def collect_week_11_games(schedule: pd.DataFrame) -> pd.DataFrame:
+def collect_week_games(schedule: pd.DataFrame, week: int) -> pd.DataFrame:
     """
-    Gather Week 11 games for the target window (Nov 13, Nov 14, Nov 16, Nov 17).
+    Gather games for the specified week.
     """
-    target_dates = pd.to_datetime([
-        '2025-11-13',
-        '2025-11-14',
-        '2025-11-16',
-        '2025-11-17'
-    ]).date
     if 'week' not in schedule.columns:
-        raise ValueError("Schedule missing 'week' column required to filter Week 11 games.")
+        raise ValueError("Schedule missing 'week' column required to filter games by week.")
     
-    mask = (schedule['week'] == 11) & schedule['game_date'].dt.date.isin(target_dates)
-    week_11_games = schedule[mask].copy()
+    week_games = schedule[schedule['week'] == week].copy()
     
-    if week_11_games.empty:
-        raise ValueError("No Week 11 games found for Nov 13/14/16/17.")
+    if week_games.empty:
+        raise ValueError(f"No games found for week {week}.")
     
-    week_11_games = week_11_games.sort_values('game_date').reset_index(drop=True)
-    print(f"\nFound {len(week_11_games)} Week 11 games on Nov 13/14/16/17:")
-    for _, row in week_11_games.iterrows():
+    week_games = week_games.sort_values('game_date').reset_index(drop=True)
+    print(f"\nFound {len(week_games)} games for week {week}:")
+    for _, row in week_games.iterrows():
         print(f"  {row['game_date'].date()} - {row['away_team']} @ {row['home_team']}")
     
     base_cols = ['home_team', 'away_team', 'game_date', 'season', 'week']
     optional_cols = [
         col for col in ['start_time', 'gametime', 'game_time', 'game_time_utc']
-        if col in week_11_games.columns
+        if col in week_games.columns
     ]
-    return week_11_games[base_cols + optional_cols].copy()
+    return week_games[base_cols + optional_cols].copy()
 
 
 def team_has_data(team: str, game_date: pd.Timestamp, completed_games: pd.DataFrame) -> bool:
@@ -120,14 +113,14 @@ def predict_games(games: pd.DataFrame,
     return predictions
 
 
-def display_predictions(predictions: List[dict]) -> None:
+def display_predictions(predictions: List[dict], week: int) -> None:
     """Pretty-print prediction results."""
     if not predictions:
         print("\nNo predictions generated.")
         return
     
     print("\n" + "=" * 80)
-    print("WEEK 11 PREDICTIONS (NOV 13 / NOV 14 / NOV 16 / NOV 17)")
+    print(f"WEEK {week} PREDICTIONS")
     print("=" * 80)
     
     for pred in predictions:
@@ -143,9 +136,67 @@ def display_predictions(predictions: List[dict]) -> None:
     print("\n" + "=" * 80)
 
 
+def write_viz_data(predictions: List[dict], games_df: pd.DataFrame, schedule_df: pd.DataFrame, week: int) -> None:
+    """Export predictions to parquet file for notebook visualization."""
+    if not predictions:
+        print("No predictions to export; skipping viz data write.")
+        return
+    
+    # Convert predictions to DataFrame
+    preds_df = pd.DataFrame(predictions)
+    preds_df['game_date'] = pd.to_datetime(preds_df['game_date'])
+    
+    # Merge with full schedule to get game_id (schedule has game_id, filtered games_df might not)
+    schedule_copy = schedule_df.copy()
+    schedule_copy['game_date'] = pd.to_datetime(schedule_copy['game_date'])
+    
+    # Check if game_id exists in schedule
+    if 'game_id' not in schedule_copy.columns:
+        print("Warning: schedule DataFrame missing 'game_id' column. Cannot export viz data.")
+        return
+    
+    # Merge on home_team, away_team, and game_date
+    merged = preds_df.merge(
+        schedule_copy[['home_team', 'away_team', 'game_date', 'game_id']].drop_duplicates(
+            subset=['home_team', 'away_team', 'game_date']
+        ),
+        on=['home_team', 'away_team', 'game_date'],
+        how='left'
+    )
+    
+    if merged['game_id'].isna().any():
+        print("Warning: Some predictions missing game_id. These will be excluded from export.")
+        merged = merged[merged['game_id'].notna()]
+    
+    if merged.empty:
+        print("No predictions with valid game_id to export.")
+        return
+    
+    # Prepare export DataFrame with required columns
+    export_df = pd.DataFrame({
+        'game_id': merged['game_id'],
+        'my_spread': merged['predicted_spread'],
+        'my_home_win_prob': merged['home_win_probability']
+    })
+    
+    # Create exports directory if it doesn't exist
+    export_dir = "notebooks/exports"
+    os.makedirs(export_dir, exist_ok=True)
+    
+    # Write to parquet
+    output_path = f"{export_dir}/week{week}_python_preds.parquet"
+    export_df.to_parquet(output_path, index=False)
+    print(f"\nExported {len(export_df)} predictions to {output_path}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Predict Week 11 games and optionally push results to Supabase."
+        description="Predict NFL games for a specific week and optionally push results to Supabase."
+    )
+    parser.add_argument(
+        "week",
+        type=int,
+        help="Week number to predict (e.g., 11, 12, 13).",
     )
     parser.add_argument(
         "--season",
@@ -157,6 +208,11 @@ def parse_args() -> argparse.Namespace:
         "--push-to-db",
         action="store_true",
         help="Persist predictions to Supabase using env credentials.",
+    )
+    parser.add_argument(
+        "--write-viz-data",
+        action="store_true",
+        help="Export predictions to parquet file for notebook visualization.",
     )
     return parser.parse_args()
 
@@ -218,7 +274,7 @@ def prepare_games_for_supabase(
     games_df: pd.DataFrame,
     schedule_df: pd.DataFrame
 ) -> pd.DataFrame:
-    """Enrich Week 11 games with metadata required for Supabase upserts."""
+    """Enrich games with metadata required for Supabase upserts."""
     if games_df.empty:
         return games_df
     
@@ -377,15 +433,16 @@ def upsert_games_pg(conn: psycopg.Connection, games_df: pd.DataFrame) -> dict:
                 row['away_team'],
                 game_date
             )
-            cur.execute(select_sql, params)
+            cur.execute(select_sql, params, prepare=False)
             existing = cur.fetchone()
             if existing:
                 game_id = existing[0]
-                cur.execute(update_sql, (game_time, week_val, game_id))
+                cur.execute(update_sql, (game_time, week_val, game_id), prepare=False)
             else:
                 cur.execute(
                     insert_sql,
-                    (row['league'], int(row['season']), week_val, game_time, row['home_team'], row['away_team'])
+                    (row['league'], int(row['season']), week_val, game_time, row['home_team'], row['away_team']),
+                    prepare=False
                 )
                 game_id = cur.fetchone()[0]
             key = game_map_key(row['home_team'], row['away_team'], game_date)
@@ -436,6 +493,8 @@ def insert_predictions_pg(
 def main():
     args = parse_args()
     season = args.season
+    week = args.week
+    
     try:
         schedule_df = load_season_schedule(season)
     except Exception as err:
@@ -455,17 +514,24 @@ def main():
     play_by_play = load_pbp([season])
     
     try:
-        week_11_games = collect_week_11_games(schedule_df)
+        week_games = collect_week_games(schedule_df, week)
     except Exception as err:
         print(f"ERROR: {err}")
         sys.exit(1)
     
-    predictions = predict_games(week_11_games, schedule_df, completed_games, play_by_play)
-    display_predictions(predictions)
+    predictions = predict_games(week_games, schedule_df, completed_games, play_by_play)
+    display_predictions(predictions, week)
+    
+    if args.write_viz_data:
+        try:
+            write_viz_data(predictions, week_games, schedule_df, week)
+        except Exception as err:
+            print(f"ERROR writing viz data: {err}")
+            sys.exit(1)
     
     if args.push_to_db:
         try:
-            push_predictions_to_supabase(predictions, week_11_games, schedule_df)
+            push_predictions_to_supabase(predictions, week_games, schedule_df)
         except Exception as err:
             print(f"ERROR pushing to Supabase: {err}")
             sys.exit(1)
@@ -473,3 +539,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

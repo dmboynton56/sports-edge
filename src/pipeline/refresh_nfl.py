@@ -1,0 +1,239 @@
+#!/usr/bin/env python3
+"""
+Weekly NFL refresh script.
+
+Pulls upcoming games for the next NFL week, builds features using historical data,
+and writes predictions to BigQuery model tables. Designed to run every Tuesday.
+"""
+
+from __future__ import annotations
+
+import argparse
+from datetime import datetime, timedelta, timezone
+from typing import List, Optional
+
+import pandas as pd
+from dotenv import load_dotenv
+from google.cloud import bigquery
+
+from src.pipeline.refresh import build_features, load_historical_data
+from src.models.predictor import GamePredictor
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Generate NFL predictions for upcoming week.")
+    parser.add_argument(
+        "--project",
+        required=True,
+        help="GCP project ID (e.g., learned-pier-478122-p7).",
+    )
+    parser.add_argument(
+        "--model-version",
+        default="v1",
+        help="Model version tag for GamePredictor (default: v1).",
+    )
+    parser.add_argument(
+        "--start-date",
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
+        default=None,
+        help="Override the week start date (YYYY-MM-DD). Default: upcoming Thursday.",
+    )
+    parser.add_argument(
+        "--window-days",
+        type=int,
+        default=6,
+        help="Number of days to include after start date (default: 6 for Thu-Mon).",
+    )
+    parser.add_argument(
+        "--season",
+        type=int,
+        default=None,
+        help="Season year override (defaults to start-date year).",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Compute predictions but do not write to BigQuery.",
+    )
+    return parser.parse_args()
+
+
+def _upcoming_thursday(today: datetime.date) -> datetime.date:
+    weekday = today.weekday()  # Monday=0
+    days_until_thursday = (3 - weekday) % 7
+    if days_until_thursday == 0:
+        days_until_thursday = 7
+    return today + timedelta(days=days_until_thursday)
+
+
+def _query_games(client: bigquery.Client, project: str, start_date: datetime.date, end_date: datetime.date) -> pd.DataFrame:
+    query = f"""
+        SELECT *
+        FROM `{project}.sports_edge_raw.raw_schedules`
+        WHERE game_date BETWEEN @start_date AND @end_date
+          AND game_date IS NOT NULL
+        ORDER BY game_date
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
+            bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
+        ]
+    )
+    df = client.query(query, job_config=job_config).to_dataframe()
+    df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
+    return df
+
+
+def _query_historical_games(client: bigquery.Client, project: str, seasons: List[int]) -> pd.DataFrame:
+    query = f"""
+        SELECT *
+        FROM `{project}.sports_edge_raw.raw_schedules`
+        WHERE season IN UNNEST(@seasons)
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
+    )
+    df = client.query(query, job_config=job_config).to_dataframe()
+    df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
+    return df
+
+
+def _query_pbp(client: bigquery.Client, project: str, seasons: List[int]) -> pd.DataFrame:
+    query = f"""
+        SELECT *
+        FROM `{project}.sports_edge_raw.raw_pbp`
+        WHERE season IN UNNEST(@seasons)
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
+    )
+    df = client.query(query, job_config=job_config).to_dataframe()
+    df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
+    return df
+
+
+def _delete_existing_predictions(client: bigquery.Client, project: str, game_ids: List[str]) -> None:
+    if not game_ids:
+        return
+    table_id = f"{project}.sports_edge_curated.model_predictions"
+    query = f"DELETE FROM `{table_id}` WHERE game_id IN UNNEST(@game_ids)"
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[bigquery.ArrayQueryParameter("game_ids", "STRING", game_ids)]
+    )
+    client.query(query, job_config=job_config).result()
+    print(f"Removed existing predictions for {len(game_ids)} games.")
+
+
+def _log_model_run(
+    client: bigquery.Client,
+    project: str,
+    run_id: str,
+    started_at: datetime,
+    finished_at: datetime,
+    rows_written: int,
+    status: str,
+    error_text: Optional[str] = None,
+) -> None:
+    table_id = f"{project}.sports_edge_curated.model_runs"
+    df = pd.DataFrame(
+        [
+            {
+                "run_id": run_id,
+                "started_at": started_at,
+                "finished_at": finished_at,
+                "league": "NFL",
+                "rows_written": rows_written,
+                "status": status,
+                "error_text": error_text,
+            }
+        ]
+    )
+    job = client.load_table_from_dataframe(df, table_id, job_config=bigquery.LoadJobConfig(write_disposition="WRITE_APPEND"))
+    job.result()
+
+
+def main() -> None:
+    load_dotenv()
+    args = _parse_args()
+    client = bigquery.Client(project=args.project)
+
+    today = datetime.now(tz=timezone.utc).date()
+    start_date = args.start_date or _upcoming_thursday(today)
+    end_date = start_date + timedelta(days=args.window_days)
+    season = args.season or start_date.year
+    print(f"Building predictions for games between {start_date} and {end_date}. Target season={season}.")
+
+    games_df = _query_games(client, args.project, start_date, end_date)
+    if games_df.empty:
+        print("No NFL games scheduled in the requested window. Exiting.")
+        return
+
+    hist_seasons = list(range(season - 3, season + 1))
+    historical_games = _query_historical_games(client, args.project, hist_seasons)
+    pbp = _query_pbp(client, args.project, hist_seasons)
+    historical_data = {"historical_games": historical_games, "play_by_play": pbp}
+
+    features = build_features(games_df, "NFL", historical_data)
+    predictor = GamePredictor("NFL", model_version=args.model_version)
+    predictions = predictor.predict_batch(features, historical_games, pbp)
+    if predictions.empty:
+        print("No predictions were generated.")
+        return
+
+    predictions["game_date"] = pd.to_datetime(predictions["game_date"])
+    predictions = predictions.merge(
+        games_df[["game_id", "home_team", "away_team", "game_date"]],
+        on=["home_team", "away_team", "game_date"],
+        how="left",
+    )
+
+    predictions["league"] = "NFL"
+    predictions["model_version"] = args.model_version
+    predictions["prediction_ts"] = datetime.now(tz=timezone.utc)
+    predictions["prediction_id"] = predictions.apply(
+        lambda row: f"{row['game_id']}_{args.model_version}_{row['prediction_ts'].strftime('%Y%m%dT%H%M%S')}",
+        axis=1,
+    )
+    predictions = predictions.rename(columns={"home_win_probability": "home_win_prob"})
+    target_columns = [
+        "prediction_id",
+        "game_id",
+        "league",
+        "model_version",
+        "predicted_spread",
+        "home_win_prob",
+        "prediction_ts",
+        "input_hash",
+    ]
+    for column in target_columns:
+        if column not in predictions.columns:
+            predictions[column] = None
+    predictions = predictions[target_columns]
+
+    if args.dry_run:
+        print(predictions)
+        return
+
+    run_id = f"nfl_{datetime.now(tz=timezone.utc).strftime('%Y%m%dT%H%M%S')}"
+    started_at = datetime.now(tz=timezone.utc)
+    try:
+        _delete_existing_predictions(client, args.project, predictions["game_id"].dropna().tolist())
+        table_id = f"{args.project}.sports_edge_curated.model_predictions"
+        load_job = client.load_table_from_dataframe(
+            predictions,
+            table_id,
+            job_config=bigquery.LoadJobConfig(write_disposition="WRITE_APPEND"),
+        )
+        load_job.result()
+        finished_at = datetime.now(tz=timezone.utc)
+        _log_model_run(client, args.project, run_id, started_at, finished_at, len(predictions), "SUCCESS")
+        print(f"Wrote {len(predictions)} predictions to {table_id}")
+    except Exception as exc:  # noqa: BLE001
+        finished_at = datetime.now(tz=timezone.utc)
+        _log_model_run(client, args.project, run_id, started_at, finished_at, 0, "FAILED", str(exc))
+        raise
+
+
+if __name__ == "__main__":
+    main()

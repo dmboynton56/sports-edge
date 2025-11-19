@@ -181,14 +181,21 @@ def _add_team_strength_features(games_df: pd.DataFrame, historical_games: pd.Dat
             (season_games['home_team'] == home_team) | (season_games['away_team'] == home_team)
         ]
         if len(home_games) > 0:
-            home_wins = sum(1 for _, g in home_games.iterrows()
-                          if (g['home_team'] == home_team and g.get('home_score', 0) > g.get('away_score', 0)) or
-                             (g['away_team'] == home_team and g.get('away_score', 0) > g.get('home_score', 0)))
-            home_point_diff = [
-                g.get('home_score', 0) - g.get('away_score', 0) if g['home_team'] == home_team
-                else g.get('away_score', 0) - g.get('home_score', 0)
-                for _, g in home_games.iterrows()
-            ]
+            home_wins = 0
+            home_point_diff = []
+            for _, g in home_games.iterrows():
+                home_score = g.get('home_score')
+                away_score = g.get('away_score')
+                if pd.isna(home_score) or pd.isna(away_score):
+                    continue
+                if (g['home_team'] == home_team and home_score > away_score) or (
+                    g['away_team'] == home_team and away_score > home_score
+                ):
+                    home_wins += 1
+                if g['home_team'] == home_team:
+                    home_point_diff.append(home_score - away_score)
+                else:
+                    home_point_diff.append(away_score - home_score)
             df.loc[idx, 'home_team_win_pct'] = home_wins / len(home_games)
             df.loc[idx, 'home_team_point_diff'] = np.mean(home_point_diff) if home_point_diff else 0
         
@@ -197,14 +204,21 @@ def _add_team_strength_features(games_df: pd.DataFrame, historical_games: pd.Dat
             (season_games['home_team'] == away_team) | (season_games['away_team'] == away_team)
         ]
         if len(away_games) > 0:
-            away_wins = sum(1 for _, g in away_games.iterrows()
-                          if (g['home_team'] == away_team and g.get('home_score', 0) > g.get('away_score', 0)) or
-                             (g['away_team'] == away_team and g.get('away_score', 0) > g.get('home_score', 0)))
-            away_point_diff = [
-                g.get('home_score', 0) - g.get('away_score', 0) if g['home_team'] == away_team
-                else g.get('away_score', 0) - g.get('home_score', 0)
-                for _, g in away_games.iterrows()
-            ]
+            away_wins = 0
+            away_point_diff = []
+            for _, g in away_games.iterrows():
+                home_score = g.get('home_score')
+                away_score = g.get('away_score')
+                if pd.isna(home_score) or pd.isna(away_score):
+                    continue
+                if (g['home_team'] == away_team and home_score > away_score) or (
+                    g['away_team'] == away_team and away_score > home_score
+                ):
+                    away_wins += 1
+                if g['home_team'] == away_team:
+                    away_point_diff.append(home_score - away_score)
+                else:
+                    away_point_diff.append(away_score - home_score)
             df.loc[idx, 'away_team_win_pct'] = away_wins / len(away_games)
             df.loc[idx, 'away_team_point_diff'] = np.mean(away_point_diff) if away_point_diff else 0
     

@@ -1,0 +1,26 @@
+Unified Data Layer
+
+Pick one canonical feed for core schedule/boxscore/PBP data; nflreadr already mirrors the nflfastR database (play-by-play, weekly team stats) and can be accessed from Python via the nfl_data_py BigQuery mirror (nfl_data_py.import_pbp_data). Since that dataset updates nightly for the current season, you can cover 2025 without waiting on nflfastR CSV drops. Keep the existing src/data/nfl_fetcher.py shim but route it through the BigQuery export so everything—schedules, team stats, EPA splits—comes from one source. For anything nflreadr still lacks (odds, injuries), bolt on secondary fetchers but store their raw outputs in the same ingestion layer.
+Feature Storage & BQML
+
+After build_features in src/pipeline/refresh.py (line 100) produces its DataFrame, write those rows into sports_edge.feature_snapshots (partitioned by game_date, clustered by league, season). Add sibling tables for raw_sched, play_by_play, model_predictions, and model_runs. This preserves both raw inputs and engineered columns (point differential, rest, form metrics) so BQML can train directly from the curated set.
+Training workflow: (1) scheduled query builds the modeling view (filters seasons, handles null imputation consistent with feature_medians), (2) CREATE MODEL/ML.RETRAIN jobs run inside BigQuery, (3) ML.EVALUATE writes metrics back to model_runs, giving you feature importance via ML.WEIGHTS or ML.FEATURE_IMPORTANCE.
+Because all artifacts sit in BigQuery, later RAG use becomes trivial: store predictions + explanations + feature weights once, then let Vertex AI or ML.GENERATE_EMBEDDING create vectors you can search.
+Supabase Role
+
+Supabase stays lean: games, odds_snapshots, model_predictions, features JSON for the UI. Everything heavy (all historical stats, intermediate features, model metadata) lives in BigQuery. A Cloud Run sync job (or even your existing CLI) simply pulls the latest model_predictions_live view from BigQuery, transforms to your Supabase schema, and upserts. That keeps the website fast and avoids bloating Supabase storage.
+Answering Your Questions
+
+Do we run scripts locally to compute/upload features? Initially yes: extend the current CLI so that after it builds features it calls pandas_gbq.to_gbq or bigquery.Client.load_table_from_dataframe. Once that works, containerize the script (Dockerfile + Cloud Run job) so you can trigger it in GCP without touching your laptop. Long-term, break the pipeline into DAG steps (ingest → feature build → BQ load → BQML score → Supabase sync) managed by Cloud Composer or Cloud Scheduler + Cloud Run; your local environment becomes optional.
+Weekly Tuesday refresh? Use Cloud Scheduler (cron 0 15 * * TUE UTC ≈ Tuesday morning ET) to call a Cloud Run job or Composer DAG. That job would:
+Pull the latest schedules/PBP up through Monday night (from the consolidated data source).
+Recompute rolling features for all teams (so “state” like rest or form stays current).
+Load the new feature snapshot into BigQuery.
+Kick off a stored procedure that runs ML.PREDICT for upcoming Week N games and materializes model_predictions_live.
+Invoke the Supabase sync step so the site shows new edges immediately.
+Because it all runs in GCP, you get reliable Tuesday automation plus an easy path to daily or on-demand reruns if injury news hits mid-week.
+Next Steps
+
+Update requirements.txt and .env to include BigQuery credentials (GOOGLE_PROJECT, GOOGLE_DATASET, service-account JSON path).
+Retrofit the refresh script to write raw + engineered frames into BigQuery tables and read from BigQuery for historical backfills.
+Stand up the Tuesday Cloud Scheduler → Cloud Run job once the script is containerized; add logging into model_runs so you can confirm ingestion/training status each week.

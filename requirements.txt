@@ -14,4 +14,8 @@ scipy>=1.10.0
 pyarrow>=12.0.0
 nfl-data-py
 nflreadpy
-
+google-cloud-bigquery>=3.13.0
+google-cloud-bigquery-storage>=2.24.0
+db-dtypes>=1.2.0
+pandas-gbq>=0.26.1
+beautifulsoup4>=4.12.0

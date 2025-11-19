@@ -142,6 +142,31 @@ const { data } = await supabase
 4. **Automation**: Schedule `refresh.py` to run every 15 minutes
 5. **Display**: Website reads from Supabase view
 
+### Sync curated BigQuery predictions back into Supabase
+
+When the BigQuery pipeline (`src/pipeline/refresh_nfl.py`) finishes writing to `sports_edge_curated.model_predictions`, run:
+
+```bash
+python scripts/sync_bq_to_supabase.py \
+  --project learned-pier-478122-p7 \
+  --league NFL \
+  --season 2025 \
+  --model-version v1 \
+  --model-number v1 \
+  --week 11
+```
+
+What the sync does:
+1. Queries the curated `model_predictions` table and grabs the latest `feature_snapshots` metadata (home/away, season, week) for each `game_id`.
+2. Upserts those games into Supabase (creating or updating `games` rows so IDs stay stable).
+3. Deletes existing Supabase predictions for that game/model version (pass `--append` if you want to keep history) and inserts the BigQuery spreads/win probabilities with their original `prediction_ts`.
+
+Prereqs:
+- `GOOGLE_APPLICATION_CREDENTIALS` pointing to the service-account JSON so the BigQuery client can read the curated dataset.
+- `.env` populated with `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and the database credentials used by `predict_WEEK_11.py` (the script imports the same helpers to open a psycopg connection).
+
+This lets you treat BigQuery as the source of truth for scoring, while Supabase remains the lightweight cache that the website reads.
+
 ### Backfill sportsbook odds for existing games
 
 When games already live in Supabase but lack recent sportsbook lines (e.g., after importing schedules), run:

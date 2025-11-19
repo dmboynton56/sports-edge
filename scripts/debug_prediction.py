@@ -10,17 +10,17 @@ from src.models.predictor import GamePredictor
 from src.data import nfl_fetcher
 
 # Load historical data
-schedule_df = nfl_fetcher.fetch_nfl_schedule(2024)
+schedule_df = nfl_fetcher.fetch_nfl_schedule(2025)
 schedule_df['game_date'] = pd.to_datetime(schedule_df['gameday'])
 
 # Initialize predictor
-predictor = GamePredictor('NFL', 'v2')
+predictor = GamePredictor('NFL', 'v1')
 
 # Game to analyze
 game_row = pd.DataFrame({
-    'home_team': ['DEN'],
-    'away_team': ['LV'],
-    'game_date': ['2025-11-06'],
+    'home_team': ['MIA'],
+    'away_team': ['BUF'],
+    'game_date': ['2025-11-09'],
     'season': [2025]
 })
 

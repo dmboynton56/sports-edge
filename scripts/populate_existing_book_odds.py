@@ -7,7 +7,7 @@ Example:
 
 import argparse
 from collections import defaultdict
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Tuple, Optional
 
 import pandas as pd
@@ -116,6 +116,30 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Print detailed matching information for debugging.",
     )
+    parser.add_argument(
+        "--min-date",
+        type=str,
+        default=None,
+        help="Only target games on/after this YYYY-MM-DD date (optional).",
+    )
+    parser.add_argument(
+        "--max-date",
+        type=str,
+        default=None,
+        help="Only target games on/before this YYYY-MM-DD date (optional).",
+    )
+    parser.add_argument(
+        "--max-unmatched",
+        type=int,
+        default=20,
+        help="How many unmatched odds rows to display (use -1 for all).",
+    )
+    parser.add_argument(
+        "--date-tolerance-days",
+        type=int,
+        default=1,
+        help="Allow Odds API rows to match Supabase games within this many days when kick-off dates differ (default: 1).",
+    )
     return parser.parse_args()
 
 
@@ -127,7 +151,7 @@ def normalize_team(name: str, league: str) -> str:
     return key
 
 
-def fetch_target_games(conn) -> List[Dict]:
+def fetch_target_games(conn, min_date: Optional[str] = None, max_date: Optional[str] = None) -> List[Dict]:
     """Return future games whose book_spread is NULL."""
     query = """
         select g.id,
@@ -140,10 +164,20 @@ def fetch_target_games(conn) -> List[Dict]:
         from games g
         where g.game_time_utc >= now()
           and g.book_spread is null
+          {date_filters}
         order by g.game_time_utc
     """
+    filters = []
+    params: List = []
+    if min_date:
+        filters.append("and g.game_time_utc::date >= %s")
+        params.append(min_date)
+    if max_date:
+        filters.append("and g.game_time_utc::date <= %s")
+        params.append(max_date)
+    query = query.format(date_filters="\n          ".join(filters))
     with conn.cursor() as cur:
-        cur.execute(query)
+        cur.execute(query, params)
         rows = cur.fetchall()
     columns = ["id", "league", "season", "week", "home_team", "away_team", "game_date"]
     return [dict(zip(columns, row)) for row in rows]
@@ -194,7 +228,16 @@ def sanitize_market(market: str) -> Optional[str]:
     return None
 
 
-def populate_odds(conn, games: List[Dict], markets: str, regions: str, bookmakers: Optional[str], verbose: bool = False) -> int:
+def populate_odds(
+    conn,
+    games: List[Dict],
+    markets: str,
+    regions: str,
+    bookmakers: Optional[str],
+    verbose: bool = False,
+    max_unmatched: int = 20,
+    date_tolerance_days: int = 1,
+) -> int:
     if not games:
         print("No games require book spread updates.")
         return 0
@@ -202,16 +245,25 @@ def populate_odds(conn, games: List[Dict], markets: str, regions: str, bookmaker
     lookup = build_game_lookup(games)
     games_by_league_date = defaultdict(list)
     pair_date_map = defaultdict(list)
+    games_by_pair = defaultdict(list)
+    dates_to_fetch = defaultdict(set)
+    offset_range = range(-date_tolerance_days, date_tolerance_days + 1)
     for game in games:
         league = game["league"].upper()
         games_by_league_date[(league, game["game_date"])].append(game)
         pair_date_map[(league, game["norm_home"], game["norm_away"])].append(game["game_date"])
+        games_by_pair[(league, game["norm_home"], game["norm_away"])].append(game)
+        for offset in offset_range:
+            fetch_date = game["game_date"] + timedelta(days=offset)
+            dates_to_fetch[(league, fetch_date)].add(game["id"])
 
     home_spread_map: Dict[str, float] = {}
     unmatched_rows: List[Tuple[str, str, str, datetime.date, str]] = []
     missing_games: List[Tuple[str, datetime.date]] = []
 
-    for (league, game_date), league_games in games_by_league_date.items():
+    # iterate through all candidate dates (including tolerance)
+    for (league, game_date), _ in sorted(dates_to_fetch.items(), key=lambda x: (x[0][0], x[0][1])):
+        league_games = games_by_league_date.get((league, game_date), [])
         date_str = game_date.isoformat()
         print(f"Fetching odds for {league} games on {date_str} ({len(league_games)} matchups)...")
         odds_df = fetch_odds(
@@ -234,8 +286,22 @@ def populate_odds(conn, games: List[Dict], markets: str, regions: str, bookmaker
             key = (league, row["norm_home"], row["norm_away"], row["game_date"])
             game = lookup.get(key)
             if not game:
-                unmatched_rows.append((league, row["home_team"], row["away_team"], row["game_date"], row["book"]))
-                continue
+                pair_key = (league, row["norm_home"], row["norm_away"])
+                potential_games = games_by_pair.get(pair_key, [])
+                if potential_games:
+                    potential_games.sort(key=lambda g: abs((g["game_date"] - row["game_date"]).days))
+                    best_game = potential_games[0]
+                    delta_days = abs((best_game["game_date"] - row["game_date"]).days)
+                    if delta_days <= date_tolerance_days:
+                        if verbose:
+                            print(
+                                f"  Adjusted date match for {row['away_team']} @ {row['home_team']} "
+                                f"({row['game_date']} vs Supabase {best_game['game_date']})"
+                            )
+                        game = best_game
+                if not game:
+                    unmatched_rows.append((league, row["home_team"], row["away_team"], row["game_date"], row["book"]))
+                    continue
             market = sanitize_market(row["market"])
             if not market:
                 unmatched_rows.append((league, row["home_team"], row["away_team"], row["game_date"], f"{row['book']} (market={row['market']})"))
@@ -264,7 +330,8 @@ def populate_odds(conn, games: List[Dict], markets: str, regions: str, bookmaker
             print(f"  - {league} on {game_date}")
     if unmatched_rows:
         print("\nOdds rows that did not match any Supabase game (team normalization mismatch?):")
-        for league, home, away, game_date, book in unmatched_rows[:20]:
+        subset = unmatched_rows if max_unmatched < 0 else unmatched_rows[:max_unmatched]
+        for league, home, away, game_date, book in subset:
             key = (league, normalize_team(home, league), normalize_team(away, league))
             alt_dates = pair_date_map.get(key, [])
             hint = ""
@@ -272,8 +339,8 @@ def populate_odds(conn, games: List[Dict], markets: str, regions: str, bookmaker
                 alt_str = ", ".join(sorted({str(d) for d in alt_dates}))
                 hint = f" (closest Supabase dates: {alt_str})"
             print(f"  - {league} {game_date}: {away} @ {home} ({book}){hint}")
-        if len(unmatched_rows) > 20:
-            print(f"  ... {len(unmatched_rows) - 20} more unmatched rows omitted")
+        if max_unmatched >= 0 and len(unmatched_rows) > max_unmatched:
+            print(f"  ... {len(unmatched_rows) - max_unmatched} more unmatched rows omitted")
 
     return updated_spreads
 
@@ -290,10 +357,19 @@ def main():
         user=creds["db_user"],
     )
     try:
-        games = fetch_target_games(conn)
+        games = fetch_target_games(conn, min_date=args.min_date, max_date=args.max_date)
         if args.verbose:
             print(f"Found {len(games)} future games missing book_spread.")
-        populate_odds(conn, games, args.markets, args.regions, args.bookmakers, verbose=args.verbose)
+        populate_odds(
+            conn,
+            games,
+            args.markets,
+            args.regions,
+            args.bookmakers,
+            verbose=args.verbose,
+            max_unmatched=args.max_unmatched,
+            date_tolerance_days=args.date_tolerance_days,
+        )
     finally:
         conn.close()
 
