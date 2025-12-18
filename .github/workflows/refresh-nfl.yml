@@ -46,3 +46,16 @@ jobs:
         shell: bash
         run: |
           python src/pipeline/refresh_nfl.py --project "$PROJECT_ID" --model-version v1
+
+      - name: Sync predictions to Supabase
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append

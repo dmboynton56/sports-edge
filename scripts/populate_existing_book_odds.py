@@ -1,352 +1,247 @@
+#!/usr/bin/env python3
 """
-Populate missing book odds for future games stored in Supabase.
+Backfill book spreads for existing games in Supabase when book_spread is NULL.
 
-Example:
-    python populate_existing_book_odds.py --markets spreads
+Usage:
+    python scripts/populate_existing_book_odds.py --league NFL --start-date 2025-11-10 --end-date 2025-11-17 --bookmakers fanduel
+
+Environment:
+    SUPABASE_URL
+    SUPABASE_SERVICE_ROLE_KEY
+    ODDS_API_KEY (used by src.data.odds_fetcher)
 """
+
+from __future__ import annotations
 
 import argparse
-from collections import defaultdict
-from datetime import datetime, timezone, timedelta
-from typing import Dict, List, Tuple, Optional
+import os
+import sys
+from datetime import datetime, timedelta, timezone
+from typing import Dict, Optional
 
 import pandas as pd
+import psycopg
+from dotenv import load_dotenv
 
-from src.data.odds_fetcher import fetch_odds
-from predict_WEEK_11 import load_supabase_credentials, create_pg_connection
+# Ensure project root on sys.path for src imports
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
-NFL_TEAM_MAP = {
-    "ari": "arizona cardinals",
-    "arizona cardinals": "arizona cardinals",
-    "atl": "atlanta falcons",
-    "atlanta falcons": "atlanta falcons",
-    "bal": "baltimore ravens",
-    "baltimore ravens": "baltimore ravens",
-    "buf": "buffalo bills",
-    "buffalo bills": "buffalo bills",
-    "car": "carolina panthers",
-    "carolina panthers": "carolina panthers",
-    "chi": "chicago bears",
-    "chicago bears": "chicago bears",
-    "cin": "cincinnati bengals",
-    "cincinnati bengals": "cincinnati bengals",
-    "cle": "cleveland browns",
-    "cleveland browns": "cleveland browns",
-    "dal": "dallas cowboys",
-    "dallas cowboys": "dallas cowboys",
-    "den": "denver broncos",
-    "denver broncos": "denver broncos",
-    "det": "detroit lions",
-    "detroit lions": "detroit lions",
-    "gb": "green bay packers",
-    "green bay packers": "green bay packers",
-    "hou": "houston texans",
-    "houston texans": "houston texans",
-    "ind": "indianapolis colts",
-    "indianapolis colts": "indianapolis colts",
-    "jax": "jacksonville jaguars",
-    "jacksonville jaguars": "jacksonville jaguars",
-    "kc": "kansas city chiefs",
-    "kansas city chiefs": "kansas city chiefs",
-    "lv": "las vegas raiders",
-    "las vegas raiders": "las vegas raiders",
-    "lac": "los angeles chargers",
-    "los angeles chargers": "los angeles chargers",
-    "la chargers": "los angeles chargers",
-    "lar": "los angeles rams",
-    "los angeles rams": "los angeles rams",
-    "la rams": "los angeles rams",
-    "la": "los angeles rams",
-    "mia": "miami dolphins",
-    "miami dolphins": "miami dolphins",
-    "min": "minnesota vikings",
-    "minnesota vikings": "minnesota vikings",
-    "ne": "new england patriots",
-    "new england patriots": "new england patriots",
-    "no": "new orleans saints",
-    "new orleans saints": "new orleans saints",
-    "nyg": "new york giants",
-    "new york giants": "new york giants",
-    "nyj": "new york jets",
-    "new york jets": "new york jets",
-    "phi": "philadelphia eagles",
-    "philadelphia eagles": "philadelphia eagles",
-    "pit": "pittsburgh steelers",
-    "pittsburgh steelers": "pittsburgh steelers",
-    "sf": "san francisco 49ers",
-    "san francisco 49ers": "san francisco 49ers",
-    "sea": "seattle seahawks",
-    "seattle seahawks": "seattle seahawks",
-    "tb": "tampa bay buccaneers",
-    "tampa bay buccaneers": "tampa bay buccaneers",
-    "ten": "tennessee titans",
-    "tennessee titans": "tennessee titans",
-    "wft": "washington football team",
-    "washington football team": "washington commanders",
-    "was": "washington commanders",
-    "wsh": "washington commanders",
-    "washington commanders": "washington commanders",
+from src.data import odds_fetcher
+from scripts.predict_week import (
+    create_pg_connection,
+    load_supabase_credentials,
+)
+
+# Mapping of NFL abbreviations to common Odds API team strings for matching.
+NFL_TEAM_ALIASES: Dict[str, list[str]] = {
+    "ARI": ["arizona cardinals"],
+    "ATL": ["atlanta falcons"],
+    "BAL": ["baltimore ravens"],
+    "BUF": ["buffalo bills"],
+    "CAR": ["carolina panthers"],
+    "CHI": ["chicago bears"],
+    "CIN": ["cincinnati bengals"],
+    "CLE": ["cleveland browns"],
+    "DAL": ["dallas cowboys"],
+    "DEN": ["denver broncos"],
+    "DET": ["detroit lions"],
+    "GB": ["green bay packers", "green bay"],
+    "HOU": ["houston texans"],
+    "IND": ["indianapolis colts"],
+    "JAX": ["jacksonville jaguars"],
+    "KC": ["kansas city chiefs", "kansas city"],
+    "LAC": ["los angeles chargers", "la chargers"],
+    "LAR": ["los angeles rams", "la rams"],
+    # Some data sources store just "LA" without specifying Rams/Chargers; handle both.
+    "LA": ["los angeles rams", "los angeles chargers", "la rams", "la chargers"],
+    "LV": ["las vegas raiders", "oakland raiders", "raiders"],
+    "MIA": ["miami dolphins"],
+    "MIN": ["minnesota vikings"],
+    "NE": ["new england patriots", "new england"],
+    "NO": ["new orleans saints"],
+    "NYG": ["new york giants", "ny giants"],
+    "NYJ": ["new york jets", "ny jets"],
+    "PHI": ["philadelphia eagles"],
+    "PIT": ["pittsburgh steelers"],
+    "SEA": ["seattle seahawks"],
+    "SF": ["san francisco 49ers", "san francisco"],
+    "TB": ["tampa bay buccaneers", "tampa bay", "buccaneers"],
+    "TEN": ["tennessee titans"],
+    "WAS": ["washington commanders", "washington"],
 }
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(
-        description="Fetch Odds API spreads for upcoming games and update games.book_spread."
+    parser = argparse.ArgumentParser(description="Populate Supabase book_spread for games missing it.")
+    parser.add_argument("--league", choices=["NFL", "NBA"], required=True, help="League to process.")
+    parser.add_argument(
+        "--start-date",
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
+        default=None,
+        help="Earliest game_date (default: today UTC).",
     )
     parser.add_argument(
-        "--markets",
-        type=str,
-        default="spreads",
-        help="Comma-separated list of Odds API markets to fetch (default: spreads).",
-    )
-    parser.add_argument(
-        "--regions",
-        type=str,
-        default="us",
-        help="Comma-separated Odds API regions (default: us).",
+        "--end-date",
+        type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
+        default=None,
+        help="Latest game_date (default: start-date + 7 days).",
     )
     parser.add_argument(
         "--bookmakers",
-        type=str,
         default=None,
-        help="Comma-separated list of bookmaker keys to request from The Odds API (e.g., 'draftkings,fanduel').",
+        help="Comma-separated bookmaker keys to prefer (e.g., 'fanduel,draftkings').",
     )
     parser.add_argument(
-        "--verbose",
+        "--skip-snapshots",
         action="store_true",
-        help="Print detailed matching information for debugging.",
-    )
-    parser.add_argument(
-        "--min-date",
-        type=str,
-        default=None,
-        help="Only target games on/after this YYYY-MM-DD date (optional).",
-    )
-    parser.add_argument(
-        "--max-date",
-        type=str,
-        default=None,
-        help="Only target games on/before this YYYY-MM-DD date (optional).",
-    )
-    parser.add_argument(
-        "--max-unmatched",
-        type=int,
-        default=20,
-        help="How many unmatched odds rows to display (use -1 for all).",
-    )
-    parser.add_argument(
-        "--date-tolerance-days",
-        type=int,
-        default=1,
-        help="Allow Odds API rows to match Supabase games within this many days when kick-off dates differ (default: 1).",
+        help="If set, update games.book_spread without inserting odds_snapshots (useful when RLS blocks inserts).",
     )
     return parser.parse_args()
 
 
-def normalize_team(name: str, league: str) -> str:
-    key = (name or "").strip().lower()
-    if league.upper() == "NFL":
-        key = key.replace(".", "")
-        return NFL_TEAM_MAP.get(key, key)
-    return key
+def _date_bounds(args: argparse.Namespace):
+    start = args.start_date or datetime.now(tz=timezone.utc).date()
+    end = args.end_date or (start + timedelta(days=7))
+    if end < start:
+        raise ValueError("end-date must be on or after start-date")
+    return start, end
 
 
-def fetch_target_games(conn, min_date: Optional[str] = None, max_date: Optional[str] = None) -> List[Dict]:
-    """Return future games whose book_spread is NULL."""
+def fetch_games_missing_spread_pg(conn: psycopg.Connection, league: str, start_date: datetime.date, end_date: datetime.date) -> pd.DataFrame:
+    """Pull games with null book_spread in the date window using direct PG connection (bypasses RLS)."""
     query = """
-        select g.id,
-               g.league,
-               g.season,
-               g.week,
-               g.home_team,
-               g.away_team,
-               g.game_time_utc::date as game_date
-        from games g
-        where g.game_time_utc >= now()
-          and g.book_spread is null
-          {date_filters}
-        order by g.game_time_utc
+        select *
+        from games
+        where league = %s
+          and book_spread is null
+          and game_time_utc between %s and %s
     """
-    filters = []
-    params: List = []
-    if min_date:
-        filters.append("and g.game_time_utc::date >= %s")
-        params.append(min_date)
-    if max_date:
-        filters.append("and g.game_time_utc::date <= %s")
-        params.append(max_date)
-    query = query.format(date_filters="\n          ".join(filters))
-    with conn.cursor() as cur:
-        cur.execute(query, params)
-        rows = cur.fetchall()
-    columns = ["id", "league", "season", "week", "home_team", "away_team", "game_date"]
-    return [dict(zip(columns, row)) for row in rows]
+    df = pd.read_sql_query(
+        query,
+        conn,
+        params=(
+            league,
+            f"{start_date} 00:00:00+00",
+            f"{end_date} 23:59:59+00",
+        ),
+    )
+    if not df.empty:
+        df["game_time_utc"] = pd.to_datetime(df["game_time_utc"], utc=True, errors="coerce")
+        df["game_date"] = df["game_time_utc"].dt.date
+    return df
 
 
-def build_game_lookup(games: List[Dict]) -> Dict[Tuple[str, str, str, datetime.date], Dict]:
-    lookup = {}
-    for game in games:
-        league = game["league"].upper()
-        home_norm = normalize_team(game["home_team"], league)
-        away_norm = normalize_team(game["away_team"], league)
-        game["norm_home"] = home_norm
-        game["norm_away"] = away_norm
-        key = (league, home_norm, away_norm, game["game_date"])
-        lookup[key] = game
-    return lookup
-
-
-def update_game_book_spreads(conn, spreads: Dict[str, float]) -> int:
-    if not spreads:
-        return 0
-    update_sql = """
-        update games
-        set book_spread = %s
-        where id = %s
-    """
-    payload = [(line, game_id) for game_id, line in spreads.items()]
-    with conn.cursor() as cur:
-        cur.executemany(update_sql, payload)
-    conn.commit()
-    return len(payload)
-
-
-def sanitize_market(market: str) -> Optional[str]:
-    if not market:
+def _canonical_team(code_or_name: str, league: str) -> Optional[str]:
+    """Map Odds API team name or code to our canonical code (NFL only for now)."""
+    if not isinstance(code_or_name, str):
         return None
-    market = market.lower()
-    if market.endswith('s'):
-        # Odds API returns plural keys; Supabase table uses singular
-        if market in ('spreads', 'spread'):
-            return 'spread'
-        if market in ('totals', 'total'):
-            return 'total'
-        if market in ('moneylines', 'moneyline'):
-            return 'moneyline'
-    if market in ('spread', 'total', 'moneyline'):
-        return market
+    token = code_or_name.strip().lower().replace(" ", "").replace(".", "").replace("-", "")
+    # Direct code match
+    for code in NFL_TEAM_ALIASES:
+        if token == code.lower():
+            return code
+    # Alias match
+    for code, aliases in NFL_TEAM_ALIASES.items():
+        for alias in aliases:
+            alias_token = alias.replace(" ", "").replace(".", "").replace("-", "")
+            if token == alias_token:
+                return code
     return None
 
 
-def populate_odds(
-    conn,
-    games: List[Dict],
-    markets: str,
-    regions: str,
-    bookmakers: Optional[str],
-    verbose: bool = False,
-    max_unmatched: int = 20,
-    date_tolerance_days: int = 1,
-) -> int:
-    if not games:
-        print("No games require book spread updates.")
-        return 0
+def pick_home_spread(
+    odds_df: pd.DataFrame,
+    home_team_code: str,
+    away_team_code: str,
+    bookmaker: Optional[str],
+) -> Optional[Dict]:
+    """Return a dict with book, line, price for the home team spread (home perspective)."""
+    odds_df = odds_df.copy()
+    odds_df["home_code"] = odds_df["home_team"].apply(lambda x: _canonical_team(x, "NFL"))
+    odds_df["away_code"] = odds_df["away_team"].apply(lambda x: _canonical_team(x, "NFL"))
 
-    lookup = build_game_lookup(games)
-    games_by_league_date = defaultdict(list)
-    pair_date_map = defaultdict(list)
-    games_by_pair = defaultdict(list)
-    dates_to_fetch = defaultdict(set)
-    offset_range = range(-date_tolerance_days, date_tolerance_days + 1)
-    for game in games:
-        league = game["league"].upper()
-        games_by_league_date[(league, game["game_date"])].append(game)
-        pair_date_map[(league, game["norm_home"], game["norm_away"])].append(game["game_date"])
-        games_by_pair[(league, game["norm_home"], game["norm_away"])].append(game)
-        for offset in offset_range:
-            fetch_date = game["game_date"] + timedelta(days=offset)
-            dates_to_fetch[(league, fetch_date)].add(game["id"])
+    spreads = odds_df[odds_df["market"] == "spreads"]
+    if bookmaker:
+        spreads = spreads[spreads["book"] == bookmaker]
+    # Allow LA ambiguity: match either Rams or Chargers if the code is "LA"
+    home_candidates = ["LAR", "LAC"] if home_team_code == "LA" else [home_team_code]
+    away_candidates = ["LAR", "LAC"] if away_team_code == "LA" else [away_team_code]
+    spreads = spreads[
+        (spreads["home_code"].isin(home_candidates))
+        & (spreads["away_code"].isin(away_candidates))
+    ]
+    if spreads.empty:
+        # Fallback: substring match on raw team names when canonical codes fail
+        spreads = odds_df[odds_df["market"] == "spreads"]
+        spreads = spreads[
+            spreads["home_team"].str.lower().str.contains(home_team_code.lower(), na=False)
+            & spreads["away_team"].str.lower().str.contains(away_team_code.lower(), na=False)
+        ]
+    if spreads.empty:
+        return None
+    # Try to find the home-team outcome explicitly
+    home_rows = spreads[
+        spreads["outcome_name"].str.lower().str.contains(home_team_code.lower(), na=False)
+    ]
+    if not home_rows.empty:
+        row = home_rows.iloc[0]
+        line = row.get("line")
+        price = row.get("price")
+        book = row.get("book")
+        if pd.isna(line):
+            return None
+        return {"book": book, "line": float(line), "price": float(price) if pd.notna(price) else None}
 
-    home_spread_map: Dict[str, float] = {}
-    unmatched_rows: List[Tuple[str, str, str, datetime.date, str]] = []
-    missing_games: List[Tuple[str, datetime.date]] = []
+    # If no home outcome, try away outcome and negate the line to home perspective
+    away_rows = spreads[
+        spreads["outcome_name"].str.lower().str.contains(away_team_code.lower(), na=False)
+    ]
+    if not away_rows.empty:
+        row = away_rows.iloc[0]
+        line = row.get("line")
+        price = row.get("price")
+        book = row.get("book")
+        if pd.isna(line):
+            return None
+        return {"book": book, "line": float(-line), "price": float(price) if pd.notna(price) else None}
 
-    # iterate through all candidate dates (including tolerance)
-    for (league, game_date), _ in sorted(dates_to_fetch.items(), key=lambda x: (x[0][0], x[0][1])):
-        league_games = games_by_league_date.get((league, game_date), [])
-        date_str = game_date.isoformat()
-        print(f"Fetching odds for {league} games on {date_str} ({len(league_games)} matchups)...")
-        odds_df = fetch_odds(
-            league,
-            date=date_str,
-            markets=markets,
-            regions=regions,
-            bookmakers=bookmakers,
+    return None
+
+
+def update_game_and_snapshot_pg(conn: psycopg.Connection, game_id: str, spread: Dict, skip_snapshots: bool) -> bool:
+    """Update games.book_spread and insert odds_snapshot using direct PG connection."""
+    now_ts = datetime.now(tz=timezone.utc)
+    updated = False
+    with conn.cursor() as cur:
+        cur.execute(
+            "update games set book_spread = %s where id = %s",
+            (spread["line"], game_id),
         )
-        if odds_df.empty:
-            print(f"  No odds returned for {league} {date_str}.")
-            missing_games.append((league, game_date))
-            continue
-
-        odds_df["norm_home"] = odds_df["home_team"].apply(lambda n: normalize_team(n, league))
-        odds_df["norm_away"] = odds_df["away_team"].apply(lambda n: normalize_team(n, league))
-        odds_df["game_date"] = pd.to_datetime(odds_df["commence_time"]).dt.date
-
-        for _, row in odds_df.iterrows():
-            key = (league, row["norm_home"], row["norm_away"], row["game_date"])
-            game = lookup.get(key)
-            if not game:
-                pair_key = (league, row["norm_home"], row["norm_away"])
-                potential_games = games_by_pair.get(pair_key, [])
-                if potential_games:
-                    potential_games.sort(key=lambda g: abs((g["game_date"] - row["game_date"]).days))
-                    best_game = potential_games[0]
-                    delta_days = abs((best_game["game_date"] - row["game_date"]).days)
-                    if delta_days <= date_tolerance_days:
-                        if verbose:
-                            print(
-                                f"  Adjusted date match for {row['away_team']} @ {row['home_team']} "
-                                f"({row['game_date']} vs Supabase {best_game['game_date']})"
-                            )
-                        game = best_game
-                if not game:
-                    unmatched_rows.append((league, row["home_team"], row["away_team"], row["game_date"], row["book"]))
-                    continue
-            market = sanitize_market(row["market"])
-            if not market:
-                unmatched_rows.append((league, row["home_team"], row["away_team"], row["game_date"], f"{row['book']} (market={row['market']})"))
-                continue
-            line = float(row["line"]) if pd.notna(row["line"]) else None
-            if market == "spread" and line is not None:
-                outcome_norm = normalize_team(row.get("outcome_name", ""), league)
-                if outcome_norm == game.get("norm_home"):
-                    home_spread_map[game["id"]] = line
-
-    if verbose:
-        for game_id, line in home_spread_map.items():
-            game = next((g for g in games if g["id"] == game_id), None)
-            if game:
-                print(f"  -> {game['away_team']} @ {game['home_team']} ({game['game_date']}): {line:+.1f}")
-
-    updated_spreads = update_game_book_spreads(conn, home_spread_map)
-    if updated_spreads:
-        print(f"Updated book_spread for {updated_spreads} games.")
-    else:
-        print("No book_spread values updated.")
-
-    if missing_games:
-        print("\nGames with no odds returned:")
-        for league, game_date in missing_games:
-            print(f"  - {league} on {game_date}")
-    if unmatched_rows:
-        print("\nOdds rows that did not match any Supabase game (team normalization mismatch?):")
-        subset = unmatched_rows if max_unmatched < 0 else unmatched_rows[:max_unmatched]
-        for league, home, away, game_date, book in subset:
-            key = (league, normalize_team(home, league), normalize_team(away, league))
-            alt_dates = pair_date_map.get(key, [])
-            hint = ""
-            if alt_dates:
-                alt_str = ", ".join(sorted({str(d) for d in alt_dates}))
-                hint = f" (closest Supabase dates: {alt_str})"
-            print(f"  - {league} {game_date}: {away} @ {home} ({book}){hint}")
-        if max_unmatched >= 0 and len(unmatched_rows) > max_unmatched:
-            print(f"  ... {len(unmatched_rows) - max_unmatched} more unmatched rows omitted")
-
-    return updated_spreads
+        updated = cur.rowcount > 0
+        if not skip_snapshots:
+            cur.execute(
+                """
+                insert into odds_snapshots (game_id, book, market, line, price, snapshot_ts)
+                values (%s, %s, %s, %s, %s, %s)
+                """,
+                (
+                    game_id,
+                    spread["book"] or "unknown",
+                    "spread",
+                    spread["line"],
+                    spread.get("price"),
+                    now_ts,
+                ),
+            )
+    conn.commit()
+    return updated
 
 
 def main():
     args = parse_args()
+    start_date, end_date = _date_bounds(args)
     creds = load_supabase_credentials()
     conn = create_pg_connection(
         supabase_url=creds["url"],
@@ -356,22 +251,65 @@ def main():
         database=creds["db_name"],
         user=creds["db_user"],
     )
-    try:
-        games = fetch_target_games(conn, min_date=args.min_date, max_date=args.max_date)
-        if args.verbose:
-            print(f"Found {len(games)} future games missing book_spread.")
-        populate_odds(
-            conn,
-            games,
-            args.markets,
-            args.regions,
-            args.bookmakers,
-            verbose=args.verbose,
-            max_unmatched=args.max_unmatched,
-            date_tolerance_days=args.date_tolerance_days,
-        )
-    finally:
+
+    games = fetch_games_missing_spread_pg(conn, args.league, start_date, end_date)
+    if games.empty:
+        print("No games with missing book_spread in the requested window.")
         conn.close()
+        return
+
+    print(f"Found {len(games)} games missing book_spread between {start_date} and {end_date}.")
+    updated_count = 0
+    skipped_no_spread = 0
+    # Fetch odds per date to limit API calls
+    for game_date, day_games in games.groupby("game_date"):
+        odds_df = odds_fetcher.fetch_odds(
+            args.league,
+            date=game_date.isoformat(),
+            markets="spreads",
+            bookmakers=args.bookmakers,
+        )
+        if odds_df.empty:
+            # Fallback: try without date filters (Odds API sometimes rejects far-future dates).
+            odds_df = odds_fetcher.fetch_odds(
+                args.league,
+                date=None,
+                markets="spreads",
+                bookmakers=args.bookmakers,
+            )
+        if odds_df.empty:
+            print(f"  No odds returned for {game_date}, skipping {len(day_games)} games.")
+            continue
+        for _, game in day_games.iterrows():
+            spread = pick_home_spread(odds_df, game["home_team"], game["away_team"], args.bookmakers)
+            if not spread:
+                # Fallback: re-fetch without bookmaker filter for this game/date
+                alt_df = odds_fetcher.fetch_odds(
+                    args.league,
+                    date=game_date.isoformat(),
+                    markets="spreads",
+                    bookmakers=None,
+                )
+                if alt_df.empty:
+                    alt_df = odds_fetcher.fetch_odds(
+                        args.league,
+                        date=None,
+                        markets="spreads",
+                        bookmakers=None,
+                    )
+                spread = pick_home_spread(alt_df, game["home_team"], game["away_team"], None)
+            if not spread:
+                print(f"  No spread found for {game['away_team']} @ {game['home_team']} on {game_date}.")
+                skipped_no_spread += 1
+                continue
+            wrote = update_game_and_snapshot_pg(conn, game["id"], spread, args.skip_snapshots)
+            if not wrote:
+                print(f"  Attempted update but Supabase returned no rows for {game['away_team']} @ {game['home_team']} ({game_date}). Check credentials/RLS.")
+            else:
+                updated_count += 1
+                print(f"  Updated {game['away_team']} @ {game['home_team']} ({game_date}) -> {spread['line']} ({spread['book']})")
+    conn.close()
+    print(f"\nSummary: updated {updated_count} games, skipped {skipped_no_spread} with no spread returned.")
 
 
 if __name__ == "__main__":

@@ -5,6 +5,11 @@ from datetime import date
 from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
+# Add project root to path for imports
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 import pandas as pd
 import psycopg
 from dotenv import load_dotenv
@@ -14,7 +19,7 @@ from src.data.pbp_loader import load_pbp
 from src.models.predictor import GamePredictor
 
 
-MODEL_VERSION = 'v1'
+MODEL_VERSION = 'v2'
 
 
 def load_season_schedule(season: int) -> pd.DataFrame:
@@ -194,8 +199,9 @@ def parse_args() -> argparse.Namespace:
         description="Predict NFL games for a specific week and optionally push results to Supabase."
     )
     parser.add_argument(
-        "week",
+        "--week",
         type=int,
+        required=True,
         help="Week number to predict (e.g., 11, 12, 13).",
     )
     parser.add_argument(

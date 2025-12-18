@@ -103,3 +103,11 @@ def win_prob_to_spread(win_prob: float, a: float = 0.15, b: float = 2.5) -> floa
     
     spread = b - (1 / a) * np.log((1 / win_prob) - 1)
     return spread
+
+def apply_link_function(spread: float, a: float = 0.15, b: float = 2.5) -> float:
+    """
+    Back‑compatible wrapper that forwards to ``spread_to_win_prob``.
+    Older notebooks import ``apply_link_function``; this function simply
+    calls the calibrated logistic conversion used throughout the pipeline.
+    """
+    return spread_to_win_prob(spread, a=a, b=b)
