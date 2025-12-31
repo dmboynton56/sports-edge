@@ -13,7 +13,14 @@ import pandas as pd
 import numpy as np
 import json
 from dotenv import load_dotenv
-from supabase import create_client, Client
+# Optional supabase import - only needed for production pushes
+try:
+    from supabase import create_client, Client
+    SUPABASE_AVAILABLE = True
+except ImportError:
+    SUPABASE_AVAILABLE = False
+    create_client = None
+    Client = None
 
 # Add parent directory to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
@@ -31,11 +38,13 @@ load_dotenv()
 
 def get_supabase_client() -> Client:
     """Create Supabase client."""
+    if not SUPABASE_AVAILABLE:
+        return None
     url = os.getenv('SUPABASE_URL')
     key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
     
     if not url or not key:
-        raise ValueError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set")
+        return None
     
     return create_client(url, key)
 
@@ -93,6 +102,16 @@ def load_historical_data(league: str, current_season: int, seasons_back: int = 3
             print(f"  Loaded {len(pbp_df)} play-by-play records")
         else:
             print("  Warning: Could not load NFL play-by-play; skipping form features")
+    else:  # NBA
+        # Load game logs for NBA form metrics
+        from src.data.nba_game_logs_loader import load_nba_game_logs
+        # Pass historical_games to enable computing opponent points for defensive ratings
+        game_logs_df = load_nba_game_logs(seasons, strict=False, schedule_df=historical_data.get('historical_games'))
+        if game_logs_df is not None and len(game_logs_df) > 0:
+            historical_data['game_logs'] = game_logs_df
+            print(f"  Loaded {len(game_logs_df)} game log records")
+        else:
+            print("  Warning: Could not load NBA game logs; skipping form features")
     
     return historical_data
 
@@ -146,6 +165,7 @@ def build_features(games_df: pd.DataFrame, league: str, historical_data: dict) -
     else:  # NBA
         game_logs = historical_data.get('game_logs')
         if game_logs is not None and len(game_logs) > 0:
+            # Add form features for NBA (net rating, offensive/defensive ratings)
             for window in [3, 5, 10]:
                 df = form_metrics.add_form_features_nba(df, game_logs, window=window)
     
@@ -273,10 +293,23 @@ def _add_form_interactions(df: pd.DataFrame, league: str) -> pd.DataFrame:
             if home_def in df.columns and away_def in df.columns:
                 df[f'form_epa_def_diff_{window}'] = df[home_def] - df[away_def]
         else:  # NBA
+            # Net rating differential
             home_net = f'form_home_net_rating_{window}'
             away_net = f'form_away_net_rating_{window}'
             if home_net in df.columns and away_net in df.columns:
                 df[f'form_net_rating_diff_{window}'] = df[home_net] - df[away_net]
+            
+            # Offensive rating differential
+            home_off = f'form_home_off_rating_{window}'
+            away_off = f'form_away_off_rating_{window}'
+            if home_off in df.columns and away_off in df.columns:
+                df[f'form_off_rating_diff_{window}'] = df[home_off] - df[away_off]
+            
+            # Defensive rating differential
+            home_def = f'form_home_def_rating_{window}'
+            away_def = f'form_away_def_rating_{window}'
+            if home_def in df.columns and away_def in df.columns:
+                df[f'form_def_rating_diff_{window}'] = df[home_def] - df[away_def]
     
     return df
 

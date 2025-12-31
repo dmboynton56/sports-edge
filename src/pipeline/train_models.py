@@ -25,7 +25,11 @@ from sklearn.base import clone
 from pandas.api.types import is_numeric_dtype
 
 from src.models.link_function import fit_link_function
-from src.pipeline.refresh import build_features
+# Lazy import for refresh to avoid supabase dependency issues
+try:
+    from src.pipeline.refresh import build_features
+except ImportError:
+    build_features = None
 from src.data import nfl_fetcher
 from src.data.pbp_loader import load_pbp
 
@@ -241,24 +245,45 @@ def train_and_save_models(features_df: pd.DataFrame,
     seen = set()
     feature_cols = [col for col in feature_cols if not (col in seen or seen.add(col))]
     
-    # Prepare data
-    extra_cols = [target_col, margin_col]
+    # Prepare data - ensure no overlap between features and targets
+    # This prevents duplicate column issues which can break dtype cleanup
+    clean_feature_cols = [c for c in feature_cols if c not in [target_col, margin_col]]
+    
+    extra_cols = []
+    if target_col in features_df.columns: extra_cols.append(target_col)
+    if margin_col in features_df.columns: extra_cols.append(margin_col)
+    
     has_season_col = 'season' in features_df.columns
+    has_date_col = 'game_date' in features_df.columns
     if has_season_col:
         extra_cols.append('season')
+    if has_date_col:
+        extra_cols.append('game_date')
     else:
-        print("WARNING: 'season' column missing from features; sample weights will be uniform.")
+        print("WARNING: 'game_date' column missing; will use random split instead of time-series split")
     
-    model_df = features_df[feature_cols + extra_cols].dropna(subset=[target_col, margin_col])
+    # Remove duplicates while preserving order
+    all_cols = []
+    for col in clean_feature_cols + extra_cols:
+        if col not in all_cols:
+            all_cols.append(col)
+    
+    model_df = features_df[all_cols].dropna(subset=[target_col, margin_col]).copy()
     
     if len(model_df) < 100:
         raise ValueError(f"Insufficient data: {len(model_df)} rows (need >= 100)")
     
-    X = model_df[feature_cols]
+    # Ensure targets are numeric before splitting
+    model_df[target_col] = pd.to_numeric(model_df[target_col], errors='coerce').fillna(0).astype(float)
+    model_df[margin_col] = pd.to_numeric(model_df[margin_col], errors='coerce').fillna(0).astype(float)
+    
+    X = model_df[clean_feature_cols]
     y_win = model_df[target_col]
     y_margin = model_df[margin_col]
+    
     # Clip margin target to reduce blowout noise and emphasize realistic spreads
     y_margin_clipped = np.clip(y_margin, -21, 21)
+    
     if has_season_col:
         sample_weights = compute_season_sample_weights(model_df, season_col='season')
     else:
@@ -268,26 +293,77 @@ def train_and_save_models(features_df: pd.DataFrame,
     mismatch_boost = 1 + 0.5 * np.clip(np.abs(y_margin_clipped) / 14.0, 0, 1)
     sample_weights = sample_weights * mismatch_boost
     
-    # Split data
-    split_result = train_test_split(
-        X, y_win, y_margin_clipped, sample_weights,
-        test_size=test_size,
-        random_state=random_state,
-        stratify=y_win
-    )
-    (X_train, X_test,
-     y_train_win, y_test_win,
-     y_train_margin, y_test_margin,
-     w_train, w_test) = split_result
+    # Split data - USE TIME-SERIES SPLIT for sports data
+    # Train on past games, test on future games (no data leakage)
+    if 'game_date' in model_df.columns:
+        # Sort by date
+        model_df_sorted = model_df.sort_values('game_date').reset_index(drop=True)
+        X_sorted = model_df_sorted[clean_feature_cols]
+        y_win_sorted = model_df_sorted[target_col]
+        y_margin_sorted = model_df_sorted[margin_col]
+        
+        # Use date-based split (e.g., train on first 80%, test on last 20%)
+        split_idx = int(len(model_df_sorted) * (1 - test_size))
+        
+        X_train = X_sorted.iloc[:split_idx]
+        X_test = X_sorted.iloc[split_idx:]
+        y_train_win = y_win_sorted.iloc[:split_idx]
+        y_test_win = y_win_sorted.iloc[split_idx:]
+        y_train_margin = y_margin_sorted.iloc[:split_idx]
+        y_test_margin = y_margin_sorted.iloc[split_idx:]
+        
+        if has_season_col:
+            # We need to recompute sample weights for the sorted dataframe to keep them aligned
+            sample_weights_sorted = compute_season_sample_weights(model_df_sorted, season_col='season')
+            mismatch_boost_sorted = 1 + 0.5 * np.clip(np.abs(np.clip(y_margin_sorted, -21, 21)) / 14.0, 0, 1)
+            sample_weights_sorted = sample_weights_sorted * mismatch_boost_sorted
+            w_train = sample_weights_sorted[:split_idx]
+            w_test = sample_weights_sorted[split_idx:]
+        else:
+            w_train = np.ones(len(X_train))
+            w_test = np.ones(len(X_test))
+    else:
+        # Fallback to random split if no date column
+        print("WARNING: No game_date column found, using random split (not ideal for time-series data)")
+        split_result = train_test_split(
+            X, y_win, y_margin_clipped, sample_weights,
+            test_size=test_size,
+            random_state=random_state,
+            stratify=y_win if len(np.unique(y_win)) > 1 else None
+        )
+        (X_train, X_test,
+         y_train_win, y_test_win,
+         y_train_margin, y_test_margin,
+         w_train, w_test) = split_result
     
     w_train = np.asarray(w_train)
     w_test = np.asarray(w_test)
     
     print(f"Training on {len(X_train)} samples, testing on {len(X_test)} samples")
-    print(f"Features: {len(feature_cols)}")
+    print(f"Features: {len(clean_feature_cols)}")
     
+    # --- AGGRESSIVE DTYPE CLEANUP ---
+    # Force targets to pure numpy float arrays to bypass pandas object-dtype issues
+    y_train_win = np.asarray(y_train_win).astype(float).astype(int)
+    y_test_win = np.asarray(y_test_win).astype(float).astype(int)
+    y_train_margin = np.asarray(y_train_margin).astype(float)
+    y_test_margin = np.asarray(y_test_margin).astype(float)
+    
+    # Force feature matrices to be purely numeric and fill any missing values
+    # This prevents LightGBM from seeing 'object' dtypes in the features
+    X_train = X_train.apply(pd.to_numeric, errors='coerce').fillna(0).astype(float)
+    X_test = X_test.apply(pd.to_numeric, errors='coerce').fillna(0).astype(float)
+    
+    # Ensure no duplicate columns and only keep numeric feature columns
+    final_feature_cols = clean_feature_cols
+    
+    X_train = X_train[final_feature_cols]
+    X_test = X_test[final_feature_cols]
+    
+    # --- END DTYPE CLEANUP ---
+
     # Keep base feature matrices for each model
-    spread_feature_cols = feature_cols.copy()
+    spread_feature_cols = final_feature_cols.copy()
     X_train_base = X_train.copy()
     X_test_base = X_test.copy()
     X_full_base = X.copy()
@@ -316,19 +392,24 @@ def train_and_save_models(features_df: pd.DataFrame,
     n_splits = min(5, max(2, len(X_train_base) // 75))
     kfold = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
     oof_spread = np.zeros(len(X_train_base))
-    for train_idx, val_idx in kfold.split(X_train_base):
+    
+    # FORCED NUMPY CONVERSION FOR FIT
+    # This prevents LightGBM from inspecting pandas dtypes at all
+    X_train_base_np = X_train_base.values.astype(float)
+    
+    for train_idx, val_idx in kfold.split(X_train_base_np):
         reg = clone(spread_estimator)
         reg.fit(
-            X_train_base.iloc[train_idx],
-            y_train_margin.iloc[train_idx],
+            X_train_base_np[train_idx],
+            y_train_margin[train_idx],
             sample_weight=w_train[train_idx]
         )
-        oof_spread[val_idx] = reg.predict(X_train_base.iloc[val_idx])
+        oof_spread[val_idx] = reg.predict(X_train_base_np[val_idx])
     
     spread_model = clone(spread_estimator)
-    spread_model.fit(X_train_base, y_train_margin, sample_weight=w_train)
+    spread_model.fit(X_train_base_np, y_train_margin, sample_weight=w_train)
     
-    y_pred_spread = spread_model.predict(X_test_base)
+    y_pred_spread = spread_model.predict(X_test_base.values.astype(float))
     mae = mean_absolute_error(y_test_margin, y_pred_spread, sample_weight=w_test)
     rmse = np.sqrt(mean_squared_error(y_test_margin, y_pred_spread, sample_weight=w_test))
     
@@ -351,6 +432,11 @@ def train_and_save_models(features_df: pd.DataFrame,
     
     # Train win probability model (now aligned with spread outputs)
     print("\nTraining win probability model...")
+    
+    # FORCED NUMPY CONVERSION FOR WIN PROB MODEL
+    X_train_win_np = X_train_win.values.astype(float)
+    X_test_win_np = X_test_win.values.astype(float)
+    
     if use_lgbm:
         try:
             base_model = LGBMClassifier(
@@ -367,7 +453,7 @@ def train_and_save_models(features_df: pd.DataFrame,
                 cv=5,
                 n_jobs=-1
             )
-            win_prob_model.fit(X_train_win, y_train_win, sample_weight=w_train)
+            win_prob_model.fit(X_train_win_np, y_train_win, sample_weight=w_train)
             model_type = 'lightgbm_calibrated'
         except Exception as e:
             print(f"LightGBM failed: {e}, falling back to Random Forest")
@@ -388,11 +474,11 @@ def train_and_save_models(features_df: pd.DataFrame,
             cv=5,
             n_jobs=-1
         )
-        win_prob_model.fit(X_train_win, y_train_win, sample_weight=w_train)
+        win_prob_model.fit(X_train_win_np, y_train_win, sample_weight=w_train)
         model_type = 'rf_calibrated'
     
-    y_pred_win = win_prob_model.predict(X_test_win)
-    y_pred_proba = win_prob_model.predict_proba(X_test_win)[:, 1]
+    y_pred_win = win_prob_model.predict(X_test_win_np)
+    y_pred_proba = win_prob_model.predict_proba(X_test_win_np)[:, 1]
     accuracy = accuracy_score(y_test_win, y_pred_win, sample_weight=w_test)
     brier = brier_score_loss(y_test_win, y_pred_proba, sample_weight=w_test)
     
@@ -403,7 +489,7 @@ def train_and_save_models(features_df: pd.DataFrame,
     # Calibrate link function using model-predicted spreads
     print("\nCalibrating link function...")
     try:
-        calibration_spreads = pd.Series(spread_pred_full, index=X.index)
+        calibration_spreads = pd.Series(spread_pred_full)
         link_params = fit_link_function(calibration_spreads, y_win, max_abs_a=0.3)
     except Exception as e:
         print(f"  Warning: Link calibration failed ({e}); falling back to defaults.")
@@ -426,7 +512,8 @@ def train_and_save_models(features_df: pd.DataFrame,
         print(f"  ⚠️  Warning: High disagreement between models. Consider ensemble approach.")
     
     # Calculate feature medians for missing value imputation
-    feature_medians = X_train_win.median().to_dict()
+    # Ensure X_train_win is clean for median calculation
+    feature_medians = X_train_win.apply(pd.to_numeric, errors='coerce').median().to_dict()
     
     # Save models
     league_lower = league.lower()
