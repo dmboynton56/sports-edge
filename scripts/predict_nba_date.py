@@ -12,8 +12,8 @@ Example:
 import argparse
 import os
 import sys
-from datetime import date, datetime
-from typing import List, Optional
+from datetime import date, datetime, timedelta
+from typing import List, Optional, Dict
 
 # Add project root to path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -140,7 +140,7 @@ def predict_games(games: pd.DataFrame,
 def display_predictions(predictions: List[dict], target_date: str) -> None:
     """Pretty-print prediction results."""
     if not predictions:
-        print("\nNo predictions generated.")
+        print(f"\nNo predictions generated for {target_date}.")
         return
     
     print("\n" + "=" * 80)
@@ -156,6 +156,88 @@ def display_predictions(predictions: List[dict], target_date: str) -> None:
             print(f"  ⚠️  Disagreement: {pred['model_disagreement']:.1%}")
     
     print("\n" + "=" * 80)
+
+
+def evaluate_predictions(predictions: List[dict], schedule: pd.DataFrame) -> List[dict]:
+    """
+    Evaluate predictions against actual results if available.
+    
+    Args:
+        predictions: List of prediction dictionaries
+        schedule: Full schedule with actual scores
+        
+    Returns:
+        List of dictionaries with evaluation results
+    """
+    eval_results = []
+    
+    for pred in predictions:
+        # Find matching game in schedule
+        target_date = pd.to_datetime(pred['game_date']).date()
+        match = schedule[
+            (schedule['home_team'] == pred['home_team']) &
+            (schedule['away_team'] == pred['away_team']) &
+            (pd.to_datetime(schedule['game_date']).dt.date == target_date)
+        ]
+        
+        if match.empty or pd.isna(match.iloc[0]['home_score']):
+            continue
+            
+        actual = match.iloc[0]
+        actual_home_margin = actual['home_score'] - actual['away_score']
+        actual_winner = pred['home_team'] if actual_home_margin > 0 else pred['away_team']
+        
+        # In our predictions, home_spread = -predicted_home_margin
+        # So predicted_home_margin = -pred['predicted_spread']
+        predicted_home_margin = -pred['predicted_spread']
+        
+        spread_error = abs(actual_home_margin - predicted_home_margin)
+        is_correct = actual_winner == pred['predicted_winner']
+        
+        eval_results.append({
+            'game': f"{pred['away_team']} @ {pred['home_team']}",
+            'date': pred['game_date'],
+            'is_correct': is_correct,
+            'spread_error': spread_error,
+            'confidence': pred['confidence'],
+            'actual_margin': actual_home_margin,
+            'predicted_margin': predicted_home_margin
+        })
+        
+    return eval_results
+
+
+def display_backtest_summary(eval_results: List[dict]):
+    """Print summary statistics for backtest results."""
+    if not eval_results:
+        print("\nNo completed games found to evaluate.")
+        return
+        
+    df = pd.DataFrame(eval_results)
+    
+    accuracy = df['is_correct'].mean()
+    mae = df['spread_error'].mean()
+    rmse = (df['spread_error']**2).mean()**0.5
+    
+    print("\n" + "#" * 80)
+    print("BACKTEST SUMMARY STATISTICS")
+    print("#" * 80)
+    print(f"Total Games Evaluated: {len(df)}")
+    print(f"Win Prediction Accuracy: {accuracy:.1%}")
+    print(f"Spread MAE: {mae:.2f}")
+    print(f"Spread RMSE: {rmse:.2f}")
+    
+    # Accuracy by confidence buckets
+    if len(df) >= 5:
+        print("\nAccuracy by Confidence:")
+        df['conf_bucket'] = pd.cut(df['confidence'], bins=[0, 0.1, 0.2, 0.4, 1.0], 
+                                  labels=['0-10%', '10-20%', '20-40%', '40%+'])
+        conf_summary = df.groupby('conf_bucket', observed=False)['is_correct'].agg(['mean', 'count'])
+        for bucket, row in conf_summary.iterrows():
+            if row['count'] > 0:
+                print(f"  {bucket}: {row['mean']:.1%} ({int(row['count'])} games)")
+
+    print("#" * 80 + "\n")
 
 
 def parse_args() -> argparse.Namespace:
@@ -175,6 +257,12 @@ def parse_args() -> argparse.Namespace:
         help="NBA season year (default: inferred from date).",
     )
     parser.add_argument(
+        "--lookback",
+        type=int,
+        default=0,
+        help="Number of days to look back from the target date for backtesting.",
+    )
+    parser.add_argument(
         "--push-to-db",
         action="store_true",
         help="Persist predictions to Supabase using env credentials.",
@@ -182,10 +270,21 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def get_nba_season_from_date(date_obj: datetime) -> int:
+    """
+    Infers NBA season starting year from a date.
+    NBA seasons typically start in October and end in June.
+    If date is January-September, it belongs to the season that started the previous year.
+    """
+    if date_obj.month >= 10:
+        return date_obj.year
+    else:
+        return date_obj.year - 1
+
+
 def main():
     args = parse_args()
     target_date = args.date
-    season = args.season or pd.to_datetime(target_date).year
     
     # Validate date format
     try:
@@ -193,6 +292,8 @@ def main():
     except ValueError:
         print(f"ERROR: Invalid date format '{target_date}'. Use YYYY-MM-DD format.")
         sys.exit(1)
+        
+    season = args.season or get_nba_season_from_date(date_obj)
     
     try:
         schedule_df = load_season_schedule(season)
@@ -225,8 +326,42 @@ def main():
         print(f"ERROR: {err}")
         sys.exit(1)
     
-    predictions = predict_games(date_games, schedule_df, completed_games, game_logs)
-    display_predictions(predictions, target_date)
+    # Handle lookback if requested
+    dates_to_predict = [target_date]
+    if args.lookback > 0:
+        base_date = datetime.strptime(target_date, '%Y-%m-%d')
+        dates_to_predict = [
+            (base_date - timedelta(days=d)).strftime('%Y-%m-%d')
+            for d in range(args.lookback, -1, -1)
+        ]
+        print(f"\nRunning backtest for {len(dates_to_predict)} days: {dates_to_predict[0]} to {dates_to_predict[-1]}")
+
+    all_predictions = []
+    all_eval_results = []
+
+    for d_str in dates_to_predict:
+        try:
+            current_date_games = collect_date_games(schedule_df, d_str)
+            if current_date_games.empty:
+                continue
+                
+            day_preds = predict_games(current_date_games, schedule_df, completed_games, game_logs)
+            all_predictions.extend(day_preds)
+            
+            # Display daily results if it's a single date or the last date in range
+            if len(dates_to_predict) == 1 or d_str == target_date:
+                display_predictions(day_preds, d_str)
+                
+            # Collect evaluation results for all dates
+            day_evals = evaluate_predictions(day_preds, schedule_df)
+            all_eval_results.extend(day_evals)
+            
+        except Exception as err:
+            print(f"Error processing {d_str}: {err}")
+            continue
+
+    if args.lookback > 0:
+        display_backtest_summary(all_eval_results)
     
     if args.push_to_db:
         # TODO: Implement Supabase push for NBA (similar to NFL)

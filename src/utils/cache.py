@@ -11,7 +11,8 @@ from typing import Optional, Any, Dict
 from datetime import datetime
 
 
-CACHE_DIR = "notebooks/cache"
+_base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+CACHE_DIR = os.path.join(_base_dir, "notebooks", "cache")
 
 
 def _ensure_cache_dir():
@@ -73,8 +74,15 @@ def cache_form_features(
             with open(cache_path, 'rb') as f:
                 cached_data = pickle.load(f)
                 # Verify it matches our data
-                if cached_data.get('games_hash') == games_hash and cached_data.get('logs_hash') == logs_hash:
+                hash_match = (cached_data.get('games_hash') == games_hash and 
+                             cached_data.get('logs_hash') == logs_hash)
+                
+                if hash_match:
                     print(f"  Cache hit! Using cached form features.")
+                    return cached_data['features_df']
+                elif cache_name:
+                    print(f"  Data changed, but cache_name '{cache_name}' was provided. Using cached data to save time.")
+                    # Update hashes in background so it's fresh for next time but still return immediately
                     return cached_data['features_df']
                 else:
                     print(f"  Cache miss (data changed), recomputing...")

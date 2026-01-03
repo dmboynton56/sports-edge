@@ -108,10 +108,10 @@ class GamePredictor:
     @staticmethod
     def _prepare_feature_matrix(features_df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
         """Project features_df onto the requested columns, defaulting missing ones to zero."""
-        X = pd.DataFrame()
+        X = pd.DataFrame(index=features_df.index)
         for col in columns:
             if col in features_df.columns:
-                X[col] = features_df[col]
+                X[col] = pd.to_numeric(features_df[col], errors='coerce')
             else:
                 X[col] = 0.0
         return X
@@ -119,9 +119,14 @@ class GamePredictor:
     @staticmethod
     def _fill_with_medians(df: pd.DataFrame, medians: Dict[str, float]) -> pd.DataFrame:
         """Fill NaNs with provided medians, defaulting to zero when missing."""
-        for col in df.columns:
-            if df[col].isna().any():
-                df[col] = df[col].fillna(medians.get(col, 0.0))
+        # Set option to avoid future warnings about downcasting
+        with pd.option_context('future.no_silent_downcasting', True):
+            for col in df.columns:
+                if df[col].isna().any():
+                    df[col] = df[col].fillna(medians.get(col, 0.0))
+                # Ensure it's numeric after filling
+                if df[col].dtype == 'object':
+                    df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
         return df
     
     def build_features_for_game(self, game_row: pd.DataFrame, historical_games: pd.DataFrame,

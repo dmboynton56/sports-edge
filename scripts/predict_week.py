@@ -19,7 +19,7 @@ from src.data.pbp_loader import load_pbp
 from src.models.predictor import GamePredictor
 
 
-MODEL_VERSION = 'v2'
+MODEL_VERSION = 'v1'
 
 
 def load_season_schedule(season: int) -> pd.DataFrame:

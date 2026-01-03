@@ -168,27 +168,40 @@ def fetch_nba_games_for_date(date: str) -> pd.DataFrame:
         
         # Use ScoreboardV2 for date-specific games
         scoreboard_data = scoreboardv2.ScoreboardV2(game_date=date_str)
-        games_df = scoreboard_data.get_data_frames()[0]
+        game_header = scoreboard_data.get_data_frames()[0]
+        line_score = scoreboard_data.get_data_frames()[1]
         
-        if games_df.empty:
+        if game_header.empty:
             return pd.DataFrame()
         
         # Standardize to match our schedule format
-        games_df['game_date'] = pd.to_datetime(games_df['GAME_DATE_EST'], errors='coerce')
-        games_df['season'] = games_df['game_date'].dt.year
+        # Line score has 2 rows per game (one for home, one for visitor)
+        games = []
+        for _, game in game_header.iterrows():
+            game_id = game['GAME_ID']
+            home_team_id = game['HOME_TEAM_ID']
+            visitor_team_id = game['VISITOR_TEAM_ID']
+            
+            home_row = line_score[(line_score['GAME_ID'] == game_id) & (line_score['TEAM_ID'] == home_team_id)]
+            visitor_row = line_score[(line_score['GAME_ID'] == game_id) & (line_score['TEAM_ID'] == visitor_team_id)]
+            
+            if not home_row.empty and not visitor_row.empty:
+                games.append({
+                    'game_id': game_id,
+                    'season': int(game['SEASON']),
+                    'game_date': pd.to_datetime(game['GAME_DATE_EST']),
+                    'home_team': home_row.iloc[0]['TEAM_ABBREVIATION'],
+                    'away_team': visitor_row.iloc[0]['TEAM_ABBREVIATION'],
+                    'home_score': home_row.iloc[0]['PTS'] if pd.notna(home_row.iloc[0]['PTS']) else None,
+                    'away_score': visitor_row.iloc[0]['PTS'] if pd.notna(visitor_row.iloc[0]['PTS']) else None,
+                })
         
-        # Create standardized format
-        result_df = pd.DataFrame({
-            'game_id': games_df.get('GAME_ID', None),
-            'season': games_df['season'],
-            'game_date': games_df['game_date'],
-            'home_team': games_df.get('HOME_TEAM_ABBREVIATION', games_df.get('HOME_TEAM_NAME', None)),
-            'away_team': games_df.get('VISITOR_TEAM_ABBREVIATION', games_df.get('VISITOR_TEAM_NAME', None)),
-            'home_score': games_df.get('HOME_TEAM_SCORE', None),
-            'away_score': games_df.get('VISITOR_TEAM_SCORE', None),
-        })
+        result_df = pd.DataFrame(games)
         
-        # Filter to requested date
+        if result_df.empty:
+            return pd.DataFrame()
+            
+        # Filter to requested date (sometimes Scoreboard returns adjacent days depending on timezone)
         result_df = result_df[result_df['game_date'].dt.date == date_obj.date()]
         
         return result_df.reset_index(drop=True)
