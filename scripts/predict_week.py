@@ -136,7 +136,7 @@ def display_predictions(predictions: List[dict], week: int) -> None:
         print(f"  Model win prob: {pred.get('home_win_prob_from_model', float('nan')):.1%}")
         print(f"  From spread: {pred.get('win_prob_from_spread', float('nan')):.1%}")
         if pred.get('model_disagreement', 0) > 0.15:
-            print(f"  ⚠️  Disagreement: {pred['model_disagreement']:.1%}")
+            print(f"  (!) Disagreement: {pred['model_disagreement']:.1%}")
     
     print("\n" + "=" * 80)
 

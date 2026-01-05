@@ -24,7 +24,7 @@ import pandas as pd
 from dotenv import load_dotenv
 
 from src.data import nba_fetcher
-from src.data.nba_game_logs_loader import load_nba_game_logs
+from src.data.nba_game_logs_loader import load_nba_game_logs, load_nba_game_logs_from_bq
 from src.models.predictor import GamePredictor
 
 
@@ -153,7 +153,7 @@ def display_predictions(predictions: List[dict], target_date: str) -> None:
         print(f"  Win Probabilities: Home {pred['home_win_probability']:.1%} | Away {pred['away_win_probability']:.1%}")
         print(f"  Predicted Winner: {pred['predicted_winner']} (Confidence {pred['confidence']:.1%})")
         if pred.get('model_disagreement', 0) > 0.15:
-            print(f"  ⚠️  Disagreement: {pred['model_disagreement']:.1%}")
+            print(f"  (!) Disagreement: {pred['model_disagreement']:.1%}")
     
     print("\n" + "=" * 80)
 
@@ -313,12 +313,20 @@ def main():
     
     # Load game logs for form metrics
     print(f"\nLoading game logs for form metrics...")
-    game_logs = load_nba_game_logs([season], strict=False)
+    
+    # Try loading from BigQuery first
+    game_logs = load_nba_game_logs_from_bq([season])
+    
+    # Fallback to API if BigQuery fails or is empty
     if game_logs is None or game_logs.empty:
-        print("  Warning: Could not load game logs; form features will be unavailable")
+        print("  BigQuery logs unavailable, falling back to NBA API...")
+        game_logs = load_nba_game_logs([season], strict=False, schedule_df=schedule_df)
+    
+    if game_logs is None or game_logs.empty:
+        print("  Warning: Could not load game logs from any source; form features will be unavailable")
         game_logs = None
     else:
-        print(f"  Loaded {len(game_logs)} game log entries")
+        print(f"  Loaded {len(game_logs)} total game log entries")
     
     try:
         date_games = collect_date_games(schedule_df, target_date)

@@ -11,6 +11,12 @@ import time
 import warnings
 from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.static import teams
+from google.cloud import bigquery
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Suppress pandas date format inference warnings for NBA game logs
 warnings.filterwarnings('ignore', category=UserWarning, 
@@ -146,6 +152,51 @@ def _compute_net_rating_from_logs(game_logs: pd.DataFrame, schedule_df: Optional
         pass
     
     return df
+
+
+def load_nba_game_logs_from_bq(seasons: Sequence[int], project_id: Optional[str] = None) -> Optional[pd.DataFrame]:
+    """
+    Load NBA game logs from BigQuery instead of the API.
+    
+    Args:
+        seasons: List of seasons to load
+        project_id: GCP Project ID
+        
+    Returns:
+        DataFrame with game logs
+    """
+    project_id = project_id or os.getenv("GCP_PROJECT_ID")
+    if not project_id:
+        print("WARNING: GCP_PROJECT_ID not found. Cannot load from BigQuery.")
+        return None
+        
+    client = bigquery.Client(project=project_id)
+    table_id = f"{project_id}.sports_edge_raw.raw_nba_game_logs"
+    
+    season_list = ", ".join(map(str, seasons))
+    query = f"""
+        SELECT * 
+        FROM `{table_id}` 
+        WHERE season IN ({season_list})
+        ORDER BY game_date ASC
+    """
+    
+    try:
+        print(f"Loading NBA game logs from BigQuery ({table_id})...")
+        df = client.query(query).to_dataframe()
+        if df.empty:
+            print(f"  No logs found in BigQuery for seasons {seasons}.")
+            return None
+            
+        print(f"  Successfully loaded {len(df)} logs from BigQuery.")
+        
+        # Ensure game_date is datetime
+        df['game_date'] = pd.to_datetime(df['game_date'])
+        
+        return df
+    except Exception as e:
+        print(f"ERROR: Failed to load from BigQuery: {e}")
+        return None
 
 
 def load_nba_game_logs(seasons: Sequence[int], strict: bool = False, schedule_df: Optional[pd.DataFrame] = None) -> Optional[pd.DataFrame]:
