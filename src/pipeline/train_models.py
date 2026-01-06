@@ -186,6 +186,7 @@ def train_and_save_models(features_df: pd.DataFrame,
                           league: str = 'NFL',
                           model_version: str = 'v1',
                           use_lgbm: bool = True,
+                          use_ensemble: bool = False,
                           test_size: float = 0.2,
                           random_state: int = 42):
     """
@@ -199,6 +200,7 @@ def train_and_save_models(features_df: pd.DataFrame,
         league: 'NFL' or 'NBA'
         model_version: Version string for saved models
         use_lgbm: Whether to use LightGBM (True) or Random Forest (False)
+        use_ensemble: Whether to train and save both LGBM and RF as an ensemble
         test_size: Test set size fraction
         random_state: Random seed
     
@@ -362,130 +364,114 @@ def train_and_save_models(features_df: pd.DataFrame,
     
     # --- END DTYPE CLEANUP ---
 
+    def train_model_pair(lgbm_flag):
+        """Helper to train a spread and win model pair."""
+        # Spread model
+        if lgbm_flag:
+            spread_est = LGBMRegressor(
+                n_estimators=200, learning_rate=0.05, max_depth=7,
+                num_leaves=31, random_state=random_state, verbose=-1
+            )
+        else:
+            spread_est = RandomForestRegressor(
+                n_estimators=200, max_depth=12, min_samples_split=10,
+                min_samples_leaf=5, random_state=random_state, n_jobs=-1
+            )
+        
+        # OOF spread for win model anchor
+        n_splits_kf = min(5, max(2, len(X_train_base) // 75))
+        kfold_kf = KFold(n_splits=n_splits_kf, shuffle=True, random_state=random_state)
+        oof_spread_kf = np.zeros(len(X_train_base))
+        
+        X_train_base_np_kf = X_train_base.values.astype(float)
+        for t_idx, v_idx in kfold_kf.split(X_train_base_np_kf):
+            reg_kf = clone(spread_est)
+            reg_kf.fit(X_train_base_np_kf[t_idx], y_train_margin[t_idx], sample_weight=w_train[t_idx])
+            oof_spread_kf[v_idx] = reg_kf.predict(X_train_base_np_kf[v_idx])
+        
+        # Final spread model
+        final_spread = clone(spread_est)
+        final_spread.fit(X_train_base_np_kf, y_train_margin, sample_weight=w_train)
+        
+        # Win model with spread as anchor
+        X_train_win_kf = X_train_base.copy()
+        X_train_win_kf[spread_feature_name] = oof_spread_kf
+        
+        if lgbm_flag:
+            base_win = LGBMClassifier(
+                n_estimators=200, learning_rate=0.05, max_depth=7,
+                num_leaves=31, random_state=random_state, verbose=-1
+            )
+        else:
+            base_win = RandomForestClassifier(
+                n_estimators=200, max_depth=12, min_samples_split=10,
+                min_samples_leaf=5, random_state=random_state, n_jobs=-1
+            )
+            
+        final_win = CalibratedClassifierCV(base_win, method='isotonic', cv=5, n_jobs=-1)
+        final_win.fit(X_train_win_kf.values.astype(float), y_train_win, sample_weight=w_train)
+        
+        return final_spread, final_win
+
     # Keep base feature matrices for each model
     spread_feature_cols = final_feature_cols.copy()
     X_train_base = X_train.copy()
     X_test_base = X_test.copy()
     X_full_base = X.copy()
-    
-    # Train spread model first
-    print("\nTraining spread model...")
-    if use_lgbm:
-        spread_estimator = LGBMRegressor(
-            n_estimators=200,
-            learning_rate=0.05,
-            max_depth=7,
-            num_leaves=31,
-            random_state=random_state,
-            verbose=-1
-        )
+    spread_feature_name = 'model_spread_feature'
+
+    if use_ensemble:
+        print("\nTraining ENSEMBLE (LGBM + Random Forest)...")
+        spread_lgbm, win_lgbm = train_model_pair(True)
+        spread_rf, win_rf = train_model_pair(False)
+        
+        # Package as ensemble
+        spread_model = {'lgbm': spread_lgbm, 'rf': spread_rf}
+        win_prob_model = {'lgbm': win_lgbm, 'rf': win_rf}
+        model_type = 'ensemble'
     else:
-        spread_estimator = RandomForestRegressor(
-            n_estimators=200,
-            max_depth=12,
-            min_samples_split=10,
-            min_samples_leaf=5,
-            random_state=random_state,
-            n_jobs=-1
-        )
+        print(f"\nTraining {'LGBM' if use_lgbm else 'Random Forest'} model pair...")
+        spread_model, win_prob_model = train_model_pair(use_lgbm)
+        model_type = 'lightgbm_calibrated' if use_lgbm else 'rf_calibrated'
+
+    # Evaluation (using the ensemble or single model)
+    def get_predictions(s_mod, w_mod, X_spread_eval, X_win_eval):
+        if isinstance(s_mod, dict):
+            # Average predictions for ensemble
+            s_preds = [m.predict(X_spread_eval.values.astype(float)) for m in s_mod.values()]
+            s_pred = np.mean(s_preds, axis=0)
+            
+            # For win model, we need to inject the averaged spread
+            X_win_eval_ens = X_win_eval.copy()
+            X_win_eval_ens[spread_feature_name] = s_pred
+            
+            w_probs = [m.predict_proba(X_win_eval_ens.values.astype(float))[:, 1] for m in w_mod.values()]
+            w_prob = np.mean(w_probs, axis=0)
+            w_class = (w_prob > 0.5).astype(int)
+            return s_pred, w_prob, w_class
+        else:
+            s_pred = s_mod.predict(X_spread_eval.values.astype(float))
+            X_win_eval_single = X_win_eval.copy()
+            X_win_eval_single[spread_feature_name] = s_pred
+            w_prob = w_mod.predict_proba(X_win_eval_single.values.astype(float))[:, 1]
+            w_class = (w_prob > 0.5).astype(int)
+            return s_pred, w_prob, w_class
+
+    y_pred_spread, y_pred_proba, y_pred_win = get_predictions(spread_model, win_prob_model, X_test_base, X_test_base)
     
-    n_splits = min(5, max(2, len(X_train_base) // 75))
-    kfold = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
-    oof_spread = np.zeros(len(X_train_base))
-    
-    # FORCED NUMPY CONVERSION FOR FIT
-    # This prevents LightGBM from inspecting pandas dtypes at all
-    X_train_base_np = X_train_base.values.astype(float)
-    
-    for train_idx, val_idx in kfold.split(X_train_base_np):
-        reg = clone(spread_estimator)
-        reg.fit(
-            X_train_base_np[train_idx],
-            y_train_margin[train_idx],
-            sample_weight=w_train[train_idx]
-        )
-        oof_spread[val_idx] = reg.predict(X_train_base_np[val_idx])
-    
-    spread_model = clone(spread_estimator)
-    spread_model.fit(X_train_base_np, y_train_margin, sample_weight=w_train)
-    
-    y_pred_spread = spread_model.predict(X_test_base.values.astype(float))
     mae = mean_absolute_error(y_test_margin, y_pred_spread, sample_weight=w_test)
     rmse = np.sqrt(mean_squared_error(y_test_margin, y_pred_spread, sample_weight=w_test))
-    
-    print(f"Spread Model ({'LGBM' if use_lgbm else 'RF'}):")
-    print(f"  MAE: {mae:.2f} points")
-    print(f"  RMSE: {rmse:.2f} points")
-    
-    # Inject spread predictions as an anchor feature for the win model
-    spread_feature_name = 'model_spread_feature'
-    spread_pred_train = oof_spread
-    spread_pred_full = spread_model.predict(X_full_base)
-    
-    X_train_win = X_train_base.copy()
-    X_test_win = X_test_base.copy()
-    X_full_win = X_full_base.copy()
-    X_train_win[spread_feature_name] = spread_pred_train
-    X_test_win[spread_feature_name] = y_pred_spread
-    X_full_win[spread_feature_name] = spread_pred_full
-    win_feature_cols = X_train_win.columns.tolist()
-    
-    # Train win probability model (now aligned with spread outputs)
-    print("\nTraining win probability model...")
-    
-    # FORCED NUMPY CONVERSION FOR WIN PROB MODEL
-    X_train_win_np = X_train_win.values.astype(float)
-    X_test_win_np = X_test_win.values.astype(float)
-    
-    if use_lgbm:
-        try:
-            base_model = LGBMClassifier(
-                n_estimators=200,
-                learning_rate=0.05,
-                max_depth=7,
-                num_leaves=31,
-                random_state=random_state,
-                verbose=-1
-            )
-            win_prob_model = CalibratedClassifierCV(
-                base_model,
-                method='isotonic',
-                cv=5,
-                n_jobs=-1
-            )
-            win_prob_model.fit(X_train_win_np, y_train_win, sample_weight=w_train)
-            model_type = 'lightgbm_calibrated'
-        except Exception as e:
-            print(f"LightGBM failed: {e}, falling back to Random Forest")
-            use_lgbm = False
-    
-    if not use_lgbm:
-        base_model = RandomForestClassifier(
-            n_estimators=200,
-            max_depth=12,
-            min_samples_split=10,
-            min_samples_leaf=5,
-            random_state=random_state,
-            n_jobs=-1
-        )
-        win_prob_model = CalibratedClassifierCV(
-            base_model,
-            method='isotonic',
-            cv=5,
-            n_jobs=-1
-        )
-        win_prob_model.fit(X_train_win_np, y_train_win, sample_weight=w_train)
-        model_type = 'rf_calibrated'
-    
-    y_pred_win = win_prob_model.predict(X_test_win_np)
-    y_pred_proba = win_prob_model.predict_proba(X_test_win_np)[:, 1]
     accuracy = accuracy_score(y_test_win, y_pred_win, sample_weight=w_test)
     brier = brier_score_loss(y_test_win, y_pred_proba, sample_weight=w_test)
-    
-    print(f"Win Probability Model ({model_type.upper()}):")
+
+    print(f"\nModel Evaluation ({model_type.upper()}):")
     print(f"  Accuracy: {accuracy:.4f}")
-    print(f"  Brier Score: {brier:.4f} (lower is better)")
+    print(f"  MAE: {mae:.2f} points")
+    print(f"  Brier Score: {brier:.4f}")
     
+    # Inject spread predictions for full dataset (needed for link calibration)
+    spread_pred_full, _, _ = get_predictions(spread_model, win_prob_model, X_full_base, X_full_base)
+
     # Calibrate link function using model-predicted spreads
     print("\nCalibrating link function...")
     try:
@@ -497,23 +483,20 @@ def train_and_save_models(features_df: pd.DataFrame,
     link_a, link_b = link_params
     print(f"Link function parameters: a={link_a:.4f}, b={link_b:.4f}")
     
-    # Check model consistency
+    # Sign agreement
     from src.models.link_function import spread_to_win_prob
     win_prob_from_spread = spread_to_win_prob(y_pred_spread, link_a, link_b)
     disagreement = np.abs(y_pred_proba - win_prob_from_spread)
     mean_disagreement = np.mean(disagreement)
     sign_agreement = ((y_pred_proba > 0.5) == (y_pred_spread > 0)).mean()
-    
-    print(f"\nModel Consistency Check:")
-    print(f"  Mean disagreement: {mean_disagreement:.4f}")
     print(f"  Sign agreement: {sign_agreement:.1%}")
-    
-    if mean_disagreement > 0.15:
-        print(f"  ⚠️  Warning: High disagreement between models. Consider ensemble approach.")
-    
-    # Calculate feature medians for missing value imputation
-    # Ensure X_train_win is clean for median calculation
-    feature_medians = X_train_win.apply(pd.to_numeric, errors='coerce').median().to_dict()
+    print(f"  Mean disagreement: {mean_disagreement:.4f}")
+
+    # Calculate feature medians
+    win_feature_cols = clean_feature_cols.copy() + [spread_feature_name]
+    X_train_win_final = X_train_base.copy()
+    X_train_win_final[spread_feature_name] = 0 # Dummy for median calc
+    feature_medians = X_train_win_final.apply(pd.to_numeric, errors='coerce').median().to_dict()
     
     # Save models
     league_lower = league.lower()
@@ -523,6 +506,7 @@ def train_and_save_models(features_df: pd.DataFrame,
     win_prob_data = {
         'model': win_prob_model,
         'model_type': model_type,
+        'ensemble': use_ensemble,
         'feature_names': win_feature_cols,
         'win_feature_names': win_feature_cols,
         'spread_feature_names': spread_feature_cols,
@@ -530,7 +514,7 @@ def train_and_save_models(features_df: pd.DataFrame,
         'brier_score': brier,
         'trained_date': datetime.now().isoformat(),
         'n_features': len(win_feature_cols),
-        'n_samples': len(X_train_win),
+        'n_samples': len(X_train_base),
         'league': league,
         'calibrated': True
     }
@@ -542,7 +526,8 @@ def train_and_save_models(features_df: pd.DataFrame,
     spread_path = os.path.join(models_dir, f'spread_model_{league_lower}_{model_version}.pkl')
     spread_data = {
         'model': spread_model,
-        'model_type': 'lightgbm' if use_lgbm else 'rf',
+        'model_type': model_type,
+        'ensemble': use_ensemble,
         'feature_names': spread_feature_cols,
         'spread_feature_names': spread_feature_cols,
         'mae': mae,
@@ -588,7 +573,7 @@ def train_and_save_models(features_df: pd.DataFrame,
         'sign_agreement': sign_agreement,
         'win_feature_names': win_feature_cols,
         'spread_feature_names': spread_feature_cols,
-        'n_samples': len(X_train_win)
+        'n_samples': len(X_train_base)
     }
 
 
@@ -602,6 +587,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('--features-path', type=str, help="Optional path to cached features (csv/parquet).")
     parser.add_argument('--save-features-path', type=str, help="Optional path to save engineered training set.")
     parser.add_argument('--use-rf', action='store_true', help="Use RandomForest instead of LightGBM.")
+    parser.add_argument('--ensemble', action='store_true', help="Train both LGBM and RF and ensemble them.")
     parser.add_argument('--no-form', action='store_true', help="Skip form metrics (no play-by-play fetch).")
     parser.add_argument('--test-size', type=float, default=0.2, help="Test size fraction.")
     parser.add_argument('--random-state', type=int, default=42, help="Random seed.")
@@ -631,6 +617,7 @@ def main():
         league=league,
         model_version=args.model_version,
         use_lgbm=not args.use_rf,
+        use_ensemble=args.ensemble,
         test_size=args.test_size,
         random_state=args.random_state
     )

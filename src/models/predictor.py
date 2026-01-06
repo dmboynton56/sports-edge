@@ -65,6 +65,7 @@ class GamePredictor:
             win_prob_data = pickle.load(f)
             self.win_prob_model = win_prob_data['model']
             self.win_feature_names = win_prob_data.get('win_feature_names') or win_prob_data.get('feature_names')
+            self.is_ensemble = win_prob_data.get('ensemble', False)
         
         # Load spread model
         with open(spread_path, 'rb') as f:
@@ -328,7 +329,13 @@ class GamePredictor:
             X_spread = self._fill_with_medians(X_spread, medians)
         else:
             X_spread = X_spread.fillna(0)
-        spread_pred = self.spread_model.predict(X_spread)
+            
+        # Spread prediction
+        if self.is_ensemble:
+            spread_preds = [m.predict(X_spread.values.astype(float)) for m in self.spread_model.values()]
+            spread_pred = np.mean(spread_preds, axis=0)
+        else:
+            spread_pred = self.spread_model.predict(X_spread)
         
         X_win = self._prepare_feature_matrix(features_df, win_cols)
         if 'model_spread_feature' in X_win.columns:
@@ -338,8 +345,12 @@ class GamePredictor:
         else:
             X_win = X_win.fillna(0)
         
-        # Predict
-        win_prob_proba = self.win_prob_model.predict_proba(X_win)[:, 1]  # Probability of home win
+        # Predict win probability
+        if self.is_ensemble:
+            win_probs = [m.predict_proba(X_win.values.astype(float))[:, 1] for m in self.win_prob_model.values()]
+            win_prob_proba = np.mean(win_probs, axis=0)
+        else:
+            win_prob_proba = self.win_prob_model.predict_proba(X_win)[:, 1]  # Probability of home win
         
         # Convert to win prob using link function (for consistency)
         link_a, link_b = self.link_params

@@ -144,6 +144,13 @@ def main() -> None:
         schedules_df = _ensure_game_date(schedules_df)
         schedules_df["ingested_at"] = utc_now
         
+        # Handle nulls (rare cases in some seasons or exhibition games)
+        schedules_df = schedules_df[
+            schedules_df['game_id'].notna() & 
+            schedules_df['home_team'].notna() & 
+            schedules_df['away_team'].notna()
+        ].copy()
+        
         # Fetch game logs
         print(f"  Fetching game logs for {season}...")
         game_logs_df = load_nba_game_logs([season], strict=False)
