@@ -74,6 +74,36 @@ def fetch_nfl_games_for_date(date: str) -> pd.DataFrame:
     return games
 
 
+def fetch_nfl_weekly_data(seasons: List[int]) -> pd.DataFrame:
+    """
+    Fetch NFL weekly player statistics for a list of seasons.
+    
+    Attempts nflreadpy first and falls back to nfl_data_py.
+    
+    Args:
+        seasons: List of season years
+    
+    Returns:
+        DataFrame with weekly player stats
+    """
+    try:
+        import nflreadpy as nflr
+        stats = nflr.load_player_stats(seasons).to_pandas()
+        if not stats.empty:
+            # Rename some columns to match nfl_data_py expectations if needed
+            # nfl_data_py: passing_tds, rushing_tds, receiving_tds
+            # nflreadpy: same.
+            
+            # nflreadpy 'team' corresponds to nfl_data_py 'recent_team'
+            if 'team' in stats.columns and 'recent_team' not in stats.columns:
+                stats['recent_team'] = stats['team']
+            return stats
+    except ImportError:
+        pass
+        
+    return nfl.import_weekly_data(seasons)
+
+
 def cache_nfl_data(data: pd.DataFrame, league: str, date: str, data_type: str):
     """
     Cache NFL data to disk for reproducibility.

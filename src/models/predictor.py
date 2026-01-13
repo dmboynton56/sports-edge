@@ -45,6 +45,7 @@ class GamePredictor:
         self.win_feature_names = None
         self.spread_feature_names = None
         self.link_params = None
+        self.meta_ensemble = None
         self._median_cache = None
         
         self._load_models()
@@ -54,6 +55,7 @@ class GamePredictor:
         win_prob_path = os.path.join(self.models_dir, f'win_prob_model_{self.league.lower()}_{self.model_version}.pkl')
         spread_path = os.path.join(self.models_dir, f'spread_model_{self.league.lower()}_{self.model_version}.pkl')
         link_path = os.path.join(self.models_dir, f'link_function_{self.league.lower()}_{self.model_version}.pkl')
+        meta_path = os.path.join(self.models_dir, f'meta_ensemble_{self.league.lower()}_{self.model_version}.pkl')
         
         if not os.path.exists(win_prob_path):
             raise FileNotFoundError(f"Win probability model not found: {win_prob_path}")
@@ -91,7 +93,13 @@ class GamePredictor:
                 else:
                     self.link_params = (a, b)
         else:
-            self.link_params = DEFAULT_LINK_PARAMS  # Default values
+            self.link_params = DEFAULT_LINK_PARAMS
+            
+        # Load meta-ensemble if available
+        if os.path.exists(meta_path):
+            with open(meta_path, 'rb') as f:
+                self.meta_ensemble = pickle.load(f)
+                print(f"Loaded meta-ensemble from {meta_path}")
 
     def _load_feature_medians(self) -> Dict[str, float]:
         """Load cached feature medians from disk."""
@@ -108,13 +116,13 @@ class GamePredictor:
     
     @staticmethod
     def _prepare_feature_matrix(features_df: pd.DataFrame, columns: List[str]) -> pd.DataFrame:
-        """Project features_df onto the requested columns, defaulting missing ones to zero."""
+        """Project features_df onto the requested columns, defaulting missing ones to NaN."""
         X = pd.DataFrame(index=features_df.index)
         for col in columns:
             if col in features_df.columns:
                 X[col] = pd.to_numeric(features_df[col], errors='coerce')
             else:
-                X[col] = 0.0
+                X[col] = np.nan
         return X
 
     @staticmethod
@@ -224,13 +232,19 @@ class GamePredictor:
                 home_wins = sum(1 for _, g in home_games.iterrows()
                               if (g['home_team'] == home_team and g.get('home_score', 0) > g.get('away_score', 0)) or
                                  (g['away_team'] == home_team and g.get('away_score', 0) > g.get('home_score', 0)))
+                
+                home_at_home = home_games[home_games['home_team'] == home_team]
+                home_wins_at_home = sum(1 for _, g in home_at_home.iterrows() if g.get('home_score', 0) > g.get('away_score', 0))
+                
                 home_point_diff = [
                     g.get('home_score', 0) - g.get('away_score', 0) if g['home_team'] == home_team
                     else g.get('away_score', 0) - g.get('home_score', 0)
                     for _, g in home_games.iterrows()
                 ]
                 df.loc[idx, 'home_team_win_pct'] = home_wins / len(home_games)
+                df.loc[idx, 'home_team_win_pct_at_home'] = home_wins_at_home / len(home_at_home) if len(home_at_home) > 0 else 0.5
                 df.loc[idx, 'home_team_point_diff'] = np.mean(home_point_diff) if home_point_diff else 0
+                df.loc[idx, 'home_team_point_diff_std'] = np.std(home_point_diff) if len(home_point_diff) > 1 else 10
             
             # Away team stats
             away_games = season_games[
@@ -240,13 +254,19 @@ class GamePredictor:
                 away_wins = sum(1 for _, g in away_games.iterrows()
                               if (g['home_team'] == away_team and g.get('home_score', 0) > g.get('away_score', 0)) or
                                  (g['away_team'] == away_team and g.get('away_score', 0) > g.get('home_score', 0)))
+                
+                away_on_road = away_games[away_games['away_team'] == away_team]
+                away_wins_on_road = sum(1 for _, g in away_on_road.iterrows() if g.get('away_score', 0) > g.get('home_score', 0))
+                
                 away_point_diff = [
                     g.get('home_score', 0) - g.get('away_score', 0) if g['home_team'] == away_team
                     else g.get('away_score', 0) - g.get('home_score', 0)
                     for _, g in away_games.iterrows()
                 ]
                 df.loc[idx, 'away_team_win_pct'] = away_wins / len(away_games)
+                df.loc[idx, 'away_team_win_pct_on_road'] = away_wins_on_road / len(away_on_road) if len(away_on_road) > 0 else 0.4
                 df.loc[idx, 'away_team_point_diff'] = np.mean(away_point_diff) if away_point_diff else 0
+                df.loc[idx, 'away_team_point_diff_std'] = np.std(away_point_diff) if len(away_point_diff) > 1 else 10
         
         return df
     
@@ -272,8 +292,6 @@ class GamePredictor:
         
         # Time features
         if 'game_date' in df.columns:
-            df['week_number'] = pd.to_datetime(df['game_date']).dt.isocalendar().week
-            df['month'] = pd.to_datetime(df['game_date']).dt.month
             if 'game_type' in df.columns:
                 df['is_playoff'] = df['game_type'].str.contains('POST', case=False, na=False).astype(int)
             else:
@@ -283,27 +301,46 @@ class GamePredictor:
     
     def _add_form_interactions(self, df: pd.DataFrame) -> pd.DataFrame:
         """Add form feature interactions."""
-        form_cols = [col for col in df.columns if col.startswith('form_')]
-        
         for window in [3, 5, 10]:
-            home_off = f'form_home_epa_off_{window}' if self.league == 'NFL' else f'form_home_net_rating_{window}'
-            away_off = f'form_away_epa_off_{window}' if self.league == 'NFL' else f'form_away_net_rating_{window}'
-            
-            if home_off in df.columns and away_off in df.columns:
-                df[f'form_off_diff_{window}'] = df[home_off] - df[away_off]
-            
             if self.league == 'NFL':
-                home_def = f'form_home_epa_def_{window}'
-                away_def = f'form_away_epa_def_{window}'
-                if home_def in df.columns and away_def in df.columns:
-                    df[f'form_def_diff_{window}'] = df[home_def] - df[away_def]
+                # EPA Offensive diffs
+                h_off = f'form_home_epa_off_{window}'
+                a_off = f'form_away_epa_off_{window}'
+                if h_off in df.columns and a_off in df.columns:
+                    df[f'form_epa_off_diff_{window}'] = df[h_off] - df[a_off]
+                
+                # EPA Defensive diffs
+                h_def = f'form_home_epa_def_{window}'
+                a_def = f'form_away_epa_def_{window}'
+                if h_def in df.columns and a_def in df.columns:
+                    df[f'form_epa_def_diff_{window}'] = df[h_def] - df[a_def]
+            
+            elif self.league == 'NBA':
+                # Net Rating differential
+                h_net = f'form_home_net_rating_{window}'
+                a_net = f'form_away_net_rating_{window}'
+                if h_net in df.columns and a_net in df.columns:
+                    df[f'form_net_rating_diff_{window}'] = df[h_net] - df[a_net]
+                
+                # Offensive rating differential
+                h_off = f'form_home_off_rating_{window}'
+                a_off = f'form_away_off_rating_{window}'
+                if h_off in df.columns and a_off in df.columns:
+                    df[f'form_off_rating_diff_{window}'] = df[h_off] - df[a_off]
+                
+                # Pace differential
+                h_pace = f'form_home_pace_{window}'
+                a_pace = f'form_away_pace_{window}'
+                if h_pace in df.columns and a_pace in df.columns:
+                    df[f'form_pace_diff_{window}'] = df[h_pace] - df[a_pace]
         
         return df
     
     def predict(self, game_row: pd.DataFrame, historical_games: pd.DataFrame,
                 play_by_play: Optional[pd.DataFrame] = None,
                 game_logs: Optional[pd.DataFrame] = None,
-                fill_missing_with_median: bool = True) -> Dict:
+                fill_missing_with_median: bool = True,
+                include_explanations: bool = False) -> Dict:
         """
         Predict outcome for a game.
         
@@ -313,6 +350,7 @@ class GamePredictor:
             play_by_play: Optional PBP data (NFL)
             game_logs: Optional game logs (NBA)
             fill_missing_with_median: Whether to fill missing features with median values
+            include_explanations: Whether to include feature importance/explanations
         
         Returns:
             Dictionary with predictions
@@ -325,6 +363,13 @@ class GamePredictor:
         win_cols = self.win_feature_names or self.feature_names
         
         X_spread = self._prepare_feature_matrix(features_df, spread_cols)
+        
+        # Neutralize features the user wants to ignore (without re-training)
+        ignore_features = ['week_number', 'month', 'point_diff_differential']
+        for feat in ignore_features:
+            if feat in X_spread.columns:
+                X_spread[feat] = 0.0
+                
         if fill_missing_with_median and medians is not None:
             X_spread = self._fill_with_medians(X_spread, medians)
         else:
@@ -338,6 +383,12 @@ class GamePredictor:
             spread_pred = self.spread_model.predict(X_spread)
         
         X_win = self._prepare_feature_matrix(features_df, win_cols)
+        
+        # Neutralize features in win model as well
+        for feat in ignore_features:
+            if feat in X_win.columns:
+                X_win[feat] = 0.0
+                
         if 'model_spread_feature' in X_win.columns:
             X_win['model_spread_feature'] = spread_pred
         if fill_missing_with_median and medians is not None:
@@ -358,14 +409,26 @@ class GamePredictor:
         
         # Blend models smoothly; never fully discard either side so extreme disagreements stay informative
         disagreement = np.abs(win_prob_proba - win_prob_from_spread)
-        max_disagreement = 0.30
-        base_weight = 0.65
-        min_weight = 0.25
-        weight_drop = (disagreement / max_disagreement) * 0.4
-        ensemble_weight = np.clip(base_weight - weight_drop, min_weight, base_weight)
-        final_win_prob = (ensemble_weight * win_prob_proba +
-                         (1 - ensemble_weight) * win_prob_from_spread)
         
+        if self.meta_ensemble:
+            # Use trained meta-model for final win probability
+            meta_X = np.column_stack([win_prob_proba, win_prob_from_spread, spread_pred])
+            final_win_prob = self.meta_ensemble['model'].predict_proba(meta_X)[:, 1]
+        else:
+            # Fallback to heuristic blending
+            max_disagreement = 0.30
+            base_weight = 0.65
+            min_weight = 0.25
+            weight_drop = (disagreement / max_disagreement) * 0.4
+            ensemble_weight = np.clip(base_weight - weight_drop, min_weight, base_weight)
+            final_win_prob = (ensemble_weight * win_prob_proba +
+                             (1 - ensemble_weight) * win_prob_from_spread)
+        
+        # Feature explanations if requested
+        explanations = []
+        if include_explanations:
+            explanations = self._get_local_explanations(X_spread, spread_cols)
+
         # Return predictions
         results = []
         for idx in range(len(game_row)):
@@ -394,9 +457,90 @@ class GamePredictor:
                     else f"{game_row.iloc[idx]['away_team']} by {abs(home_spread):.1f}"
                 )
             }
+            if include_explanations and idx < len(explanations):
+                result['top_features'] = explanations[idx]
+                
             results.append(result)
         
         return results[0] if len(results) == 1 else results
+
+    def _get_local_explanations(self, X: pd.DataFrame, feature_names: List[str]) -> List[List[Dict]]:
+        """
+        Get local feature importance for each prediction.
+        Falls back to feature values vs medians if model doesn't support contributions.
+        """
+        explanations = []
+        
+        # Try to get SHAP-like contributions if it's a LightGBM or XGBoost model
+        # We focus on the spread model for explanations as it's often the most intuitive
+        model = self.spread_model
+        if self.is_ensemble:
+            # For ensembles, use the first model for a representative explanation
+            # or could average them, but first is faster and usually representative
+            model = list(self.spread_model.values())[0]
+            
+        try:
+            import lightgbm as lgb
+            if isinstance(model, (lgb.LGBMRegressor, lgb.Booster)):
+                # LightGBM supports fast SHAP values via pred_contrib
+                if isinstance(model, lgb.LGBMRegressor):
+                    booster = model.booster_
+                else:
+                    booster = model
+                
+                # pred_contrib=True returns (n_samples, n_features + 1)
+                contribs = booster.predict(X, pred_contrib=True)
+                
+                for i in range(len(X)):
+                    # Get feature names and their contributions
+                    row_contribs = contribs[i, :-1]  # skip the expected value at the end
+                    feat_impact = []
+                    # Exclude time-based features and blowout-skewed features
+                    exclude_explanations = ['week_number', 'month', 'point_diff_differential']
+                    
+                    for name, val, impact in zip(feature_names, X.iloc[i], row_contribs):
+                        if name in exclude_explanations:
+                            continue
+                            
+                        feat_impact.append({
+                            'feature': name,
+                            'value': float(val),
+                            'impact': float(impact)
+                        })
+                    
+                    # Sort by absolute impact
+                    feat_impact = sorted(feat_impact, key=lambda x: abs(x['impact']), reverse=True)
+                    explanations.append(feat_impact[:10])  # Top 10
+                return explanations
+        except Exception as e:
+            # print(f"DEBUG: Could not use LightGBM contributions: {e}")
+            pass
+
+        # Fallback: Just return feature values relative to medians for the most important-sounding features
+        # This is a heuristic but better than nothing
+        medians = self._load_feature_medians()
+        important_prefixes = ['win_pct', 'point_diff', 'rest', 'form_', 'opp_strength']
+        
+        for i in range(len(X)):
+            feat_impact = []
+            for name, val in X.iloc[i].items():
+                if any(name.startswith(p) for p in important_prefixes):
+                    median = medians.get(name, 0)
+                    # Heuristic "impact": difference from median
+                    # We don't know the direction/weight for sure here, so just report the delta
+                    diff = val - median
+                    feat_impact.append({
+                        'feature': name,
+                        'value': float(val),
+                        'impact': float(diff), # This is not true impact, just delta
+                        'is_heuristic': True
+                    })
+            
+            # Sort by absolute delta
+            feat_impact = sorted(feat_impact, key=lambda x: abs(x['impact']), reverse=True)
+            explanations.append(feat_impact[:10])
+            
+        return explanations
     
     def predict_batch(self, games_df: pd.DataFrame, historical_games: pd.DataFrame,
                      play_by_play: Optional[pd.DataFrame] = None,

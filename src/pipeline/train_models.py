@@ -20,6 +20,7 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error, brier_score_loss
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.linear_model import LogisticRegression
 from lightgbm import LGBMClassifier, LGBMRegressor
 from sklearn.base import clone
 from pandas.api.types import is_numeric_dtype
@@ -30,8 +31,9 @@ try:
     from src.pipeline.refresh import build_features
 except ImportError:
     build_features = None
-from src.data import nfl_fetcher
+from src.data import nfl_fetcher, nba_fetcher
 from src.data.pbp_loader import load_pbp
+from src.data.nba_game_logs_loader import load_nba_game_logs, load_nba_game_logs_from_bq
 
 
 def compute_season_sample_weights(df: pd.DataFrame, season_col: str = 'season',
@@ -79,6 +81,7 @@ def load_completed_games(league: str, seasons: List[int]) -> pd.DataFrame:
     """
     Fetch and combine completed games for the requested seasons.
     """
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Loading completed games for {league} seasons {seasons}...")
     if not seasons:
         raise ValueError("At least one season must be provided.")
     
@@ -88,8 +91,10 @@ def load_completed_games(league: str, seasons: List[int]) -> pd.DataFrame:
     for season in seasons:
         if league == 'NFL':
             schedule = nfl_fetcher.fetch_nfl_schedule(season)
+        elif league == 'NBA':
+            schedule = nba_fetcher.fetch_nba_schedule(season)
         else:
-            raise NotImplementedError("Automated training currently supports NFL only.")
+            raise NotImplementedError(f"Automated training currently supports NFL and NBA only. Got {league}")
         
         schedule = _normalize_schedule(schedule, season, league)
         completed = schedule[
@@ -147,6 +152,15 @@ def build_training_dataset(league: str, seasons: List[int], include_form: bool =
         pbp = load_play_by_play(seasons)
         if pbp is not None:
             historical_data['play_by_play'] = pbp
+    elif league.upper() == 'NBA' and include_form:
+        print(f"Loading NBA game logs for {seasons}...")
+        # Try BQ first, then API
+        game_logs = load_nba_game_logs_from_bq(seasons)
+        if game_logs is None or game_logs.empty:
+            game_logs = load_nba_game_logs(seasons, strict=False, schedule_df=games)
+        
+        if game_logs is not None and not game_logs.empty:
+            historical_data['game_logs'] = game_logs
     
     features = build_features(games, league.upper(), historical_data)
     features = features[features['home_score'].notna() & features['away_score'].notna()].copy()
@@ -191,33 +205,21 @@ def train_and_save_models(features_df: pd.DataFrame,
                           random_state: int = 42):
     """
     Train and save win probability and spread models.
-    
-    Args:
-        features_df: DataFrame with features and targets
-        target_col: Column name for binary win target
-        margin_col: Column name for margin/spread target
-        feature_cols: List of feature column names (if None, auto-detect)
-        league: 'NFL' or 'NBA'
-        model_version: Version string for saved models
-        use_lgbm: Whether to use LightGBM (True) or Random Forest (False)
-        use_ensemble: Whether to train and save both LGBM and RF as an ensemble
-        test_size: Test set size fraction
-        random_state: Random seed
-    
-    Returns:
-        Dictionary with model metrics and paths
     """
+    print(f"\n[{datetime.now().strftime('%H:%M:%S')}] Starting training pipeline for {league} {model_version}...")
     # Create models directory
     models_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), 'models')
     os.makedirs(models_dir, exist_ok=True)
     
     # Determine feature columns
     if feature_cols is None:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Auto-detecting feature columns...")
         # Auto-detect feature columns (exclude target, margin, and metadata columns)
         exclude_cols = [
             target_col, margin_col, 'game_id', 'game_date', 'gameday',
             'home_team', 'away_team', 'home_score', 'away_score',
             'league', 'season', 'game_type', 'week', 'weekday', 'gametime',
+            'week_number', 'month', 'point_diff_differential',
             'result', 'total', 'overtime', 'old_game_id', 'gsis',
             'nfl_detail_id', 'pfr', 'pff', 'espn', 'ftn',
             'away_qb_id', 'home_qb_id', 'stadium_id', 'referee',
@@ -242,6 +244,8 @@ def train_and_save_models(features_df: pd.DataFrame,
             col for col in feature_cols
             if not any(keyword in col.lower() for keyword in odds_keywords)
         ]
+    
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Selected {len(feature_cols)} features.")
     
     # Remove duplicates while preserving order
     seen = set()
@@ -270,6 +274,7 @@ def train_and_save_models(features_df: pd.DataFrame,
         if col not in all_cols:
             all_cols.append(col)
     
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Cleaning and preparing dataset...")
     model_df = features_df[all_cols].dropna(subset=[target_col, margin_col]).copy()
     
     if len(model_df) < 100:
@@ -298,6 +303,7 @@ def train_and_save_models(features_df: pd.DataFrame,
     # Split data - USE TIME-SERIES SPLIT for sports data
     # Train on past games, test on future games (no data leakage)
     if 'game_date' in model_df.columns:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Performing time-series split...")
         # Sort by date
         model_df_sorted = model_df.sort_values('game_date').reset_index(drop=True)
         X_sorted = model_df_sorted[clean_feature_cols]
@@ -341,8 +347,7 @@ def train_and_save_models(features_df: pd.DataFrame,
     w_train = np.asarray(w_train)
     w_test = np.asarray(w_test)
     
-    print(f"Training on {len(X_train)} samples, testing on {len(X_test)} samples")
-    print(f"Features: {len(clean_feature_cols)}")
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Final train size: {len(X_train)}, test size: {len(X_test)}")
     
     # --- AGGRESSIVE DTYPE CLEANUP ---
     # Force targets to pure numpy float arrays to bypass pandas object-dtype issues
@@ -366,6 +371,8 @@ def train_and_save_models(features_df: pd.DataFrame,
 
     def train_model_pair(lgbm_flag):
         """Helper to train a spread and win model pair."""
+        name = "LGBM" if lgbm_flag else "Random Forest"
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Training {name} spread model...")
         # Spread model
         if lgbm_flag:
             spread_est = LGBMRegressor(
@@ -379,21 +386,25 @@ def train_and_save_models(features_df: pd.DataFrame,
             )
         
         # OOF spread for win model anchor
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Generating OOF spread predictions for {name} win model...")
         n_splits_kf = min(5, max(2, len(X_train_base) // 75))
         kfold_kf = KFold(n_splits=n_splits_kf, shuffle=True, random_state=random_state)
         oof_spread_kf = np.zeros(len(X_train_base))
         
         X_train_base_np_kf = X_train_base.values.astype(float)
-        for t_idx, v_idx in kfold_kf.split(X_train_base_np_kf):
+        for fold, (t_idx, v_idx) in enumerate(kfold_kf.split(X_train_base_np_kf)):
+            print(f"  Fold {fold+1}/{n_splits_kf}...")
             reg_kf = clone(spread_est)
             reg_kf.fit(X_train_base_np_kf[t_idx], y_train_margin[t_idx], sample_weight=w_train[t_idx])
             oof_spread_kf[v_idx] = reg_kf.predict(X_train_base_np_kf[v_idx])
         
         # Final spread model
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Fitting final {name} spread model...")
         final_spread = clone(spread_est)
         final_spread.fit(X_train_base_np_kf, y_train_margin, sample_weight=w_train)
         
         # Win model with spread as anchor
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Training {name} win probability model...")
         X_train_win_kf = X_train_base.copy()
         X_train_win_kf[spread_feature_name] = oof_spread_kf
         
@@ -421,7 +432,7 @@ def train_and_save_models(features_df: pd.DataFrame,
     spread_feature_name = 'model_spread_feature'
 
     if use_ensemble:
-        print("\nTraining ENSEMBLE (LGBM + Random Forest)...")
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Training ENSEMBLE (LGBM + Random Forest)...")
         spread_lgbm, win_lgbm = train_model_pair(True)
         spread_rf, win_rf = train_model_pair(False)
         
@@ -430,11 +441,12 @@ def train_and_save_models(features_df: pd.DataFrame,
         win_prob_model = {'lgbm': win_lgbm, 'rf': win_rf}
         model_type = 'ensemble'
     else:
-        print(f"\nTraining {'LGBM' if use_lgbm else 'Random Forest'} model pair...")
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Training {'LGBM' if use_lgbm else 'Random Forest'} model pair...")
         spread_model, win_prob_model = train_model_pair(use_lgbm)
         model_type = 'lightgbm_calibrated' if use_lgbm else 'rf_calibrated'
 
     # Evaluation (using the ensemble or single model)
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Evaluating model performance...")
     def get_predictions(s_mod, w_mod, X_spread_eval, X_win_eval):
         if isinstance(s_mod, dict):
             # Average predictions for ensemble
@@ -473,6 +485,7 @@ def train_and_save_models(features_df: pd.DataFrame,
     spread_pred_full, _, _ = get_predictions(spread_model, win_prob_model, X_full_base, X_full_base)
 
     # Calibrate link function using model-predicted spreads
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Calibrating link function...")
     print("\nCalibrating link function...")
     try:
         calibration_spreads = pd.Series(spread_pred_full)
@@ -492,7 +505,95 @@ def train_and_save_models(features_df: pd.DataFrame,
     print(f"  Sign agreement: {sign_agreement:.1%}")
     print(f"  Mean disagreement: {mean_disagreement:.4f}")
 
+    # --- TRAIN OUTPUT ENSEMBLE (STACKING) ---
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Training stacking meta-ensemble...")
+    print("\nTraining output-level ensemble (stacking)...")
+    # Get OOF predictions for the ensemble to train on
+    # We use the same KFold as before for consistency
+    oof_spread = np.zeros(len(X_train_base))
+    oof_win_prob = np.zeros(len(X_train_base))
+    
+    n_splits_ens = min(5, max(2, len(X_train_base) // 75))
+    kfold_ens = KFold(n_splits=n_splits_ens, shuffle=True, random_state=random_state)
+    
+    for fold, (t_idx, v_idx) in enumerate(kfold_ens.split(X_train_base.values)):
+        print(f"  Stacking Fold {fold+1}/{n_splits_ens}...")
+        # 1. Train spread model on t_idx, predict on v_idx
+        if use_ensemble:
+            # For simplicity in stacking, we use the first model or a simplified version
+            # But better to use a combined prediction
+            s_preds_oof = []
+            w_preds_oof = []
+            
+            # LGBM
+            s_lgbm = LGBMRegressor(n_estimators=100, max_depth=5, verbose=-1, random_state=random_state)
+            s_lgbm.fit(X_train_base.iloc[t_idx].values, y_train_margin[t_idx], sample_weight=w_train[t_idx])
+            s_pred_v = s_lgbm.predict(X_train_base.iloc[v_idx].values)
+            s_preds_oof.append(s_pred_v)
+            
+            # RF
+            s_rf = RandomForestRegressor(n_estimators=100, max_depth=10, n_jobs=-1, random_state=random_state)
+            s_rf.fit(X_train_base.iloc[t_idx].values, y_train_margin[t_idx], sample_weight=w_train[t_idx])
+            s_pred_v_rf = s_rf.predict(X_train_base.iloc[v_idx].values)
+            s_preds_oof.append(s_pred_v_rf)
+            
+            s_pred_v_avg = np.mean(s_preds_oof, axis=0)
+            oof_spread[v_idx] = s_pred_v_avg
+            
+            # Win prob (with spread anchor)
+            X_win_v = X_train_base.iloc[v_idx].copy()
+            X_win_v[spread_feature_name] = s_pred_v_avg
+            
+            # Win LGBM
+            w_lgbm = LGBMClassifier(n_estimators=100, max_depth=5, verbose=-1, random_state=random_state)
+            # Use X_train_win_kf logic but for this fold
+            X_train_win_fold = X_train_base.iloc[t_idx].copy()
+            X_train_win_fold[spread_feature_name] = y_train_margin[t_idx]
+            w_lgbm.fit(X_train_win_fold.values, y_train_win[t_idx], sample_weight=w_train[t_idx])
+            w_pred_v = w_lgbm.predict_proba(X_win_v.values)[:, 1]
+            w_preds_oof.append(w_pred_v)
+            
+            # Win RF
+            w_rf = RandomForestClassifier(n_estimators=100, max_depth=10, n_jobs=-1, random_state=random_state)
+            w_rf.fit(X_train_win_fold.values, y_train_win[t_idx], sample_weight=w_train[t_idx])
+            w_pred_v_rf = w_rf.predict_proba(X_win_v.values)[:, 1]
+            w_preds_oof.append(w_pred_v_rf)
+            
+            oof_win_prob[v_idx] = np.mean(w_preds_oof, axis=0)
+        else:
+            # Single model pair
+            cur_s, cur_w = train_model_pair(use_lgbm)
+            oof_spread[v_idx] = cur_s.predict(X_train_base.iloc[v_idx].values)
+            
+            X_win_v = X_train_base.iloc[v_idx].copy()
+            X_win_v[spread_feature_name] = oof_spread[v_idx]
+            oof_win_prob[v_idx] = cur_w.predict_proba(X_win_v.values)[:, 1]
+            
+    # Also add link-function probability as a feature to the meta-model
+    oof_win_from_spread = spread_to_win_prob(oof_spread, link_a, link_b)
+    
+    # Meta-features: [win_prob, win_from_spread, spread]
+    meta_X_train = np.column_stack([oof_win_prob, oof_win_from_spread, oof_spread])
+    meta_model = LogisticRegression(fit_intercept=True)
+    meta_model.fit(meta_X_train, y_train_win, sample_weight=w_train)
+    
+    # Evaluate Meta-model on test set
+    win_from_spread_test = spread_to_win_prob(y_pred_spread, link_a, link_b)
+    meta_X_test = np.column_stack([y_pred_proba, win_from_spread_test, y_pred_spread])
+    y_pred_meta_proba = meta_model.predict_proba(meta_X_test)[:, 1]
+    y_pred_meta_class = (y_pred_meta_proba > 0.5).astype(int)
+    
+    meta_accuracy = accuracy_score(y_test_win, y_pred_meta_class, sample_weight=w_test)
+    meta_brier = brier_score_loss(y_test_win, y_pred_meta_proba, sample_weight=w_test)
+    
+    print(f"\nMeta-Ensemble Evaluation:")
+    print(f"  Accuracy: {meta_accuracy:.4f} (vs {accuracy:.4f} base)")
+    print(f"  Brier Score: {meta_brier:.4f} (vs {brier:.4f} base)")
+    
+    # --- END ENSEMBLE TRAINING ---
+
     # Calculate feature medians
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Calculating feature medians and saving models...")
     win_feature_cols = clean_feature_cols.copy() + [spread_feature_name]
     X_train_win_final = X_train_base.copy()
     X_train_win_final[spread_feature_name] = 0 # Dummy for median calc
@@ -559,13 +660,30 @@ def train_and_save_models(features_df: pd.DataFrame,
         pickle.dump(feature_medians, f)
     print(f"Saved feature medians to {medians_path}")
     
+    # Meta-ensemble model
+    meta_path = os.path.join(models_dir, f'meta_ensemble_{league_lower}_{model_version}.pkl')
+    meta_data = {
+        'model': meta_model,
+        'features': ['win_prob_model', 'win_prob_from_spread', 'predicted_spread'],
+        'trained_date': datetime.now().isoformat(),
+        'accuracy': meta_accuracy,
+        'brier_score': meta_brier,
+        'league': league
+    }
+    with open(meta_path, 'wb') as f:
+        pickle.dump(meta_data, f)
+    print(f"Saved meta-ensemble to {meta_path}")
+    
     return {
         'win_prob_model_path': win_prob_path,
         'spread_model_path': spread_path,
         'link_function_path': link_path,
         'feature_medians_path': medians_path,
+        'meta_ensemble_path': meta_path,
         'accuracy': accuracy,
+        'meta_accuracy': meta_accuracy,
         'brier_score': brier,
+        'meta_brier': meta_brier,
         'mae': mae,
         'rmse': rmse,
         'link_params': link_params,
@@ -580,7 +698,7 @@ def train_and_save_models(features_df: pd.DataFrame,
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments."""
     parser = argparse.ArgumentParser(description="Train and export Sports-Edge models.")
-    parser.add_argument('--league', default='NFL', choices=['NFL'], help="League to train.")
+    parser.add_argument('--league', default='NFL', choices=['NFL', 'NBA'], help="League to train.")
     parser.add_argument('--start-season', type=int, default=2021, help="First season to include.")
     parser.add_argument('--end-season', type=int, default=2024, help="Last season to include (inclusive).")
     parser.add_argument('--model-version', default='v1', help="Model version tag for saved artifacts.")

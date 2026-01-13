@@ -8,22 +8,30 @@ import numpy as np
 from typing import Optional
 
 
+def compute_possessions(df: pd.DataFrame) -> pd.Series:
+    """
+    Estimate possessions for a set of games.
+    Formula: FGA + 0.44 * FTA - OREB + TOV
+    """
+    fga = pd.to_numeric(df.get('FGA', 0), errors='coerce').fillna(0)
+    fta = pd.to_numeric(df.get('FTA', 0), errors='coerce').fillna(0)
+    oreb = pd.to_numeric(df.get('OREB', 0), errors='coerce').fillna(0)
+    tov = pd.to_numeric(df.get('TOV', 0), errors='coerce').fillna(0)
+    
+    return fga + (0.44 * fta) - oreb + tov
+
+
 def compute_rolling_net_rating(team: str, game_date: pd.Timestamp, 
                                game_logs: pd.DataFrame, window: int = 3) -> Optional[float]:
     """
     Compute rolling net rating for NBA team.
     
-    Net rating = Average point differential per game over the window.
-    This is a proxy for true net rating (points per 100 possessions).
+    If box score stats are available, computes True Net Rating (Points per 100 possessions).
+    Otherwise falls back to average point differential.
     
     Args:
         team: Team abbreviation
         game_date: Date of current game
-        game_logs: DataFrame with game logs (must have 'game_date', 'team', 'points_scored', 'points_allowed')
-        window: Number of games to look back
-    
-    Returns:
-        Rolling net rating (average point differential) or None
     """
     team_games = game_logs[
         (game_logs['team'] == team) &
@@ -33,32 +41,30 @@ def compute_rolling_net_rating(team: str, game_date: pd.Timestamp,
     if len(team_games) < window:
         return None
     
-    recent_games = team_games.tail(window)
+    recent_games = team_games.tail(window).copy()
     
-    # Try to use pre-computed net_rating
-    if 'net_rating' in recent_games.columns:
-        net_rating = pd.to_numeric(recent_games['net_rating'], errors='coerce')
-        valid_rating = net_rating[net_rating.notna()]
-        if len(valid_rating) >= window:
-            return valid_rating.mean()
+    # Check for box score stats to compute pace-adjusted net rating
+    box_cols = ['FGA', 'FTA', 'TOV', 'OREB']
+    has_box = all(col in recent_games.columns for col in box_cols)
     
-    # Compute from point differential
-    if 'point_diff' in recent_games.columns:
-        point_diff = pd.to_numeric(recent_games['point_diff'], errors='coerce')
-        valid_diff = point_diff[point_diff.notna()]
-        if len(valid_diff) >= window:
-            return valid_diff.mean()
-    
-    # Compute from points scored/allowed
-    if 'points_scored' in recent_games.columns and 'points_allowed' in recent_games.columns:
-        points_scored = pd.to_numeric(recent_games['points_scored'], errors='coerce')
-        points_allowed = pd.to_numeric(recent_games['points_allowed'], errors='coerce')
+    if has_box:
+        poss = compute_possessions(recent_games)
+        pts_scored = pd.to_numeric(recent_games.get('pts', recent_games.get('PTS', 0)), errors='coerce').fillna(0)
+        pts_allowed = pd.to_numeric(recent_games.get('points_allowed', 0), errors='coerce').fillna(0)
         
-        # Need both to be valid
-        valid_mask = points_scored.notna() & points_allowed.notna()
-        if valid_mask.sum() >= window:
-            point_diff = points_scored[valid_mask] - points_allowed[valid_mask]
-            return point_diff.mean()
+        # Calculate totals over window to avoid division by zero in single games
+        total_poss = poss.sum()
+        if total_poss > 0:
+            off_rating = (pts_scored.sum() / total_poss) * 100
+            def_rating = (pts_allowed.sum() / total_poss) * 100
+            return off_rating - def_rating
+
+    # Fallback to pre-computed or simple point differential
+    for col in ['net_rating', 'point_diff', 'PLUS_MINUS']:
+        if col in recent_games.columns:
+            vals = pd.to_numeric(recent_games[col], errors='coerce').dropna()
+            if len(vals) >= window:
+                return vals.mean()
     
     return None
 
@@ -66,16 +72,7 @@ def compute_rolling_net_rating(team: str, game_date: pd.Timestamp,
 def compute_rolling_offensive_rating(team: str, game_date: pd.Timestamp,
                                      game_logs: pd.DataFrame, window: int = 3) -> Optional[float]:
     """
-    Compute rolling offensive rating (points scored per game) for NBA team.
-    
-    Args:
-        team: Team abbreviation
-        game_date: Date of current game
-        game_logs: DataFrame with game logs
-        window: Number of games to look back
-    
-    Returns:
-        Average points scored per game over window
+    Compute rolling offensive rating (Points per 100 possessions) for NBA team.
     """
     team_games = game_logs[
         (game_logs['team'] == team) &
@@ -85,21 +82,21 @@ def compute_rolling_offensive_rating(team: str, game_date: pd.Timestamp,
     if len(team_games) < window:
         return None
     
-    recent_games = team_games.tail(window)
+    recent_games = team_games.tail(window).copy()
     
-    # Try points_scored column
-    if 'points_scored' in recent_games.columns:
-        pts = pd.to_numeric(recent_games['points_scored'], errors='coerce')
-        valid_pts = pts[pts.notna()]
-        if len(valid_pts) >= window:  # Need at least window games with valid data
-            return valid_pts.mean()
-    
-    # Fallback to PTS column
-    if 'PTS' in recent_games.columns:
-        pts = pd.to_numeric(recent_games['PTS'], errors='coerce')
-        valid_pts = pts[pts.notna()]
-        if len(valid_pts) >= window:
-            return valid_pts.mean()
+    # Try pace-adjusted
+    if all(col in recent_games.columns for col in ['FGA', 'FTA', 'TOV', 'OREB']):
+        poss = compute_possessions(recent_games)
+        pts = pd.to_numeric(recent_games.get('pts', recent_games.get('PTS', 0)), errors='coerce').fillna(0)
+        if poss.sum() > 0:
+            return (pts.sum() / poss.sum()) * 100
+            
+    # Fallback to points per game
+    for col in ['points_scored', 'PTS']:
+        if col in recent_games.columns:
+            vals = pd.to_numeric(recent_games[col], errors='coerce').dropna()
+            if len(vals) >= window:
+                return vals.mean()
     
     return None
 
@@ -107,16 +104,7 @@ def compute_rolling_offensive_rating(team: str, game_date: pd.Timestamp,
 def compute_rolling_defensive_rating(team: str, game_date: pd.Timestamp,
                                      game_logs: pd.DataFrame, window: int = 3) -> Optional[float]:
     """
-    Compute rolling defensive rating (points allowed per game) for NBA team.
-    
-    Args:
-        team: Team abbreviation
-        game_date: Date of current game
-        game_logs: DataFrame with game logs (must have 'points_allowed' or opponent points)
-        window: Number of games to look back
-    
-    Returns:
-        Average points allowed per game over window
+    Compute rolling defensive rating (Points allowed per 100 possessions) for NBA team.
     """
     team_games = game_logs[
         (game_logs['team'] == team) &
@@ -126,24 +114,45 @@ def compute_rolling_defensive_rating(team: str, game_date: pd.Timestamp,
     if len(team_games) < window:
         return None
     
-    recent_games = team_games.tail(window)
+    recent_games = team_games.tail(window).copy()
     
-    # Try points_allowed column (preferred - computed from schedule)
-    if 'points_allowed' in recent_games.columns:
-        pts = pd.to_numeric(recent_games['points_allowed'], errors='coerce')
-        valid_pts = pts[pts.notna()]
-        if len(valid_pts) >= window:  # Need at least window games with valid data
-            return valid_pts.mean()
+    # Try pace-adjusted
+    if all(col in recent_games.columns for col in ['FGA', 'FTA', 'TOV', 'OREB']):
+        poss = compute_possessions(recent_games)
+        pts_allowed = pd.to_numeric(recent_games.get('points_allowed', 0), errors='coerce').fillna(0)
+        if poss.sum() > 0:
+            return (pts_allowed.sum() / poss.sum()) * 100
+
+    # Fallback to points allowed per game
+    for col in ['points_allowed', 'OPP_PTS']:
+        if col in recent_games.columns:
+            vals = pd.to_numeric(recent_games[col], errors='coerce').dropna()
+            if len(vals) >= window:
+                return vals.mean()
     
-    # Fallback to OPP_PTS column (if available in raw game logs)
-    if 'OPP_PTS' in recent_games.columns:
-        pts = pd.to_numeric(recent_games['OPP_PTS'], errors='coerce')
-        valid_pts = pts[pts.notna()]
-        if len(valid_pts) >= window:
-            return valid_pts.mean()
+    return None
+
+
+def compute_rolling_pace(team: str, game_date: pd.Timestamp,
+                         game_logs: pd.DataFrame, window: int = 3) -> Optional[float]:
+    """
+    Compute rolling pace (Possessions per 48 minutes).
+    """
+    team_games = game_logs[
+        (game_logs['team'] == team) &
+        (pd.to_datetime(game_logs['game_date']) < game_date)
+    ].sort_values('game_date')
     
-    # If we have points_scored and can compute from schedule, try that
-    # (This would require schedule data, which we don't have here)
+    if len(team_games) < window:
+        return None
+    
+    recent_games = team_games.tail(window).copy()
+    
+    if all(col in recent_games.columns for col in ['FGA', 'FTA', 'TOV', 'OREB']):
+        poss = compute_possessions(recent_games)
+        # Assuming 48 mins unless 'MIN' is available and different
+        return poss.mean()  # Simplified pace
+        
     return None
 
 
@@ -232,73 +241,75 @@ def compute_rolling_success_rate(team: str, game_date: pd.Timestamp,
 def add_form_features_nba(games_df: pd.DataFrame, game_logs: pd.DataFrame, 
                          window: int = 3) -> pd.DataFrame:
     """
-    Add form features for NBA games.
-    
-    Computes rolling averages for:
-    - Net rating (point differential)
-    - Offensive rating (points scored)
-    - Defensive rating (points allowed)
-    
-    Args:
-        games_df: DataFrame with games
-        game_logs: DataFrame with game logs (must have 'team', 'game_date', 'points_scored', 'points_allowed')
-        window: Rolling window size (3, 5, or 10 games)
-    
-    Returns:
-        DataFrame with added columns:
-        - form_home_net_rating_{window}
-        - form_away_net_rating_{window}
-        - form_home_off_rating_{window}
-        - form_away_off_rating_{window}
-        - form_home_def_rating_{window}
-        - form_away_def_rating_{window}
+    Add form features for NBA games efficiently.
     """
     df = games_df.copy()
+    df['game_date'] = pd.to_datetime(df['game_date'])
+    logs = game_logs.copy()
+    logs['game_date'] = pd.to_datetime(logs['game_date'])
     
-    # Net rating (point differential)
-    df[f'form_home_net_rating_{window}'] = df.apply(
-        lambda row: compute_rolling_net_rating(
-            row['home_team'], pd.to_datetime(row['game_date']), game_logs, window
-        ),
-        axis=1
-    )
+    # Ensure necessary columns are numeric and exist
+    box_cols = ['FGA', 'FTA', 'TOV', 'OREB']
+    for col in box_cols:
+        logs[col] = pd.to_numeric(logs.get(col, 0), errors='coerce').fillna(0)
     
-    df[f'form_away_net_rating_{window}'] = df.apply(
-        lambda row: compute_rolling_net_rating(
-            row['away_team'], pd.to_datetime(row['game_date']), game_logs, window
-        ),
-        axis=1
-    )
+    logs['pts_scored'] = pd.to_numeric(logs.get('pts', logs.get('PTS', 0)), errors='coerce').fillna(0)
+    logs['pts_allowed'] = pd.to_numeric(logs.get('points_allowed', 0), errors='coerce').fillna(0)
     
-    # Offensive rating (points scored)
-    df[f'form_home_off_rating_{window}'] = df.apply(
-        lambda row: compute_rolling_offensive_rating(
-            row['home_team'], pd.to_datetime(row['game_date']), game_logs, window
-        ),
-        axis=1
-    )
+    # Calculate possessions per game
+    logs['possessions'] = logs['FGA'] + (0.44 * logs['FTA']) - logs['OREB'] + logs['TOV']
     
-    df[f'form_away_off_rating_{window}'] = df.apply(
-        lambda row: compute_rolling_offensive_rating(
-            row['away_team'], pd.to_datetime(row['game_date']), game_logs, window
-        ),
-        axis=1
-    )
+    # Sort logs for rolling calculations
+    logs = logs.sort_values(['team', 'game_date'])
     
-    # Defensive rating (points allowed)
-    df[f'form_home_def_rating_{window}'] = df.apply(
-        lambda row: compute_rolling_defensive_rating(
-            row['home_team'], pd.to_datetime(row['game_date']), game_logs, window
-        ),
-        axis=1
-    )
+    # Group by team to calculate rolling sums
+    team_gb = logs.groupby('team')
     
-    df[f'form_away_def_rating_{window}'] = df.apply(
-        lambda row: compute_rolling_defensive_rating(
-            row['away_team'], pd.to_datetime(row['game_date']), game_logs, window
-        ),
-        axis=1
-    )
+    # Calculate rolling totals over the window
+    rolling_totals = team_gb[['possessions', 'pts_scored', 'pts_allowed']].rolling(window=window).sum().reset_index(level=0, drop=True)
+    
+    # Calculate ratings (shifted by 1 to get stats BEFORE the current game)
+    logs['roll_poss'] = rolling_totals['possessions']
+    logs['roll_pts_scored'] = rolling_totals['pts_scored']
+    logs['roll_pts_allowed'] = rolling_totals['pts_allowed']
+    
+    # Shift per team
+    logs['prev_roll_poss'] = team_gb['roll_poss'].shift(1)
+    logs['prev_roll_pts_scored'] = team_gb['roll_pts_scored'].shift(1)
+    logs['prev_roll_pts_allowed'] = team_gb['roll_pts_allowed'].shift(1)
+    
+    # Compute the final metrics
+    logs[f'form_off_rating_{window}'] = (logs['prev_roll_pts_scored'] / logs['prev_roll_poss'].replace(0, np.nan)) * 100
+    logs[f'form_def_rating_{window}'] = (logs['prev_roll_pts_allowed'] / logs['prev_roll_poss'].replace(0, np.nan)) * 100
+    logs[f'form_net_rating_{window}'] = logs[f'form_off_rating_{window}'] - logs[f'form_def_rating_{window}']
+    
+    # Handle cases where box score stats are missing (fallback to point diff)
+    # If off_rating is still NaN after the shift, use simple point differential if available
+    fallback_col = 'net_rating' if 'net_rating' in logs.columns else 'PLUS_MINUS'
+    if fallback_col in logs.columns:
+        logs[fallback_col] = pd.to_numeric(logs[fallback_col], errors='coerce')
+        logs[f'form_net_rating_fallback_{window}'] = team_gb[fallback_col].transform(lambda x: x.rolling(window=window).mean().shift(1))
+        logs[f'form_net_rating_{window}'] = logs[f'form_net_rating_{window}'].fillna(logs[f'form_net_rating_fallback_{window}'])
+
+    # Create lookup table
+    lookup_cols = ['team', 'game_date', f'form_net_rating_{window}', f'form_off_rating_{window}', f'form_def_rating_{window}']
+    lookup = logs[lookup_cols].dropna(subset=[f'form_net_rating_{window}'])
+    
+    # Merge back for home team
+    df = pd.merge(df, lookup.rename(columns={
+        'team': 'home_team', 
+        f'form_net_rating_{window}': f'form_home_net_rating_{window}',
+        f'form_off_rating_{window}': f'form_home_off_rating_{window}',
+        f'form_def_rating_{window}': f'form_home_def_rating_{window}'
+    }), on=['home_team', 'game_date'], how='left')
+    
+    # Merge back for away team
+    df = pd.merge(df, lookup.rename(columns={
+        'team': 'away_team', 
+        f'form_net_rating_{window}': f'form_away_net_rating_{window}',
+        f'form_off_rating_{window}': f'form_away_off_rating_{window}',
+        f'form_def_rating_{window}': f'form_away_def_rating_{window}'
+    }), on=['away_team', 'game_date'], how='left')
     
     return df
 

@@ -120,15 +120,8 @@ def build_features(games_df: pd.DataFrame, league: str, historical_data: dict) -
     """
     Build features for games using enhanced feature contract.
     Matches the feature engineering from the EDA notebook.
-    
-    Args:
-        games_df: DataFrame with games
-        league: 'NFL' or 'NBA'
-        historical_data: Dict with historical_games, play_by_play (NFL), game_logs (NBA)
-    
-    Returns:
-        DataFrame with features
     """
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Building features for {len(games_df)} games...")
     df = games_df.copy()
     
     # Ensure game_date exists
@@ -145,15 +138,19 @@ def build_features(games_df: pd.DataFrame, league: str, historical_data: dict) -
         raise ValueError("historical_games required for feature building")
     
     # Add rest and schedule features
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding rest features...")
     df = rest_schedule.add_rest_features(df, historical_games)
     
     # Add opponent strength features
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding opponent strength features...")
     df = strength.add_opponent_strength_features(df, historical_games, league.lower())
     
     # Add team strength features (win %, point diff)
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding team strength features...")
     df = _add_team_strength_features(df, historical_games)
     
     # Add interaction features
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding interaction features...")
     df = _add_interaction_features(df)
     
     # Add form features if available
@@ -161,86 +158,78 @@ def build_features(games_df: pd.DataFrame, league: str, historical_data: dict) -
         play_by_play = historical_data.get('play_by_play')
         if play_by_play is not None and len(play_by_play) > 0:
             for window in [3, 5, 10]:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding NFL form features (window={window})...")
                 df = form_metrics.add_form_features_nfl(df, play_by_play, window=window)
     else:  # NBA
         game_logs = historical_data.get('game_logs')
         if game_logs is not None and len(game_logs) > 0:
             # Add form features for NBA (net rating, offensive/defensive ratings)
             for window in [3, 5, 10]:
+                print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding NBA form features (window={window})...")
                 df = form_metrics.add_form_features_nba(df, game_logs, window=window)
     
     # Add form interaction features
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding form interaction features...")
     df = _add_form_interactions(df, league)
     
     return df
 
 
 def _add_team_strength_features(games_df: pd.DataFrame, historical_games: pd.DataFrame) -> pd.DataFrame:
-    """Add team strength features (win %, point diff)."""
+    """Add team strength features (win %, point diff) efficiently."""
     import numpy as np
     
     df = games_df.copy()
-    df['home_team_win_pct'] = np.nan
-    df['away_team_win_pct'] = np.nan
-    df['home_team_point_diff'] = np.nan
-    df['away_team_point_diff'] = np.nan
+    df['game_date'] = pd.to_datetime(df['game_date'])
+    hist = historical_games.copy()
+    hist['game_date'] = pd.to_datetime(hist['game_date'])
     
-    for idx, row in df.iterrows():
-        game_date = pd.to_datetime(row['game_date'])
-        home_team = row['home_team']
-        away_team = row['away_team']
-        season = row.get('season', game_date.year)
-        
-        season_games = historical_games[
-            (pd.to_datetime(historical_games['game_date']) < game_date) &
-            (historical_games.get('season', pd.to_datetime(historical_games['game_date']).dt.year) == season)
-        ]
-        
-        # Home team stats
-        home_games = season_games[
-            (season_games['home_team'] == home_team) | (season_games['away_team'] == home_team)
-        ]
-        if len(home_games) > 0:
-            home_wins = 0
-            home_point_diff = []
-            for _, g in home_games.iterrows():
-                home_score = g.get('home_score')
-                away_score = g.get('away_score')
-                if pd.isna(home_score) or pd.isna(away_score):
-                    continue
-                if (g['home_team'] == home_team and home_score > away_score) or (
-                    g['away_team'] == home_team and away_score > home_score
-                ):
-                    home_wins += 1
-                if g['home_team'] == home_team:
-                    home_point_diff.append(home_score - away_score)
-                else:
-                    home_point_diff.append(away_score - home_score)
-            df.loc[idx, 'home_team_win_pct'] = home_wins / len(home_games)
-            df.loc[idx, 'home_team_point_diff'] = np.mean(home_point_diff) if home_point_diff else 0
-        
-        # Away team stats
-        away_games = season_games[
-            (season_games['home_team'] == away_team) | (season_games['away_team'] == away_team)
-        ]
-        if len(away_games) > 0:
-            away_wins = 0
-            away_point_diff = []
-            for _, g in away_games.iterrows():
-                home_score = g.get('home_score')
-                away_score = g.get('away_score')
-                if pd.isna(home_score) or pd.isna(away_score):
-                    continue
-                if (g['home_team'] == away_team and home_score > away_score) or (
-                    g['away_team'] == away_team and away_score > home_score
-                ):
-                    away_wins += 1
-                if g['home_team'] == away_team:
-                    away_point_diff.append(home_score - away_score)
-                else:
-                    away_point_diff.append(away_score - home_score)
-            df.loc[idx, 'away_team_win_pct'] = away_wins / len(away_games)
-            df.loc[idx, 'away_team_point_diff'] = np.mean(away_point_diff) if away_point_diff else 0
+    # Sort history to use for cumulative stats
+    hist = hist.sort_values('game_date')
+    
+    # Ensure scores are numeric
+    hist['home_score'] = pd.to_numeric(hist['home_score'], errors='coerce')
+    hist['away_score'] = pd.to_numeric(hist['away_score'], errors='coerce')
+    
+    # Pre-calculate points and wins for each game record
+    hist['home_win'] = (hist['home_score'] > hist['away_score']).astype(int)
+    hist['away_win'] = (hist['away_score'] > hist['home_score']).astype(int)
+    hist['home_diff'] = hist['home_score'] - hist['away_score']
+    hist['away_diff'] = hist['away_score'] - hist['home_score']
+    
+    # Melt history to get a per-team perspective
+    home_stats = hist[['game_date', 'season', 'home_team', 'home_win', 'home_diff']].rename(
+        columns={'home_team': 'team', 'home_win': 'win', 'home_diff': 'diff'}
+    )
+    away_stats = hist[['game_date', 'season', 'away_team', 'away_win', 'away_diff']].rename(
+        columns={'away_team': 'team', 'away_win': 'win', 'away_diff': 'diff'}
+    )
+    team_stats = pd.concat([home_stats, away_stats]).sort_values(['team', 'game_date'])
+    
+    # Compute cumulative stats per team per season
+    team_stats['cum_wins'] = team_stats.groupby(['team', 'season'])['win'].cumsum()
+    team_stats['cum_games'] = team_stats.groupby(['team', 'season']).cumcount() + 1
+    team_stats['cum_diff'] = team_stats.groupby(['team', 'season'])['diff'].cumsum()
+    
+    # Shift by 1 because we want stats *before* the current game
+    team_stats['prev_win_pct'] = team_stats.groupby(['team', 'season'])['cum_wins'].shift(1) / team_stats.groupby(['team', 'season'])['cum_games'].shift(1)
+    team_stats['prev_avg_diff'] = team_stats.groupby(['team', 'season'])['cum_diff'].shift(1) / team_stats.groupby(['team', 'season'])['cum_games'].shift(1)
+    
+    # Merge back to the games_df
+    # We need to merge twice: once for home team and once for away team
+    # Use merge_asof for efficient date-based merging if the indices were aligned, 
+    # but a simple merge on team and game_date is safer here assuming game_date + team is unique in hist
+    
+    # Prepare lookup table
+    lookup = team_stats[['team', 'game_date', 'prev_win_pct', 'prev_avg_diff']].dropna(subset=['prev_win_pct', 'prev_avg_diff'])
+    
+    # Merge for home team
+    df = pd.merge(df, lookup.rename(columns={'team': 'home_team', 'prev_win_pct': 'home_team_win_pct', 'prev_avg_diff': 'home_team_point_diff'}), 
+                  on=['home_team', 'game_date'], how='left')
+    
+    # Merge for away team
+    df = pd.merge(df, lookup.rename(columns={'team': 'away_team', 'prev_win_pct': 'away_team_win_pct', 'prev_avg_diff': 'away_team_point_diff'}), 
+                  on=['away_team', 'game_date'], how='left')
     
     return df
 
@@ -269,8 +258,6 @@ def _add_interaction_features(df: pd.DataFrame) -> pd.DataFrame:
     
     # Time features
     if 'game_date' in df.columns:
-        df['week_number'] = pd.to_datetime(df['game_date']).dt.isocalendar().week
-        df['month'] = pd.to_datetime(df['game_date']).dt.month
         if 'game_type' in df.columns:
             df['is_playoff'] = df['game_type'].str.contains('POST', case=False, na=False).astype(int)
         else:

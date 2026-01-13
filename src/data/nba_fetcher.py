@@ -53,7 +53,11 @@ def fetch_nba_schedule(season: int) -> pd.DataFrame:
     
     try:
         # Use LeagueGameFinder to get all games for the season
-        game_finder = leaguegamefinder.LeagueGameFinder(season_nullable=season_str)
+        # Explicitly filter for NBA (00) to avoid G-League/WNBA games
+        game_finder = leaguegamefinder.LeagueGameFinder(
+            season_nullable=season_str,
+            league_id_nullable='00'
+        )
         games_df = game_finder.get_data_frames()[0]
         
         if games_df.empty:
@@ -167,7 +171,11 @@ def fetch_nba_games_for_date(date: str) -> pd.DataFrame:
         date_str = date_obj.strftime('%m/%d/%Y')
         
         # Use ScoreboardV2 for date-specific games
-        scoreboard_data = scoreboardv2.ScoreboardV2(game_date=date_str)
+        # Explicitly filter for NBA (00)
+        scoreboard_data = scoreboardv2.ScoreboardV2(
+            game_date=date_str,
+            league_id='00'
+        )
         game_header = scoreboard_data.get_data_frames()[0]
         line_score = scoreboard_data.get_data_frames()[1]
         

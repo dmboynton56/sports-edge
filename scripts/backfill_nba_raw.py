@@ -10,8 +10,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import sys
 from datetime import datetime, timezone
 from typing import Iterable, List, Sequence, Any
+
+# Add project root to path
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -180,11 +187,11 @@ def main() -> None:
         if args.replace:
             _delete_season(client, f"{args.project}.sports_edge_raw.raw_schedules", season)
             if not game_logs_selected.empty:
-                _delete_season(client, f"{args.project}.sports_edge_raw.raw_game_logs", season)
+                _delete_season(client, f"{args.project}.sports_edge_raw.raw_nba_game_logs", season)
         
         _load_dataframe(client, schedules_selected, f"{args.project}.sports_edge_raw.raw_schedules")
         if not game_logs_selected.empty:
-            _load_dataframe(client, game_logs_selected, f"{args.project}.sports_edge_raw.raw_game_logs")
+            _load_dataframe(client, game_logs_selected, f"{args.project}.sports_edge_raw.raw_nba_game_logs")
     
     print("NBA raw backfill complete.")
 

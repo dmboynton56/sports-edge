@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 from datetime import date
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 # Add project root to path for imports
@@ -55,26 +55,37 @@ def filter_completed_games(schedule: pd.DataFrame) -> pd.DataFrame:
     return completed
 
 
-def collect_week_games(schedule: pd.DataFrame, week: int) -> pd.DataFrame:
+def collect_week_games(schedule: pd.DataFrame, week: Union[int, str]) -> pd.DataFrame:
     """
-    Gather games for the specified week.
+    Gather games for the specified week or game type.
     """
     if 'week' not in schedule.columns:
         raise ValueError("Schedule missing 'week' column required to filter games by week.")
     
-    week_games = schedule[schedule['week'] == week].copy()
+    # Handle string week (could be a number or a game type like 'WC')
+    if isinstance(week, str) and not week.isdigit():
+        if 'game_type' not in schedule.columns:
+            raise ValueError("Schedule missing 'game_type' column required to filter by game type.")
+        week_games = schedule[schedule['game_type'] == week.upper()].copy()
+        if week_games.empty:
+            # Try matching game_type with 'POST' and filtering by common playoff abbreviations
+            valid_types = schedule['game_type'].unique()
+            raise ValueError(f"No games found for game type '{week}'. Valid types in schedule: {valid_types}")
+    else:
+        week_num = int(week)
+        week_games = schedule[schedule['week'] == week_num].copy()
     
     if week_games.empty:
         raise ValueError(f"No games found for week {week}.")
     
     week_games = week_games.sort_values('game_date').reset_index(drop=True)
-    print(f"\nFound {len(week_games)} games for week {week}:")
+    print(f"\nFound {len(week_games)} games for {week}:")
     for _, row in week_games.iterrows():
         print(f"  {row['game_date'].date()} - {row['away_team']} @ {row['home_team']}")
     
     base_cols = ['home_team', 'away_team', 'game_date', 'season', 'week']
     optional_cols = [
-        col for col in ['start_time', 'gametime', 'game_time', 'game_time_utc']
+        col for col in ['start_time', 'gametime', 'game_time', 'game_time_utc', 'game_type']
         if col in week_games.columns
     ]
     return week_games[base_cols + optional_cols].copy()
@@ -92,7 +103,8 @@ def team_has_data(team: str, game_date: pd.Timestamp, completed_games: pd.DataFr
 def predict_games(games: pd.DataFrame,
                   schedule: pd.DataFrame,
                   completed_games: pd.DataFrame,
-                  play_by_play: Optional[pd.DataFrame]) -> List[dict]:
+                  play_by_play: Optional[pd.DataFrame],
+                  include_explanations: bool = False) -> List[dict]:
     """Predict a batch of games, skipping any without sufficient data."""
     predictor = GamePredictor('NFL', MODEL_VERSION)
     
@@ -112,20 +124,20 @@ def predict_games(games: pd.DataFrame,
             continue
         
         game_df = pd.DataFrame([game])
-        result = predictor.predict(game_df, schedule, play_by_play=play_by_play)
+        result = predictor.predict(game_df, schedule, play_by_play=play_by_play, include_explanations=include_explanations)
         predictions.append(result)
     
     return predictions
 
 
-def display_predictions(predictions: List[dict], week: int) -> None:
+def display_predictions(predictions: List[dict], week: Union[int, str], show_features: bool = False) -> None:
     """Pretty-print prediction results."""
     if not predictions:
         print("\nNo predictions generated.")
         return
     
     print("\n" + "=" * 80)
-    print(f"WEEK {week} PREDICTIONS")
+    print(f"PREDICTIONS FOR {week}")
     print("=" * 80)
     
     for pred in predictions:
@@ -133,15 +145,24 @@ def display_predictions(predictions: List[dict], week: int) -> None:
         print(f"  Spread: {pred['predicted_spread']:.2f} ({pred['spread_interpretation']})")
         print(f"  Win Probabilities: Home {pred['home_win_probability']:.1%} | Away {pred['away_win_probability']:.1%}")
         print(f"  Predicted Winner: {pred['predicted_winner']} (Confidence {pred['confidence']:.1%})")
-        print(f"  Model win prob: {pred.get('home_win_prob_from_model', float('nan')):.1%}")
-        print(f"  From spread: {pred.get('win_prob_from_spread', float('nan')):.1%}")
-        if pred.get('model_disagreement', 0) > 0.15:
-            print(f"  (!) Disagreement: {pred['model_disagreement']:.1%}")
+        
+        if show_features and 'top_features' in pred:
+            print(f"  Top Contributing Features:")
+            for feat in pred['top_features']:
+                impact_str = f"{feat['impact']:+.3f}"
+                heur_marker = " (h)" if feat.get('is_heuristic') else ""
+                print(f"    - {feat['feature']:<30}: {feat['value']:>8.2f} | Impact: {impact_str}{heur_marker}")
+        
+        if not show_features:
+            print(f"  Model win prob: {pred.get('home_win_prob_from_model', float('nan')):.1%}")
+            print(f"  From spread: {pred.get('win_prob_from_spread', float('nan')):.1%}")
+            if pred.get('model_disagreement', 0) > 0.15:
+                print(f"  (!) Disagreement: {pred['model_disagreement']:.1%}")
     
     print("\n" + "=" * 80)
 
 
-def write_viz_data(predictions: List[dict], games_df: pd.DataFrame, schedule_df: pd.DataFrame, week: int) -> None:
+def write_viz_data(predictions: List[dict], games_df: pd.DataFrame, schedule_df: pd.DataFrame, week: Union[int, str]) -> None:
     """Export predictions to parquet file for notebook visualization."""
     if not predictions:
         print("No predictions to export; skipping viz data write.")
@@ -200,9 +221,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--week",
-        type=int,
+        type=str,
         required=True,
-        help="Week number to predict (e.g., 11, 12, 13).",
+        help="Week number (e.g., 18) or playoff type (WC, DIV, CON, SB) to predict.",
     )
     parser.add_argument(
         "--season",
@@ -219,6 +240,11 @@ def parse_args() -> argparse.Namespace:
         "--write-viz-data",
         action="store_true",
         help="Export predictions to parquet file for notebook visualization.",
+    )
+    parser.add_argument(
+        "--show-features",
+        action="store_true",
+        help="Show top contributing features for each prediction.",
     )
     return parser.parse_args()
 
@@ -525,8 +551,8 @@ def main():
         print(f"ERROR: {err}")
         sys.exit(1)
     
-    predictions = predict_games(week_games, schedule_df, completed_games, play_by_play)
-    display_predictions(predictions, week)
+    predictions = predict_games(week_games, schedule_df, completed_games, play_by_play, include_explanations=args.show_features)
+    display_predictions(predictions, week, show_features=args.show_features)
     
     if args.write_viz_data:
         try:

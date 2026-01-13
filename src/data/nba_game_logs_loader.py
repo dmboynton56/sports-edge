@@ -9,7 +9,7 @@ import numpy as np
 from typing import Optional, Sequence, List
 import time
 import warnings
-from nba_api.stats.endpoints import teamgamelog
+from nba_api.stats.endpoints import teamgamelog, leaguegamefinder
 from nba_api.stats.static import teams
 from google.cloud import bigquery
 import os
@@ -30,18 +30,22 @@ def _normalize_game_dates(df: pd.DataFrame) -> pd.DataFrame:
             warnings.filterwarnings('ignore', category=UserWarning)
             df['game_date'] = pd.to_datetime(df['game_date'], errors='coerce')
     elif 'GAME_DATE' in df.columns:
-        # NBA API TeamGameLog returns dates as "APR 13, 2025" format (e.g., "%b %d, %Y")
-        # Suppress the format inference warning since we're explicitly providing the format
+        # NBA API has two common formats:
+        # 1. "APR 13, 2025" (TeamGameLog)
+        # 2. "2025-04-13" (LeagueGameFinder)
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', category=UserWarning)
-            # Use exact format - NBA API consistently uses "MON DD, YYYY" format
-            # Convert to string first to ensure consistent handling, replace 'nan' strings
-            date_series = df['GAME_DATE'].astype(str).replace('nan', pd.NA)
-            df['game_date'] = pd.to_datetime(
-                date_series, 
-                format='%b %d, %Y', 
-                errors='coerce'
-            )
+            # Try flexible parsing first, then fallback to specific format if needed
+            df['game_date'] = pd.to_datetime(df['GAME_DATE'], errors='coerce')
+            
+            # If everything is still null, try the specific legacy format
+            if df['game_date'].isna().all():
+                date_series = df['GAME_DATE'].astype(str).replace('nan', pd.NA)
+                df['game_date'] = pd.to_datetime(
+                    date_series, 
+                    format='%b %d, %Y', 
+                    errors='coerce'
+                )
     return df
 
 
@@ -190,6 +194,22 @@ def load_nba_game_logs_from_bq(seasons: Sequence[int], project_id: Optional[str]
             
         print(f"  Successfully loaded {len(df)} logs from BigQuery.")
         
+        # Expand raw_record JSON if present
+        if 'raw_record' in df.columns:
+            import json
+            print("  Expanding raw_record JSON data...")
+            try:
+                # Convert JSON strings to dicts and then to a DataFrame
+                raw_df = pd.json_normalize(df['raw_record'].apply(json.loads))
+                
+                # Combine with original DF, prioritizing the expanded columns
+                # We drop columns from df that exist in raw_df to avoid duplicates during concat
+                df = df.drop(columns=['raw_record'])
+                cols_to_keep = [c for c in df.columns if c not in raw_df.columns]
+                df = pd.concat([df[cols_to_keep], raw_df], axis=1)
+            except Exception as e:
+                print(f"  Warning: Could not expand raw_record: {e}")
+        
         # Ensure game_date is datetime
         df['game_date'] = pd.to_datetime(df['game_date'])
         
@@ -201,7 +221,7 @@ def load_nba_game_logs_from_bq(seasons: Sequence[int], project_id: Optional[str]
 
 def load_nba_game_logs(seasons: Sequence[int], strict: bool = False, schedule_df: Optional[pd.DataFrame] = None) -> Optional[pd.DataFrame]:
     """
-    Load NBA team game logs for the requested seasons.
+    Load NBA team game logs for the requested seasons using LeagueGameFinder (efficient).
     
     Args:
         seasons: Iterable of season years (e.g., [2024, 2025])
@@ -215,57 +235,47 @@ def load_nba_game_logs(seasons: Sequence[int], strict: bool = False, schedule_df
     all_logs = []
     
     try:
-        # Get all NBA teams
-        nba_teams = teams.get_teams()
-        team_ids = [team['id'] for team in nba_teams]
-        
-        print(f"Loading game logs for {len(team_ids)} teams across {len(seasons)} seasons...")
+        print(f"Loading game logs for {len(seasons)} seasons using LeagueGameFinder...")
         
         for season in seasons:
             season_str = f"{season}-{str(season + 1)[-2:]}"
             print(f"  Processing {season_str}...")
             
-            for i, team_id in enumerate(team_ids):
-                try:
-                    # Fetch team game log
-                    team_log = teamgamelog.TeamGameLog(team_id=team_id, season=season_str)
-                    df = team_log.get_data_frames()[0]
-                    
-                    if df.empty:
-                        continue
-                    
-                    # Add team identifier
-                    team_info = next((t for t in nba_teams if t['id'] == team_id), None)
-                    if team_info:
-                        df['team'] = team_info['abbreviation']
-                        df['team_id'] = team_id
-                    else:
-                        df['team'] = None
-                        df['team_id'] = team_id
-                    
-                    # Add season
-                    df['season'] = season
-                    
-                    # Normalize game date (suppress warnings during date parsing)
-                    with warnings.catch_warnings():
-                        warnings.filterwarnings('ignore', category=UserWarning)
-                        df = _normalize_game_dates(df)
-                    
-                    # Don't compute ratings yet - we'll do it after combining all logs
-                    # so we can match with schedule more efficiently
-                    
-                    all_logs.append(df)
-                    
-                    # Rate limiting - be nice to the API
-                    if (i + 1) % 10 == 0:
-                        time.sleep(0.5)  # Small delay every 10 teams
-                    
-                except Exception as e:
-                    print(f"    Warning: Could not load logs for team {team_id} ({season_str}): {e}")
+            try:
+                # Use LeagueGameFinder to get ALL games for the season in ONE call
+                # We don't filter by season_type so we match the schedule's Preseason/Playoffs/etc.
+                game_finder = leaguegamefinder.LeagueGameFinder(
+                    season_nullable=season_str,
+                    league_id_nullable='00'  # NBA
+                )
+                df = game_finder.get_data_frames()[0]
+                
+                if df.empty:
+                    print(f"    Warning: No logs found for {season_str}")
                     continue
-            
-            # Longer delay between seasons
-            time.sleep(1)
+                
+                # Add season
+                df['season'] = season
+                
+                # Normalize game date
+                with warnings.catch_warnings():
+                    warnings.filterwarnings('ignore', category=UserWarning)
+                    df = _normalize_game_dates(df)
+                
+                # Standardize team column
+                df['team'] = df['TEAM_ABBREVIATION']
+                df['team_id'] = df['TEAM_ID']
+                
+                all_logs.append(df)
+                
+                # Small delay between seasons to be safe
+                time.sleep(1.0)
+                
+            except Exception as e:
+                print(f"    Warning: Could not load logs for season {season_str}: {e}")
+                if strict:
+                    raise
+                continue
         
         if not all_logs:
             message = "No game logs were loaded"
@@ -277,37 +287,23 @@ def load_nba_game_logs(seasons: Sequence[int], strict: bool = False, schedule_df
         # Combine all logs
         combined_df = pd.concat(all_logs, ignore_index=True)
         
-        # Standardize columns
-        standard_cols = ['game_id', 'game_date', 'team', 'team_id', 'season']
-        
         # Map common column names
         col_mapping = {
-            'Game_ID': 'game_id',
             'GAME_ID': 'game_id',
-            'GAME_DATE': 'game_date',
             'MATCHUP': 'matchup',
             'WL': 'win_loss',
             'PTS': 'points_scored',
-            'OPP_PTS': 'points_allowed',
         }
         
         for old_col, new_col in col_mapping.items():
-            if old_col in combined_df.columns and new_col not in combined_df.columns:
+            if old_col in combined_df.columns:
                 combined_df[new_col] = combined_df[old_col]
-        
-        # Ensure game_id exists and is string format
-        if 'game_id' not in combined_df.columns:
-            if 'Game_ID' in combined_df.columns:
-                combined_df['game_id'] = combined_df['Game_ID'].astype(str)
-            elif 'GAME_ID' in combined_df.columns:
-                combined_df['game_id'] = combined_df['GAME_ID'].astype(str)
         
         # Convert game_id to string for matching
         if 'game_id' in combined_df.columns:
             combined_df['game_id'] = combined_df['game_id'].astype(str)
         
         # Now compute ratings with schedule lookup (if available)
-        # This matches game logs with schedule to get opponent points
         print("  Computing ratings from game logs (matching with schedule for opponent points)...")
         combined_df = _compute_net_rating_from_logs(combined_df, schedule_df=schedule_df)
         
@@ -325,4 +321,9 @@ def load_nba_game_logs(seasons: Sequence[int], strict: bool = False, schedule_df
         import traceback
         traceback.print_exc()
         return None
+
+def load_nba_game_logs_legacy(seasons: Sequence[int], strict: bool = False, schedule_df: Optional[pd.DataFrame] = None) -> Optional[pd.DataFrame]:
+    """
+    Load NBA team game logs for the requested seasons (Legacy team-by-team version).
+    """
 

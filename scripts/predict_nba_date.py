@@ -28,7 +28,7 @@ from src.data.nba_game_logs_loader import load_nba_game_logs, load_nba_game_logs
 from src.models.predictor import GamePredictor
 
 
-MODEL_VERSION = 'v1'
+MODEL_VERSION = 'v3'
 
 
 def load_season_schedule(season: int) -> pd.DataFrame:
@@ -111,7 +111,8 @@ def team_has_data(team: str, game_date: pd.Timestamp, completed_games: pd.DataFr
 def predict_games(games: pd.DataFrame,
                   schedule: pd.DataFrame,
                   completed_games: pd.DataFrame,
-                  game_logs: Optional[pd.DataFrame]) -> List[dict]:
+                  game_logs: Optional[pd.DataFrame],
+                  include_explanations: bool = False) -> List[dict]:
     """Predict a batch of games, skipping any without sufficient data."""
     predictor = GamePredictor('NBA', MODEL_VERSION)
     
@@ -131,13 +132,13 @@ def predict_games(games: pd.DataFrame,
             continue
         
         game_df = pd.DataFrame([game])
-        result = predictor.predict(game_df, schedule, game_logs=game_logs)
+        result = predictor.predict(game_df, schedule, game_logs=game_logs, include_explanations=include_explanations)
         predictions.append(result)
     
     return predictions
 
 
-def display_predictions(predictions: List[dict], target_date: str) -> None:
+def display_predictions(predictions: List[dict], target_date: str, show_features: bool = False) -> None:
     """Pretty-print prediction results."""
     if not predictions:
         print(f"\nNo predictions generated for {target_date}.")
@@ -152,6 +153,14 @@ def display_predictions(predictions: List[dict], target_date: str) -> None:
         print(f"  Spread: {pred['predicted_spread']:.2f} ({pred['spread_interpretation']})")
         print(f"  Win Probabilities: Home {pred['home_win_probability']:.1%} | Away {pred['away_win_probability']:.1%}")
         print(f"  Predicted Winner: {pred['predicted_winner']} (Confidence {pred['confidence']:.1%})")
+        
+        if show_features and 'top_features' in pred:
+            print(f"  Top Contributing Features:")
+            for feat in pred['top_features']:
+                impact_str = f"{feat['impact']:+.3f}"
+                heur_marker = " (h)" if feat.get('is_heuristic') else ""
+                print(f"    - {feat['feature']:<30}: {feat['value']:>8.2f} | Impact: {impact_str}{heur_marker}")
+        
         if pred.get('model_disagreement', 0) > 0.15:
             print(f"  (!) Disagreement: {pred['model_disagreement']:.1%}")
     
@@ -267,6 +276,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Persist predictions to Supabase using env credentials.",
     )
+    parser.add_argument(
+        "--show-features",
+        action="store_true",
+        help="Show top contributing features for each prediction.",
+    )
     return parser.parse_args()
 
 
@@ -353,12 +367,12 @@ def main():
             if current_date_games.empty:
                 continue
                 
-            day_preds = predict_games(current_date_games, schedule_df, completed_games, game_logs)
+            day_preds = predict_games(current_date_games, schedule_df, completed_games, game_logs, include_explanations=args.show_features)
             all_predictions.extend(day_preds)
             
             # Display daily results if it's a single date or the last date in range
             if len(dates_to_predict) == 1 or d_str == target_date:
-                display_predictions(day_preds, d_str)
+                display_predictions(day_preds, d_str, show_features=args.show_features)
                 
             # Collect evaluation results for all dates
             day_evals = evaluate_predictions(day_preds, schedule_df)
