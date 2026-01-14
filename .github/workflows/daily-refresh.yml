@@ -6,7 +6,7 @@ on:
     - cron: "0 13 * * *" # Daily at 13:00 UTC (08:00 ET)
 
 env:
-  PROJECT_ID: learned-pier-478122-p7
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcp-key.json
 
 jobs:
