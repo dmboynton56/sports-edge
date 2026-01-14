@@ -275,7 +275,7 @@ class GamePredictor:
         # Rest differentials
         if 'rest_home' in df.columns and 'rest_away' in df.columns:
             df['rest_differential'] = df['rest_home'] - df['rest_away']
-            df['rest_advantage_home'] = (df['rest_home'] > df['rest_away']).astype(int)
+            df['rest_advantage_home'] = (df['rest_home'] > df['rest_away']).fillna(False).astype(int)
         
         # Team strength differentials
         if 'home_team_win_pct' in df.columns and 'away_team_win_pct' in df.columns:
@@ -284,7 +284,7 @@ class GamePredictor:
             df['point_diff_differential'] = df['home_team_point_diff'] - df['away_team_point_diff']
             df['point_diff_gap'] = df['away_team_point_diff'] - df['home_team_point_diff']
             df['abs_point_diff_gap'] = df['point_diff_gap'].abs()
-            df['point_diff_gap_flag'] = (df['point_diff_gap'] > 5).astype(int)
+            df['point_diff_gap_flag'] = (df['point_diff_gap'] > 5).fillna(False).astype(int)
         
         # Opponent strength differential
         if 'opp_strength_home_season' in df.columns and 'opp_strength_away_season' in df.columns:

@@ -95,6 +95,27 @@ TABLE_SPECS = [
         "description": "Weekly team summary stats stored verbatim plus JSON extras.",
     },
     {
+        "dataset": "sports_edge_raw",
+        "table": "raw_nba_game_logs",
+        "schema": _schema(
+            [
+                ("game_id", "STRING", "REQUIRED"),
+                ("game_date", "DATE", "REQUIRED"),
+                ("team", "STRING", "REQUIRED"),
+                ("team_id", "INT64", "NULLABLE"),
+                ("season", "INT64", "REQUIRED"),
+                ("points_scored", "INT64", "NULLABLE"),
+                ("points_allowed", "INT64", "NULLABLE"),
+                ("net_rating", "FLOAT64", "NULLABLE"),
+                ("point_diff", "INT64", "NULLABLE"),
+                ("ingested_at", "TIMESTAMP", "NULLABLE"),
+                ("raw_record", "JSON", "NULLABLE"),
+            ]
+        ),
+        "partition_field": "game_date",
+        "description": "Raw NBA game logs for form metrics computation.",
+    },
+    {
         "dataset": "sports_edge_curated",
         "table": "feature_snapshots",
         "schema": _schema(
@@ -112,6 +133,8 @@ TABLE_SPECS = [
                 ("rest_away", "FLOAT64", "NULLABLE"),
                 ("b2b_home", "BOOL", "NULLABLE"),
                 ("b2b_away", "BOOL", "NULLABLE"),
+                ("is_3in4_home", "BOOL", "NULLABLE"),
+                ("is_3in4_away", "BOOL", "NULLABLE"),
                 ("opp_strength_home_season", "FLOAT64", "NULLABLE"),
                 ("opp_strength_away_season", "FLOAT64", "NULLABLE"),
                 ("home_team_win_pct", "FLOAT64", "NULLABLE"),
@@ -122,6 +145,7 @@ TABLE_SPECS = [
                 ("win_pct_differential", "FLOAT64", "NULLABLE"),
                 ("point_diff_differential", "FLOAT64", "NULLABLE"),
                 ("opp_strength_differential", "FLOAT64", "NULLABLE"),
+                ("is_3in4_differential", "FLOAT64", "NULLABLE"),
                 ("week_number", "INT64", "NULLABLE"),
                 ("month", "INT64", "NULLABLE"),
                 ("is_playoff", "BOOL", "NULLABLE"),
@@ -143,6 +167,16 @@ TABLE_SPECS = [
                 ("form_epa_def_diff_3", "FLOAT64", "NULLABLE"),
                 ("form_epa_def_diff_5", "FLOAT64", "NULLABLE"),
                 ("form_epa_def_diff_10", "FLOAT64", "NULLABLE"),
+                # NBA Form Metrics
+                ("form_home_net_rating_3", "FLOAT64", "NULLABLE"),
+                ("form_home_net_rating_5", "FLOAT64", "NULLABLE"),
+                ("form_home_net_rating_10", "FLOAT64", "NULLABLE"),
+                ("form_away_net_rating_3", "FLOAT64", "NULLABLE"),
+                ("form_away_net_rating_5", "FLOAT64", "NULLABLE"),
+                ("form_away_net_rating_10", "FLOAT64", "NULLABLE"),
+                ("form_net_rating_diff_3", "FLOAT64", "NULLABLE"),
+                ("form_net_rating_diff_5", "FLOAT64", "NULLABLE"),
+                ("form_net_rating_diff_10", "FLOAT64", "NULLABLE"),
                 ("feature_version", "STRING", "NULLABLE"),
             ]
         ),

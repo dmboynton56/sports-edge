@@ -251,10 +251,22 @@ def add_form_features_nba(games_df: pd.DataFrame, game_logs: pd.DataFrame,
     # Ensure necessary columns are numeric and exist
     box_cols = ['FGA', 'FTA', 'TOV', 'OREB']
     for col in box_cols:
-        logs[col] = pd.to_numeric(logs.get(col, 0), errors='coerce').fillna(0)
+        if col in logs.columns:
+            logs[col] = pd.to_numeric(logs[col], errors='coerce').fillna(0)
+        else:
+            logs[col] = 0
     
-    logs['pts_scored'] = pd.to_numeric(logs.get('pts', logs.get('PTS', 0)), errors='coerce').fillna(0)
-    logs['pts_allowed'] = pd.to_numeric(logs.get('points_allowed', 0), errors='coerce').fillna(0)
+    if 'pts' in logs.columns:
+        logs['pts_scored'] = pd.to_numeric(logs['pts'], errors='coerce').fillna(0)
+    elif 'PTS' in logs.columns:
+        logs['pts_scored'] = pd.to_numeric(logs['PTS'], errors='coerce').fillna(0)
+    else:
+        logs['pts_scored'] = 0
+        
+    if 'points_allowed' in logs.columns:
+        logs['pts_allowed'] = pd.to_numeric(logs['points_allowed'], errors='coerce').fillna(0)
+    else:
+        logs['pts_allowed'] = 0
     
     # Calculate possessions per game
     logs['possessions'] = logs['FGA'] + (0.44 * logs['FTA']) - logs['OREB'] + logs['TOV']

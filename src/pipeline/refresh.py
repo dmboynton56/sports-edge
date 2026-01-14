@@ -187,9 +187,10 @@ def _add_team_strength_features(games_df: pd.DataFrame, historical_games: pd.Dat
     # Sort history to use for cumulative stats
     hist = hist.sort_values('game_date')
     
-    # Ensure scores are numeric
+    # Ensure scores are numeric and drop games without scores
     hist['home_score'] = pd.to_numeric(hist['home_score'], errors='coerce')
     hist['away_score'] = pd.to_numeric(hist['away_score'], errors='coerce')
+    hist = hist.dropna(subset=['home_score', 'away_score'])
     
     # Pre-calculate points and wins for each game record
     hist['home_win'] = (hist['home_score'] > hist['away_score']).astype(int)
@@ -241,7 +242,7 @@ def _add_interaction_features(df: pd.DataFrame) -> pd.DataFrame:
     # Rest differentials
     if 'rest_home' in df.columns and 'rest_away' in df.columns:
         df['rest_differential'] = df['rest_home'] - df['rest_away']
-        df['rest_advantage_home'] = (df['rest_home'] > df['rest_away']).astype(int)
+        df['rest_advantage_home'] = (df['rest_home'] > df['rest_away']).fillna(False).astype(int)
     
     # Fatigue indicators
     if 'is_3in4_home' in df.columns and 'is_3in4_away' in df.columns:
@@ -254,7 +255,7 @@ def _add_interaction_features(df: pd.DataFrame) -> pd.DataFrame:
         df['point_diff_differential'] = df['home_team_point_diff'] - df['away_team_point_diff']
         df['point_diff_gap'] = df['away_team_point_diff'] - df['home_team_point_diff']
         df['abs_point_diff_gap'] = df['point_diff_gap'].abs()
-        df['point_diff_gap_flag'] = (df['point_diff_gap'] > 5).astype(int)
+        df['point_diff_gap_flag'] = (df['point_diff_gap'] > 5).fillna(False).astype(int)
     
     # Opponent strength differential
     if 'opp_strength_home_season' in df.columns and 'opp_strength_away_season' in df.columns:

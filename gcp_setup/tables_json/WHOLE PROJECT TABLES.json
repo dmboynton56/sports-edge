@@ -750,6 +750,61 @@
   "data_type": "FLOAT64"
 }, {
   "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "game_date",
+  "data_type": "DATE"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "game_id",
+  "data_type": "STRING"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "ingested_at",
+  "data_type": "TIMESTAMP"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "net_rating",
+  "data_type": "FLOAT64"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "point_diff",
+  "data_type": "FLOAT64"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "points_allowed",
+  "data_type": "INT64"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "points_scored",
+  "data_type": "INT64"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "raw_record",
+  "data_type": "STRING"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "season",
+  "data_type": "INT64"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "team",
+  "data_type": "STRING"
+}, {
+  "table_schema": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "team_id",
+  "data_type": "INT64"
+}, {
+  "table_schema": "sports_edge_raw",
   "table_name": "raw_pbp",
   "column_name": "away_team",
   "data_type": "STRING"

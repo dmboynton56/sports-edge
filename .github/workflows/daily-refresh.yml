@@ -1,0 +1,79 @@
+name: Daily Sports-Edge Refresh
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 13 * * *" # Daily at 13:00 UTC (08:00 ET)
+
+env:
+  PROJECT_ID: learned-pier-478122-p7
+  GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcp-key.json
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt google-cloud-bigquery nflreadpy supabase
+
+      - name: Configure GCP credentials
+        shell: bash
+        run: |
+          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > "$GOOGLE_APPLICATION_CREDENTIALS"
+
+      - name: Update NBA Raw Data
+        shell: bash
+        run: |
+          # Only backfill current season daily
+          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons 2025 --replace
+
+      - name: Update NFL Raw Data
+        shell: bash
+        run: |
+          CURRENT_SEASON=$(date +%Y)
+          python scripts/backfill_nfl_raw.py --project "$PROJECT_ID" --seasons "$CURRENT_SEASON" --replace
+
+      - name: Build NBA Feature Snapshots
+        shell: bash
+        run: |
+          python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons 2025 --replace
+
+      - name: Build NFL Feature Snapshots
+        shell: bash
+        run: |
+          CURRENT_SEASON=$(date +%Y)
+          python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$CURRENT_SEASON" --replace
+
+      - name: Generate NBA Predictions
+        shell: bash
+        run: |
+          python src/pipeline/refresh_nba.py --project "$PROJECT_ID" --model-version v3
+
+      - name: Generate NFL Predictions
+        shell: bash
+        run: |
+          # NFL weekly refresh logic can stay here, or run daily to catch line movements
+          python src/pipeline/refresh_nfl.py --project "$PROJECT_ID" --model-version v1
+
+      - name: Sync Predictions to Supabase
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
+          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
