@@ -283,6 +283,11 @@ def add_form_features_nba(games_df: pd.DataFrame, game_logs: pd.DataFrame,
     logs[f'form_def_rating_{window}'] = (logs['prev_roll_pts_allowed'] / logs['prev_roll_poss'].replace(0, np.nan)) * 100
     logs[f'form_net_rating_{window}'] = logs[f'form_off_rating_{window}'] - logs[f'form_def_rating_{window}']
     
+    # NEW: Form Volatility (Std Dev of point differential)
+    # This helps identify "swingy" teams like WAS or SAC
+    logs['actual_pts_diff'] = logs['pts_scored'] - logs['pts_allowed']
+    logs[f'form_volatility_{window}'] = team_gb['actual_pts_diff'].transform(lambda x: x.rolling(window=window).std().shift(1))
+    
     # Handle cases where box score stats are missing (fallback to point diff)
     # If off_rating is still NaN after the shift, use simple point differential if available
     fallback_col = 'net_rating' if 'net_rating' in logs.columns else 'PLUS_MINUS'
@@ -292,7 +297,7 @@ def add_form_features_nba(games_df: pd.DataFrame, game_logs: pd.DataFrame,
         logs[f'form_net_rating_{window}'] = logs[f'form_net_rating_{window}'].fillna(logs[f'form_net_rating_fallback_{window}'])
 
     # Create lookup table
-    lookup_cols = ['team', 'game_date', f'form_net_rating_{window}', f'form_off_rating_{window}', f'form_def_rating_{window}']
+    lookup_cols = ['team', 'game_date', f'form_net_rating_{window}', f'form_off_rating_{window}', f'form_def_rating_{window}', f'form_volatility_{window}']
     lookup = logs[lookup_cols].dropna(subset=[f'form_net_rating_{window}'])
     
     # Merge back for home team
@@ -300,7 +305,8 @@ def add_form_features_nba(games_df: pd.DataFrame, game_logs: pd.DataFrame,
         'team': 'home_team', 
         f'form_net_rating_{window}': f'form_home_net_rating_{window}',
         f'form_off_rating_{window}': f'form_home_off_rating_{window}',
-        f'form_def_rating_{window}': f'form_home_def_rating_{window}'
+        f'form_def_rating_{window}': f'form_home_def_rating_{window}',
+        f'form_volatility_{window}': f'form_home_volatility_{window}'
     }), on=['home_team', 'game_date'], how='left')
     
     # Merge back for away team
@@ -308,7 +314,8 @@ def add_form_features_nba(games_df: pd.DataFrame, game_logs: pd.DataFrame,
         'team': 'away_team', 
         f'form_net_rating_{window}': f'form_away_net_rating_{window}',
         f'form_off_rating_{window}': f'form_away_off_rating_{window}',
-        f'form_def_rating_{window}': f'form_away_def_rating_{window}'
+        f'form_def_rating_{window}': f'form_away_def_rating_{window}',
+        f'form_volatility_{window}': f'form_away_volatility_{window}'
     }), on=['away_team', 'game_date'], how='left')
     
     return df

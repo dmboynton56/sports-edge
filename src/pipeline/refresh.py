@@ -243,6 +243,10 @@ def _add_interaction_features(df: pd.DataFrame) -> pd.DataFrame:
         df['rest_differential'] = df['rest_home'] - df['rest_away']
         df['rest_advantage_home'] = (df['rest_home'] > df['rest_away']).astype(int)
     
+    # Fatigue indicators
+    if 'is_3in4_home' in df.columns and 'is_3in4_away' in df.columns:
+        df['is_3in4_differential'] = df['is_3in4_home'] - df['is_3in4_away']
+    
     # Team strength differentials
     if 'home_team_win_pct' in df.columns and 'away_team_win_pct' in df.columns:
         df['win_pct_differential'] = df['home_team_win_pct'] - df['away_team_win_pct']
@@ -297,6 +301,12 @@ def _add_form_interactions(df: pd.DataFrame, league: str) -> pd.DataFrame:
             away_def = f'form_away_def_rating_{window}'
             if home_def in df.columns and away_def in df.columns:
                 df[f'form_def_rating_diff_{window}'] = df[home_def] - df[away_def]
+            
+            # Volatility differential
+            home_vol = f'form_home_volatility_{window}'
+            away_vol = f'form_away_volatility_{window}'
+            if home_vol in df.columns and away_vol in df.columns:
+                df[f'form_volatility_diff_{window}'] = df[home_vol] - df[away_vol]
     
     return df
 

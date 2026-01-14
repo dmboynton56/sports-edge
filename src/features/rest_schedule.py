@@ -174,64 +174,58 @@ def compute_travel_distance(team: str, game_date: datetime, previous_games: pd.D
 
 def add_rest_features(games_df: pd.DataFrame, historical_games: pd.DataFrame) -> pd.DataFrame:
     """
-    Add rest and schedule features to games DataFrame.
-    
-    Args:
-        games_df: DataFrame with games to add features to
-        historical_games: Historical games for computing rest
-    
-    Returns:
-        DataFrame with added columns: rest_home, rest_away, b2b_home, b2b_away
+    Add rest and schedule features to games DataFrame efficiently.
     """
     df = games_df.copy()
+    df['game_date'] = pd.to_datetime(df['game_date'])
+    hist = historical_games.copy()
+    hist['game_date'] = pd.to_datetime(hist['game_date'])
     
-    def _season_for_row(row):
-        season_val = row.get('season')
-        if pd.notna(season_val):
-            try:
-                return int(season_val)
-            except (TypeError, ValueError):
-                return pd.to_datetime(row['game_date']).year
-        return pd.to_datetime(row['game_date']).year
+    # 1. Melt history to get all games per team
+    h_games = hist[['game_date', 'season', 'home_team']].rename(columns={'home_team': 'team'})
+    a_games = hist[['game_date', 'season', 'away_team']].rename(columns={'away_team': 'team'})
+    team_games = pd.concat([h_games, a_games]).sort_values(['team', 'game_date'])
     
-    df['rest_home'] = df.apply(
-        lambda row: compute_rest_days(
-            row['home_team'],
-            pd.to_datetime(row['game_date']),
-            historical_games,
-            season=_season_for_row(row)
-        ),
-        axis=1
-    )
+    # 2. Compute rest days
+    team_games['prev_game_date'] = team_games.groupby(['team', 'season'])['game_date'].shift(1)
+    team_games['rest_days'] = (team_games['game_date'] - team_games['prev_game_date']).dt.days
     
-    df['rest_away'] = df.apply(
-        lambda row: compute_rest_days(
-            row['away_team'],
-            pd.to_datetime(row['game_date']),
-            historical_games,
-            season=_season_for_row(row)
-        ),
-        axis=1
-    )
+    # 3. Add fatigue indicators
+    # B2B
+    team_games['is_b2b'] = (team_games['rest_days'] <= 1).astype(int)
     
-    df['b2b_home'] = df.apply(
-        lambda row: is_back_to_back(
-            row['home_team'],
-            pd.to_datetime(row['game_date']),
-            historical_games,
-            season=_season_for_row(row)
-        ),
-        axis=1
-    )
+    # 3 games in 4 nights (3in4)
+    # A team has played 3 in 4 if their game 2 days ago was also within 4 days of today
+    team_games['game_3_ago_date'] = team_games.groupby(['team', 'season'])['game_date'].shift(2)
+    team_games['is_3in4'] = ((team_games['game_date'] - team_games['game_3_ago_date']).dt.days <= 4).astype(int)
     
-    df['b2b_away'] = df.apply(
-        lambda row: is_back_to_back(
-            row['away_team'],
-            pd.to_datetime(row['game_date']),
-            historical_games,
-            season=_season_for_row(row)
-        ),
-        axis=1
-    )
+    # 4. Merge back to games_df
+    # We want the rest/fatigue status AT THE TIME OF THE GAME
+    # The team_games table already has this for each game
+    lookup = team_games[['team', 'game_date', 'rest_days', 'is_b2b', 'is_3in4']]
+    
+    # Home team
+    df = pd.merge(df, lookup.rename(columns={
+        'team': 'home_team', 
+        'rest_days': 'rest_home', 
+        'is_b2b': 'b2b_home', 
+        'is_3in4': 'is_3in4_home'
+    }), on=['home_team', 'game_date'], how='left')
+    
+    # Away team
+    df = pd.merge(df, lookup.rename(columns={
+        'team': 'away_team', 
+        'rest_days': 'rest_away', 
+        'is_b2b': 'b2b_away', 
+        'is_3in4': 'is_3in4_away'
+    }), on=['away_team', 'game_date'], how='left')
+    
+    # Fill NAs (first game of season)
+    df['rest_home'] = df['rest_home'].fillna(7) # Assume full rest for first game
+    df['rest_away'] = df['rest_away'].fillna(7)
+    df['b2b_home'] = df['b2b_home'].fillna(0)
+    df['b2b_away'] = df['b2b_away'].fillna(0)
+    df['is_3in4_home'] = df['is_3in4_home'].fillna(0)
+    df['is_3in4_away'] = df['is_3in4_away'].fillna(0)
     
     return df
