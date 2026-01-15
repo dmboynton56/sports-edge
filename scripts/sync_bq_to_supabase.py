@@ -14,6 +14,7 @@ from datetime import date, datetime, timedelta, timezone
 from typing import Optional, Tuple
 
 import pandas as pd
+import requests
 from dotenv import load_dotenv
 from google.cloud import bigquery
 
@@ -308,6 +309,70 @@ def insert_predictions_from_bq(
     return inserted, skipped
 
 
+def send_discord_alerts(preds: pd.DataFrame, league: str) -> None:
+    """Format and send predictions to Discord via webhook."""
+    webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
+    if not webhook_url:
+        LOGGER.warning("DISCORD_WEBHOOK_URL not found; skipping Discord alert.")
+        return
+
+    if preds.empty:
+        return
+
+    # Group by date to handle multiple days if necessary
+    preds["game_date_str"] = preds["game_date"].dt.strftime("%m-%d-%Y")
+    dates = preds["game_date_str"].unique()
+
+    for d in dates:
+        day_preds = preds[preds["game_date_str"] == d]
+        
+        message_lines = [f"**{league} GAMES {d}**"]
+        
+        for _, row in day_preds.iterrows():
+            home = row["home_team"]
+            away = row["away_team"]
+            win_prob = row["home_win_prob"]
+            spread = row["predicted_spread"]
+            
+            if win_prob > 0.5:
+                winner = home
+                prob = win_prob
+            else:
+                winner = away
+                prob = 1 - win_prob
+            
+            # Confidence is absolute distance from 50% * 2
+            confidence = abs(prob - 0.5) * 2
+            
+            # Formatting spread (standard notation: negative for favorite)
+            # In our data, predicted_spread is home_margin (positive = home win)
+            # So negative home_margin means away is favorite. 
+            # Standard spread = -predicted_spread
+            display_spread = -spread if spread is not None else 0
+            spread_sign = "-" if display_spread <= 0 else "+"
+            spread_val = abs(display_spread)
+            
+            line = (
+                f"{home} vs {away}:\n"
+                f"Win prob: **{winner} {prob:.1%}** ({confidence:.0%} confidence)\n"
+                f"**{home} {spread_sign}{spread_val:.1f}**\n"
+            )
+            message_lines.append(line)
+
+        full_message = "\n".join(message_lines)
+        
+        try:
+            response = requests.post(
+                webhook_url,
+                json={"content": full_message},
+                timeout=10
+            )
+            response.raise_for_status()
+            LOGGER.info("Sent Discord alert for %s games on %s", league, d)
+        except Exception as e:
+            LOGGER.error("Failed to send Discord alert: %s", e)
+
+
 def main() -> None:
     load_dotenv()
     args = _parse_args()
@@ -384,6 +449,10 @@ def main() -> None:
             skipped,
             not args.append,
         )
+        
+        # Send Discord alerts for the predictions we just synced
+        if inserted > 0:
+            send_discord_alerts(preds, args.league)
     finally:
         conn.close()
 

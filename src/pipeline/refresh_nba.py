@@ -18,6 +18,7 @@ from google.cloud import bigquery
 
 from src.pipeline.refresh import build_features
 from src.models.predictor import GamePredictor
+from src.data.nba_fetcher import fetch_nba_games_for_date
 
 
 def _parse_args() -> argparse.Namespace:
@@ -151,6 +152,10 @@ def main() -> None:
     print(f"Building NBA predictions for {target_date}. Target season={season}.")
 
     games_df = _query_games(client, args.project, target_date)
+    if games_df.empty:
+        print(f"No NBA games found in BigQuery for {target_date}. Trying NBA API...")
+        games_df = fetch_nba_games_for_date(target_date.strftime("%Y-%m-%d"))
+
     if games_df.empty:
         print(f"No NBA games scheduled for {target_date}. Exiting.")
         return

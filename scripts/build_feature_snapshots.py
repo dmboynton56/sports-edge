@@ -23,6 +23,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from src.pipeline.refresh import build_features
+from src.data.nba_fetcher import fetch_nba_games_for_date
 
 
 FEATURE_COLUMNS = [
@@ -159,6 +160,21 @@ def main() -> None:
 
     print(f"Processing {args.league} for seasons: {args.seasons}")
     schedules = _fetch_table(client, args.project, "sports_edge_raw", "raw_schedules", args.seasons)
+    
+    if args.league == "NBA":
+        # Ensure today's games are included even if not in raw_schedules
+        today_str = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
+        print(f"Checking for NBA games on {today_str}...")
+        # Convert to datetime for comparison
+        schedules["game_date"] = pd.to_datetime(schedules["game_date"], errors="coerce")
+        today_games = schedules[schedules["game_date"].dt.strftime("%Y-%m-%d") == today_str]
+        
+        if today_games.empty:
+            print(f"No NBA games for {today_str} found in BQ. Fetching from API...")
+            api_games = fetch_nba_games_for_date(today_str)
+            if not api_games.empty:
+                print(f"Found {len(api_games)} games on API. Adding to processing queue.")
+                schedules = pd.concat([schedules, api_games]).drop_duplicates(subset=["game_id"])
     
     historical_data: Dict[str, pd.DataFrame] = {
         "historical_games": schedules,

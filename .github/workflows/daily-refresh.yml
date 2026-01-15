@@ -112,13 +112,6 @@ jobs:
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
 
-      - name: Notify Discord on Success
-        if: success()
-        run: |
-          curl -X POST -H "Content-Type: application/json" \
-            -d "{\"content\": \"✅ **Sports-Edge Refresh Successful**\nAll NBA and NFL predictions have been updated and synced to Supabase.\"}" \
-            $DISCORD_WEBHOOK_URL
-
       - name: Notify Discord on Failure
         if: failure()
         run: |

@@ -58,12 +58,18 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _upcoming_thursday(today: datetime.date) -> datetime.date:
+def _nfl_week_start(today: datetime.date) -> datetime.date:
+    """Return the Thursday that starts the current NFL week."""
     weekday = today.weekday()  # Monday=0
-    days_until_thursday = (3 - weekday) % 7
-    if days_until_thursday == 0:
-        days_until_thursday = 7
-    return today + timedelta(days=days_until_thursday)
+    # Tue (1), Wed (2) -> Look forward to upcoming Thursday (3)
+    if weekday in [1, 2]:
+        return today + timedelta(days=(3 - weekday))
+    # Thu (3), Fri (4), Sat (5), Sun (6), Mon (0) -> Look back to most recent Thursday
+    else:
+        if weekday == 0:  # Monday
+            return today - timedelta(days=4)
+        else:  # Thursday-Sunday
+            return today - timedelta(days=(weekday - 3))
 
 
 def _query_games(client: bigquery.Client, project: str, start_date: datetime.date, end_date: datetime.date) -> pd.DataFrame:
@@ -159,7 +165,7 @@ def main() -> None:
     client = bigquery.Client(project=args.project)
 
     today = datetime.now(tz=timezone.utc).date()
-    start_date = args.start_date or _upcoming_thursday(today)
+    start_date = args.start_date or _nfl_week_start(today)
     end_date = start_date + timedelta(days=args.window_days)
     season = args.season or (start_date.year if start_date.month >= 8 else start_date.year - 1)
     print(f"Building predictions for games between {start_date} and {end_date}. Target season={season}.")
