@@ -7,6 +7,8 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PYTHONPATH: ${{ github.workspace }}
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
 jobs:
   refresh:
@@ -109,3 +111,17 @@ jobs:
         run: |
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
+
+      - name: Notify Discord on Success
+        if: success()
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d "{\"content\": \"✅ **Sports-Edge Refresh Successful**\nAll NBA and NFL predictions have been updated and synced to Supabase.\"}" \
+            $DISCORD_WEBHOOK_URL
+
+      - name: Notify Discord on Failure
+        if: failure()
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d "{\"content\": \"❌ **Sports-Edge Refresh Failed**\nThe daily refresh workflow encountered an error. Check GitHub Actions for details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            $DISCORD_WEBHOOK_URL
