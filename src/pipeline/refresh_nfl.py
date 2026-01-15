@@ -161,7 +161,7 @@ def main() -> None:
     today = datetime.now(tz=timezone.utc).date()
     start_date = args.start_date or _upcoming_thursday(today)
     end_date = start_date + timedelta(days=args.window_days)
-    season = args.season or start_date.year
+    season = args.season or (start_date.year if start_date.month >= 8 else start_date.year - 1)
     print(f"Building predictions for games between {start_date} and {end_date}. Target season={season}.")
 
     games_df = _query_games(client, args.project, start_date, end_date)

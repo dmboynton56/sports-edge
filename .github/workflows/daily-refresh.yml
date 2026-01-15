@@ -36,25 +36,54 @@ jobs:
       - name: Update NBA Raw Data
         shell: bash
         run: |
-          # Only backfill current season daily
-          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons 2025 --replace
+          # NBA season is usually referred to by the year it started (e.g., Jan 2026 is 2025-26 season)
+          MONTH=$(date +%m)
+          YEAR=$(date +%Y)
+          if [ "$MONTH" -lt "08" ]; then
+            SEASON=$((YEAR - 1))
+          else
+            SEASON=$YEAR
+          fi
+          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --replace
 
       - name: Update NFL Raw Data
         shell: bash
         run: |
-          CURRENT_SEASON=$(date +%Y)
-          python scripts/backfill_nfl_raw.py --project "$PROJECT_ID" --seasons "$CURRENT_SEASON" --replace
+          # NFL season is the year it started (e.g., Jan 2026 is still 2025 season)
+          MONTH=$(date +%m)
+          YEAR=$(date +%Y)
+          if [ "$MONTH" -lt "08" ]; then
+            SEASON=$((YEAR - 1))
+          else
+            SEASON=$YEAR
+          fi
+          python scripts/backfill_nfl_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --replace
 
       - name: Build NBA Feature Snapshots
         shell: bash
         run: |
-          python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons 2025 --replace
+          # NBA season is usually referred to by the year it started (e.g., Jan 2026 is 2025-26 season)
+          MONTH=$(date +%m)
+          YEAR=$(date +%Y)
+          if [ "$MONTH" -lt "08" ]; then
+            SEASON=$((YEAR - 1))
+          else
+            SEASON=$YEAR
+          fi
+          python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons "$SEASON" --replace
 
       - name: Build NFL Feature Snapshots
         shell: bash
         run: |
-          CURRENT_SEASON=$(date +%Y)
-          python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$CURRENT_SEASON" --replace
+          # NFL season is the year it started (e.g., Jan 2026 is still 2025 season)
+          MONTH=$(date +%m)
+          YEAR=$(date +%Y)
+          if [ "$MONTH" -lt "08" ]; then
+            SEASON=$((YEAR - 1))
+          else
+            SEASON=$YEAR
+          fi
+          python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$SEASON" --replace
 
       - name: Generate NBA Predictions
         shell: bash
