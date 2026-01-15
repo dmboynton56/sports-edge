@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from scripts.predict_week import (
+from src.utils.supabase_pg import (
     create_pg_connection,
     game_map_key,
     load_supabase_credentials,

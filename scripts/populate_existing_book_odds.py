@@ -29,7 +29,7 @@ if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
 from src.data import odds_fetcher
-from scripts.predict_week import (
+from src.utils.supabase_pg import (
     create_pg_connection,
     load_supabase_credentials,
 )

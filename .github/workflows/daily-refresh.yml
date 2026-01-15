@@ -29,7 +29,9 @@ jobs:
       - name: Configure GCP credentials
         shell: bash
         run: |
-          echo "${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}" > "$GOOGLE_APPLICATION_CREDENTIALS"
+          echo "$GCP_SERVICE_ACCOUNT_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
+        env:
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Update NBA Raw Data
         shell: bash
