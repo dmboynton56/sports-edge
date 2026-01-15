@@ -7,11 +7,12 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  GOOGLE_APPLICATION_CREDENTIALS: ${{ runner.temp }}/gcp-key.json
 
 jobs:
   refresh:
     runs-on: ubuntu-latest
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-key.json
 
     steps:
       - name: Checkout repository
