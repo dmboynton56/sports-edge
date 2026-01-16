@@ -154,7 +154,7 @@ def main() -> None:
     games_df = _query_games(client, args.project, target_date)
     if games_df.empty:
         print(f"No NBA games found in BigQuery for {target_date}. Trying NBA API...")
-        games_df = fetch_nba_games_for_date(target_date.strftime("%Y-%m-%d"))
+        games_df = fetch_nba_games_for_date(target_date.strftime("%Y-%m-%d"), raise_on_error=True)
 
     if games_df.empty:
         print(f"No NBA games scheduled for {target_date}. Exiting.")

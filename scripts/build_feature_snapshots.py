@@ -171,7 +171,7 @@ def main() -> None:
         
         if today_games.empty:
             print(f"No NBA games for {today_str} found in BQ. Fetching from API...")
-            api_games = fetch_nba_games_for_date(today_str)
+            api_games = fetch_nba_games_for_date(today_str, raise_on_error=True)
             if not api_games.empty:
                 print(f"Found {len(api_games)} games on API. Adding to processing queue.")
                 schedules = pd.concat([schedules, api_games]).drop_duplicates(subset=["game_id"])

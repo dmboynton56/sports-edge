@@ -142,7 +142,7 @@ def main() -> None:
         
         # Fetch schedule
         print(f"  Fetching schedule for {season}...")
-        schedules_df = nba_fetcher.fetch_nba_schedule(season)
+        schedules_df = nba_fetcher.fetch_nba_schedule(season, raise_on_error=True)
         
         if schedules_df.empty:
             print(f"  Warning: No schedule data for {season}")

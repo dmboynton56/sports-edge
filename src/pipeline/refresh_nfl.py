@@ -16,7 +16,6 @@ import pandas as pd
 from dotenv import load_dotenv
 from google.cloud import bigquery
 
-from src.pipeline.refresh import build_features, load_historical_data
 from src.models.predictor import GamePredictor
 
 
@@ -180,9 +179,8 @@ def main() -> None:
     pbp = _query_pbp(client, args.project, hist_seasons)
     historical_data = {"historical_games": historical_games, "play_by_play": pbp}
 
-    features = build_features(games_df, "NFL", historical_data)
     predictor = GamePredictor("NFL", model_version=args.model_version)
-    predictions = predictor.predict_batch(features, historical_games, pbp)
+    predictions = predictor.predict_batch(games_df, historical_games, pbp)
     if predictions.empty:
         print("No predictions were generated.")
         return

@@ -6,7 +6,7 @@ Fetches schedule, team game logs, and advanced statistics.
 import pandas as pd
 import numpy as np
 from datetime import datetime
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Callable, TypeVar
 import os
 import time
 from nba_api.live.nba.endpoints import scoreboard as live_scoreboard
@@ -39,7 +39,40 @@ def get_team_id(team_name: str) -> Optional[int]:
     return None
 
 
-def fetch_nba_schedule(season: int) -> pd.DataFrame:
+T = TypeVar("T")
+
+
+def _retry_nba_request(
+    fn: Callable[[], T],
+    label: str,
+    retries: int,
+    base_delay: int,
+) -> T:
+    """Retry NBA API calls with exponential backoff."""
+    attempts = max(1, retries)
+    last_exc: Optional[Exception] = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            if attempt >= attempts:
+                break
+            sleep_for = base_delay * (2 ** (attempt - 1))
+            print(f"Warning: {label} failed (attempt {attempt}/{attempts}): {exc}. Retrying in {sleep_for}s...")
+            time.sleep(sleep_for)
+    if last_exc:
+        raise last_exc
+    raise RuntimeError(f"{label} failed without an exception")
+
+
+def fetch_nba_schedule(
+    season: int,
+    *,
+    max_retries: int = 3,
+    base_delay: int = 2,
+    raise_on_error: bool = False,
+) -> pd.DataFrame:
     """
     Fetch NBA schedule for a given season using LeagueGameFinder.
     
@@ -54,9 +87,17 @@ def fetch_nba_schedule(season: int) -> pd.DataFrame:
     try:
         # Use LeagueGameFinder to get all games for the season
         # Explicitly filter for NBA (00) to avoid G-League/WNBA games
-        game_finder = leaguegamefinder.LeagueGameFinder(
-            season_nullable=season_str,
-            league_id_nullable='00'
+        def _fetch():
+            return leaguegamefinder.LeagueGameFinder(
+                season_nullable=season_str,
+                league_id_nullable='00'
+            )
+
+        game_finder = _retry_nba_request(
+            _fetch,
+            label=f"NBA schedule {season_str}",
+            retries=max_retries,
+            base_delay=base_delay,
         )
         games_df = game_finder.get_data_frames()[0]
         
@@ -152,10 +193,18 @@ def fetch_nba_schedule(season: int) -> pd.DataFrame:
         print(f"Error fetching NBA schedule for {season}: {e}")
         import traceback
         traceback.print_exc()
+        if raise_on_error:
+            raise
         return pd.DataFrame()
 
 
-def fetch_nba_games_for_date(date: str) -> pd.DataFrame:
+def fetch_nba_games_for_date(
+    date: str,
+    *,
+    max_retries: int = 3,
+    base_delay: int = 2,
+    raise_on_error: bool = False,
+) -> pd.DataFrame:
     """
     Fetch NBA games scheduled for a specific date.
     
@@ -172,9 +221,17 @@ def fetch_nba_games_for_date(date: str) -> pd.DataFrame:
         
         # Use ScoreboardV2 for date-specific games
         # Explicitly filter for NBA (00)
-        scoreboard_data = scoreboardv2.ScoreboardV2(
-            game_date=date_str,
-            league_id='00'
+        def _fetch():
+            return scoreboardv2.ScoreboardV2(
+                game_date=date_str,
+                league_id='00'
+            )
+
+        scoreboard_data = _retry_nba_request(
+            _fetch,
+            label=f"NBA games {date_str}",
+            retries=max_retries,
+            base_delay=base_delay,
         )
         game_header = scoreboard_data.get_data_frames()[0]
         line_score = scoreboard_data.get_data_frames()[1]
@@ -218,6 +275,8 @@ def fetch_nba_games_for_date(date: str) -> pd.DataFrame:
         print(f"Error fetching NBA games for {date}: {e}")
         import traceback
         traceback.print_exc()
+        if raise_on_error:
+            raise
         return pd.DataFrame()
 
 
