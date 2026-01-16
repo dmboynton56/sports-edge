@@ -5,7 +5,7 @@ Fetches schedule, team game logs, and advanced statistics.
 
 import pandas as pd
 import numpy as np
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from typing import Optional, List, Dict, Callable, TypeVar, Any
 import inspect
 import os
@@ -117,6 +117,65 @@ def fetch_nba_schedule(
     season_str = f"{season}-{str(season + 1)[-2:]}"
     
     try:
+        # Optimization: For small date ranges (e.g., daily updates), use ScoreboardV2 per day
+        # effectively avoiding the heavy LeagueGameFinder which can timeout on full season scans.
+        use_optimized_fetch = False
+        parsed_date_from = None
+        parsed_date_to = None
+        
+        if date_from and date_to:
+            try:
+                # Parse dates to check duration
+                if isinstance(date_from, str):
+                    parsed_date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+                elif isinstance(date_from, (datetime, date)):
+                    parsed_date_from = date_from
+                    
+                if isinstance(date_to, str):
+                    parsed_date_to = datetime.strptime(date_to, "%Y-%m-%d").date()
+                elif isinstance(date_to, (datetime, date)):
+                    parsed_date_to = date_to
+                
+                if parsed_date_from and parsed_date_to:
+                    delta = (parsed_date_to - parsed_date_from).days
+                    # If window is small enough (arbitrary cutoff, 45 days is generous for "daily" but safe for loop)
+                    if 0 <= delta <= 45:
+                        use_optimized_fetch = True
+            except Exception:
+                # If date parsing fails, fall back to standard method
+                pass
+
+        if use_optimized_fetch:
+            print(f"  Using optimized iterative fetch for {parsed_date_from} to {parsed_date_to}...")
+            all_games = []
+            current_date = parsed_date_from
+            while current_date <= parsed_date_to:
+                try:
+                    date_str = current_date.strftime("%Y-%m-%d")
+                    daily_games = fetch_nba_games_for_date(
+                        date_str, 
+                        max_retries=max_retries,
+                        base_delay=base_delay,
+                        timeout=timeout
+                    )
+                    if not daily_games.empty:
+                        all_games.append(daily_games)
+                except Exception as e:
+                    print(f"    Error fetching specific date {current_date}: {e}")
+                
+                current_date += timedelta(days=1)
+            
+            if not all_games:
+                return pd.DataFrame()
+            
+            games_df = pd.concat(all_games, ignore_index=True)
+            # Ensure season column matches requested (though ScoreboardV2 returns correct season usually)
+            # Filter to only keep games for the requested season if overlap exists
+            if 'season' in games_df.columns:
+                games_df = games_df[games_df['season'] == season]
+            
+            return games_df
+
         # Use LeagueGameFinder to get all games for the season
         # Explicitly filter for NBA (00) to avoid G-League/WNBA games
         def _fetch():

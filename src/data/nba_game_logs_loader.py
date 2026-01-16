@@ -302,15 +302,36 @@ def load_nba_game_logs(
                 # Use LeagueGameFinder to get games for the season (optionally limited by date).
                 def _fetch():
                     kwargs: Dict[str, Any] = {
-                        "season_nullable": season_str,
                         "league_id_nullable": "00",
                     }
+                    
+                    # Optimization: If we have specific dates, we don't ALWAYS strictly need the season
+                    # passing season + date often causes full partition scan.
+                    # passing JUST date is often faster.
+                    # However, we must ensure we don't get other seasons if dates overlap (unlikely for specific dates)
+                    
                     date_from_value = _format_nba_date(date_from)
                     date_to_value = _format_nba_date(date_to)
+                    
+                    has_dates = date_from_value or date_to_value
+                    
+                    # Only include season if we aren't filtering by a specific tight date range
+                    # OR if we want to be safe. 
+                    # For performance on daily updates, relying on date filter is better.
+                    if not has_dates:
+                        kwargs["season_nullable"] = season_str
+                    else:
+                        # If we have dates, verify we still want to filter by season 
+                        # just in case date range spans multiple seasons (rare for daily update)
+                        # But to fix timeout, we try omitting season and trusting dates.
+                        # We will filter by season in pandas post-fetch to be safe.
+                         pass
+
                     if date_from_value:
                         kwargs["date_from_nullable"] = date_from_value
                     if date_to_value:
                         kwargs["date_to_nullable"] = date_to_value
+                        
                     if _supports_timeout(leaguegamefinder.LeagueGameFinder):
                         kwargs["timeout"] = timeout
                     kwargs = _filter_kwargs(leaguegamefinder.LeagueGameFinder, kwargs)
