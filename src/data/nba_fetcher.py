@@ -7,6 +7,7 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 from typing import Optional, List, Dict, Callable, TypeVar
+import inspect
 import os
 import time
 from nba_api.live.nba.endpoints import scoreboard as live_scoreboard
@@ -66,11 +67,19 @@ def _retry_nba_request(
     raise RuntimeError(f"{label} failed without an exception")
 
 
+def _supports_timeout(endpoint: Callable[..., object]) -> bool:
+    try:
+        return "timeout" in inspect.signature(endpoint).parameters
+    except (ValueError, TypeError):
+        return False
+
+
 def fetch_nba_schedule(
     season: int,
     *,
     max_retries: int = 3,
     base_delay: int = 2,
+    timeout: int = 120,
     raise_on_error: bool = False,
 ) -> pd.DataFrame:
     """
@@ -88,10 +97,13 @@ def fetch_nba_schedule(
         # Use LeagueGameFinder to get all games for the season
         # Explicitly filter for NBA (00) to avoid G-League/WNBA games
         def _fetch():
-            return leaguegamefinder.LeagueGameFinder(
-                season_nullable=season_str,
-                league_id_nullable='00'
-            )
+            kwargs = {
+                "season_nullable": season_str,
+                "league_id_nullable": "00",
+            }
+            if _supports_timeout(leaguegamefinder.LeagueGameFinder):
+                kwargs["timeout"] = timeout
+            return leaguegamefinder.LeagueGameFinder(**kwargs)
 
         game_finder = _retry_nba_request(
             _fetch,
@@ -203,6 +215,7 @@ def fetch_nba_games_for_date(
     *,
     max_retries: int = 3,
     base_delay: int = 2,
+    timeout: int = 120,
     raise_on_error: bool = False,
 ) -> pd.DataFrame:
     """
@@ -222,10 +235,13 @@ def fetch_nba_games_for_date(
         # Use ScoreboardV2 for date-specific games
         # Explicitly filter for NBA (00)
         def _fetch():
-            return scoreboardv2.ScoreboardV2(
-                game_date=date_str,
-                league_id='00'
-            )
+            kwargs = {
+                "game_date": date_str,
+                "league_id": "00",
+            }
+            if _supports_timeout(scoreboardv2.ScoreboardV2):
+                kwargs["timeout"] = timeout
+            return scoreboardv2.ScoreboardV2(**kwargs)
 
         scoreboard_data = _retry_nba_request(
             _fetch,
