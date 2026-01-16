@@ -12,8 +12,8 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone
-from typing import Iterable, List, Sequence, Any
+from datetime import datetime, timezone, timedelta
+from typing import Iterable, List, Sequence, Any, Optional
 
 # Add project root to path
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -46,6 +46,22 @@ def _parse_args() -> argparse.Namespace:
         "--replace",
         action="store_true",
         help="Delete existing rows for each season before inserting.",
+    )
+    parser.add_argument(
+        "--schedule-start",
+        default=None,
+        help="Schedule window start date (YYYY-MM-DD). Defaults to today if --schedule-window-days set.",
+    )
+    parser.add_argument(
+        "--schedule-end",
+        default=None,
+        help="Schedule window end date (YYYY-MM-DD). Defaults to start + window days if --schedule-window-days set.",
+    )
+    parser.add_argument(
+        "--schedule-window-days",
+        type=int,
+        default=None,
+        help="If set, only fetch schedule/game logs for this many days starting from schedule-start/today.",
     )
     return parser.parse_args()
 
@@ -106,6 +122,26 @@ def _delete_season(client: bigquery.Client, table_id: str, season: int) -> None:
     print(f"Cleared {table_id} for season {season}")
 
 
+def _delete_date_range(
+    client: bigquery.Client,
+    table_id: str,
+    start_date: datetime.date,
+    end_date: datetime.date,
+    season: Optional[int] = None,
+) -> None:
+    query = f"DELETE FROM `{table_id}` WHERE game_date BETWEEN @start_date AND @end_date"
+    params = [
+        bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
+        bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
+    ]
+    if season is not None:
+        query += " AND season = @season"
+        params.append(bigquery.ScalarQueryParameter("season", "INT64", season))
+    job_config = bigquery.QueryJobConfig(query_parameters=params)
+    client.query(query, job_config=job_config).result()
+    print(f"Cleared {table_id} for dates {start_date} to {end_date}")
+
+
 GAME_LOGS_COLUMNS = [
     "game_id",
     "game_date",
@@ -136,13 +172,41 @@ def main() -> None:
     args = _parse_args()
     client = bigquery.Client(project=args.project)
     utc_now = datetime.now(tz=timezone.utc)
+    today = utc_now.date()
+
+    schedule_start = None
+    schedule_end = None
+    if args.schedule_window_days is not None:
+        if args.schedule_start:
+            schedule_start = datetime.strptime(args.schedule_start, "%Y-%m-%d").date()
+        else:
+            schedule_start = today
+        if args.schedule_end:
+            schedule_end = datetime.strptime(args.schedule_end, "%Y-%m-%d").date()
+        else:
+            window_days = max(args.schedule_window_days - 1, 0)
+            schedule_end = schedule_start + timedelta(days=window_days)
+    elif args.schedule_start or args.schedule_end:
+        if args.schedule_start:
+            schedule_start = datetime.strptime(args.schedule_start, "%Y-%m-%d").date()
+        if args.schedule_end:
+            schedule_end = datetime.strptime(args.schedule_end, "%Y-%m-%d").date()
+        if schedule_start and not schedule_end:
+            schedule_end = schedule_start
+        if schedule_end and not schedule_start:
+            schedule_start = schedule_end
 
     for season in args.seasons:
         print(f"Processing NBA season {season}")
         
         # Fetch schedule
         print(f"  Fetching schedule for {season}...")
-        schedules_df = nba_fetcher.fetch_nba_schedule(season, raise_on_error=True)
+        schedules_df = nba_fetcher.fetch_nba_schedule(
+            season,
+            date_from=schedule_start,
+            date_to=schedule_end,
+            raise_on_error=True,
+        )
         
         if schedules_df.empty:
             print(f"  Warning: No schedule data for {season}")
@@ -160,7 +224,13 @@ def main() -> None:
         
         # Fetch game logs
         print(f"  Fetching game logs for {season}...")
-        game_logs_df = load_nba_game_logs([season], strict=False)
+        game_logs_df = load_nba_game_logs(
+            [season],
+            strict=False,
+            date_from=schedule_start,
+            date_to=schedule_end,
+            schedule_df=schedules_df,
+        )
         
         if game_logs_df is None or game_logs_df.empty:
             print(f"  Warning: No game logs for {season}")
@@ -184,7 +254,23 @@ def main() -> None:
         else:
             game_logs_selected = pd.DataFrame(columns=GAME_LOGS_COLUMNS)
         
-        if args.replace:
+        if schedule_start and schedule_end:
+            _delete_date_range(
+                client,
+                f"{args.project}.sports_edge_raw.raw_schedules",
+                schedule_start,
+                schedule_end,
+                season=season,
+            )
+            if not game_logs_selected.empty:
+                _delete_date_range(
+                    client,
+                    f"{args.project}.sports_edge_raw.raw_nba_game_logs",
+                    schedule_start,
+                    schedule_end,
+                    season=season,
+                )
+        elif args.replace:
             _delete_season(client, f"{args.project}.sports_edge_raw.raw_schedules", season)
             if not game_logs_selected.empty:
                 _delete_season(client, f"{args.project}.sports_edge_raw.raw_nba_game_logs", season)

@@ -6,7 +6,7 @@ Similar to pbp_loader.py for NFL.
 
 import pandas as pd
 import numpy as np
-from typing import Optional, Sequence, List
+from typing import Optional, Sequence, List, Dict, Any
 import time
 import warnings
 from nba_api.stats.endpoints import teamgamelog, leaguegamefinder
@@ -14,6 +14,8 @@ from nba_api.stats.static import teams
 from google.cloud import bigquery
 import os
 from dotenv import load_dotenv
+import inspect
+from datetime import datetime, date
 
 # Load environment variables
 load_dotenv()
@@ -47,6 +49,52 @@ def _normalize_game_dates(df: pd.DataFrame) -> pd.DataFrame:
                     errors='coerce'
                 )
     return df
+
+
+def _supports_timeout(endpoint) -> bool:
+    try:
+        return "timeout" in inspect.signature(endpoint).parameters
+    except (ValueError, TypeError):
+        return False
+
+
+def _filter_kwargs(endpoint, kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        params = inspect.signature(endpoint).parameters
+    except (ValueError, TypeError):
+        return kwargs
+    return {key: value for key, value in kwargs.items() if key in params}
+
+
+def _format_nba_date(value: Optional[object]) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, (datetime, date)):
+        return value.strftime("%m/%d/%Y")
+    if isinstance(value, str):
+        try:
+            return datetime.strptime(value, "%Y-%m-%d").strftime("%m/%d/%Y")
+        except ValueError:
+            return value
+    return str(value)
+
+
+def _retry_nba_request(fn, label: str, retries: int, base_delay: int):
+    attempts = max(1, retries)
+    last_exc: Optional[Exception] = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return fn()
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            if attempt >= attempts:
+                break
+            sleep_for = base_delay * (2 ** (attempt - 1))
+            print(f"Warning: {label} failed (attempt {attempt}/{attempts}): {exc}. Retrying in {sleep_for}s...")
+            time.sleep(sleep_for)
+    if last_exc:
+        raise last_exc
+    raise RuntimeError(f"{label} failed without an exception")
 
 
 def _compute_net_rating_from_logs(game_logs: pd.DataFrame, schedule_df: Optional[pd.DataFrame] = None) -> pd.DataFrame:
@@ -219,7 +267,16 @@ def load_nba_game_logs_from_bq(seasons: Sequence[int], project_id: Optional[str]
         return None
 
 
-def load_nba_game_logs(seasons: Sequence[int], strict: bool = False, schedule_df: Optional[pd.DataFrame] = None) -> Optional[pd.DataFrame]:
+def load_nba_game_logs(
+    seasons: Sequence[int],
+    strict: bool = False,
+    schedule_df: Optional[pd.DataFrame] = None,
+    date_from: Optional[object] = None,
+    date_to: Optional[object] = None,
+    timeout: int = 120,
+    max_retries: int = 3,
+    base_delay: int = 2,
+) -> Optional[pd.DataFrame]:
     """
     Load NBA team game logs for the requested seasons using LeagueGameFinder (efficient).
     
@@ -242,11 +299,28 @@ def load_nba_game_logs(seasons: Sequence[int], strict: bool = False, schedule_df
             print(f"  Processing {season_str}...")
             
             try:
-                # Use LeagueGameFinder to get ALL games for the season in ONE call
-                # We don't filter by season_type so we match the schedule's Preseason/Playoffs/etc.
-                game_finder = leaguegamefinder.LeagueGameFinder(
-                    season_nullable=season_str,
-                    league_id_nullable='00'  # NBA
+                # Use LeagueGameFinder to get games for the season (optionally limited by date).
+                def _fetch():
+                    kwargs: Dict[str, Any] = {
+                        "season_nullable": season_str,
+                        "league_id_nullable": "00",
+                    }
+                    date_from_value = _format_nba_date(date_from)
+                    date_to_value = _format_nba_date(date_to)
+                    if date_from_value:
+                        kwargs["date_from_nullable"] = date_from_value
+                    if date_to_value:
+                        kwargs["date_to_nullable"] = date_to_value
+                    if _supports_timeout(leaguegamefinder.LeagueGameFinder):
+                        kwargs["timeout"] = timeout
+                    kwargs = _filter_kwargs(leaguegamefinder.LeagueGameFinder, kwargs)
+                    return leaguegamefinder.LeagueGameFinder(**kwargs)
+
+                game_finder = _retry_nba_request(
+                    _fetch,
+                    label=f"NBA game logs {season_str}",
+                    retries=max_retries,
+                    base_delay=base_delay,
                 )
                 df = game_finder.get_data_frames()[0]
                 
@@ -261,6 +335,14 @@ def load_nba_game_logs(seasons: Sequence[int], strict: bool = False, schedule_df
                 with warnings.catch_warnings():
                     warnings.filterwarnings('ignore', category=UserWarning)
                     df = _normalize_game_dates(df)
+
+                if date_from or date_to:
+                    start_date = pd.to_datetime(date_from, errors="coerce")
+                    end_date = pd.to_datetime(date_to, errors="coerce")
+                    if pd.notna(start_date):
+                        df = df[df["game_date"] >= start_date]
+                    if pd.notna(end_date):
+                        df = df[df["game_date"] <= end_date]
                 
                 # Standardize team column
                 df['team'] = df['TEAM_ABBREVIATION']

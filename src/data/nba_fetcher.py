@@ -5,8 +5,8 @@ Fetches schedule, team game logs, and advanced statistics.
 
 import pandas as pd
 import numpy as np
-from datetime import datetime
-from typing import Optional, List, Dict, Callable, TypeVar
+from datetime import datetime, date
+from typing import Optional, List, Dict, Callable, TypeVar, Any
 import inspect
 import os
 import time
@@ -74,12 +74,35 @@ def _supports_timeout(endpoint: Callable[..., object]) -> bool:
         return False
 
 
+def _filter_kwargs(endpoint: Callable[..., object], kwargs: Dict[str, Any]) -> Dict[str, Any]:
+    try:
+        params = inspect.signature(endpoint).parameters
+    except (ValueError, TypeError):
+        return kwargs
+    return {key: value for key, value in kwargs.items() if key in params}
+
+
+def _format_nba_date(value: Optional[object]) -> Optional[str]:
+    if value is None:
+        return None
+    if isinstance(value, (datetime, date)):
+        return value.strftime("%m/%d/%Y")
+    if isinstance(value, str):
+        try:
+            return datetime.strptime(value, "%Y-%m-%d").strftime("%m/%d/%Y")
+        except ValueError:
+            return value
+    return str(value)
+
+
 def fetch_nba_schedule(
     season: int,
     *,
     max_retries: int = 3,
     base_delay: int = 2,
     timeout: int = 120,
+    date_from: Optional[object] = None,
+    date_to: Optional[object] = None,
     raise_on_error: bool = False,
 ) -> pd.DataFrame:
     """
@@ -97,12 +120,19 @@ def fetch_nba_schedule(
         # Use LeagueGameFinder to get all games for the season
         # Explicitly filter for NBA (00) to avoid G-League/WNBA games
         def _fetch():
-            kwargs = {
+            kwargs: Dict[str, Any] = {
                 "season_nullable": season_str,
                 "league_id_nullable": "00",
             }
+            date_from_value = _format_nba_date(date_from)
+            date_to_value = _format_nba_date(date_to)
+            if date_from_value:
+                kwargs["date_from_nullable"] = date_from_value
+            if date_to_value:
+                kwargs["date_to_nullable"] = date_to_value
             if _supports_timeout(leaguegamefinder.LeagueGameFinder):
                 kwargs["timeout"] = timeout
+            kwargs = _filter_kwargs(leaguegamefinder.LeagueGameFinder, kwargs)
             return leaguegamefinder.LeagueGameFinder(**kwargs)
 
         game_finder = _retry_nba_request(
@@ -235,12 +265,13 @@ def fetch_nba_games_for_date(
         # Use ScoreboardV2 for date-specific games
         # Explicitly filter for NBA (00)
         def _fetch():
-            kwargs = {
+            kwargs: Dict[str, Any] = {
                 "game_date": date_str,
                 "league_id": "00",
             }
             if _supports_timeout(scoreboardv2.ScoreboardV2):
                 kwargs["timeout"] = timeout
+            kwargs = _filter_kwargs(scoreboardv2.ScoreboardV2, kwargs)
             return scoreboardv2.ScoreboardV2(**kwargs)
 
         scoreboard_data = _retry_nba_request(

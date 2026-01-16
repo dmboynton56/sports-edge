@@ -46,7 +46,7 @@ jobs:
           else
             SEASON=$YEAR
           fi
-          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --replace
+          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --schedule-window-days 7 --replace
 
       - name: Update NFL Raw Data
         shell: bash
