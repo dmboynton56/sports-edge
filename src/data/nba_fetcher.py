@@ -10,6 +10,8 @@ from typing import Optional, List, Dict, Callable, TypeVar, Any
 import inspect
 import os
 import time
+import requests
+from urllib3.exceptions import ReadTimeoutError
 from nba_api.live.nba.endpoints import scoreboard as live_scoreboard
 from nba_api.stats.endpoints import (
     teamgamelog, 
@@ -18,6 +20,21 @@ from nba_api.stats.endpoints import (
     scoreboardv2
 )
 from nba_api.stats.static import teams
+
+
+NBA_API_HEADERS = {
+    "Host": "stats.nba.com",
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/120.0.0.0 Safari/537.36"
+    ),
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.nba.com/",
+    "Origin": "https://www.nba.com",
+    "Connection": "keep-alive",
+}
 
 
 def get_team_id(team_name: str) -> Optional[int]:
@@ -56,6 +73,10 @@ def _retry_nba_request(
         try:
             return fn()
         except Exception as exc:  # noqa: BLE001
+            # Fail fast on timeouts (don't retry hangs)
+            if isinstance(exc, (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout, ReadTimeoutError)):
+                raise exc
+
             last_exc = exc
             if attempt >= attempts:
                 break
@@ -100,7 +121,7 @@ def fetch_nba_schedule(
     *,
     max_retries: int = 3,
     base_delay: int = 2,
-    timeout: int = 120,
+    timeout: int = 30,
     date_from: Optional[object] = None,
     date_to: Optional[object] = None,
     raise_on_error: bool = False,
@@ -182,6 +203,7 @@ def fetch_nba_schedule(
             kwargs: Dict[str, Any] = {
                 "season_nullable": season_str,
                 "league_id_nullable": "00",
+                "headers": NBA_API_HEADERS,
             }
             date_from_value = _format_nba_date(date_from)
             date_to_value = _format_nba_date(date_to)
@@ -304,7 +326,7 @@ def fetch_nba_games_for_date(
     *,
     max_retries: int = 3,
     base_delay: int = 2,
-    timeout: int = 120,
+    timeout: int = 30,
     raise_on_error: bool = False,
 ) -> pd.DataFrame:
     """
@@ -327,6 +349,7 @@ def fetch_nba_games_for_date(
             kwargs: Dict[str, Any] = {
                 "game_date": date_str,
                 "league_id": "00",
+                "headers": NBA_API_HEADERS,
             }
             if _supports_timeout(scoreboardv2.ScoreboardV2):
                 kwargs["timeout"] = timeout
@@ -398,7 +421,12 @@ def fetch_nba_team_stats(team_id: int, season: str) -> pd.DataFrame:
         DataFrame with team statistics
     """
     try:
-        team_log = teamgamelog.TeamGameLog(team_id=team_id, season=season)
+        team_log = teamgamelog.TeamGameLog(
+            team_id=team_id, 
+            season=season,
+            headers=NBA_API_HEADERS,
+            timeout=30
+        )
         df = team_log.get_data_frames()[0]
         return df
     except Exception as e:
@@ -419,7 +447,10 @@ def fetch_nba_advanced_stats(team_id: int, season: str) -> pd.DataFrame:
     """
     try:
         dashboard = teamdashboardbygeneralsplits.TeamDashboardByGeneralSplits(
-            team_id=team_id, season=season
+            team_id=team_id, 
+            season=season,
+            headers=NBA_API_HEADERS,
+            timeout=30
         )
         df = dashboard.get_data_frames()[0]
         return df

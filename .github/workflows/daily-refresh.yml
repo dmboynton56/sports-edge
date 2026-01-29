@@ -46,7 +46,9 @@ jobs:
           else
             SEASON=$YEAR
           fi
-          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --schedule-window-days 7 --replace
+          # Only fetch yesterday's data to avoid rate limits
+          START_DATE=$(date -u -d "yesterday" +%Y-%m-%d)
+          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --schedule-start "$START_DATE" --schedule-window-days 1 --replace
 
       - name: Update NFL Raw Data
         shell: bash

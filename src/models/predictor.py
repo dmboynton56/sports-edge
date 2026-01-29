@@ -340,7 +340,8 @@ class GamePredictor:
                 play_by_play: Optional[pd.DataFrame] = None,
                 game_logs: Optional[pd.DataFrame] = None,
                 fill_missing_with_median: bool = True,
-                include_explanations: bool = False) -> Dict:
+                include_explanations: bool = False,
+                is_neutral: bool = False) -> Dict:
         """
         Predict outcome for a game.
         
@@ -351,10 +352,58 @@ class GamePredictor:
             game_logs: Optional game logs (NBA)
             fill_missing_with_median: Whether to fill missing features with median values
             include_explanations: Whether to include feature importance/explanations
+            is_neutral: Whether the game is at a neutral site (ignores HFA)
         
         Returns:
             Dictionary with predictions
         """
+        if is_neutral:
+            # Predict both ways and average to cancel out Home Field Advantage
+            res1 = self.predict(game_row, historical_games, play_by_play, game_logs, 
+                              fill_missing_with_median, include_explanations, is_neutral=False)
+            
+            # Swap teams
+            swapped_row = game_row.copy()
+            swapped_row['home_team'], swapped_row['away_team'] = game_row['away_team'], game_row['home_team']
+            
+            res2 = self.predict(swapped_row, historical_games, play_by_play, game_logs, 
+                              fill_missing_with_median, include_explanations, is_neutral=False)
+            
+            # Combine: res1['home_win_probability'] is Team A win prob
+            # res2['away_win_probability'] is also Team A win prob (when Team A is away)
+            team_a_win_prob = (res1['home_win_probability'] + res2['away_win_probability']) / 2
+            
+            # Spread: res1['predicted_spread'] is HFA-biased spread for Team A
+            # res2['predicted_spread'] is HFA-biased spread for Team B
+            # -res2['predicted_spread'] is the spread for Team A in the second scenario
+            avg_spread = (res1['predicted_spread'] + (-res2['predicted_spread'])) / 2
+            
+            # Reconstruct result
+            winner = res1['home_team'] if team_a_win_prob > 0.5 else res1['away_team']
+            final_res = {
+                'home_team': res1['home_team'],
+                'away_team': res1['away_team'],
+                'game_date': res1['game_date'],
+                'predicted_spread': avg_spread,
+                'home_win_probability': team_a_win_prob,
+                'away_win_probability': 1 - team_a_win_prob,
+                'predicted_winner': winner,
+                'confidence': abs(team_a_win_prob - 0.5) * 2,
+                'spread_interpretation': (
+                    f"Neutral: {winner} by {abs(avg_spread):.1f}"
+                ),
+                'is_neutral': True
+            }
+            # Merge some metadata from res1
+            for key in ['home_win_prob_from_model', 'win_prob_from_spread', 'model_disagreement']:
+                if key in res1:
+                    final_res[key] = (res1[key] + res2[key]) / 2 if key in res2 else res1[key]
+            
+            if 'top_features' in res1:
+                final_res['top_features'] = res1['top_features'] # Keep first for context
+                
+            return final_res
+
         # Build features
         features_df = self.build_features_for_game(game_row, historical_games, play_by_play, game_logs)
         

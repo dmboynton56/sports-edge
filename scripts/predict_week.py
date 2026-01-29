@@ -104,7 +104,8 @@ def predict_games(games: pd.DataFrame,
                   schedule: pd.DataFrame,
                   completed_games: pd.DataFrame,
                   play_by_play: Optional[pd.DataFrame],
-                  include_explanations: bool = False) -> List[dict]:
+                  include_explanations: bool = False,
+                  is_neutral: bool = False) -> List[dict]:
     """Predict a batch of games, skipping any without sufficient data."""
     predictor = GamePredictor('NFL', MODEL_VERSION)
     
@@ -124,7 +125,13 @@ def predict_games(games: pd.DataFrame,
             continue
         
         game_df = pd.DataFrame([game])
-        result = predictor.predict(game_df, schedule, play_by_play=play_by_play, include_explanations=include_explanations)
+        result = predictor.predict(
+            game_df, 
+            schedule, 
+            play_by_play=play_by_play, 
+            include_explanations=include_explanations,
+            is_neutral=is_neutral
+        )
         predictions.append(result)
     
     return predictions
@@ -245,6 +252,11 @@ def parse_args() -> argparse.Namespace:
         "--show-features",
         action="store_true",
         help="Show top contributing features for each prediction.",
+    )
+    parser.add_argument(
+        "--neutral",
+        action="store_true",
+        help="Treat games as neutral site (ignores home field advantage by averaging swapped predictions).",
     )
     return parser.parse_args()
 
@@ -551,7 +563,14 @@ def main():
         print(f"ERROR: {err}")
         sys.exit(1)
     
-    predictions = predict_games(week_games, schedule_df, completed_games, play_by_play, include_explanations=args.show_features)
+    predictions = predict_games(
+        week_games, 
+        schedule_df, 
+        completed_games, 
+        play_by_play, 
+        include_explanations=args.show_features,
+        is_neutral=args.neutral
+    )
     display_predictions(predictions, week, show_features=args.show_features)
     
     if args.write_viz_data:
