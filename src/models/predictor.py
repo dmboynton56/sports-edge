@@ -414,7 +414,7 @@ class GamePredictor:
         X_spread = self._prepare_feature_matrix(features_df, spread_cols)
         
         # Neutralize features the user wants to ignore (without re-training)
-        ignore_features = ['week_number', 'month', 'point_diff_differential']
+        ignore_features = ['week_number', 'month']
         for feat in ignore_features:
             if feat in X_spread.columns:
                 X_spread[feat] = 0.0
@@ -545,7 +545,7 @@ class GamePredictor:
                     row_contribs = contribs[i, :-1]  # skip the expected value at the end
                     feat_impact = []
                     # Exclude time-based features and blowout-skewed features
-                    exclude_explanations = ['week_number', 'month', 'point_diff_differential']
+                    exclude_explanations = ['week_number', 'month']
                     
                     for name, val, impact in zip(feature_names, X.iloc[i], row_contribs):
                         if name in exclude_explanations:
