@@ -192,6 +192,8 @@ TABLE_SPECS = [
                 ("prediction_id", "STRING", "REQUIRED"),
                 ("game_id", "STRING", "REQUIRED"),
                 ("league", "STRING", "REQUIRED"),
+                ("season", "INT64", "NULLABLE"),
+                ("season_week", "INT64", "NULLABLE"),
                 ("model_version", "STRING", "REQUIRED"),
                 ("predicted_spread", "FLOAT64", "NULLABLE"),
                 ("home_win_prob", "FLOAT64", "NULLABLE"),

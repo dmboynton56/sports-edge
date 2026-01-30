@@ -221,6 +221,8 @@ def main() -> None:
         "prediction_id",
         "game_id",
         "league",
+        "season",
+        "season_week",
         "model_version",
         "predicted_spread",
         "home_win_prob",

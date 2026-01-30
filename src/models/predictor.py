@@ -501,6 +501,8 @@ class GamePredictor:
                 'home_team': game_row.iloc[idx]['home_team'],
                 'away_team': game_row.iloc[idx]['away_team'],
                 'game_date': pd.to_datetime(game_row.iloc[idx]['game_date']).strftime('%Y-%m-%d'),
+                'season': int(game_row.iloc[idx]['season']) if 'season' in game_row.columns and pd.notna(game_row.iloc[idx]['season']) else None,
+                'season_week': int(game_row.iloc[idx]['week']) if 'week' in game_row.columns and pd.notna(game_row.iloc[idx]['week']) else (int(game_row.iloc[idx]['season_week']) if 'season_week' in game_row.columns and pd.notna(game_row.iloc[idx]['season_week']) else None),
                 'predicted_spread': home_spread,
                 # Use ensemble probability as primary
                 'home_win_probability': float(final_win_prob[idx]),
