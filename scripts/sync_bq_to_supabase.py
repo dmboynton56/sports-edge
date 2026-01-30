@@ -295,8 +295,6 @@ def insert_predictions_from_bq(
             asof_ts = row["prediction_ts"]
             if pd.isna(asof_ts):
                 asof_ts = datetime.now(tz=timezone.utc)
-            if spread is not None:
-                spread = -spread
             
             model_version = _clean(row["model_version"])
             
