@@ -127,9 +127,9 @@ def _format_nba_date(value: Optional[object]) -> Optional[str]:
 def fetch_nba_schedule(
     season: int,
     *,
-    max_retries: int = 5,
-    base_delay: int = 3,
-    timeout: int = 60,
+    max_retries: int = 3,
+    base_delay: int = 2,
+    timeout: int = 30,
     date_from: Optional[object] = None,
     date_to: Optional[object] = None,
     raise_on_error: bool = False,
@@ -209,9 +209,10 @@ def fetch_nba_schedule(
 
     # 3. NBA API Fallback (Simplified)
     try:
-        print(f"  Attempting NBA API for {season_str}...")
-        # Since ESPN is primary, we'll keep this extremely minimal or empty for now
-        # to avoid the slow hangs that prompted this fix.
+        # Since ESPN is primary and very reliable for schedule/scores, 
+        # we skip the problematic stats.nba.com schedule calls entirely.
+        # This prevents the hangs and timeouts that plague stats.nba.com.
+        print(f"  Skipping NBA API schedule fallback (relying on ESPN).")
         return pd.DataFrame()
     except Exception as e:
         if raise_on_error: raise
@@ -283,9 +284,9 @@ def fetch_nba_schedule(
 def fetch_nba_games_for_date(
     date: str,
     *,
-    max_retries: int = 5,
-    base_delay: int = 3,
-    timeout: int = 60,
+    max_retries: int = 3,
+    base_delay: int = 2,
+    timeout: int = 30,
     raise_on_error: bool = False,
 ) -> pd.DataFrame:
     """
@@ -333,74 +334,7 @@ def fetch_nba_games_for_date(
         return pd.DataFrame(games)
 
     except Exception as e:
-        print(f"  ESPN API failed for {date}: {e}. Falling back to NBA API...")
-
-    try:
-        # Convert date to MM/DD/YYYY format for NBA API
-        date_obj = datetime.strptime(date, '%Y-%m-%d')
-        date_str = date_obj.strftime('%m/%d/%Y')
-        
-        # Use ScoreboardV2 for date-specific games
-        # Explicitly filter for NBA (00)
-        def _fetch():
-            kwargs: Dict[str, Any] = {
-                "game_date": date_str,
-                "league_id": "00",
-                "headers": NBA_API_HEADERS,
-            }
-            if _supports_timeout(scoreboardv2.ScoreboardV2):
-                kwargs["timeout"] = timeout
-            kwargs = _filter_kwargs(scoreboardv2.ScoreboardV2, kwargs)
-            return scoreboardv2.ScoreboardV2(**kwargs)
-
-        scoreboard_data = _retry_nba_request(
-            _fetch,
-            label=f"NBA games {date_str}",
-            retries=max_retries,
-            base_delay=base_delay,
-        )
-        game_header = scoreboard_data.get_data_frames()[0]
-        line_score = scoreboard_data.get_data_frames()[1]
-        
-        if game_header.empty:
-            return pd.DataFrame()
-        
-        # Standardize to match our schedule format
-        # Line score has 2 rows per game (one for home, one for visitor)
-        games = []
-        for _, game in game_header.iterrows():
-            game_id = game['GAME_ID']
-            home_team_id = game['HOME_TEAM_ID']
-            visitor_team_id = game['VISITOR_TEAM_ID']
-            
-            home_row = line_score[(line_score['GAME_ID'] == game_id) & (line_score['TEAM_ID'] == home_team_id)]
-            visitor_row = line_score[(line_score['GAME_ID'] == game_id) & (line_score['TEAM_ID'] == visitor_team_id)]
-            
-            if not home_row.empty and not visitor_row.empty:
-                games.append({
-                    'game_id': game_id,
-                    'season': int(game['SEASON']),
-                    'game_date': pd.to_datetime(game['GAME_DATE_EST']),
-                    'home_team': home_row.iloc[0]['TEAM_ABBREVIATION'],
-                    'away_team': visitor_row.iloc[0]['TEAM_ABBREVIATION'],
-                    'home_score': home_row.iloc[0]['PTS'] if pd.notna(home_row.iloc[0]['PTS']) else None,
-                    'away_score': visitor_row.iloc[0]['PTS'] if pd.notna(visitor_row.iloc[0]['PTS']) else None,
-                })
-        
-        result_df = pd.DataFrame(games)
-        
-        if result_df.empty:
-            return pd.DataFrame()
-            
-        # Filter to requested date (sometimes Scoreboard returns adjacent days depending on timezone)
-        result_df = result_df[result_df['game_date'].dt.date == date_obj.date()]
-        
-        return result_df.reset_index(drop=True)
-        
-    except Exception as e:
-        print(f"Error fetching NBA games for {date}: {e}")
-        import traceback
-        traceback.print_exc()
+        print(f"  ESPN API failed for {date}: {e}.")
         if raise_on_error:
             raise
         return pd.DataFrame()

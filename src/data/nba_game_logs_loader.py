@@ -285,9 +285,9 @@ def load_nba_game_logs(
     schedule_df: Optional[pd.DataFrame] = None,
     date_from: Optional[object] = None,
     date_to: Optional[object] = None,
-    timeout: int = 10,
-    max_retries: int = 2,
-    base_delay: int = 2,
+    timeout: int = 5,
+    max_retries: int = 1,
+    base_delay: int = 1,
     headers: Optional[Dict[str, str]] = None,
 ) -> Optional[pd.DataFrame]:
     """
