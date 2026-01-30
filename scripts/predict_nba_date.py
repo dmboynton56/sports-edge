@@ -65,19 +65,14 @@ def filter_completed_games(schedule: pd.DataFrame) -> pd.DataFrame:
 def collect_date_games(schedule: pd.DataFrame, target_date: str) -> pd.DataFrame:
     """
     Gather games for the specified date.
-    
-    Args:
-        schedule: Full season schedule
-        target_date: Date string in YYYY-MM-DD format
-    
-    Returns:
-        DataFrame with games for that date
+    Uses a 24-hour window to catch games that might have shifted in UTC.
     """
-    date_obj = pd.to_datetime(target_date)
+    date_obj = pd.to_datetime(target_date).date()
     
-    date_games = schedule[
-        pd.to_datetime(schedule['game_date']).dt.date == date_obj.date()
-    ].copy()
+    # Standardize schedule dates to naive date objects for comparison
+    sched_dates = pd.to_datetime(schedule['game_date']).dt.date
+    
+    date_games = schedule[sched_dates == date_obj].copy()
     
     if date_games.empty:
         # Try fetching directly from API
@@ -85,7 +80,9 @@ def collect_date_games(schedule: pd.DataFrame, target_date: str) -> pd.DataFrame
         date_games = nba_fetcher.fetch_nba_games_for_date(target_date)
         if date_games.empty:
             raise ValueError(f"No games found for date {target_date}.")
-    
+        
+    # Final filter: Ensure we are only looking at games for THIS specific local day
+    # We trust the ESPN API query for this date
     date_games = date_games.sort_values('game_date').reset_index(drop=True)
     print(f"\nFound {len(date_games)} games for {target_date}:")
     for _, row in date_games.iterrows():
@@ -101,8 +98,16 @@ def collect_date_games(schedule: pd.DataFrame, target_date: str) -> pd.DataFrame
 
 def team_has_data(team: str, game_date: pd.Timestamp, completed_games: pd.DataFrame) -> bool:
     """Check whether the team has at least one current-season completed game before the given date."""
+    # Ensure game_date is naive
+    if game_date.tzinfo is not None:
+        game_date = game_date.replace(tzinfo=None)
+        
+    hist_dates = pd.to_datetime(completed_games['game_date'])
+    if hist_dates.dt.tz is not None:
+        hist_dates = hist_dates.dt.tz_localize(None)
+        
     games_before = completed_games[
-        (completed_games['game_date'] < game_date) &
+        (hist_dates < game_date) &
         ((completed_games['home_team'] == team) | (completed_games['away_team'] == team))
     ]
     return len(games_before) > 0

@@ -98,8 +98,13 @@ def add_opponent_strength_features(games_df: pd.DataFrame,
     
     df = games_df.copy()
     df['game_date'] = pd.to_datetime(df['game_date'])
+    if df['game_date'].dt.tz is not None:
+        df['game_date'] = df['game_date'].dt.tz_localize(None)
+        
     hist = historical_games.copy()
     hist['game_date'] = pd.to_datetime(hist['game_date'])
+    if hist['game_date'].dt.tz is not None:
+        hist['game_date'] = hist['game_date'].dt.tz_localize(None)
     
     # Ensure scores are numeric
     hist['home_score'] = pd.to_numeric(hist['home_score'], errors='coerce')

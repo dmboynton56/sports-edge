@@ -143,51 +143,68 @@ class GamePredictor:
                                 game_logs: Optional[pd.DataFrame] = None) -> pd.DataFrame:
         """
         Build features for a single game or games.
-        
-        Args:
-            game_row: DataFrame with game(s) to predict (must have home_team, away_team, game_date)
-            historical_games: Historical games DataFrame for computing rest/strength features
-            play_by_play: Optional PBP data for NFL form features
-            game_logs: Optional game logs for NBA form features
-        
-        Returns:
-            DataFrame with features
         """
-        df = game_row.copy()
-        
-        # Ensure game_date is datetime
-        if 'game_date' not in df.columns:
-            if 'gameday' in df.columns:
-                df['game_date'] = pd.to_datetime(df['gameday'])
+        try:
+            df = game_row.copy()
+            
+            # Ensure game_date is naive datetime for comparison
+            if 'game_date' not in df.columns:
+                if 'gameday' in df.columns:
+                    df['game_date'] = pd.to_datetime(df['gameday'])
+                else:
+                    raise ValueError("game_date or gameday column required")
             else:
-                raise ValueError("game_date or gameday column required")
-        else:
-            df['game_date'] = pd.to_datetime(df['game_date'])
-        
-        # Add rest features
-        df = rest_schedule.add_rest_features(df, historical_games)
-        
-        # Add opponent strength features
-        df = strength.add_opponent_strength_features(df, historical_games, league=self.league.lower())
-        
-        # Add team strength features (win %, point diff)
-        df = self._add_team_strength_features(df, historical_games)
-        
-        # Add interaction features
-        df = self._add_interaction_features(df)
-        
-        # Add form features if available
-        if self.league == 'NFL' and play_by_play is not None:
-            for window in [3, 5, 10]:
-                df = form_metrics.add_form_features_nfl(df, play_by_play, window=window)
-        elif self.league == 'NBA' and game_logs is not None:
-            for window in [3, 5, 10]:
-                df = form_metrics.add_form_features_nba(df, game_logs, window=window)
-        
-        # Add form interaction features if form features exist
-        df = self._add_form_interactions(df)
-        
-        return df
+                df['game_date'] = pd.to_datetime(df['game_date'])
+                
+            if df['game_date'].dt.tz is not None:
+                df['game_date'] = df['game_date'].dt.tz_localize(None)
+                
+            # Also ensure historical_games is naive
+            hist = historical_games.copy()
+            if 'game_date' in hist.columns:
+                hist['game_date'] = pd.to_datetime(hist['game_date'])
+                if hist['game_date'].dt.tz is not None:
+                    hist['game_date'] = hist['game_date'].dt.tz_localize(None)
+            
+            # Add rest features
+            df = rest_schedule.add_rest_features(df, hist)
+            
+            # Add opponent strength features
+            df = strength.add_opponent_strength_features(df, hist, league=self.league.lower())
+            
+            # Add team strength features (win %, point diff)
+            df = self._add_team_strength_features(df, hist)
+            
+            # Add interaction features
+            df = self._add_interaction_features(df)
+            
+            # Add form features if available
+            if self.league == 'NFL' and play_by_play is not None:
+                pbp = play_by_play.copy()
+                if 'game_date' in pbp.columns:
+                    pbp['game_date'] = pd.to_datetime(pbp['game_date'])
+                    if pbp['game_date'].dt.tz is not None:
+                        pbp['game_date'] = pbp['game_date'].dt.tz_localize(None)
+                for window in [3, 5, 10]:
+                    df = form_metrics.add_form_features_nfl(df, pbp, window=window)
+            elif self.league == 'NBA' and game_logs is not None:
+                logs = game_logs.copy()
+                if 'game_date' in logs.columns:
+                    logs['game_date'] = pd.to_datetime(logs['game_date'])
+                    if logs['game_date'].dt.tz is not None:
+                        logs['game_date'] = logs['game_date'].dt.tz_localize(None)
+                for window in [3, 5, 10]:
+                    df = form_metrics.add_form_features_nba(df, logs, window=window)
+            
+            # Add form interaction features if form features exist
+            df = self._add_form_interactions(df)
+            
+            return df
+        except Exception as e:
+            print(f"DEBUG: Error in build_features_for_game: {e}")
+            import traceback
+            traceback.print_exc()
+            raise
     
     def _add_team_strength_features(self, games_df: pd.DataFrame, historical_games: pd.DataFrame) -> pd.DataFrame:
         """Add team strength features (win %, point diff).
@@ -203,14 +220,21 @@ class GamePredictor:
         
         for idx, row in df.iterrows():
             game_date = pd.to_datetime(row['game_date'])
+            if game_date.tzinfo is not None:
+                game_date = game_date.replace(tzinfo=None)
+                
             home_team = row['home_team']
             away_team = row['away_team']
             season = row.get('season', game_date.year)
             
             # Only use current season games (completed games only)
+            hist_dates = pd.to_datetime(historical_games['game_date'])
+            if hist_dates.dt.tz is not None:
+                hist_dates = hist_dates.dt.tz_localize(None)
+                
             season_games = historical_games[
-                (pd.to_datetime(historical_games['game_date']) < game_date) &
-                (historical_games.get('season', pd.to_datetime(historical_games['game_date']).dt.year) == season)
+                (hist_dates < game_date) &
+                (historical_games.get('season', hist_dates.dt.year) == season)
             ]
             
             # Filter to only completed games (have scores)

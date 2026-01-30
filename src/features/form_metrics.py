@@ -245,8 +245,13 @@ def add_form_features_nba(games_df: pd.DataFrame, game_logs: pd.DataFrame,
     """
     df = games_df.copy()
     df['game_date'] = pd.to_datetime(df['game_date'])
+    if df['game_date'].dt.tz is not None:
+        df['game_date'] = df['game_date'].dt.tz_localize(None)
+        
     logs = game_logs.copy()
     logs['game_date'] = pd.to_datetime(logs['game_date'])
+    if logs['game_date'].dt.tz is not None:
+        logs['game_date'] = logs['game_date'].dt.tz_localize(None)
     
     # Ensure necessary columns are numeric and exist
     box_cols = ['FGA', 'FTA', 'TOV', 'OREB']

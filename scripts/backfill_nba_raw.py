@@ -12,7 +12,7 @@ import argparse
 import json
 import os
 import sys
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone, timedelta, date
 from typing import Iterable, List, Sequence, Any, Optional
 
 # Add project root to path
@@ -83,9 +83,7 @@ def _ensure_game_date(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _to_jsonable(value: Any) -> Any:
-    if isinstance(value, pd.Timestamp):
-        return value.isoformat()
-    if isinstance(value, datetime):
+    if isinstance(value, (pd.Timestamp, datetime, date)):
         return value.isoformat()
     return value
 
@@ -206,6 +204,7 @@ def main() -> None:
             date_from=schedule_start,
             date_to=schedule_end,
             raise_on_error=True,
+            use_cache=False, # Force refresh from API
         )
         
         if schedules_df.empty:

@@ -178,8 +178,13 @@ def add_rest_features(games_df: pd.DataFrame, historical_games: pd.DataFrame) ->
     """
     df = games_df.copy()
     df['game_date'] = pd.to_datetime(df['game_date'])
+    if df['game_date'].dt.tz is not None:
+        df['game_date'] = df['game_date'].dt.tz_localize(None)
+        
     hist = historical_games.copy()
     hist['game_date'] = pd.to_datetime(hist['game_date'])
+    if hist['game_date'].dt.tz is not None:
+        hist['game_date'] = hist['game_date'].dt.tz_localize(None)
     
     # 1. Melt history to get all games per team
     h_games = hist[['game_date', 'season', 'home_team']].rename(columns={'home_team': 'team'})

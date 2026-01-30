@@ -46,9 +46,9 @@ jobs:
           else
             SEASON=$YEAR
           fi
-          # Only fetch yesterday's data to avoid rate limits
+          # Fetch Yesterday, Today, and Tomorrow to ensure BigQuery is perfectly in sync
           START_DATE=$(date -u -d "yesterday" +%Y-%m-%d)
-          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --schedule-start "$START_DATE" --schedule-window-days 1 --replace
+          python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --schedule-start "$START_DATE" --schedule-window-days 3
 
       - name: Update NFL Raw Data
         shell: bash

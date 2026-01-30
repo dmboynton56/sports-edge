@@ -82,6 +82,10 @@ def _format_nba_date(value: Optional[object]) -> Optional[str]:
 def _retry_nba_request(fn, label: str, retries: int, base_delay: int):
     attempts = max(1, retries)
     last_exc: Optional[Exception] = None
+    import random
+    import requests
+    from urllib3.exceptions import ReadTimeoutError
+    
     for attempt in range(1, attempts + 1):
         try:
             return fn()
@@ -89,8 +93,15 @@ def _retry_nba_request(fn, label: str, retries: int, base_delay: int):
             last_exc = exc
             if attempt >= attempts:
                 break
-            sleep_for = base_delay * (2 ** (attempt - 1))
-            print(f"Warning: {label} failed (attempt {attempt}/{attempts}): {exc}. Retrying in {sleep_for}s...")
+            
+            # Increase delay for timeouts specifically
+            multiplier = 2 if isinstance(exc, (requests.exceptions.ReadTimeout, requests.exceptions.ConnectTimeout, ReadTimeoutError)) else 1
+            sleep_for = (base_delay * multiplier) * (2 ** (attempt - 1))
+            
+            # Add small jitter to avoid bot detection
+            sleep_for += random.uniform(0, 1)
+            
+            print(f"Warning: {label} failed (attempt {attempt}/{attempts}): {exc}. Retrying in {sleep_for:.1f}s...")
             time.sleep(sleep_for)
     if last_exc:
         raise last_exc
@@ -273,9 +284,10 @@ def load_nba_game_logs(
     schedule_df: Optional[pd.DataFrame] = None,
     date_from: Optional[object] = None,
     date_to: Optional[object] = None,
-    timeout: int = 120,
-    max_retries: int = 3,
+    timeout: int = 10,
+    max_retries: int = 2,
     base_delay: int = 2,
+    headers: Optional[Dict[str, str]] = None,
 ) -> Optional[pd.DataFrame]:
     """
     Load NBA team game logs for the requested seasons using LeagueGameFinder (efficient).
@@ -291,6 +303,14 @@ def load_nba_game_logs(
     seasons = list(seasons)
     all_logs = []
     
+    # Use headers from nba_fetcher if not provided
+    if headers is None:
+        try:
+            from src.data.nba_fetcher import NBA_API_HEADERS
+            headers = NBA_API_HEADERS
+        except ImportError:
+            headers = None
+
     try:
         print(f"Loading game logs for {len(seasons)} seasons using LeagueGameFinder...")
         
@@ -304,28 +324,15 @@ def load_nba_game_logs(
                     kwargs: Dict[str, Any] = {
                         "league_id_nullable": "00",
                     }
-                    
-                    # Optimization: If we have specific dates, we don't ALWAYS strictly need the season
-                    # passing season + date often causes full partition scan.
-                    # passing JUST date is often faster.
-                    # However, we must ensure we don't get other seasons if dates overlap (unlikely for specific dates)
+                    if headers:
+                        kwargs["headers"] = headers
                     
                     date_from_value = _format_nba_date(date_from)
                     date_to_value = _format_nba_date(date_to)
                     
                     has_dates = date_from_value or date_to_value
-                    
-                    # Only include season if we aren't filtering by a specific tight date range
-                    # OR if we want to be safe. 
-                    # For performance on daily updates, relying on date filter is better.
                     if not has_dates:
                         kwargs["season_nullable"] = season_str
-                    else:
-                        # If we have dates, verify we still want to filter by season 
-                        # just in case date range spans multiple seasons (rare for daily update)
-                        # But to fix timeout, we try omitting season and trusting dates.
-                        # We will filter by season in pandas post-fetch to be safe.
-                         pass
 
                     if date_from_value:
                         kwargs["date_from_nullable"] = date_from_value
@@ -337,13 +344,45 @@ def load_nba_game_logs(
                     kwargs = _filter_kwargs(leaguegamefinder.LeagueGameFinder, kwargs)
                     return leaguegamefinder.LeagueGameFinder(**kwargs)
 
-                game_finder = _retry_nba_request(
-                    _fetch,
-                    label=f"NBA game logs {season_str}",
-                    retries=max_retries,
-                    base_delay=base_delay,
-                )
-                df = game_finder.get_data_frames()[0]
+                try:
+                    game_finder = _retry_nba_request(
+                        _fetch,
+                        label=f"NBA game logs {season_str}",
+                        retries=max_retries,
+                        base_delay=base_delay,
+                    )
+                    df = game_finder.get_data_frames()[0]
+                except Exception as e:
+                    print(f"    NBA Game Logs API failed: {e}. Attempting to build logs from schedule...")
+                    if schedule_df is not None and not schedule_df.empty:
+                        # Build logs from schedule (2 rows per game)
+                        rows = []
+                        for _, game in schedule_df.iterrows():
+                            # Home perspective
+                            rows.append({
+                                'GAME_ID': game['game_id'],
+                                'GAME_DATE': game['game_date'],
+                                'TEAM_ABBREVIATION': game['home_team'],
+                                'TEAM_ID': None,
+                                'MATCHUP': f"{game['home_team']} vs. {game['away_team']}",
+                                'WL': 'W' if (game['home_score'] or 0) > (game['away_score'] or 0) else 'L',
+                                'PTS': game['home_score'],
+                                'season': game['season']
+                            })
+                            # Away perspective
+                            rows.append({
+                                'GAME_ID': game['game_id'],
+                                'GAME_DATE': game['game_date'],
+                                'TEAM_ABBREVIATION': game['away_team'],
+                                'TEAM_ID': None,
+                                'MATCHUP': f"{game['away_team']} @ {game['home_team']}",
+                                'WL': 'W' if (game['away_score'] or 0) > (game['home_score'] or 0) else 'L',
+                                'PTS': game['away_score'],
+                                'season': game['season']
+                            })
+                        df = pd.DataFrame(rows)
+                    else:
+                        continue
                 
                 if df.empty:
                     print(f"    Warning: No logs found for {season_str}")
@@ -358,8 +397,18 @@ def load_nba_game_logs(
                     df = _normalize_game_dates(df)
 
                 if date_from or date_to:
+                    # Ensure df['game_date'] is naive if date_from/to are naive, or vice versa
+                    if df["game_date"].dt.tz is not None:
+                        df["game_date"] = df["game_date"].dt.tz_localize(None)
+                        
                     start_date = pd.to_datetime(date_from, errors="coerce")
+                    if start_date and start_date.tzinfo is not None:
+                        start_date = start_date.replace(tzinfo=None)
+                        
                     end_date = pd.to_datetime(date_to, errors="coerce")
+                    if end_date and end_date.tzinfo is not None:
+                        end_date = end_date.replace(tzinfo=None)
+                        
                     if pd.notna(start_date):
                         df = df[df["game_date"] >= start_date]
                     if pd.notna(end_date):
