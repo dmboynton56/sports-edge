@@ -174,12 +174,28 @@ def main() -> None:
         return
 
     # Merge with games_df to get game_id
-    predictions["game_date"] = pd.to_datetime(predictions["game_date"])
+    # Normalize dates to midnight to ensure merge matches even if times differ
+    predictions["game_date"] = pd.to_datetime(predictions["game_date"]).dt.normalize()
+    games_df_normalized = games_df[["game_id", "home_team", "away_team", "game_date"]].copy()
+    games_df_normalized["game_date"] = pd.to_datetime(games_df_normalized["game_date"]).dt.normalize()
+
     predictions = predictions.merge(
-        games_df[["game_id", "home_team", "away_team", "game_date"]],
+        games_df_normalized,
         on=["home_team", "away_team", "game_date"],
         how="left",
     )
+
+    # Drop any predictions where game_id could not be matched
+    if predictions["game_id"].isna().any():
+        missing_games = predictions[predictions["game_id"].isna()]
+        print(f"Warning: Could not match game_id for {len(missing_games)} games. Dropping them.")
+        for _, row in missing_games.iterrows():
+            print(f"  Missing: {row['away_team']} @ {row['home_team']} on {row['game_date']}")
+        predictions = predictions.dropna(subset=["game_id"])
+
+    if predictions.empty:
+        print("No predictions remaining after game_id matching. Exiting.")
+        return
 
     predictions["league"] = "NBA"
     predictions["model_version"] = args.model_version
