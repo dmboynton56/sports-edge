@@ -127,11 +127,11 @@ def build_features(games_df: pd.DataFrame, league: str, historical_data: dict) -
     # Ensure game_date exists
     if 'game_date' not in df.columns:
         if 'gameday' in df.columns:
-            df['game_date'] = pd.to_datetime(df['gameday'])
+            df['game_date'] = pd.to_datetime(df['gameday'], utc=True).dt.tz_localize(None)
         else:
             raise ValueError("game_date or gameday column required")
     else:
-        df['game_date'] = pd.to_datetime(df['game_date'])
+        df['game_date'] = pd.to_datetime(df['game_date'], utc=True).dt.tz_localize(None)
     
     historical_games = historical_data.get('historical_games')
     if historical_games is None or len(historical_games) == 0:

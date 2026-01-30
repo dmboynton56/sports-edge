@@ -150,21 +150,16 @@ class GamePredictor:
             # Ensure game_date is naive datetime for comparison
             if 'game_date' not in df.columns:
                 if 'gameday' in df.columns:
-                    df['game_date'] = pd.to_datetime(df['gameday'])
+                    df['game_date'] = pd.to_datetime(df['gameday'], utc=True).dt.tz_localize(None)
                 else:
                     raise ValueError("game_date or gameday column required")
             else:
-                df['game_date'] = pd.to_datetime(df['game_date'])
-                
-            if df['game_date'].dt.tz is not None:
-                df['game_date'] = df['game_date'].dt.tz_localize(None)
+                df['game_date'] = pd.to_datetime(df['game_date'], utc=True).dt.tz_localize(None)
                 
             # Also ensure historical_games is naive
             hist = historical_games.copy()
             if 'game_date' in hist.columns:
-                hist['game_date'] = pd.to_datetime(hist['game_date'])
-                if hist['game_date'].dt.tz is not None:
-                    hist['game_date'] = hist['game_date'].dt.tz_localize(None)
+                hist['game_date'] = pd.to_datetime(hist['game_date'], utc=True).dt.tz_localize(None)
             
             # Add rest features
             df = rest_schedule.add_rest_features(df, hist)
@@ -182,17 +177,13 @@ class GamePredictor:
             if self.league == 'NFL' and play_by_play is not None:
                 pbp = play_by_play.copy()
                 if 'game_date' in pbp.columns:
-                    pbp['game_date'] = pd.to_datetime(pbp['game_date'])
-                    if pbp['game_date'].dt.tz is not None:
-                        pbp['game_date'] = pbp['game_date'].dt.tz_localize(None)
+                    pbp['game_date'] = pd.to_datetime(pbp['game_date'], utc=True).dt.tz_localize(None)
                 for window in [3, 5, 10]:
                     df = form_metrics.add_form_features_nfl(df, pbp, window=window)
             elif self.league == 'NBA' and game_logs is not None:
                 logs = game_logs.copy()
                 if 'game_date' in logs.columns:
-                    logs['game_date'] = pd.to_datetime(logs['game_date'])
-                    if logs['game_date'].dt.tz is not None:
-                        logs['game_date'] = logs['game_date'].dt.tz_localize(None)
+                    logs['game_date'] = pd.to_datetime(logs['game_date'], utc=True).dt.tz_localize(None)
                 for window in [3, 5, 10]:
                     df = form_metrics.add_form_features_nba(df, logs, window=window)
             
@@ -219,18 +210,14 @@ class GamePredictor:
         df['away_team_point_diff'] = np.nan
         
         for idx, row in df.iterrows():
-            game_date = pd.to_datetime(row['game_date'])
-            if game_date.tzinfo is not None:
-                game_date = game_date.replace(tzinfo=None)
+            game_date = pd.to_datetime(row['game_date'], utc=True).tz_localize(None)
                 
             home_team = row['home_team']
             away_team = row['away_team']
             season = row.get('season', game_date.year)
             
             # Only use current season games (completed games only)
-            hist_dates = pd.to_datetime(historical_games['game_date'])
-            if hist_dates.dt.tz is not None:
-                hist_dates = hist_dates.dt.tz_localize(None)
+            hist_dates = pd.to_datetime(historical_games['game_date'], utc=True).dt.tz_localize(None)
                 
             season_games = historical_games[
                 (hist_dates < game_date) &

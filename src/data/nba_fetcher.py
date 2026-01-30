@@ -164,7 +164,7 @@ def fetch_nba_schedule(
                     # If we have a decent number of games (or specifically requested a small range), trust cache
                     if (date_from and date_to) or len(df_bq) > 100:
                         print(f"  Successfully loaded {len(df_bq)} games from BigQuery.")
-                        df_bq['game_date'] = pd.to_datetime(df_bq['game_date'])
+                        df_bq['game_date'] = pd.to_datetime(df_bq['game_date'], utc=True).dt.tz_localize(None)
                         return df_bq.sort_values('game_date').reset_index(drop=True)
         except Exception as bq_err:
             print(f"  BigQuery check skipped/failed: {bq_err}. Falling back to APIs...")
@@ -201,7 +201,7 @@ def fetch_nba_schedule(
             schedule_df = pd.concat(espn_dfs, ignore_index=True).drop_duplicates(subset=["game_id"])
             print(f"  Successfully fetched {len(schedule_df)} games via ESPN.")
             # Standardize columns for the rest of the pipeline
-            schedule_df['game_date'] = pd.to_datetime(schedule_df['game_date'])
+            schedule_df['game_date'] = pd.to_datetime(schedule_df['game_date'], utc=True).dt.tz_localize(None)
             return schedule_df.sort_values('game_date').reset_index(drop=True)
             
     except Exception as e:
@@ -318,7 +318,7 @@ def fetch_nba_games_for_date(
                 games.append({
                     'game_id': str(event.get("id")),
                     'season': data.get("season", {}).get("year", 2025),
-                    'game_date': pd.to_datetime(event.get("date")),
+                    'game_date': pd.to_datetime(event.get("date"), utc=True).dt.tz_localize(None),
                     'home_team': home_team_node.get("team", {}).get("abbreviation"),
                     'away_team': away_team_node.get("team", {}).get("abbreviation"),
                     'home_score': h_score if is_completed else None,

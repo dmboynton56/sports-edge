@@ -30,7 +30,7 @@ def _normalize_game_dates(df: pd.DataFrame) -> pd.DataFrame:
     if 'game_date' in df.columns:
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', category=UserWarning)
-            df['game_date'] = pd.to_datetime(df['game_date'], errors='coerce')
+            df['game_date'] = pd.to_datetime(df['game_date'], errors='coerce', utc=True).dt.tz_localize(None)
     elif 'GAME_DATE' in df.columns:
         # NBA API has two common formats:
         # 1. "APR 13, 2025" (TeamGameLog)
@@ -38,7 +38,7 @@ def _normalize_game_dates(df: pd.DataFrame) -> pd.DataFrame:
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', category=UserWarning)
             # Try flexible parsing first, then fallback to specific format if needed
-            df['game_date'] = pd.to_datetime(df['GAME_DATE'], errors='coerce')
+            df['game_date'] = pd.to_datetime(df['GAME_DATE'], errors='coerce', utc=True).dt.tz_localize(None)
             
             # If everything is still null, try the specific legacy format
             if df['game_date'].isna().all():
@@ -46,8 +46,9 @@ def _normalize_game_dates(df: pd.DataFrame) -> pd.DataFrame:
                 df['game_date'] = pd.to_datetime(
                     date_series, 
                     format='%b %d, %Y', 
-                    errors='coerce'
-                )
+                    errors='coerce',
+                    utc=True
+                ).dt.tz_localize(None)
     return df
 
 

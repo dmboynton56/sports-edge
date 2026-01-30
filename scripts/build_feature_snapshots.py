@@ -163,8 +163,8 @@ def main() -> None:
     
     # 1. Aggressive deduplication of schedules to avoid row explosion
     if not schedules.empty:
-        # Standardize dates for comparison
-        schedules["game_date"] = pd.to_datetime(schedules["game_date"], errors="coerce")
+        # Standardize dates for comparison - using utc=True to avoid mixed timezone errors
+        schedules["game_date"] = pd.to_datetime(schedules["game_date"], errors="coerce", utc=True).dt.tz_localize(None)
         schedules = schedules.sort_values("ingested_at", ascending=False) if "ingested_at" in schedules.columns else schedules
         
         # Deduplicate by game_id first, then by the core game identifiers
@@ -186,7 +186,7 @@ def main() -> None:
             if not api_games.empty:
                 print(f"Found {len(api_games)} games on API. Adding to processing queue.")
                 # Standardize api_games dates
-                api_games["game_date"] = pd.to_datetime(api_games["game_date"])
+                api_games["game_date"] = pd.to_datetime(api_games["game_date"], utc=True).dt.tz_localize(None)
                 
                 # Combine and deduplicate again
                 schedules = pd.concat([schedules, api_games])
@@ -202,13 +202,13 @@ def main() -> None:
         print(f"Loading raw play-by-play for NFL...")
         pbp = _fetch_table(client, args.project, "sports_edge_raw", "raw_pbp", args.seasons)
         if not pbp.empty:
-            pbp["game_date"] = pd.to_datetime(pbp["game_date"], errors="coerce")
+            pbp["game_date"] = pd.to_datetime(pbp["game_date"], errors="coerce", utc=True).dt.tz_localize(None)
         historical_data["play_by_play"] = pbp
     else:
         print(f"Loading raw game logs for NBA...")
         logs = _fetch_table(client, args.project, "sports_edge_raw", "raw_nba_game_logs", args.seasons)
         if not logs.empty:
-            logs["game_date"] = pd.to_datetime(logs["game_date"], errors="coerce")
+            logs["game_date"] = pd.to_datetime(logs["game_date"], errors="coerce", utc=True).dt.tz_localize(None)
             # Deduplicate logs to avoid cartesian explosion in feature building
             logs = logs.sort_values("ingested_at", ascending=False) if "ingested_at" in logs.columns else logs
             logs = logs.drop_duplicates(subset=["team", "game_date"])
@@ -246,7 +246,7 @@ def main() -> None:
         if column not in feature_rows.columns:
             feature_rows[column] = None
             
-    feature_rows["game_date"] = pd.to_datetime(feature_rows["game_date"]).dt.date
+    feature_rows["game_date"] = pd.to_datetime(feature_rows["game_date"], utc=True).dt.date
     
     int_columns = ["season", "week_number", "month"]
     for col in int_columns:
