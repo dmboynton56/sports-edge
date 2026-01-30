@@ -33,12 +33,21 @@ def game_map_key(home_team: str, away_team: str, game_date) -> str:
 def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
     """Upsert games into Supabase and return a map of keys to IDs."""
     game_id_map = {}
+    
+    # Helper to clean values for psycopg
+    def _clean(val):
+        if pd.isna(val):
+            return None
+        if hasattr(val, "to_pydatetime"):
+            return val.to_pydatetime()
+        return val
+
     with conn.cursor() as cur:
         for _, row in games_df.iterrows():
             # Check if game exists
             cur.execute(
                 "SELECT id FROM games WHERE league = %s AND home_team = %s AND away_team = %s AND game_time_utc::date = %s",
-                (row["league"], row["home_team"], row["away_team"], row["game_time_utc"])
+                (_clean(row["league"]), _clean(row["home_team"]), _clean(row["away_team"]), _clean(row["game_time_utc"]))
             )
             res = cur.fetchone()
             
@@ -46,12 +55,12 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
                 game_id = res[0]
                 cur.execute(
                     "UPDATE games SET season = %s, week = %s WHERE id = %s",
-                    (row["season"], row.get("week"), game_id)
+                    (_clean(row["season"]), _clean(row.get("week")), game_id)
                 )
             else:
                 cur.execute(
                     "INSERT INTO games (league, season, week, home_team, away_team, game_time_utc) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
-                    (row["league"], row["season"], row.get("week"), row["home_team"], row["away_team"], row["game_time_utc"])
+                    (_clean(row["league"]), _clean(row["season"]), _clean(row.get("week")), _clean(row["home_team"]), _clean(row["away_team"]), _clean(row["game_time_utc"]))
                 )
                 game_id = cur.fetchone()[0]
             

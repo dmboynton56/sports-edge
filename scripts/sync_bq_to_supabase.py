@@ -238,7 +238,7 @@ def fetch_latest_predictions(
     LOGGER.debug("BigQuery returned %d rows", len(df))
     if df.empty:
         return df
-    df["game_date"] = pd.to_datetime(df["game_date"])
+    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_localize(None)
     df["prediction_ts"] = pd.to_datetime(df["prediction_ts"], utc=True, errors="coerce")
     if LOGGER.isEnabledFor(logging.DEBUG):
         preview = df[["game_id", "season", "season_week", "home_team", "away_team", "model_version"]].head()
@@ -281,6 +281,15 @@ def insert_predictions_from_bq(
                 LOGGER.debug("No Supabase game_id for %s -> skipping prediction", key)
                 skipped += 1
                 continue
+            
+            # Clean values for psycopg
+            def _clean(val):
+                if pd.isna(val):
+                    return None
+                if hasattr(val, "to_pydatetime"):
+                    return val.to_pydatetime()
+                return val
+
             spread = float(row["predicted_spread"]) if pd.notna(row["predicted_spread"]) else None
             win_prob = float(row["home_win_prob"]) if pd.notna(row["home_win_prob"]) else None
             asof_ts = row["prediction_ts"]
@@ -288,18 +297,21 @@ def insert_predictions_from_bq(
                 asof_ts = datetime.now(tz=timezone.utc)
             if spread is not None:
                 spread = -spread
+            
+            model_version = _clean(row["model_version"])
+            
             if replace_existing:
-                LOGGER.debug("Deleting existing predictions for game_id=%s version=%s", game_id, row["model_version"])
-                cur.execute(delete_sql, (game_id, row["model_version"]), prepare=False)
+                LOGGER.debug("Deleting existing predictions for game_id=%s version=%s", game_id, model_version)
+                cur.execute(delete_sql, (game_id, model_version), prepare=False)
             cur.execute(
                 insert_sql,
                 (
                     game_id,
                     MODEL_NAME,
-                    row["model_version"],
+                    model_version,
                     spread,
                     win_prob,
-                    asof_ts.to_pydatetime() if hasattr(asof_ts, "to_pydatetime") else asof_ts,
+                    _clean(asof_ts),
                 ),
                 prepare=False,
             )
