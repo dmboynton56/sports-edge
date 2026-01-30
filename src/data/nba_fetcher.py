@@ -319,7 +319,7 @@ def fetch_nba_games_for_date(
                 games.append({
                     'game_id': str(event.get("id")),
                     'season': data.get("season", {}).get("year", 2025),
-                    'game_date': pd.to_datetime(event.get("date"), utc=True).dt.tz_localize(None),
+                    'game_date': pd.to_datetime(event.get("date"), utc=True).tz_localize(None),
                     'home_team': home_team_node.get("team", {}).get("abbreviation"),
                     'away_team': away_team_node.get("team", {}).get("abbreviation"),
                     'home_score': h_score if is_completed else None,
