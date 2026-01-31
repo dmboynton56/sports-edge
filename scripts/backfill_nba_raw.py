@@ -112,12 +112,12 @@ def _load_dataframe(
 
 
 def _delete_season(client: bigquery.Client, table_id: str, season: int) -> None:
-    query = f"DELETE FROM `{table_id}` WHERE season = @season"
+    query = f"DELETE FROM `{table_id}` WHERE season = @season AND league = 'NBA'"
     job_config = bigquery.QueryJobConfig(
         query_parameters=[bigquery.ScalarQueryParameter("season", "INT64", season)]
     )
     client.query(query, job_config=job_config).result()
-    print(f"Cleared {table_id} for season {season}")
+    print(f"Cleared {table_id} for NBA season {season}")
 
 
 def _delete_date_range(
@@ -127,7 +127,7 @@ def _delete_date_range(
     end_date: datetime.date,
     season: Optional[int] = None,
 ) -> None:
-    query = f"DELETE FROM `{table_id}` WHERE game_date BETWEEN @start_date AND @end_date"
+    query = f"DELETE FROM `{table_id}` WHERE league = 'NBA' AND game_date BETWEEN @start_date AND @end_date"
     params = [
         bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
         bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
@@ -143,6 +143,7 @@ def _delete_date_range(
 GAME_LOGS_COLUMNS = [
     "game_id",
     "game_date",
+    "league",
     "team",
     "team_id",
     "season",
@@ -155,6 +156,7 @@ GAME_LOGS_COLUMNS = [
 
 SCHEDULE_COLUMNS = [
     "game_id",
+    "league",
     "season",
     "game_date",
     "home_team",
@@ -213,6 +215,7 @@ def main() -> None:
         
         schedules_df = _ensure_game_date(schedules_df)
         schedules_df["ingested_at"] = utc_now
+        schedules_df["league"] = "NBA"
         
         # Handle nulls (rare cases in some seasons or exhibition games)
         schedules_df = schedules_df[
@@ -237,6 +240,7 @@ def main() -> None:
         else:
             game_logs_df = _ensure_game_date(game_logs_df)
             game_logs_df["ingested_at"] = utc_now
+            game_logs_df["league"] = "NBA"
         
         # Prepare schedule data
         schedules_df = _ensure_columns(schedules_df, SCHEDULE_COLUMNS[:-1])

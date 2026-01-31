@@ -59,6 +59,7 @@ def _query_games(client: bigquery.Client, project: str, target_date: datetime.da
         FROM `{project}.sports_edge_raw.raw_schedules`
         WHERE game_date = @target_date
           AND game_date IS NOT NULL
+          AND league = 'NBA'
         ORDER BY game_date
     """
     job_config = bigquery.QueryJobConfig(
@@ -76,6 +77,7 @@ def _query_historical_games(client: bigquery.Client, project: str, seasons: List
         SELECT *
         FROM `{project}.sports_edge_raw.raw_schedules`
         WHERE season IN UNNEST(@seasons)
+          AND league = 'NBA'
     """
     job_config = bigquery.QueryJobConfig(
         query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]

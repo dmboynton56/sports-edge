@@ -37,6 +37,7 @@ TABLE_SPECS = [
         "schema": _schema(
             [
                 ("game_id", "STRING", "REQUIRED"),
+                ("league", "STRING", "REQUIRED"),
                 ("play_id", "INT64", "REQUIRED"),
                 ("season", "INT64", "REQUIRED"),
                 ("week", "INT64", "NULLABLE"),
@@ -60,6 +61,7 @@ TABLE_SPECS = [
         "schema": _schema(
             [
                 ("game_id", "STRING", "REQUIRED"),
+                ("league", "STRING", "REQUIRED"),
                 ("season", "INT64", "REQUIRED"),
                 ("week", "INT64", "NULLABLE"),
                 ("game_date", "DATE", "NULLABLE"),
@@ -81,6 +83,7 @@ TABLE_SPECS = [
         "schema": _schema(
             [
                 ("team", "STRING", "REQUIRED"),
+                ("league", "STRING", "REQUIRED"),
                 ("season", "INT64", "REQUIRED"),
                 ("week", "INT64", "REQUIRED"),
                 ("points_for", "FLOAT64", "NULLABLE"),

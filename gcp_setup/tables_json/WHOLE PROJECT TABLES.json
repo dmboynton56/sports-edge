@@ -1,1066 +1,1805 @@
 [{
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "as_of_ts",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "away_team",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "away_team_point_diff",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "away_team_win_pct",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "b2b_away",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "b2b_home",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "feature_version",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_away_epa_def_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_away_epa_def_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_away_epa_def_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_away_epa_off_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_away_epa_off_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_away_epa_off_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_epa_def_diff_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_epa_def_diff_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_epa_def_diff_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_epa_off_diff_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_epa_off_diff_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_epa_off_diff_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_home_epa_def_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_home_epa_def_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_home_epa_def_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_home_epa_off_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_home_epa_off_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "form_home_epa_off_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "game_date",
-  "data_type": "DATE"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
   "column_name": "game_id",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "home_margin",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "home_team",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "home_team_point_diff",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "home_team_win_pct",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "home_win",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "is_playoff",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "league",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "month",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "opp_strength_away_season",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "opp_strength_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "opp_strength_home_season",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "point_diff_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "rest_away",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "rest_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "rest_home",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "season",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "week_number",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "feature_snapshots",
-  "column_name": "win_pct_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "game_id",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "home_win_prob",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "input_hash",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "league",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "model_number",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "model_version",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "predicted_spread",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "prediction_id",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "prediction_ts",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "season",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_predictions",
-  "column_name": "season_week",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_runs",
-  "column_name": "error_text",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_runs",
-  "column_name": "finished_at",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_runs",
-  "column_name": "league",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_runs",
-  "column_name": "rows_written",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_runs",
-  "column_name": "run_id",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_runs",
-  "column_name": "started_at",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "model_runs",
-  "column_name": "status",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "as_of_ts",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "away_team",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "away_team_point_diff",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "away_team_win_pct",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "b2b_away",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "b2b_home",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "feature_version",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_away_epa_def_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_away_epa_def_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_away_epa_def_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_away_epa_off_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_away_epa_off_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_away_epa_off_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_epa_def_diff_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_epa_def_diff_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_epa_def_diff_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_epa_off_diff_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_epa_off_diff_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_epa_off_diff_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_home_epa_def_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_home_epa_def_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_home_epa_def_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_home_epa_off_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_home_epa_off_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "form_home_epa_off_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "game_date",
-  "data_type": "DATE"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "game_id",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "home_margin",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "home_team",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "home_team_point_diff",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "home_team_win_pct",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "home_win",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "is_playoff",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "league",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "month",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "opp_strength_away_season",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "opp_strength_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "opp_strength_home_season",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "point_diff_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "rest_away",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "rest_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "rest_home",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "season",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "week_number",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view",
-  "column_name": "win_pct_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "away_team_point_diff",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "away_team_win_pct",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "b2b_away",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "b2b_home",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_away_epa_def_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_away_epa_def_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_away_epa_def_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_away_epa_off_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_away_epa_off_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_away_epa_off_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_epa_def_diff_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_epa_def_diff_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_epa_def_diff_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_epa_off_diff_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_epa_off_diff_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_epa_off_diff_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_home_epa_def_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_home_epa_def_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_home_epa_def_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_home_epa_off_10",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_home_epa_off_3",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "form_home_epa_off_5",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "game_date",
-  "data_type": "DATE"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "game_id",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "home_margin",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "home_team_point_diff",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "home_team_win_pct",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "home_win",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "is_playoff",
-  "data_type": "BOOL"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "iso_week",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "league",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "month",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "opp_strength_away_season",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "opp_strength_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "opp_strength_home_season",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "point_diff_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "rest_away",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "rest_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "rest_home",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "season",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "week_number",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_curated",
-  "table_name": "training_feature_view_v2",
-  "column_name": "win_pct_differential",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_raw",
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_nba_game_logs",
   "column_name": "game_date",
-  "data_type": "DATE"
+  "ordinal_position": "2",
+  "data_type": "DATE",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_nba_game_logs",
-  "column_name": "game_id",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_nba_game_logs",
-  "column_name": "ingested_at",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_nba_game_logs",
-  "column_name": "net_rating",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_nba_game_logs",
-  "column_name": "point_diff",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_nba_game_logs",
-  "column_name": "points_allowed",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_nba_game_logs",
-  "column_name": "points_scored",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_nba_game_logs",
-  "column_name": "raw_record",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_nba_game_logs",
-  "column_name": "season",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_nba_game_logs",
   "column_name": "team",
-  "data_type": "STRING"
+  "ordinal_position": "3",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_nba_game_logs",
   "column_name": "team_id",
-  "data_type": "INT64"
+  "ordinal_position": "4",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_pbp",
-  "column_name": "away_team",
-  "data_type": "STRING"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "season",
+  "ordinal_position": "5",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_pbp",
-  "column_name": "defteam",
-  "data_type": "STRING"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "points_scored",
+  "ordinal_position": "6",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_pbp",
-  "column_name": "epa",
-  "data_type": "FLOAT64"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "points_allowed",
+  "ordinal_position": "7",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_pbp",
-  "column_name": "game_date",
-  "data_type": "DATE"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "net_rating",
+  "ordinal_position": "8",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "point_diff",
+  "ordinal_position": "9",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "ingested_at",
+  "ordinal_position": "10",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_nba_game_logs",
+  "column_name": "raw_record",
+  "ordinal_position": "11",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_pbp",
   "column_name": "game_id",
-  "data_type": "STRING"
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_pbp",
-  "column_name": "home_team",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_pbp",
-  "column_name": "ingested_at",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_pbp",
   "column_name": "play_id",
-  "data_type": "INT64"
+  "ordinal_position": "2",
+  "data_type": "INT64",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_pbp",
-  "column_name": "play_type",
-  "data_type": "STRING"
+  "column_name": "season",
+  "ordinal_position": "3",
+  "data_type": "INT64",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_pbp",
+  "column_name": "week",
+  "ordinal_position": "4",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_pbp",
+  "column_name": "game_date",
+  "ordinal_position": "5",
+  "data_type": "DATE",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_pbp",
+  "column_name": "home_team",
+  "ordinal_position": "6",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_pbp",
+  "column_name": "away_team",
+  "ordinal_position": "7",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_pbp",
   "column_name": "posteam",
-  "data_type": "STRING"
+  "ordinal_position": "8",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_pbp",
-  "column_name": "raw_record",
-  "data_type": "STRING"
+  "column_name": "defteam",
+  "ordinal_position": "9",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_pbp",
-  "column_name": "season",
-  "data_type": "INT64"
+  "column_name": "play_type",
+  "ordinal_position": "10",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_pbp",
-  "column_name": "week",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_pbp",
   "column_name": "yards_gained",
-  "data_type": "FLOAT64"
+  "ordinal_position": "11",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_schedules",
-  "column_name": "away_score",
-  "data_type": "INT64"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_pbp",
+  "column_name": "epa",
+  "ordinal_position": "12",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_schedules",
-  "column_name": "away_team",
-  "data_type": "STRING"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_pbp",
+  "column_name": "ingested_at",
+  "ordinal_position": "14",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_schedules",
-  "column_name": "game_date",
-  "data_type": "DATE"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_pbp",
+  "column_name": "raw_record",
+  "ordinal_position": "15",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_schedules",
   "column_name": "game_id",
-  "data_type": "STRING"
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_schedules",
-  "column_name": "home_score",
-  "data_type": "INT64"
+  "column_name": "season",
+  "ordinal_position": "2",
+  "data_type": "INT64",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_schedules",
+  "column_name": "week",
+  "ordinal_position": "3",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_schedules",
+  "column_name": "game_date",
+  "ordinal_position": "4",
+  "data_type": "DATE",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_schedules",
   "column_name": "home_team",
-  "data_type": "STRING"
+  "ordinal_position": "5",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_schedules",
-  "column_name": "ingested_at",
-  "data_type": "TIMESTAMP"
+  "column_name": "away_team",
+  "ordinal_position": "6",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_schedules",
-  "column_name": "raw_record",
-  "data_type": "STRING"
+  "column_name": "home_score",
+  "ordinal_position": "7",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_schedules",
-  "column_name": "result",
-  "data_type": "STRING"
+  "column_name": "away_score",
+  "ordinal_position": "8",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_schedules",
-  "column_name": "season",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_schedules",
   "column_name": "venue",
-  "data_type": "STRING"
+  "ordinal_position": "9",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_schedules",
-  "column_name": "week",
-  "data_type": "INT64"
+  "column_name": "result",
+  "ordinal_position": "10",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_team_stats",
-  "column_name": "epa_def",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_team_stats",
-  "column_name": "epa_off",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_team_stats",
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_schedules",
   "column_name": "ingested_at",
-  "data_type": "TIMESTAMP"
+  "ordinal_position": "12",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_team_stats",
-  "column_name": "points_against",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_team_stats",
-  "column_name": "points_for",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_team_stats",
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_schedules",
   "column_name": "raw_record",
-  "data_type": "STRING"
+  "ordinal_position": "13",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
-  "table_name": "raw_team_stats",
-  "column_name": "season",
-  "data_type": "INT64"
-}, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_team_stats",
   "column_name": "team",
-  "data_type": "STRING"
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_team_stats",
+  "column_name": "season",
+  "ordinal_position": "2",
+  "data_type": "INT64",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_team_stats",
   "column_name": "week",
-  "data_type": "INT64"
+  "ordinal_position": "3",
+  "data_type": "INT64",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_raw",
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_team_stats",
+  "column_name": "points_for",
+  "ordinal_position": "4",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_team_stats",
+  "column_name": "points_against",
+  "ordinal_position": "5",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_team_stats",
+  "column_name": "epa_off",
+  "ordinal_position": "6",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_team_stats",
+  "column_name": "epa_def",
+  "ordinal_position": "7",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_raw",
   "table_name": "raw_team_stats",
   "column_name": "win_pct",
-  "data_type": "FLOAT64"
+  "ordinal_position": "8",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "actual_away_points",
-  "data_type": "INT64"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_team_stats",
+  "column_name": "ingested_at",
+  "ordinal_position": "10",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "YES",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "actual_home_margin",
-  "data_type": "INT64"
+  "dataset_name": "sports_edge_raw",
+  "table_name": "raw_team_stats",
+  "column_name": "raw_record",
+  "ordinal_position": "11",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}]
+
+[{
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "game_id",
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "actual_home_points",
-  "data_type": "INT64"
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "league",
+  "ordinal_position": "2",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "actual_home_win",
-  "data_type": "BOOL"
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "season",
+  "ordinal_position": "3",
+  "data_type": "INT64",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "created_at",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
   "column_name": "game_date",
-  "data_type": "DATE"
+  "ordinal_position": "4",
+  "data_type": "DATE",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "as_of_ts",
+  "ordinal_position": "5",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "home_team",
+  "ordinal_position": "6",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "away_team",
+  "ordinal_position": "7",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "home_win",
+  "ordinal_position": "8",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "home_margin",
+  "ordinal_position": "9",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "rest_home",
+  "ordinal_position": "10",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "rest_away",
+  "ordinal_position": "11",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "b2b_home",
+  "ordinal_position": "12",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "b2b_away",
+  "ordinal_position": "13",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "opp_strength_home_season",
+  "ordinal_position": "14",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "opp_strength_away_season",
+  "ordinal_position": "15",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "home_team_win_pct",
+  "ordinal_position": "16",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "away_team_win_pct",
+  "ordinal_position": "17",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "home_team_point_diff",
+  "ordinal_position": "18",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "away_team_point_diff",
+  "ordinal_position": "19",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "rest_differential",
+  "ordinal_position": "20",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "win_pct_differential",
+  "ordinal_position": "21",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "point_diff_differential",
+  "ordinal_position": "22",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "opp_strength_differential",
+  "ordinal_position": "23",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "week_number",
+  "ordinal_position": "24",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "month",
+  "ordinal_position": "25",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "is_playoff",
+  "ordinal_position": "26",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_epa_off_3",
+  "ordinal_position": "27",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_epa_off_5",
+  "ordinal_position": "28",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_epa_off_10",
+  "ordinal_position": "29",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_epa_def_3",
+  "ordinal_position": "30",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_epa_def_5",
+  "ordinal_position": "31",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_epa_def_10",
+  "ordinal_position": "32",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_epa_off_3",
+  "ordinal_position": "33",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_epa_off_5",
+  "ordinal_position": "34",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_epa_off_10",
+  "ordinal_position": "35",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_epa_def_3",
+  "ordinal_position": "36",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_epa_def_5",
+  "ordinal_position": "37",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_epa_def_10",
+  "ordinal_position": "38",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_epa_off_diff_3",
+  "ordinal_position": "39",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_epa_off_diff_5",
+  "ordinal_position": "40",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_epa_off_diff_10",
+  "ordinal_position": "41",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_epa_def_diff_3",
+  "ordinal_position": "42",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_epa_def_diff_5",
+  "ordinal_position": "43",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_epa_def_diff_10",
+  "ordinal_position": "44",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "feature_version",
+  "ordinal_position": "45",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "is_3in4_home",
+  "ordinal_position": "46",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "is_3in4_away",
+  "ordinal_position": "47",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "is_3in4_differential",
+  "ordinal_position": "48",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_net_rating_3",
+  "ordinal_position": "49",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_net_rating_5",
+  "ordinal_position": "50",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_home_net_rating_10",
+  "ordinal_position": "51",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_net_rating_3",
+  "ordinal_position": "52",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_net_rating_5",
+  "ordinal_position": "53",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_away_net_rating_10",
+  "ordinal_position": "54",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_net_rating_diff_3",
+  "ordinal_position": "55",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_net_rating_diff_5",
+  "ordinal_position": "56",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "feature_snapshots",
+  "column_name": "form_net_rating_diff_10",
+  "ordinal_position": "57",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "prediction_id",
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "game_id",
+  "ordinal_position": "2",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "league",
+  "ordinal_position": "3",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "model_version",
+  "ordinal_position": "4",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "predicted_spread",
+  "ordinal_position": "5",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "home_win_prob",
+  "ordinal_position": "6",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "prediction_ts",
+  "ordinal_position": "7",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "input_hash",
+  "ordinal_position": "8",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "season",
+  "ordinal_position": "9",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "season_week",
+  "ordinal_position": "10",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_predictions",
+  "column_name": "model_number",
+  "ordinal_position": "12",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_runs",
+  "column_name": "run_id",
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_runs",
+  "column_name": "started_at",
+  "ordinal_position": "2",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "NO",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_runs",
+  "column_name": "finished_at",
+  "ordinal_position": "3",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_runs",
+  "column_name": "league",
+  "ordinal_position": "4",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_runs",
+  "column_name": "rows_written",
+  "ordinal_position": "5",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_runs",
+  "column_name": "status",
+  "ordinal_position": "6",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "model_runs",
+  "column_name": "error_text",
+  "ordinal_position": "7",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "game_id",
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "league",
+  "ordinal_position": "2",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "season",
+  "ordinal_position": "3",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "game_date",
+  "ordinal_position": "4",
+  "data_type": "DATE",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "as_of_ts",
+  "ordinal_position": "5",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "home_team",
+  "ordinal_position": "6",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "away_team",
+  "ordinal_position": "7",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "home_win",
+  "ordinal_position": "8",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "home_margin",
+  "ordinal_position": "9",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "rest_home",
+  "ordinal_position": "10",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "rest_away",
+  "ordinal_position": "11",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "b2b_home",
+  "ordinal_position": "12",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "b2b_away",
+  "ordinal_position": "13",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "opp_strength_home_season",
+  "ordinal_position": "14",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "opp_strength_away_season",
+  "ordinal_position": "15",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "home_team_win_pct",
+  "ordinal_position": "16",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "away_team_win_pct",
+  "ordinal_position": "17",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "home_team_point_diff",
+  "ordinal_position": "18",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "away_team_point_diff",
+  "ordinal_position": "19",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "rest_differential",
+  "ordinal_position": "20",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "win_pct_differential",
+  "ordinal_position": "21",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "point_diff_differential",
+  "ordinal_position": "22",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "opp_strength_differential",
+  "ordinal_position": "23",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "week_number",
+  "ordinal_position": "24",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "month",
+  "ordinal_position": "25",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "is_playoff",
+  "ordinal_position": "26",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_home_epa_off_3",
+  "ordinal_position": "27",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_home_epa_off_5",
+  "ordinal_position": "28",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_home_epa_off_10",
+  "ordinal_position": "29",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_home_epa_def_3",
+  "ordinal_position": "30",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_home_epa_def_5",
+  "ordinal_position": "31",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_home_epa_def_10",
+  "ordinal_position": "32",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_away_epa_off_3",
+  "ordinal_position": "33",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_away_epa_off_5",
+  "ordinal_position": "34",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_away_epa_off_10",
+  "ordinal_position": "35",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_away_epa_def_3",
+  "ordinal_position": "36",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_away_epa_def_5",
+  "ordinal_position": "37",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_away_epa_def_10",
+  "ordinal_position": "38",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_epa_off_diff_3",
+  "ordinal_position": "39",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_epa_off_diff_5",
+  "ordinal_position": "40",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_epa_off_diff_10",
+  "ordinal_position": "41",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_epa_def_diff_3",
+  "ordinal_position": "42",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_epa_def_diff_5",
+  "ordinal_position": "43",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "form_epa_def_diff_10",
+  "ordinal_position": "44",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view",
+  "column_name": "feature_version",
+  "ordinal_position": "45",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "game_id",
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "league",
+  "ordinal_position": "2",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "season",
+  "ordinal_position": "3",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "week_number",
+  "ordinal_position": "4",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "game_date",
+  "ordinal_position": "5",
+  "data_type": "DATE",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "home_win",
+  "ordinal_position": "6",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "home_margin",
+  "ordinal_position": "7",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "rest_home",
+  "ordinal_position": "8",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "rest_away",
+  "ordinal_position": "9",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "b2b_home",
+  "ordinal_position": "10",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "b2b_away",
+  "ordinal_position": "11",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "opp_strength_home_season",
+  "ordinal_position": "12",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "opp_strength_away_season",
+  "ordinal_position": "13",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "home_team_win_pct",
+  "ordinal_position": "14",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "away_team_win_pct",
+  "ordinal_position": "15",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "home_team_point_diff",
+  "ordinal_position": "16",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "away_team_point_diff",
+  "ordinal_position": "17",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "rest_differential",
+  "ordinal_position": "18",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "win_pct_differential",
+  "ordinal_position": "19",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "point_diff_differential",
+  "ordinal_position": "20",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "opp_strength_differential",
+  "ordinal_position": "21",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "iso_week",
+  "ordinal_position": "22",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "month",
+  "ordinal_position": "23",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "is_playoff",
+  "ordinal_position": "24",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_home_epa_off_3",
+  "ordinal_position": "25",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_home_epa_off_5",
+  "ordinal_position": "26",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_home_epa_off_10",
+  "ordinal_position": "27",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_home_epa_def_3",
+  "ordinal_position": "28",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_home_epa_def_5",
+  "ordinal_position": "29",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_home_epa_def_10",
+  "ordinal_position": "30",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_away_epa_off_3",
+  "ordinal_position": "31",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_away_epa_off_5",
+  "ordinal_position": "32",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_away_epa_off_10",
+  "ordinal_position": "33",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_away_epa_def_3",
+  "ordinal_position": "34",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_away_epa_def_5",
+  "ordinal_position": "35",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_away_epa_def_10",
+  "ordinal_position": "36",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_epa_off_diff_3",
+  "ordinal_position": "37",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_epa_off_diff_5",
+  "ordinal_position": "38",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_epa_off_diff_10",
+  "ordinal_position": "39",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_epa_def_diff_3",
+  "ordinal_position": "40",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_epa_def_diff_5",
+  "ordinal_position": "41",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_curated",
+  "table_name": "training_feature_view_v2",
+  "column_name": "form_epa_def_diff_10",
+  "ordinal_position": "42",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}]
+
+[{
+  "dataset_name": "sports_edge_results",
   "table_name": "game_results",
   "column_name": "game_id",
-  "data_type": "STRING"
+  "ordinal_position": "1",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
+  "dataset_name": "sports_edge_results",
   "table_name": "game_results",
   "column_name": "league",
-  "data_type": "STRING"
+  "ordinal_position": "2",
+  "data_type": "STRING",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "model_version",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "predicted_home_margin",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "predicted_home_win_prob",
-  "data_type": "FLOAT64"
-}, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "prediction_ts",
-  "data_type": "TIMESTAMP"
-}, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "run_id",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_results",
+  "dataset_name": "sports_edge_results",
   "table_name": "game_results",
   "column_name": "season",
-  "data_type": "INT64"
+  "ordinal_position": "3",
+  "data_type": "INT64",
+  "is_nullable": "NO",
+  "column_default": "NULL"
 }, {
-  "table_schema": "sports_edge_results",
-  "table_name": "game_results",
-  "column_name": "source_model",
-  "data_type": "STRING"
-}, {
-  "table_schema": "sports_edge_results",
+  "dataset_name": "sports_edge_results",
   "table_name": "game_results",
   "column_name": "week",
-  "data_type": "INT64"
+  "ordinal_position": "4",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "game_date",
+  "ordinal_position": "5",
+  "data_type": "DATE",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "model_version",
+  "ordinal_position": "6",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "predicted_home_win_prob",
+  "ordinal_position": "7",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "predicted_home_margin",
+  "ordinal_position": "8",
+  "data_type": "FLOAT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "prediction_ts",
+  "ordinal_position": "9",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "actual_home_win",
+  "ordinal_position": "10",
+  "data_type": "BOOL",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "actual_home_margin",
+  "ordinal_position": "11",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "actual_home_points",
+  "ordinal_position": "12",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "actual_away_points",
+  "ordinal_position": "13",
+  "data_type": "INT64",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "source_model",
+  "ordinal_position": "14",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "run_id",
+  "ordinal_position": "15",
+  "data_type": "STRING",
+  "is_nullable": "YES",
+  "column_default": "NULL"
+}, {
+  "dataset_name": "sports_edge_results",
+  "table_name": "game_results",
+  "column_name": "created_at",
+  "ordinal_position": "16",
+  "data_type": "TIMESTAMP",
+  "is_nullable": "YES",
+  "column_default": "CURRENT_TIMESTAMP()"
 }]

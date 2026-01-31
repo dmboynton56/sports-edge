@@ -88,12 +88,12 @@ def _load_dataframe(
 
 
 def _delete_season(client: bigquery.Client, table_id: str, season: int) -> None:
-    query = f"DELETE FROM `{table_id}` WHERE season = @season"
+    query = f"DELETE FROM `{table_id}` WHERE season = @season AND league = 'NFL'"
     job_config = bigquery.QueryJobConfig(
         query_parameters=[bigquery.ScalarQueryParameter("season", "INT64", season)]
     )
     client.query(query, job_config=job_config).result()
-    print(f"Cleared {table_id} for season {season}")
+    print(f"Cleared {table_id} for NFL season {season}")
 
 
 def _load_module():
@@ -106,6 +106,7 @@ def _load_module():
 
 PBP_COLUMNS = [
     "game_id",
+    "league",
     "play_id",
     "season",
     "week",
@@ -122,6 +123,7 @@ PBP_COLUMNS = [
 
 SCHEDULE_COLUMNS = [
     "game_id",
+    "league",
     "season",
     "week",
     "game_date",
@@ -136,6 +138,7 @@ SCHEDULE_COLUMNS = [
 
 TEAM_STATS_COLUMNS = [
     "team",
+    "league",
     "season",
     "week",
     "points_for",
@@ -170,6 +173,10 @@ def main() -> None:
         pbp_df["ingested_at"] = utc_now
         schedules_df["ingested_at"] = utc_now
         team_stats_df["ingested_at"] = utc_now
+
+        pbp_df["league"] = "NFL"
+        schedules_df["league"] = "NFL"
+        team_stats_df["league"] = "NFL"
 
         pbp_df = _ensure_columns(pbp_df, PBP_COLUMNS[:-1])
         schedules_df = _ensure_columns(schedules_df, SCHEDULE_COLUMNS[:-1])

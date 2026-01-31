@@ -347,12 +347,6 @@ def main():
     else:
         print(f"  Loaded {len(game_logs)} total game log entries")
     
-    try:
-        date_games = collect_date_games(schedule_df, target_date)
-    except Exception as err:
-        print(f"ERROR: {err}")
-        sys.exit(1)
-    
     # Handle lookback if requested
     dates_to_predict = [target_date]
     if args.lookback > 0:
