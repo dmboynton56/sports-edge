@@ -18,7 +18,8 @@ from google.cloud import bigquery
 
 from src.pipeline.refresh import build_features
 from src.models.predictor import GamePredictor
-from src.data.nba_fetcher import fetch_nba_games_for_date
+from src.data.nba_fetcher import fetch_nba_games_for_date, fetch_nba_schedule
+from src.data.nba_game_logs_loader import load_nba_game_logs_from_bq
 
 
 def _parse_args() -> argparse.Namespace:
@@ -68,36 +69,8 @@ def _query_games(client: bigquery.Client, project: str, target_date: datetime.da
         ]
     )
     df = client.query(query, job_config=job_config).to_dataframe()
-    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
-    return df
-
-
-def _query_historical_games(client: bigquery.Client, project: str, seasons: List[int]) -> pd.DataFrame:
-    query = f"""
-        SELECT *
-        FROM `{project}.sports_edge_raw.raw_schedules`
-        WHERE season IN UNNEST(@seasons)
-          AND league = 'NBA'
-    """
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
-    )
-    df = client.query(query, job_config=job_config).to_dataframe()
-    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
-    return df
-
-
-def _query_game_logs(client: bigquery.Client, project: str, seasons: List[int]) -> pd.DataFrame:
-    query = f"""
-        SELECT *
-        FROM `{project}.sports_edge_raw.raw_nba_game_logs`
-        WHERE season IN UNNEST(@seasons)
-    """
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
-    )
-    df = client.query(query, job_config=job_config).to_dataframe()
-    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
+    # BigQuery DATE columns are already local gameday
+    df["game_date"] = pd.to_datetime(df["game_date"]).dt.tz_localize(None)
     return df
 
 
@@ -163,12 +136,17 @@ def main() -> None:
         return
 
     hist_seasons = [season]
-    historical_games = _query_historical_games(client, args.project, hist_seasons)
-    game_logs = _query_game_logs(client, args.project, hist_seasons)
+    # Use helper functions for consistency with local pipeline
+    # historical_games: ET naive from BQ or API
+    historical_games = fetch_nba_schedule(season, use_cache=True)
+    # game_logs: ET naive from BQ
+    game_logs = load_nba_game_logs_from_bq(hist_seasons, project_id=args.project)
     historical_data = {"historical_games": historical_games, "game_logs": game_logs}
 
     # Predictor handles feature building automatically
     predictor = GamePredictor("NBA", model_version=args.model_version)
+    # Ensure games_df dates are normalized before passing to batch
+    games_df['game_date'] = predictor._normalize_datetime(games_df['game_date'])
     predictions = predictor.predict_batch(games_df, historical_games, game_logs=game_logs)
     
     if predictions.empty:
@@ -177,9 +155,9 @@ def main() -> None:
 
     # Merge with games_df to get game_id
     # Normalize dates to midnight to ensure merge matches even if times differ
-    predictions["game_date"] = pd.to_datetime(predictions["game_date"]).dt.normalize()
+    predictions["game_date"] = pd.to_datetime(predictions["game_date"]).dt.normalize().dt.tz_localize(None)
     games_df_normalized = games_df[["game_id", "home_team", "away_team", "game_date"]].copy()
-    games_df_normalized["game_date"] = pd.to_datetime(games_df_normalized["game_date"]).dt.normalize()
+    games_df_normalized["game_date"] = pd.to_datetime(games_df_normalized["game_date"]).dt.normalize().dt.tz_localize(None)
 
     predictions = predictions.merge(
         games_df_normalized,
@@ -226,7 +204,7 @@ def main() -> None:
     predictions = predictions[target_columns]
 
     if args.dry_run:
-        print(predictions)
+        print(predictions[['game_id', 'predicted_spread', 'home_win_prob']])
         return
 
     run_id = f"nba_{datetime.now(tz=timezone.utc).strftime('%Y%m%dT%H%M%S')}"

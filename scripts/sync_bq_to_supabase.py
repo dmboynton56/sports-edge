@@ -238,7 +238,15 @@ def fetch_latest_predictions(
     LOGGER.debug("BigQuery returned %d rows", len(df))
     if df.empty:
         return df
-    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_localize(None)
+    # Normalize dates to ET for consistent display/matching
+    # If they are already naive DATE columns from BQ, don't convert.
+    def _normalize_date(s):
+        s = pd.to_datetime(s)
+        if s.dt.tz is not None:
+            return s.dt.tz_convert("America/New_York").dt.tz_localize(None)
+        return s
+
+    df["game_date"] = _normalize_date(df["game_date"])
     df["prediction_ts"] = pd.to_datetime(df["prediction_ts"], utc=True, errors="coerce")
     if LOGGER.isEnabledFor(logging.DEBUG):
         preview = df[["game_id", "season", "season_week", "home_team", "away_team", "model_version"]].head()
@@ -358,7 +366,7 @@ def send_discord_alerts(preds: pd.DataFrame, league: str) -> None:
             # In our data, predicted_spread is home_margin (positive = home win)
             # So negative home_margin means away is favorite. 
             # Standard spread = -predicted_spread
-            display_spread = -spread if spread is not None else 0
+            display_spread = spread if spread is not None else 0
             spread_sign = "-" if display_spread <= 0 else "+"
             spread_val = abs(display_spread)
             

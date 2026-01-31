@@ -270,8 +270,9 @@ def load_nba_game_logs_from_bq(seasons: Sequence[int], project_id: Optional[str]
             except Exception as e:
                 print(f"  Warning: Could not expand raw_record: {e}")
         
-        # Ensure game_date is datetime and normalized to ET
-        df['game_date'] = pd.to_datetime(df['game_date'], utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
+        # Ensure game_date is datetime and naive
+        # BigQuery DATE columns are already local gameday, don't convert to/from UTC
+        df['game_date'] = pd.to_datetime(df['game_date']).dt.tz_localize(None)
         
         return df
     except Exception as e:
