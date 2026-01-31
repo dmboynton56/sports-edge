@@ -68,7 +68,7 @@ def _query_games(client: bigquery.Client, project: str, target_date: datetime.da
         ]
     )
     df = client.query(query, job_config=job_config).to_dataframe()
-    df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
+    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
     return df
 
 
@@ -83,7 +83,7 @@ def _query_historical_games(client: bigquery.Client, project: str, seasons: List
         query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
     )
     df = client.query(query, job_config=job_config).to_dataframe()
-    df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
+    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
     return df
 
 
@@ -97,7 +97,7 @@ def _query_game_logs(client: bigquery.Client, project: str, seasons: List[int]) 
         query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
     )
     df = client.query(query, job_config=job_config).to_dataframe()
-    df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
+    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
     return df
 
 

@@ -30,7 +30,7 @@ def _normalize_game_dates(df: pd.DataFrame) -> pd.DataFrame:
     if 'game_date' in df.columns:
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', category=UserWarning)
-            df['game_date'] = pd.to_datetime(df['game_date'], errors='coerce', utc=True).dt.tz_localize(None)
+            df['game_date'] = pd.to_datetime(df['game_date'], errors='coerce', utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
     elif 'GAME_DATE' in df.columns:
         # NBA API has two common formats:
         # 1. "APR 13, 2025" (TeamGameLog)
@@ -38,7 +38,7 @@ def _normalize_game_dates(df: pd.DataFrame) -> pd.DataFrame:
         with warnings.catch_warnings():
             warnings.filterwarnings('ignore', category=UserWarning)
             # Try flexible parsing first, then fallback to specific format if needed
-            df['game_date'] = pd.to_datetime(df['GAME_DATE'], errors='coerce', utc=True).dt.tz_localize(None)
+            df['game_date'] = pd.to_datetime(df['GAME_DATE'], errors='coerce', utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
             
             # If everything is still null, try the specific legacy format
             if df['game_date'].isna().all():
@@ -270,8 +270,8 @@ def load_nba_game_logs_from_bq(seasons: Sequence[int], project_id: Optional[str]
             except Exception as e:
                 print(f"  Warning: Could not expand raw_record: {e}")
         
-        # Ensure game_date is datetime
-        df['game_date'] = pd.to_datetime(df['game_date'])
+        # Ensure game_date is datetime and normalized to ET
+        df['game_date'] = pd.to_datetime(df['game_date'], utc=True).dt.tz_convert("America/New_York").dt.tz_localize(None)
         
         return df
     except Exception as e:

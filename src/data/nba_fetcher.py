@@ -145,9 +145,9 @@ def fetch_nba_schedule(
     if use_cache:
         try:
             from google.cloud import bigquery
-            client = bigquery.Client()
             project = os.getenv("GCP_PROJECT_ID")
             if project:
+                client = bigquery.Client(project=project)
                 print(f"  Checking BigQuery for {season} schedule...")
                 query = f"""
                     SELECT game_id, season, game_date, home_team, away_team, home_score, away_score
