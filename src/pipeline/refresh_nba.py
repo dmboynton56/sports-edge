@@ -51,6 +51,11 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Compute predictions but do not write to BigQuery.",
     )
+    parser.add_argument(
+        "--skip-odds",
+        action="store_true",
+        help="Skip fetching odds from The Odds API (requires ODDS_API_KEY).",
+    )
     return parser.parse_args()
 
 
@@ -125,6 +130,16 @@ def main() -> None:
     target_date = args.date or datetime.now(tz=timezone.utc).date()
     season = args.season or (target_date.year if target_date.month >= 10 else target_date.year - 1)
     print(f"Building NBA predictions for {target_date}. Target season={season}.")
+
+    # Fetch current odds from The Odds API and load into raw_nba_odds
+    if not args.skip_odds:
+        try:
+            from src.data.nba_odds_api import fetch_and_load_odds
+            date_str = target_date.strftime("%Y-%m-%d")
+            n_odds = fetch_and_load_odds(args.project, date_str, replace_existing=True)
+            print(f"Loaded {n_odds} odds rows for {date_str}")
+        except Exception as e:
+            print(f"Odds fetch skipped: {e}")
 
     games_df = _query_games(client, args.project, target_date)
     if games_df.empty:

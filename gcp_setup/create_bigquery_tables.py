@@ -119,6 +119,30 @@ TABLE_SPECS = [
         "description": "Raw NBA game logs for form metrics computation.",
     },
     {
+        "dataset": "sports_edge_raw",
+        "table": "raw_nba_odds",
+        "schema": _schema(
+            [
+                ("game_id", "STRING", "REQUIRED"),
+                ("league", "STRING", "REQUIRED"),
+                ("season", "INT64", "REQUIRED"),
+                ("game_date", "DATE", "REQUIRED"),
+                ("home_team", "STRING", "REQUIRED"),
+                ("away_team", "STRING", "REQUIRED"),
+                ("book", "STRING", "NULLABLE"),
+                ("market", "STRING", "REQUIRED"),
+                ("line", "FLOAT64", "NULLABLE"),
+                ("price", "FLOAT64", "NULLABLE"),
+                ("whos_favored", "STRING", "NULLABLE"),
+                ("ingested_at", "TIMESTAMP", "NULLABLE"),
+                ("raw_record", "STRING", "NULLABLE"),
+            ]
+        ),
+        "partition_field": "game_date",
+        "cluster_fields": ["league", "season"],
+        "description": "Historical NBA betting odds (spread, total, moneyline) from CSV backfill.",
+    },
+    {
         "dataset": "sports_edge_curated",
         "table": "feature_snapshots",
         "schema": _schema(

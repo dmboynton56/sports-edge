@@ -1,5 +1,8 @@
 # Sports-Edge: NFL/NBA Betting Analysis Pipeline
 
+![Build Status](https://github.com/dmboynton56/sports-edge/actions/workflows/test.yml/badge.svg)
+
+
 A machine learning pipeline to compute model spreads and home win probabilities for NFL/NBA games, compare against sportsbook lines, and display results on a personal portfolio.
 
 The system treats BigQuery as the source of truth for scoring and historical data, while Supabase remains the lightweight cache that the frontend website reads.
@@ -61,6 +64,7 @@ The pipeline handles data fetching, feature building, and prediction in one flow
 ```bash
 python -m src.pipeline.refresh_nba --project your-project-id --model-version v3 --date 2026-01-14
 ```
+The NBA refresh now fetches current odds from The Odds API (requires `ODDS_API_KEY`) and loads them into `raw_nba_odds` before generating predictions. Use `--skip-odds` to skip this step.
 
 **NFL (Weekly)**:
 ```bash

@@ -28,7 +28,7 @@ from src.data.nba_game_logs_loader import load_nba_game_logs, load_nba_game_logs
 from src.models.predictor import GamePredictor
 
 
-MODEL_VERSION = 'v3'
+MODEL_VERSION = 'v2'
 
 
 def load_season_schedule(season: int) -> pd.DataFrame:
