@@ -38,7 +38,9 @@ def load_season_schedule(season: int) -> pd.DataFrame:
     if schedule.empty:
         raise ValueError(f"No schedule data found for {season}")
     
-    schedule['game_date'] = pd.to_datetime(schedule['game_date'])
+    # Normalize to ET naive for consistent day-of-game filtering
+    predictor = GamePredictor('NBA', MODEL_VERSION)
+    schedule['game_date'] = predictor._normalize_datetime(schedule['game_date'])
     schedule['season'] = season
     print(f"  Loaded {len(schedule)} games for {season}")
     return schedule
@@ -55,7 +57,8 @@ def filter_completed_games(schedule: pd.DataFrame) -> pd.DataFrame:
     
     print(f"  Completed games: {len(completed)}")
     if len(completed) > 0:
-        print(f"  Completed through: {completed['game_date'].max().date()}")
+        # Standardize dates to date objects for display
+        print(f"  Completed through: {pd.to_datetime(completed['game_date']).max().date()}")
     else:
         print("  WARNING: No completed games yet; team-strength features will be empty.")
     
@@ -81,8 +84,11 @@ def collect_date_games(schedule: pd.DataFrame, target_date: str) -> pd.DataFrame
         if date_games.empty:
             raise ValueError(f"No games found for date {target_date}.")
         
+        # Normalize API dates too
+        predictor = GamePredictor('NBA', MODEL_VERSION)
+        date_games['game_date'] = predictor._normalize_datetime(date_games['game_date'])
+        
     # Final filter: Ensure we are only looking at games for THIS specific local day
-    # We trust the ESPN API query for this date
     date_games = date_games.sort_values('game_date').reset_index(drop=True)
     print(f"\nFound {len(date_games)} games for {target_date}:")
     for _, row in date_games.iterrows():

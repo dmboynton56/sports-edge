@@ -1,0 +1,20 @@
+ Full 2025–26 season backtest
+Use the --full-season flag:
+python scripts/backtest_nba_spread.py --project learned-pier-478122-p7 --full-season --output-csv backtest_results.csv
+This runs from 2025-10-22 through yesterday. For a custom range:
+python scripts/backtest_nba_spread.py --project learned-pier-478122-p7 \  --start-date 2025-10-22 \  --end-date 2026-02-14 \  --output-csv backtest_results.csv
+2. Picks for today / next few days
+Use the new predict_nba_picks.py script:
+# Today onlypython scripts/predict_nba_picks.py --project learned-pier-478122-p7# Next 3 dayspython scripts/predict_nba_picks.py --project learned-pier-478122-p7 --days 3# Next 7 dayspython scripts/predict_nba_picks.py --project learned-pier-478122-p7 --days 7# Specific datepython scripts/predict_nba_picks.py --project learned-pier-478122-p7 --date 2026-02-16 --days 3# Stricter filters (from backtest)python scripts/predict_nba_picks.py --project learned-pier-478122-p7 --days 3 --edge-threshold 1.0 --min-confidence 0.4
+Output: For each game it prints:
+BET lines when edge and confidence pass the thresholds
+All games with model spread, book spread (if available), and edge
+Odds: Picks use odds from raw_nba_odds (Pinnacle and historical CSV). If there are no odds for upcoming games, it prints Book N/A and you add them manually. For live use, you’d scrape or fetch odds daily.
+Summary
+Task	Command
+Full season backtest	--full-season
+Today’s picks	--days 1 (default)
+Next 3 days	--days 3
+Next week	--days 7
+
+DONE: Daily refresh fetches odds (refresh_nba.py). predict_nba_picks fetches odds for the date range by default (--no-fetch-odds to skip). Book spread is joined and used for edge calculation.

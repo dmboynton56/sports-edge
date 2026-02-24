@@ -158,6 +158,26 @@ def fetch_latest_predictions(
     if start_date and end_date:
         date_filter = "AND f.game_date BETWEEN @start_date AND @end_date"
     
+    odds_join = ""
+    if league.upper() == "NBA":
+        odds_join = f"""
+        LEFT JOIN (
+            SELECT
+                o.game_id,
+                o.line AS book_spread,
+                ROW_NUMBER() OVER (
+                    PARTITION BY o.game_id 
+                    ORDER BY (CASE WHEN o.book = 'pinnacle' THEN 1 ELSE 2 END), o.ingested_at DESC
+                ) AS rn
+            FROM `{project}.sports_edge_raw.raw_nba_odds` AS o
+            WHERE o.market = 'spread'
+              AND o.line IS NOT NULL
+        ) AS o
+          ON p.game_id = o.game_id AND o.rn = 1
+        """
+    else:
+        odds_join = "CROSS JOIN (SELECT CAST(NULL AS FLOAT64) AS book_spread) AS o"
+
     query = f"""
         WITH latest_preds AS (
             SELECT
@@ -196,10 +216,12 @@ def fetch_latest_predictions(
             p.model_version,
             p.predicted_spread,
             p.home_win_prob,
-            p.prediction_ts
+            p.prediction_ts,
+            o.book_spread
         FROM latest_preds AS p
         JOIN latest_features AS f
           ON p.game_id = f.game_id
+        {odds_join}
         WHERE p.rn = 1
           AND f.rn = 1
           {date_filter}
@@ -238,7 +260,15 @@ def fetch_latest_predictions(
     LOGGER.debug("BigQuery returned %d rows", len(df))
     if df.empty:
         return df
-    df["game_date"] = pd.to_datetime(df["game_date"], utc=True).dt.tz_localize(None)
+    # Normalize dates to ET for consistent display/matching
+    # If they are already naive DATE columns from BQ, don't convert.
+    def _normalize_date(s):
+        s = pd.to_datetime(s)
+        if s.dt.tz is not None:
+            return s.dt.tz_convert("America/New_York").dt.tz_localize(None)
+        return s
+
+    df["game_date"] = _normalize_date(df["game_date"])
     df["prediction_ts"] = pd.to_datetime(df["prediction_ts"], utc=True, errors="coerce")
     if LOGGER.isEnabledFor(logging.DEBUG):
         preview = df[["game_id", "season", "season_week", "home_team", "away_team", "model_version"]].head()
@@ -249,13 +279,13 @@ def fetch_latest_predictions(
 def _prepare_games(preds: pd.DataFrame) -> pd.DataFrame:
     """Deduplicate games and coerce week/time columns before upserting."""
     games = (
-        preds[["league", "season", "home_team", "away_team", "game_date", "season_week"]]
+        preds[["league", "season", "home_team", "away_team", "game_date", "season_week", "book_spread"]]
         .drop_duplicates(subset=["league", "season", "home_team", "away_team", "game_date"])
         .rename(columns={"season_week": "week"})
     )
     games["week"] = games["week"].astype("Int64")
     games["game_time_utc"] = pd.to_datetime(games["game_date"], utc=True)
-    LOGGER.debug("Prepared %d unique games for upsert.", len(games))
+    LOGGER.debug("Prepared %d unique games for upsert (including book_spread).", len(games))
     return games
 
 
@@ -358,7 +388,7 @@ def send_discord_alerts(preds: pd.DataFrame, league: str) -> None:
             # In our data, predicted_spread is home_margin (positive = home win)
             # So negative home_margin means away is favorite. 
             # Standard spread = -predicted_spread
-            display_spread = -spread if spread is not None else 0
+            display_spread = spread if spread is not None else 0
             spread_sign = "-" if display_spread <= 0 else "+"
             spread_val = abs(display_spread)
             

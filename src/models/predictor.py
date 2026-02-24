@@ -138,6 +138,27 @@ class GamePredictor:
                     df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0)
         return df
     
+    def _normalize_datetime(self, dt_series):
+        """Normalize a series of datetimes to naive America/New_York."""
+        if dt_series is None:
+            return None
+        # Convert to series if it's a single value
+        is_single = not isinstance(dt_series, (pd.Series, pd.Index))
+        if is_single:
+            dt_series = pd.Series([dt_series])
+            
+        s = pd.to_datetime(dt_series)
+        # If it has TZ info, convert to ET then drop it
+        if s.dt.tz is not None:
+            s = s.dt.tz_convert("America/New_York").dt.tz_localize(None)
+        else:
+            # If it's already naive, we assume it's already local day time
+            # but to be safe, if it's midnight UTC (common for BQ DATEs), 
+            # we keep it as-is.
+            pass
+            
+        return s.iloc[0] if is_single else s
+
     def build_features_for_game(self, game_row: pd.DataFrame, historical_games: pd.DataFrame,
                                 play_by_play: Optional[pd.DataFrame] = None,
                                 game_logs: Optional[pd.DataFrame] = None) -> pd.DataFrame:
@@ -147,19 +168,19 @@ class GamePredictor:
         try:
             df = game_row.copy()
             
-            # Ensure game_date is naive datetime for comparison
+            # Ensure game_date is naive datetime for comparison (normalized to America/New_York)
             if 'game_date' not in df.columns:
                 if 'gameday' in df.columns:
-                    df['game_date'] = pd.to_datetime(df['gameday'], utc=True).dt.tz_localize(None)
+                    df['game_date'] = self._normalize_datetime(df['gameday'])
                 else:
                     raise ValueError("game_date or gameday column required")
             else:
-                df['game_date'] = pd.to_datetime(df['game_date'], utc=True).dt.tz_localize(None)
+                df['game_date'] = self._normalize_datetime(df['game_date'])
                 
             # Also ensure historical_games is naive
             hist = historical_games.copy()
             if 'game_date' in hist.columns:
-                hist['game_date'] = pd.to_datetime(hist['game_date'], utc=True).dt.tz_localize(None)
+                hist['game_date'] = self._normalize_datetime(hist['game_date'])
             
             # Add rest features
             df = rest_schedule.add_rest_features(df, hist)
@@ -177,13 +198,13 @@ class GamePredictor:
             if self.league == 'NFL' and play_by_play is not None:
                 pbp = play_by_play.copy()
                 if 'game_date' in pbp.columns:
-                    pbp['game_date'] = pd.to_datetime(pbp['game_date'], utc=True).dt.tz_localize(None)
+                    pbp['game_date'] = self._normalize_datetime(pbp['game_date'])
                 for window in [3, 5, 10]:
                     df = form_metrics.add_form_features_nfl(df, pbp, window=window)
             elif self.league == 'NBA' and game_logs is not None:
                 logs = game_logs.copy()
                 if 'game_date' in logs.columns:
-                    logs['game_date'] = pd.to_datetime(logs['game_date'], utc=True).dt.tz_localize(None)
+                    logs['game_date'] = self._normalize_datetime(logs['game_date'])
                 for window in [3, 5, 10]:
                     df = form_metrics.add_form_features_nba(df, logs, window=window)
             
@@ -210,14 +231,15 @@ class GamePredictor:
         df['away_team_point_diff'] = np.nan
         
         for idx, row in df.iterrows():
-            game_date = pd.to_datetime(row['game_date'], utc=True).tz_localize(None)
+            game_date = self._normalize_datetime(row['game_date'])
                 
             home_team = row['home_team']
             away_team = row['away_team']
             season = row.get('season', game_date.year)
             
             # Only use current season games (completed games only)
-            hist_dates = pd.to_datetime(historical_games['game_date'], utc=True).dt.tz_localize(None)
+            # Use TZ-aware check then normalize
+            hist_dates = self._normalize_datetime(historical_games['game_date'])
                 
             season_games = historical_games[
                 (hist_dates < game_date) &
