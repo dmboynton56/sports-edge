@@ -114,6 +114,20 @@ jobs:
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
 
+      - name: Sync Market Odds
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          python scripts/sync_odds.py --project "$PROJECT_ID"
+
       - name: Notify Discord on Failure
         if: failure()
         run: |
