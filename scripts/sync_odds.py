@@ -252,6 +252,9 @@ def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_dat
         ]
     )
     preds = client.query(query, job_config=job_config).to_dataframe()
+    # Deduplicate in case the join produced multiple rows per prediction
+    if not preds.empty:
+        preds = preds.drop_duplicates('prediction_id')
     
     if preds.empty:
         LOGGER.warning(f"No BigQuery predictions found for {league} on/after {target_date}")
@@ -291,7 +294,8 @@ def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_dat
     if pred_updates:
         # Update model_predictions
         temp_pred_id = f"{project}.sports_edge_curated.temp_preds_update_{league.lower()}"
-        client.load_table_from_dataframe(pd.DataFrame(pred_updates), temp_pred_id, job_config=bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")).result()
+        df_pred = pd.DataFrame(pred_updates).drop_duplicates('prediction_id')
+        client.load_table_from_dataframe(df_pred, temp_pred_id, job_config=bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")).result()
         
         client.query(f"""
             MERGE `{pred_table_id}` t
@@ -300,12 +304,13 @@ def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_dat
             WHEN MATCHED THEN UPDATE SET book_spread = s.book_spread
         """).result()
         client.delete_table(temp_pred_id)
-        LOGGER.info(f"Updated {len(pred_updates)} BigQuery model_predictions rows with book spreads for {league}")
+        LOGGER.info(f"Updated {len(df_pred)} BigQuery model_predictions rows with book spreads for {league}")
 
     if feat_updates:
         # Update feature_snapshots
         temp_feat_id = f"{project}.sports_edge_curated.temp_feat_update_{league.lower()}"
-        client.load_table_from_dataframe(pd.DataFrame(feat_updates), temp_feat_id, job_config=bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")).result()
+        df_feat = pd.DataFrame(feat_updates).drop_duplicates('game_id')
+        client.load_table_from_dataframe(df_feat, temp_feat_id, job_config=bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")).result()
         
         client.query(f"""
             MERGE `{feat_table_id}` t
@@ -314,7 +319,7 @@ def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_dat
             WHEN MATCHED THEN UPDATE SET book_spread = s.book_spread
         """).result()
         client.delete_table(temp_feat_id)
-        LOGGER.info(f"Updated {len(feat_updates)} BigQuery feature_snapshots rows with book spreads for {league}")
+        LOGGER.info(f"Updated {len(df_feat)} BigQuery feature_snapshots rows with book spreads for {league}")
 
 def main():
     load_dotenv()
