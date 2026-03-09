@@ -8,7 +8,7 @@ def create_pg_connection(supabase_url: str, password: str, host_override: Option
     """Create a PostgreSQL connection to Supabase."""
     host = host_override or supabase_url.split("//")[1].split(".")[0] + ".supabase.co"
     conn_str = f"host={host} port={port} dbname={database} user={user} password={password} sslmode=require"
-    return psycopg.connect(conn_str)
+    return psycopg.connect(conn_str, prepare_threshold=None)
 
 def load_supabase_credentials() -> Dict[str, str]:
     """Load Supabase credentials from environment variables."""

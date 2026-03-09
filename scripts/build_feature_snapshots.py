@@ -11,12 +11,14 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+import time
 from datetime import datetime, timezone
 from typing import Dict, List
 
 import pandas as pd
 from dotenv import load_dotenv
 from google.cloud import bigquery
+from google.api_core import exceptions
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
@@ -131,7 +133,18 @@ def _fetch_table(client: bigquery.Client, project: str, dataset: str, table: str
     job_config = bigquery.QueryJobConfig(
         query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
     )
-    return client.query(query, job_config=job_config).to_dataframe()
+    
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            return client.query(query, job_config=job_config).to_dataframe()
+        except exceptions.ServiceUnavailable as e:
+            if attempt < max_retries - 1:
+                sleep_time = 2 ** attempt
+                print(f"ServiceUnavailable error fetching {table}, retrying in {sleep_time}s...")
+                time.sleep(sleep_time)
+            else:
+                raise
 
 
 def _delete_existing_features(client: bigquery.Client, table_id: str, seasons: List[int], league: str) -> None:

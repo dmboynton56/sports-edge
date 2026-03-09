@@ -197,6 +197,12 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]):
             fuzzy_key = next((k for k in game_map.keys() if k.startswith(day_key_prefix) and home_code in k and away_code in k), None)
             if fuzzy_key:
                 gid = game_map[fuzzy_key]
+                
+        if not gid:
+            # Fallback: find any game with the same home and away team in the window
+            fallback_key = next((k for k in game_map.keys() if home_code in k and away_code in k), None)
+            if fallback_key:
+                gid = game_map[fallback_key]
         
         if gid:
             # Find the best bookmaker spread
@@ -216,8 +222,7 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]):
                         
     if updates:
         with conn.cursor() as cur:
-            for spread, gid in updates:
-                cur.execute("UPDATE games SET book_spread = %s WHERE id = %s", (spread, gid))
+            cur.executemany("UPDATE games SET book_spread = %s WHERE id = %s", updates)
         conn.commit()
         LOGGER.info(f"Updated {len(updates)} games in Supabase with book spreads for {league}")
     else:
@@ -268,11 +273,12 @@ def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_dat
         if not home_code or not away_code:
             continue
             
-        event_date = datetime.fromisoformat(event['commence_time'].replace('Z', '+00:00')).date()
+        event_time_utc = datetime.fromisoformat(event['commence_time'].replace('Z', '+00:00'))
+        event_date_us = (event_time_utc - timedelta(hours=5)).date()
         matches = preds[
             (preds['home_team'] == home_code) & 
             (preds['away_team'] == away_code) & 
-            (pd.to_datetime(preds['game_date']).dt.date == event_date)
+            (pd.to_datetime(preds['game_date']).dt.date == event_date_us)
         ]
         
         if not matches.empty:
@@ -360,6 +366,7 @@ def main():
             if not odds_data:
                 continue
                 
+            LOGGER.info(f"Retrieved {len(odds_data)} games from The Odds API for {league}")
             sync_odds_to_supabase(pg_conn, league, odds_data)
             sync_odds_to_bq(bq_client, project, league, odds_data)
             
