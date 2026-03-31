@@ -1,0 +1,962 @@
+[
+  {
+    "team": "Duke",
+    "teamId": 1181,
+    "seed": 1,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.9321,
+      "S16": 0.6978,
+      "E8": 0.484,
+      "F4": 0.3153,
+      "Championship": 0.1915,
+      "Winner": 0.1178
+    }
+  },
+  {
+    "team": "Arizona",
+    "teamId": 1112,
+    "seed": 1,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.9303,
+      "S16": 0.6788,
+      "E8": 0.4647,
+      "F4": 0.2987,
+      "Championship": 0.1708,
+      "Winner": 0.0993
+    }
+  },
+  {
+    "team": "Florida",
+    "teamId": 1196,
+    "seed": 1,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.9243,
+      "S16": 0.6674,
+      "E8": 0.46,
+      "F4": 0.278,
+      "Championship": 0.1729,
+      "Winner": 0.0937
+    }
+  },
+  {
+    "team": "Michigan",
+    "teamId": 1276,
+    "seed": 1,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.9312,
+      "S16": 0.6956,
+      "E8": 0.4705,
+      "F4": 0.2901,
+      "Championship": 0.157,
+      "Winner": 0.0832
+    }
+  },
+  {
+    "team": "Houston",
+    "teamId": 1222,
+    "seed": 2,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.8865,
+      "S16": 0.631,
+      "E8": 0.4074,
+      "F4": 0.2338,
+      "Championship": 0.1354,
+      "Winner": 0.0726
+    }
+  },
+  {
+    "team": "Purdue",
+    "teamId": 1345,
+    "seed": 2,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.8612,
+      "S16": 0.6191,
+      "E8": 0.4093,
+      "F4": 0.2303,
+      "Championship": 0.1273,
+      "Winner": 0.0708
+    }
+  },
+  {
+    "team": "UConn",
+    "teamId": 1163,
+    "seed": 2,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.8862,
+      "S16": 0.6319,
+      "E8": 0.3974,
+      "F4": 0.2054,
+      "Championship": 0.1117,
+      "Winner": 0.0623
+    }
+  },
+  {
+    "team": "Iowa State",
+    "teamId": 1235,
+    "seed": 2,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.8879,
+      "S16": 0.6097,
+      "E8": 0.3864,
+      "F4": 0.2039,
+      "Championship": 0.1046,
+      "Winner": 0.0532
+    }
+  },
+  {
+    "team": "Illinois",
+    "teamId": 1228,
+    "seed": 3,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.7951,
+      "S16": 0.5389,
+      "E8": 0.2829,
+      "F4": 0.1584,
+      "Championship": 0.089,
+      "Winner": 0.044
+    }
+  },
+  {
+    "team": "Michigan State",
+    "teamId": 1277,
+    "seed": 3,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.7989,
+      "S16": 0.5513,
+      "E8": 0.2929,
+      "F4": 0.1513,
+      "Championship": 0.0782,
+      "Winner": 0.0378
+    }
+  },
+  {
+    "team": "Gonzaga",
+    "teamId": 1211,
+    "seed": 3,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.8152,
+      "S16": 0.572,
+      "E8": 0.2888,
+      "F4": 0.1484,
+      "Championship": 0.0707,
+      "Winner": 0.035
+    }
+  },
+  {
+    "team": "Virginia",
+    "teamId": 1438,
+    "seed": 3,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.8084,
+      "S16": 0.5184,
+      "E8": 0.2669,
+      "F4": 0.1406,
+      "Championship": 0.065,
+      "Winner": 0.0299
+    }
+  },
+  {
+    "team": "Kansas",
+    "teamId": 1242,
+    "seed": 4,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.7429,
+      "S16": 0.4773,
+      "E8": 0.212,
+      "F4": 0.1062,
+      "Championship": 0.0495,
+      "Winner": 0.0226
+    }
+  },
+  {
+    "team": "Nebraska",
+    "teamId": 1304,
+    "seed": 4,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.7532,
+      "S16": 0.5084,
+      "E8": 0.2259,
+      "F4": 0.1013,
+      "Championship": 0.0453,
+      "Winner": 0.0194
+    }
+  },
+  {
+    "team": "Texas Tech",
+    "teamId": 1403,
+    "seed": 5,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6928,
+      "S16": 0.3929,
+      "E8": 0.1767,
+      "F4": 0.0896,
+      "Championship": 0.0396,
+      "Winner": 0.0164
+    }
+  },
+  {
+    "team": "Alabama",
+    "teamId": 1104,
+    "seed": 4,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6995,
+      "S16": 0.3998,
+      "E8": 0.1795,
+      "F4": 0.0845,
+      "Championship": 0.038,
+      "Winner": 0.0161
+    }
+  },
+  {
+    "team": "Arkansas",
+    "teamId": 1116,
+    "seed": 4,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.7297,
+      "S16": 0.4379,
+      "E8": 0.1836,
+      "F4": 0.0814,
+      "Championship": 0.0351,
+      "Winner": 0.0134
+    }
+  },
+  {
+    "team": "Tennessee",
+    "teamId": 1397,
+    "seed": 6,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6438,
+      "S16": 0.3095,
+      "E8": 0.1524,
+      "F4": 0.0701,
+      "Championship": 0.0289,
+      "Winner": 0.0117
+    }
+  },
+  {
+    "team": "Wisconsin",
+    "teamId": 1458,
+    "seed": 5,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6566,
+      "S16": 0.3606,
+      "E8": 0.1531,
+      "F4": 0.066,
+      "Championship": 0.0268,
+      "Winner": 0.0105
+    }
+  },
+  {
+    "team": "St. John's",
+    "teamId": 1385,
+    "seed": 5,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6262,
+      "S16": 0.3154,
+      "E8": 0.1267,
+      "F4": 0.0552,
+      "Championship": 0.023,
+      "Winner": 0.0094
+    }
+  },
+  {
+    "team": "Vanderbilt",
+    "teamId": 1435,
+    "seed": 5,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6586,
+      "S16": 0.3084,
+      "E8": 0.1223,
+      "F4": 0.05,
+      "Championship": 0.0201,
+      "Winner": 0.0076
+    }
+  },
+  {
+    "team": "North Carolina",
+    "teamId": 1314,
+    "seed": 6,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6617,
+      "S16": 0.2896,
+      "E8": 0.1204,
+      "F4": 0.0511,
+      "Championship": 0.0212,
+      "Winner": 0.0076
+    }
+  },
+  {
+    "team": "BYU",
+    "teamId": 1140,
+    "seed": 6,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6237,
+      "S16": 0.2617,
+      "E8": 0.1189,
+      "F4": 0.0504,
+      "Championship": 0.0198,
+      "Winner": 0.0074
+    }
+  },
+  {
+    "team": "Saint Mary's",
+    "teamId": 1388,
+    "seed": 7,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6337,
+      "S16": 0.2353,
+      "E8": 0.1022,
+      "F4": 0.0433,
+      "Championship": 0.018,
+      "Winner": 0.0069
+    }
+  },
+  {
+    "team": "Louisville",
+    "teamId": 1257,
+    "seed": 6,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6609,
+      "S16": 0.2784,
+      "E8": 0.1206,
+      "F4": 0.047,
+      "Championship": 0.0183,
+      "Winner": 0.0068
+    }
+  },
+  {
+    "team": "Kentucky",
+    "teamId": 1246,
+    "seed": 7,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6194,
+      "S16": 0.2504,
+      "E8": 0.1054,
+      "F4": 0.0432,
+      "Championship": 0.0162,
+      "Winner": 0.0057
+    }
+  },
+  {
+    "team": "UCLA",
+    "teamId": 1417,
+    "seed": 7,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.5786,
+      "S16": 0.2064,
+      "E8": 0.0906,
+      "F4": 0.036,
+      "Championship": 0.0136,
+      "Winner": 0.0051
+    }
+  },
+  {
+    "team": "Villanova",
+    "teamId": 1437,
+    "seed": 8,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.6047,
+      "S16": 0.1853,
+      "E8": 0.0971,
+      "F4": 0.0364,
+      "Championship": 0.0123,
+      "Winner": 0.0042
+    }
+  },
+  {
+    "team": "Miami FL",
+    "teamId": 1274,
+    "seed": 7,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.619,
+      "S16": 0.2214,
+      "E8": 0.0888,
+      "F4": 0.032,
+      "Championship": 0.011,
+      "Winner": 0.0037
+    }
+  },
+  {
+    "team": "Ohio State",
+    "teamId": 1326,
+    "seed": 8,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.5672,
+      "S16": 0.1647,
+      "E8": 0.0767,
+      "F4": 0.0276,
+      "Championship": 0.0099,
+      "Winner": 0.0036
+    }
+  },
+  {
+    "team": "Clemson",
+    "teamId": 1155,
+    "seed": 8,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.528,
+      "S16": 0.1673,
+      "E8": 0.0808,
+      "F4": 0.0292,
+      "Championship": 0.0107,
+      "Winner": 0.0035
+    }
+  },
+  {
+    "team": "Iowa",
+    "teamId": 1234,
+    "seed": 9,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.472,
+      "S16": 0.1464,
+      "E8": 0.0639,
+      "F4": 0.0202,
+      "Championship": 0.0071,
+      "Winner": 0.0022
+    }
+  },
+  {
+    "team": "Saint Louis",
+    "teamId": 1387,
+    "seed": 9,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.5577,
+      "S16": 0.1539,
+      "E8": 0.0651,
+      "F4": 0.0224,
+      "Championship": 0.0071,
+      "Winner": 0.002
+    }
+  },
+  {
+    "team": "Utah State",
+    "teamId": 1429,
+    "seed": 9,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3953,
+      "S16": 0.1171,
+      "E8": 0.0541,
+      "F4": 0.0188,
+      "Championship": 0.0056,
+      "Winner": 0.0017
+    }
+  },
+  {
+    "team": "TCU",
+    "teamId": 1395,
+    "seed": 9,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.4328,
+      "S16": 0.1166,
+      "E8": 0.0457,
+      "F4": 0.0148,
+      "Championship": 0.005,
+      "Winner": 0.0014
+    }
+  },
+  {
+    "team": "UCF",
+    "teamId": 1416,
+    "seed": 10,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.4214,
+      "S16": 0.1308,
+      "E8": 0.0455,
+      "F4": 0.0149,
+      "Championship": 0.0043,
+      "Winner": 0.0013
+    }
+  },
+  {
+    "team": "Georgia",
+    "teamId": 1208,
+    "seed": 8,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.4423,
+      "S16": 0.131,
+      "E8": 0.0523,
+      "F4": 0.0173,
+      "Championship": 0.0053,
+      "Winner": 0.0013
+    }
+  },
+  {
+    "team": "Missouri",
+    "teamId": 1281,
+    "seed": 10,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.381,
+      "S16": 0.1197,
+      "E8": 0.0399,
+      "F4": 0.0123,
+      "Championship": 0.0035,
+      "Winner": 0.0011
+    }
+  },
+  {
+    "team": "Santa Clara",
+    "teamId": 1365,
+    "seed": 10,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3806,
+      "S16": 0.1099,
+      "E8": 0.037,
+      "F4": 0.0117,
+      "Championship": 0.0036,
+      "Winner": 0.0011
+    }
+  },
+  {
+    "team": "Texas A&M",
+    "teamId": 1401,
+    "seed": 10,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3663,
+      "S16": 0.1017,
+      "E8": 0.0354,
+      "F4": 0.0106,
+      "Championship": 0.0029,
+      "Winner": 0.0009
+    }
+  },
+  {
+    "team": "South Florida",
+    "teamId": 1378,
+    "seed": 11,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3391,
+      "S16": 0.1097,
+      "E8": 0.0329,
+      "F4": 0.0085,
+      "Championship": 0.0023,
+      "Winner": 0.0008
+    }
+  },
+  {
+    "team": "SMU",
+    "teamId": 1374,
+    "seed": 11,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3562,
+      "S16": 0.1236,
+      "E8": 0.0358,
+      "F4": 0.0102,
+      "Championship": 0.0027,
+      "Winner": 0.0008
+    }
+  },
+  {
+    "team": "NC State",
+    "teamId": 1301,
+    "seed": 11,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3763,
+      "S16": 0.1156,
+      "E8": 0.0345,
+      "F4": 0.0104,
+      "Championship": 0.0029,
+      "Winner": 0.0006
+    }
+  },
+  {
+    "team": "Hofstra",
+    "teamId": 1220,
+    "seed": 13,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3005,
+      "S16": 0.104,
+      "E8": 0.0256,
+      "F4": 0.0063,
+      "Championship": 0.0017,
+      "Winner": 0.0005
+    }
+  },
+  {
+    "team": "Northern Iowa",
+    "teamId": 1320,
+    "seed": 12,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3738,
+      "S16": 0.1236,
+      "E8": 0.0308,
+      "F4": 0.008,
+      "Championship": 0.0021,
+      "Winner": 0.0004
+    }
+  },
+  {
+    "team": "VCU",
+    "teamId": 1433,
+    "seed": 11,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3383,
+      "S16": 0.1098,
+      "E8": 0.0304,
+      "F4": 0.0085,
+      "Championship": 0.0021,
+      "Winner": 0.0004
+    }
+  },
+  {
+    "team": "McNeese",
+    "teamId": 1270,
+    "seed": 12,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3414,
+      "S16": 0.1089,
+      "E8": 0.0274,
+      "F4": 0.0066,
+      "Championship": 0.0018,
+      "Winner": 0.0004
+    }
+  },
+  {
+    "team": "Akron",
+    "teamId": 1103,
+    "seed": 12,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3072,
+      "S16": 0.1033,
+      "E8": 0.0259,
+      "F4": 0.0063,
+      "Championship": 0.0016,
+      "Winner": 0.0004
+    }
+  },
+  {
+    "team": "High Point",
+    "teamId": 1219,
+    "seed": 12,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.3434,
+      "S16": 0.1081,
+      "E8": 0.023,
+      "F4": 0.0053,
+      "Championship": 0.0012,
+      "Winner": 0.0003
+    }
+  },
+  {
+    "team": "Hawaii",
+    "teamId": 1218,
+    "seed": 13,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.2703,
+      "S16": 0.0934,
+      "E8": 0.0198,
+      "F4": 0.005,
+      "Championship": 0.001,
+      "Winner": 0.0003
+    }
+  },
+  {
+    "team": "Cal Baptist",
+    "teamId": 1465,
+    "seed": 13,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.2571,
+      "S16": 0.0837,
+      "E8": 0.0189,
+      "F4": 0.0044,
+      "Championship": 0.0011,
+      "Winner": 0.0002
+    }
+  },
+  {
+    "team": "Troy",
+    "teamId": 1407,
+    "seed": 13,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.2468,
+      "S16": 0.0743,
+      "E8": 0.0156,
+      "F4": 0.0037,
+      "Championship": 0.0009,
+      "Winner": 0.0002
+    }
+  },
+  {
+    "team": "Penn",
+    "teamId": 1335,
+    "seed": 14,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.2049,
+      "S16": 0.0617,
+      "E8": 0.0142,
+      "F4": 0.0031,
+      "Championship": 0.0006,
+      "Winner": 0.0002
+    }
+  },
+  {
+    "team": "North Dakota State",
+    "teamId": 1295,
+    "seed": 14,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.2011,
+      "S16": 0.0605,
+      "E8": 0.0135,
+      "F4": 0.0031,
+      "Championship": 0.0006,
+      "Winner": 0.0001
+    }
+  },
+  {
+    "team": "Kennesaw",
+    "teamId": 1244,
+    "seed": 14,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.1848,
+      "S16": 0.0507,
+      "E8": 0.0115,
+      "F4": 0.0022,
+      "Championship": 0.0004,
+      "Winner": 0.0001
+    }
+  },
+  {
+    "team": "LIU Brooklyn",
+    "teamId": 1254,
+    "seed": 16,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.0697,
+      "S16": 0.0189,
+      "E8": 0.0045,
+      "F4": 0.0009,
+      "Championship": 0.0002,
+      "Winner": 0.0001
+    }
+  },
+  {
+    "team": "Idaho",
+    "teamId": 1225,
+    "seed": 15,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.1135,
+      "S16": 0.032,
+      "E8": 0.0072,
+      "F4": 0.0015,
+      "Championship": 0.0002,
+      "Winner": 0.0001
+    }
+  },
+  {
+    "team": "Furman",
+    "teamId": 1202,
+    "seed": 15,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.1138,
+      "S16": 0.0309,
+      "E8": 0.0065,
+      "F4": 0.0014,
+      "Championship": 0.0002,
+      "Winner": 0.0
+    }
+  },
+  {
+    "team": "Siena",
+    "teamId": 1373,
+    "seed": 16,
+    "region": "E",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.0679,
+      "S16": 0.0209,
+      "E8": 0.0052,
+      "F4": 0.0011,
+      "Championship": 0.0001,
+      "Winner": 0.0
+    }
+  },
+  {
+    "team": "Queens NC",
+    "teamId": 1474,
+    "seed": 15,
+    "region": "W",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.1388,
+      "S16": 0.0399,
+      "E8": 0.0083,
+      "F4": 0.0017,
+      "Championship": 0.0003,
+      "Winner": 0.0
+    }
+  },
+  {
+    "team": "Lehigh",
+    "teamId": 1250,
+    "seed": 16,
+    "region": "S",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.0757,
+      "S16": 0.0189,
+      "E8": 0.0041,
+      "F4": 0.0007,
+      "Championship": 0.0,
+      "Winner": 0.0
+    }
+  },
+  {
+    "team": "Wright State",
+    "teamId": 1460,
+    "seed": 14,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.1916,
+      "S16": 0.0486,
+      "E8": 0.0103,
+      "F4": 0.0021,
+      "Championship": 0.0003,
+      "Winner": 0.0
+    }
+  },
+  {
+    "team": "Tennessee State",
+    "teamId": 1398,
+    "seed": 15,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.1121,
+      "S16": 0.0299,
+      "E8": 0.0059,
+      "F4": 0.0012,
+      "Championship": 0.0002,
+      "Winner": 0.0
+    }
+  },
+  {
+    "team": "UMBC",
+    "teamId": 1420,
+    "seed": 16,
+    "region": "M",
+    "probabilities": {
+      "R64": 1.0,
+      "R32": 0.0688,
+      "S16": 0.0195,
+      "E8": 0.0045,
+      "F4": 0.0007,
+      "Championship": 0.0001,
+      "Winner": 0.0
+    }
+  }
+]

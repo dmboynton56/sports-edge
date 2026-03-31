@@ -19,9 +19,9 @@ class PGAModelTrainer:
     Trains GPU-accelerated regression models to predict Expected Strokes Gained
     for the next round.
     """
-    def __init__(self, data_path: str = "data/processed/training_dataset.csv"):
+    def __init__(self, data_path: str = "data-core/notebooks/cache/pga_feature_store_event_level.csv"):
         self.data_path = data_path
-        self.models_dir = "models/saved/"
+        self.models_dir = "data-core/models/saved/"
         os.makedirs(self.models_dir, exist_ok=True)
         
     def load_data(self):
@@ -33,25 +33,26 @@ class PGAModelTrainer:
         print(f"Loading data from {self.data_path}...")
         df = pd.read_csv(self.data_path)
         
-        # We need a target variable. Let's assume we want to predict 'sg_total' 
-        # based on historical features. In a real time-series setup, you'd shift this.
-        # For this script, we'll assume the dataset builder has created a 'target_sg_next_round'
-        # If not, we create a dummy target for the sake of the architecture script.
+        # We want to predict 'target_sg_per_round'
+        target_col = 'target_sg_per_round'
         
-        if 'target_sg_next_round' not in df.columns:
-            print("Warning: 'target_sg_next_round' not found. Creating a synthetic target for architecture testing.")
-            # Synthetic target: Current SG + some random noise
-            df['target_sg_next_round'] = df.get('sg_total', 0) * 0.8 + np.random.normal(0, 1, len(df))
+        if target_col not in df.columns:
+            print(f"Error: {target_col} not found in the dataset.")
+            return None, None
             
-        # Define features
-        features = [col for col in df.columns if col not in ['target_sg_next_round', 'player_name', 'date', 'tournament_id', 'course_id']]
+        # Define features by dropping meta columns and target columns
+        meta_cols = ['season', 'start', 'end', 'tournament', 'location', 'name', 'position_str', 'position_num', 'dataset_split']
+        target_cols = ['target_sg_total', 'target_sg_per_round', 'target_made_cut', 'target_top10', 'target_top20', 'target_win']
+        cols_to_drop = [c for c in meta_cols + target_cols if c in df.columns]
+        
+        features = [col for col in df.columns if col not in cols_to_drop]
         
         # Drop rows with NaN targets or fill NaN features
-        df = df.dropna(subset=['target_sg_next_round'])
+        df = df.dropna(subset=[target_col])
         df = df.fillna(0) # Simple imputation for now
         
         X = df[features]
-        y = df['target_sg_next_round']
+        y = df[target_col]
         
         return X, y
 
@@ -62,8 +63,7 @@ class PGAModelTrainer:
             
         print("\n--- Training LightGBM Regressor ---")
         
-        # Configure for GPU (This will seamlessly fall back to CPU on Mac if configured properly, 
-        # but is intended for the RTX 5070)
+        # Configure for GPU
         params = {
             'objective': 'regression',
             'metric': 'rmse',
@@ -71,7 +71,7 @@ class PGAModelTrainer:
             'learning_rate': 0.05,
             'num_leaves': 31,
             'max_depth': -1,
-            # 'device': 'gpu', # Uncomment on the PC
+            'device': 'cpu', # CPU since LightGBM GPU requires OpenCL/CUDA specific build
             'verbose': -1
         }
         
@@ -100,13 +100,13 @@ class PGAModelTrainer:
             
         print("\n--- Training XGBoost Regressor ---")
         
-        # Configure for GPU (tree_method='hist', device='cuda' on PC)
+        # Configure for GPU
         model = xgb.XGBRegressor(
             n_estimators=1000,
             learning_rate=0.05,
             max_depth=6,
-            # tree_method='hist', # Uncomment on the PC
-            # device='cuda',      # Uncomment on the PC
+            tree_method='hist', # Enabled for RTX 5070
+            device='cuda',      # Enabled for RTX 5070
             early_stopping_rounds=50,
             eval_metric='rmse'
         )
@@ -155,5 +155,5 @@ class PGAModelTrainer:
             print(f"Ensemble RMSE: {np.sqrt(mean_squared_error(y_val, ensemble_preds)):.4f}")
 
 if __name__ == "__main__":
-    trainer = PGAModelTrainer(data_path="data/processed/test_training_dataset.csv") # Using the test set from earlier
+    trainer = PGAModelTrainer(data_path="data-core/notebooks/cache/pga_feature_store_event_level.csv") 
     trainer.run_training_pipeline()

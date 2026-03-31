@@ -58,7 +58,7 @@ Earlier related work (same initiative): full-archive **`left` weather join** + i
 |------|------|
 | `src/data/archive/pga_results_2001-2025.tsv` | Primary historical results |
 | `src/data/archive/pga_results_espn_supplement.tsv` | ESPN-pulled rows (e.g. 2026) |
-| `notebooks/cache/pga_feature_store_event_level.csv` | Training / inference feature store (large — regenerate locally; typically not committed) |
+| `notebooks/cache/pga_feature_store_event_level.csv` | Training / inference feature store (large — **gitignored**; regenerate locally after `build_pga_feature_store`) |
 | `notebooks/cache/masters_2026_predictions.csv` | Masters field predictions |
 | `notebooks/cache/masters_2026_predictions.meta.json` | Run metadata |
 | `web/public/data/pga_masters_dashboard.json` | UI bundle |
