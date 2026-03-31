@@ -27,6 +27,7 @@ wheels/
 .env
 .env.local
 learned-pier-478122-p7-9cdc2e51a95c.json
+.venv/
 
 # Jupyter
 .ipynb_checkpoints/
@@ -35,10 +36,13 @@ learned-pier-478122-p7-9cdc2e51a95c.json
 # Data
 data/raw/
 data/curated/
-.csv
 *.parquet
-
 *.pickle
+
+# Local / large (regenerate via pipeline — see data-core/docs/PGA_REFRESH_PIPELINE.md)
+data-core/data/
+data-core/web/
+data-core/notebooks/cache/pga_feature_store_event_level.csv
 
 # Models
 
