@@ -31,6 +31,7 @@ export default function RootLayout({
                   <a className="transition-colors hover:text-foreground/80 text-foreground/60" href="/nba">NBA</a>
                   <a className="transition-colors hover:text-foreground/80 text-foreground/60" href="/nfl">NFL</a>
                   <a className="transition-colors hover:text-foreground/80 text-foreground/60" href="/pga">PGA</a>
+                  <a className="transition-colors hover:text-foreground/80 text-foreground/60" href="/cbb">CBB</a>
                 </nav>
               </div>
             </div>
