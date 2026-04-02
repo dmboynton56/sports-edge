@@ -7,7 +7,7 @@ on:
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-  PYTHONPATH: ${{ github.workspace }}
+  PYTHONPATH: ${{ github.workspace }}/data-core
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
 jobs:
@@ -95,13 +95,13 @@ jobs:
       - name: Generate NBA Predictions
         shell: bash
         run: |
-          python src/pipeline/refresh_nba.py --project "$PROJECT_ID" --model-version v3
+          python -m src.pipeline.refresh_nba --project "$PROJECT_ID" --model-version v3
 
       - name: Generate NFL Predictions
         shell: bash
         run: |
           # NFL weekly refresh logic can stay here, or run daily to catch line movements
-          python src/pipeline/refresh_nfl.py --project "$PROJECT_ID" --model-version v1
+          python -m src.pipeline.refresh_nfl --project "$PROJECT_ID" --model-version v1
 
       - name: Sync Predictions to Supabase
         shell: bash
