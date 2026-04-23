@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "0 13 * * *" # Daily at 13:00 UTC (08:00 ET)
 
+concurrency:
+  group: sports-edge-daily-refresh
+  cancel-in-progress: false
+
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   PYTHONPATH: ${{ github.workspace }}/data-core
@@ -129,7 +133,57 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
-          python scripts/sync_odds.py --project "$PROJECT_ID"
+          max_attempts=3
+          attempt=1
+          until [ "$attempt" -gt "$max_attempts" ]; do
+            echo "sync_odds attempt ${attempt}/${max_attempts}"
+            if python scripts/sync_odds.py --project "$PROJECT_ID"; then
+              break
+            fi
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "sync_odds failed after ${max_attempts} attempts"
+              exit 1
+            fi
+            sleep 20
+            attempt=$((attempt + 1))
+          done
+
+      - name: Sync Final Scores
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/sync_final_scores.py --project "$PROJECT_ID" --lookback-days 4 --lookahead-days 1
+
+      - name: Post-sync validation
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/validate_supabase_sync.py --strict | tee /tmp/sports_edge_validation.json
+          echo "### Sports Edge Sync Validation" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          cat /tmp/sports_edge_validation.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify Discord on Success
+        if: success()
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d "{\"content\": \"✅ **Sports-Edge Refresh Succeeded**\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+            $DISCORD_WEBHOOK_URL
 
       - name: Notify Discord on Failure
         if: failure()
