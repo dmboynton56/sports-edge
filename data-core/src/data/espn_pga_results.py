@@ -13,19 +13,30 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 import requests
 
-SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard"
 HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; SportsEdge/1.0; +https://github.com)"}
-
 
 def _get_json(url: str, params: Optional[dict] = None) -> dict:
     r = requests.get(url, headers=HEADERS, params=params or {}, timeout=45)
     r.raise_for_status()
     return r.json()
 
+def get_scoreboard_url(tour: str = "pga") -> str:
+    return f"https://site.api.espn.com/apis/site/v2/sports/golf/{tour}/scoreboard"
 
-def fetch_season_calendar(season_year: int) -> List[dict]:
-    """Return calendar entries for a PGA season (from live scoreboard payload)."""
-    data = _get_json(SCOREBOARD_URL)
+def fetch_season_calendar(season_year: int, tour: str = "pga") -> List[dict]:
+    """Return calendar entries for a PGA/LIV/EUR season.
+
+    The ESPN scoreboard default response only returns the *current* season's
+    calendar. For historical seasons we pass ``dates=YYYYMMDD-YYYYMMDD`` which
+    forces ESPN to return that year's calendar and events.
+    """
+    params: Dict[str, str] = {}
+    current_year = datetime.now(timezone.utc).year
+    if season_year < current_year:
+        params["dates"] = f"{season_year}0101-{season_year}1231"
+    # For current season, the default (no params) works fine.
+
+    data = _get_json(get_scoreboard_url(tour), params=params)
     leagues = data.get("leagues") or []
     if not leagues:
         return []
@@ -37,7 +48,9 @@ def fetch_season_calendar(season_year: int) -> List[dict]:
             y = int(sd[:4]) if len(sd) >= 4 else 0
         except ValueError:
             y = 0
-        if y == season_year:
+        # Accept entries whose startDate falls anywhere in a wide window
+        # around the requested season year.
+        if abs(y - season_year) <= 1:
             out.append(
                 {
                     "id": c.get("id"),
@@ -60,9 +73,9 @@ def _parse_espn_dt(s: Optional[str]) -> Optional[datetime]:
         return None
 
 
-def fetch_scoreboard_date(ymd: str) -> dict:
+def fetch_scoreboard_date(ymd: str, tour: str = "pga") -> dict:
     """ymd = YYYYMMDD"""
-    return _get_json(SCOREBOARD_URL, params={"dates": ymd})
+    return _get_json(get_scoreboard_url(tour), params={"dates": ymd})
 
 
 def _round_strokes(linescores: List[dict]) -> Tuple[Optional[float], ...]:
@@ -181,7 +194,7 @@ def event_to_tsv_rows(event: dict, competition: dict) -> List[dict]:
 
 
 def find_populated_scoreboard_date(
-    start: datetime, end: datetime, min_players: int = 30
+    start: datetime, end: datetime, min_players: int = 30, tour: str = "pga"
 ) -> Optional[Tuple[str, dict]]:
     """Scan day-by-day between start and end (inclusive) for a scoreboard with enough players."""
     cur = start.date()
@@ -189,7 +202,7 @@ def find_populated_scoreboard_date(
     while cur <= last + timedelta(days=2):
         ymd = cur.strftime("%Y%m%d")
         try:
-            data = fetch_scoreboard_date(ymd)
+            data = fetch_scoreboard_date(ymd, tour)
         except requests.RequestException:
             cur += timedelta(days=1)
             time.sleep(0.15)
@@ -212,6 +225,7 @@ def find_populated_scoreboard_date(
 def fetch_season_results(
     season_year: int,
     *,
+    tour: str = "pga",
     only_completed_before: Optional[datetime] = None,
     sleep_s: float = 0.2,
     min_players: int = 30,
@@ -224,8 +238,8 @@ def fetch_season_results(
         only_completed_before = datetime.now(timezone.utc)
 
     log: List[str] = []
-    cal = fetch_season_calendar(season_year)
-    log.append(f"Calendar entries for {season_year}: {len(cal)}")
+    cal = fetch_season_calendar(season_year, tour)
+    log.append(f"Calendar entries for {season_year} ({tour}): {len(cal)}")
 
     all_rows: List[dict] = []
     seen_ids: set = set()
@@ -244,7 +258,7 @@ def fetch_season_results(
         if eid in seen_ids:
             continue
 
-        found = find_populated_scoreboard_date(start_dt, end_dt or start_dt, min_players=min_players)
+        found = find_populated_scoreboard_date(start_dt, end_dt or start_dt, min_players=min_players, tour=tour)
         if not found:
             log.append(f"no board: {label} ({eid})")
             continue

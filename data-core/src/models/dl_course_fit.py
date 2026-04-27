@@ -101,7 +101,8 @@ class CourseFitTrainer:
         # 2. Extract Continuous Features
         meta_cols = ['season', 'start', 'end', 'tournament', 'location', 'name', 'position_str', 'position_num', 'dataset_split', 'player_idx', 'course_idx']
         target_cols = ['target_sg_total', 'target_sg_per_round', 'target_made_cut', 'target_top10', 'target_top20', 'target_win']
-        cols_to_drop = [c for c in meta_cols + target_cols if c in df.columns]
+        leak_cols = ['rounds_played']
+        cols_to_drop = [c for c in meta_cols + target_cols + leak_cols if c in df.columns]
         
         continuous_cols = [col for col in df.columns if col not in cols_to_drop]
         df[continuous_cols] = df[continuous_cols].fillna(0) # Simple imputation

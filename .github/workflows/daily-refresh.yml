@@ -2,6 +2,15 @@ name: Daily Sports-Edge Refresh
 
 on:
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Skip Supabase writes (validation-only run)"
+        required: false
+        default: "false"
+      force_full_rebuild:
+        description: "Force full feature snapshot rebuild"
+        required: false
+        default: "false"
   schedule:
     - cron: "0 13 * * *" # Daily at 13:00 UTC (08:00 ET)
 
@@ -13,6 +22,8 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   PYTHONPATH: ${{ github.workspace }}/data-core
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+  FORCE_FULL_REBUILD: ${{ github.event.inputs.force_full_rebuild || 'false' }}
 
 jobs:
   refresh:
@@ -28,9 +39,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: data-core/requirements.txt
 
       - name: Install dependencies
         run: pip install -r requirements.txt google-cloud-bigquery nflreadpy supabase
@@ -81,7 +94,11 @@ jobs:
           else
             SEASON=$YEAR
           fi
-          python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons "$SEASON" --replace
+          if [ "$FORCE_FULL_REBUILD" = "true" ]; then
+            python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons "$SEASON" --replace
+          else
+            python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons "$SEASON"
+          fi
 
       - name: Build NFL Feature Snapshots
         shell: bash
@@ -94,7 +111,11 @@ jobs:
           else
             SEASON=$YEAR
           fi
-          python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$SEASON" --replace
+          if [ "$FORCE_FULL_REBUILD" = "true" ]; then
+            python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$SEASON" --replace
+          else
+            python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$SEASON"
+          fi
 
       - name: Generate NBA Predictions
         shell: bash
@@ -108,6 +129,7 @@ jobs:
           python -m src.pipeline.refresh_nfl --project "$PROJECT_ID" --model-version v1
 
       - name: Sync Predictions to Supabase
+        if: ${{ env.DRY_RUN != 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -122,6 +144,7 @@ jobs:
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
 
       - name: Sync Market Odds
+        if: ${{ env.DRY_RUN != 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -149,6 +172,7 @@ jobs:
           done
 
       - name: Sync Final Scores
+        if: ${{ env.DRY_RUN != 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -162,6 +186,7 @@ jobs:
           python scripts/sync_final_scores.py --project "$PROJECT_ID" --lookback-days 4 --lookahead-days 1
 
       - name: Post-sync validation
+        if: ${{ env.DRY_RUN != 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -178,16 +203,67 @@ jobs:
           cat /tmp/sports_edge_validation.json >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
 
+      - name: Dry-run summary
+        if: ${{ env.DRY_RUN == 'true' }}
+        run: |
+          echo "Dry run completed: Supabase write and strict validation steps were skipped." >> $GITHUB_STEP_SUMMARY
+
+      - name: Build run summary
+        if: always()
+        shell: bash
+        env:
+          JOB_STATUS: ${{ job.status }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          if [ "$DRY_RUN" = "true" ]; then
+            RUN_MODE="dry-run"
+          else
+            RUN_MODE="normal"
+          fi
+
+          python scripts/generate_run_summary.py \
+            --mode "$RUN_MODE" \
+            --status "$JOB_STATUS" \
+            --run-url "$RUN_URL" \
+            --repository "$GITHUB_REPOSITORY" \
+            --workflow "$GITHUB_WORKFLOW" \
+            --validation-json /tmp/sports_edge_validation.json \
+            --output-markdown /tmp/sports_edge_run_summary.md \
+            --discord-json /tmp/sports_edge_discord.json \
+            --allow-query-failures
+
+          cat /tmp/sports_edge_run_summary.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Notify Discord on Success
         if: success()
+        shell: bash
         run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL is not configured; skipping success notification."
+            exit 0
+          fi
+
           curl -X POST -H "Content-Type: application/json" \
-            -d "{\"content\": \"✅ **Sports-Edge Refresh Succeeded**\\nRun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
-            $DISCORD_WEBHOOK_URL
+            -d @/tmp/sports_edge_discord.json \
+            "$DISCORD_WEBHOOK_URL"
 
       - name: Notify Discord on Failure
         if: failure()
+        shell: bash
+        env:
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          curl -X POST -H "Content-Type: application/json" \
-            -d "{\"content\": \"❌ **Sports-Edge Refresh Failed**\nThe daily refresh workflow encountered an error. Check GitHub Actions for details: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
-            $DISCORD_WEBHOOK_URL
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL is not configured; skipping failure notification."
+            exit 0
+          fi
+
+          if [ -s /tmp/sports_edge_discord.json ]; then
+            curl -X POST -H "Content-Type: application/json" \
+              -d @/tmp/sports_edge_discord.json \
+              "$DISCORD_WEBHOOK_URL"
+          else
+            curl -X POST -H "Content-Type: application/json" \
+              -d "{\"content\": \"**Sports-Edge Refresh failed**\\nRun: $RUN_URL\"}" \
+              "$DISCORD_WEBHOOK_URL"
+          fi

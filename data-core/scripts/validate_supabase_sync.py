@@ -23,6 +23,18 @@ def parse_args() -> argparse.Namespace:
         default=48,
         help="Window for recent predictions (default: 48h).",
     )
+    parser.add_argument(
+        "--score-lookback-days",
+        type=int,
+        default=7,
+        help="Lookback window for game/final score checks (default: 7).",
+    )
+    parser.add_argument(
+        "--max-orphans",
+        type=int,
+        default=0,
+        help="Maximum allowed prediction rows with no matching game (default: 0).",
+    )
     return parser.parse_args()
 
 
@@ -60,10 +72,11 @@ def main() -> None:
                 """
                 SELECT COUNT(*)
                 FROM games
-                WHERE game_time_utc::date >= CURRENT_DATE - INTERVAL '3 days'
+                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
                   AND home_score IS NOT NULL
                   AND away_score IS NOT NULL
-                """
+                """,
+                (args.score_lookback_days,),
             )
             report["recent_final_scores"] = int(cur.fetchone()[0])
 
@@ -71,10 +84,35 @@ def main() -> None:
                 """
                 SELECT COUNT(*)
                 FROM games
-                WHERE game_time_utc::date >= CURRENT_DATE - INTERVAL '3 days'
-                """
+                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
+                """,
+                (args.score_lookback_days,),
             )
             report["recent_games"] = int(cur.fetchone()[0])
+
+            cur.execute(
+                """
+                SELECT COUNT(*)
+                FROM games
+                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
+                  AND status = 'final'
+                  AND (home_score IS NULL OR away_score IS NULL)
+                """,
+                (args.score_lookback_days,),
+            )
+            report["final_missing_scores"] = int(cur.fetchone()[0])
+
+            cur.execute(
+                """
+                SELECT COUNT(*)
+                FROM model_predictions p
+                LEFT JOIN games g ON g.id = p.game_id
+                WHERE p.asof_ts >= NOW() - (%s || ' hours')::interval
+                  AND g.id IS NULL
+                """,
+                (args.prediction_hours,),
+            )
+            report["orphan_predictions"] = int(cur.fetchone()[0])
     finally:
         conn.close()
 
@@ -87,6 +125,14 @@ def main() -> None:
             failures.append("No recent model_predictions rows found.")
         if report["recent_games"] > 0 and report["recent_final_scores"] <= 0:
             failures.append("Recent games exist but none have final scores.")
+        if report["final_missing_scores"] > 0:
+            failures.append(
+                f"Found {report['final_missing_scores']} final games missing scores."
+            )
+        if report["orphan_predictions"] > args.max_orphans:
+            failures.append(
+                f"Found {report['orphan_predictions']} orphan predictions (max {args.max_orphans})."
+            )
         if failures:
             for failure in failures:
                 LOGGER.error(failure)

@@ -1,0 +1,2097 @@
+{
+  "tournament": "Masters Tournament",
+  "fetchedAt": "2026-04-09T17:30:51.523116+00:00",
+  "commenceTime": "2026-04-09T11:40:00Z",
+  "books": [
+    "betrivers",
+    "draftkings",
+    "fanduel"
+  ],
+  "overrounds": {
+    "betrivers": 1.5878,
+    "draftkings": 1.3885,
+    "fanduel": 1.3669
+  },
+  "playerOdds": [
+    {
+      "player": "Scottie Scheffler",
+      "apiName": "Scottie Scheffler",
+      "bestPrice": 560,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.10657,
+      "bookOdds": {
+        "betrivers": {
+          "price": 525,
+          "implied": 0.16,
+          "decimal": 6.25
+        },
+        "fanduel": {
+          "price": 550,
+          "implied": 0.15385,
+          "decimal": 6.5
+        },
+        "draftkings": {
+          "price": 560,
+          "implied": 0.15152,
+          "decimal": 6.6
+        }
+      }
+    },
+    {
+      "player": "Rory McIlroy",
+      "apiName": "Rory McIlroy",
+      "bestPrice": 850,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.07967,
+      "bookOdds": {
+        "betrivers": {
+          "price": 700,
+          "implied": 0.125,
+          "decimal": 8.0
+        },
+        "fanduel": {
+          "price": 850,
+          "implied": 0.10526,
+          "decimal": 9.5
+        },
+        "draftkings": {
+          "price": 750,
+          "implied": 0.11765,
+          "decimal": 8.5
+        }
+      }
+    },
+    {
+      "player": "Xander Schauffele",
+      "apiName": "Xander Schauffele",
+      "bestPrice": 1000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.07281,
+      "bookOdds": {
+        "betrivers": {
+          "price": 700,
+          "implied": 0.125,
+          "decimal": 8.0
+        },
+        "fanduel": {
+          "price": 1000,
+          "implied": 0.09091,
+          "decimal": 11.0
+        },
+        "draftkings": {
+          "price": 880,
+          "implied": 0.10204,
+          "decimal": 9.8
+        }
+      }
+    },
+    {
+      "player": "Patrick Reed",
+      "apiName": "Patrick Reed",
+      "bestPrice": 960,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.07036,
+      "bookOdds": {
+        "betrivers": {
+          "price": 750,
+          "implied": 0.11765,
+          "decimal": 8.5
+        },
+        "fanduel": {
+          "price": 950,
+          "implied": 0.09524,
+          "decimal": 10.5
+        },
+        "draftkings": {
+          "price": 960,
+          "implied": 0.09434,
+          "decimal": 10.6
+        }
+      }
+    },
+    {
+      "player": "Tommy Fleetwood",
+      "apiName": "Tommy Fleetwood",
+      "bestPrice": 1200,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.05812,
+      "bookOdds": {
+        "betrivers": {
+          "price": 950,
+          "implied": 0.09524,
+          "decimal": 10.5
+        },
+        "fanduel": {
+          "price": 1200,
+          "implied": 0.07692,
+          "decimal": 13.0
+        },
+        "draftkings": {
+          "price": 1125,
+          "implied": 0.08163,
+          "decimal": 12.25
+        }
+      }
+    },
+    {
+      "player": "Jon Rahm",
+      "apiName": "Jon Rahm",
+      "bestPrice": 1300,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.05323,
+      "bookOdds": {
+        "betrivers": {
+          "price": 1050,
+          "implied": 0.08696,
+          "decimal": 11.5
+        },
+        "fanduel": {
+          "price": 1300,
+          "implied": 0.07143,
+          "decimal": 14.0
+        },
+        "draftkings": {
+          "price": 1250,
+          "implied": 0.07407,
+          "decimal": 13.5
+        }
+      }
+    },
+    {
+      "player": "Sam Burns",
+      "apiName": "Sam Burns",
+      "bestPrice": 1600,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.04166,
+      "bookOdds": {
+        "betrivers": {
+          "price": 1500,
+          "implied": 0.0625,
+          "decimal": 16.0
+        },
+        "fanduel": {
+          "price": 1600,
+          "implied": 0.05882,
+          "decimal": 17.0
+        },
+        "draftkings": {
+          "price": 1550,
+          "implied": 0.06061,
+          "decimal": 16.5
+        }
+      }
+    },
+    {
+      "player": "Ludvig \u00c5berg",
+      "apiName": "Ludvig Aberg",
+      "bestPrice": 1850,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.04048,
+      "bookOdds": {
+        "betrivers": {
+          "price": 1400,
+          "implied": 0.06667,
+          "decimal": 15.0
+        },
+        "fanduel": {
+          "price": 1600,
+          "implied": 0.05882,
+          "decimal": 17.0
+        },
+        "draftkings": {
+          "price": 1850,
+          "implied": 0.05128,
+          "decimal": 19.5
+        }
+      }
+    },
+    {
+      "player": "Shane Lowry",
+      "apiName": "Shane Lowry",
+      "bestPrice": 2200,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.03492,
+      "bookOdds": {
+        "betrivers": {
+          "price": 1500,
+          "implied": 0.0625,
+          "decimal": 16.0
+        },
+        "fanduel": {
+          "price": 2200,
+          "implied": 0.04348,
+          "decimal": 23.0
+        },
+        "draftkings": {
+          "price": 2050,
+          "implied": 0.04651,
+          "decimal": 21.5
+        }
+      }
+    },
+    {
+      "player": "Justin Rose",
+      "apiName": "Justin Rose",
+      "bestPrice": 3400,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.02309,
+      "bookOdds": {
+        "betrivers": {
+          "price": 2400,
+          "implied": 0.04,
+          "decimal": 25.0
+        },
+        "fanduel": {
+          "price": 3000,
+          "implied": 0.03226,
+          "decimal": 31.0
+        },
+        "draftkings": {
+          "price": 3400,
+          "implied": 0.02857,
+          "decimal": 35.0
+        }
+      }
+    },
+    {
+      "player": "Hideki Matsuyama",
+      "apiName": "Hideki Matsuyama",
+      "bestPrice": 3500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.02099,
+      "bookOdds": {
+        "betrivers": {
+          "price": 2800,
+          "implied": 0.03448,
+          "decimal": 29.0
+        },
+        "fanduel": {
+          "price": 3500,
+          "implied": 0.02778,
+          "decimal": 36.0
+        },
+        "draftkings": {
+          "price": 3300,
+          "implied": 0.02941,
+          "decimal": 34.0
+        }
+      }
+    },
+    {
+      "player": "Robert MacIntyre",
+      "apiName": "Robert Macintyre",
+      "bestPrice": 3600,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.02082,
+      "bookOdds": {
+        "betrivers": {
+          "price": 2800,
+          "implied": 0.03448,
+          "decimal": 29.0
+        },
+        "fanduel": {
+          "price": 3300,
+          "implied": 0.02941,
+          "decimal": 34.0
+        },
+        "draftkings": {
+          "price": 3600,
+          "implied": 0.02703,
+          "decimal": 37.0
+        }
+      }
+    },
+    {
+      "player": "Akshay Bhatia",
+      "apiName": "Akshay Bhatia",
+      "bestPrice": 4000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.01967,
+      "bookOdds": {
+        "betrivers": {
+          "price": 2800,
+          "implied": 0.03448,
+          "decimal": 29.0
+        },
+        "fanduel": {
+          "price": 4000,
+          "implied": 0.02439,
+          "decimal": 41.0
+        },
+        "draftkings": {
+          "price": 3600,
+          "implied": 0.02703,
+          "decimal": 37.0
+        }
+      }
+    },
+    {
+      "player": "Jordan Spieth",
+      "apiName": "Jordan Spieth",
+      "bestPrice": 3800,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.01897,
+      "bookOdds": {
+        "betrivers": {
+          "price": 3300,
+          "implied": 0.02941,
+          "decimal": 34.0
+        },
+        "fanduel": {
+          "price": 3500,
+          "implied": 0.02778,
+          "decimal": 36.0
+        },
+        "draftkings": {
+          "price": 3800,
+          "implied": 0.02564,
+          "decimal": 39.0
+        }
+      }
+    },
+    {
+      "player": "Bryson DeChambeau",
+      "apiName": "Bryson DeChambeau",
+      "bestPrice": 4600,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.01797,
+      "bookOdds": {
+        "betrivers": {
+          "price": 3300,
+          "implied": 0.02941,
+          "decimal": 34.0
+        },
+        "fanduel": {
+          "price": 3500,
+          "implied": 0.02778,
+          "decimal": 36.0
+        },
+        "draftkings": {
+          "price": 4600,
+          "implied": 0.02128,
+          "decimal": 47.0
+        }
+      }
+    },
+    {
+      "player": "Jason Day",
+      "apiName": "Jason Day",
+      "bestPrice": 4000,
+      "bestBook": "betrivers",
+      "consensusImplied": 0.01736,
+      "bookOdds": {
+        "betrivers": {
+          "price": 4000,
+          "implied": 0.02439,
+          "decimal": 41.0
+        },
+        "fanduel": {
+          "price": 4000,
+          "implied": 0.02439,
+          "decimal": 41.0
+        },
+        "draftkings": {
+          "price": 3600,
+          "implied": 0.02703,
+          "decimal": 37.0
+        }
+      }
+    },
+    {
+      "player": "Brooks Koepka",
+      "apiName": "Brooks Koepka",
+      "bestPrice": 4500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.01615,
+      "bookOdds": {
+        "betrivers": {
+          "price": 4000,
+          "implied": 0.02439,
+          "decimal": 41.0
+        },
+        "fanduel": {
+          "price": 4500,
+          "implied": 0.02174,
+          "decimal": 46.0
+        },
+        "draftkings": {
+          "price": 4000,
+          "implied": 0.02439,
+          "decimal": 41.0
+        }
+      }
+    },
+    {
+      "player": "Matt Fitzpatrick",
+      "apiName": "Matthew Fitzpatrick",
+      "bestPrice": 5000,
+      "bestBook": "betrivers",
+      "consensusImplied": 0.0161,
+      "bookOdds": {
+        "betrivers": {
+          "price": 5000,
+          "implied": 0.01961,
+          "decimal": 51.0
+        },
+        "fanduel": {
+          "price": 4000,
+          "implied": 0.02439,
+          "decimal": 41.0
+        },
+        "draftkings": {
+          "price": 3700,
+          "implied": 0.02632,
+          "decimal": 38.0
+        }
+      }
+    },
+    {
+      "player": "Si Woo Kim",
+      "apiName": "Si Woo Kim",
+      "bestPrice": 5500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.014,
+      "bookOdds": {
+        "betrivers": {
+          "price": 4000,
+          "implied": 0.02439,
+          "decimal": 41.0
+        },
+        "fanduel": {
+          "price": 5500,
+          "implied": 0.01786,
+          "decimal": 56.0
+        },
+        "draftkings": {
+          "price": 5200,
+          "implied": 0.01887,
+          "decimal": 53.0
+        }
+      }
+    },
+    {
+      "player": "Kurt Kitayama",
+      "apiName": "Kurt Kitayama",
+      "bestPrice": 5500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.01307,
+      "bookOdds": {
+        "betrivers": {
+          "price": 5000,
+          "implied": 0.01961,
+          "decimal": 51.0
+        },
+        "fanduel": {
+          "price": 5500,
+          "implied": 0.01786,
+          "decimal": 56.0
+        },
+        "draftkings": {
+          "price": 5000,
+          "implied": 0.01961,
+          "decimal": 51.0
+        }
+      }
+    },
+    {
+      "player": "Russell Henley",
+      "apiName": "Russell Henley",
+      "bestPrice": 6000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.01233,
+      "bookOdds": {
+        "betrivers": {
+          "price": 5000,
+          "implied": 0.01961,
+          "decimal": 51.0
+        },
+        "fanduel": {
+          "price": 6000,
+          "implied": 0.01639,
+          "decimal": 61.0
+        },
+        "draftkings": {
+          "price": 5500,
+          "implied": 0.01786,
+          "decimal": 56.0
+        }
+      }
+    },
+    {
+      "player": "Christopher Gotterup",
+      "apiName": "Christopher Gotterup",
+      "bestPrice": 6000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.01213,
+      "bookOdds": {
+        "betrivers": {
+          "price": 5000,
+          "implied": 0.01961,
+          "decimal": 51.0
+        },
+        "fanduel": {
+          "price": 6000,
+          "implied": 0.01639,
+          "decimal": 61.0
+        },
+        "draftkings": {
+          "price": 5800,
+          "implied": 0.01695,
+          "decimal": 59.0
+        }
+      }
+    },
+    {
+      "player": "Aaron Rai",
+      "apiName": "Aaron Rai",
+      "bestPrice": 7400,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.01003,
+      "bookOdds": {
+        "betrivers": {
+          "price": 6000,
+          "implied": 0.01639,
+          "decimal": 61.0
+        },
+        "fanduel": {
+          "price": 7000,
+          "implied": 0.01408,
+          "decimal": 71.0
+        },
+        "draftkings": {
+          "price": 7400,
+          "implied": 0.01333,
+          "decimal": 75.0
+        }
+      }
+    },
+    {
+      "player": "Collin Morikawa",
+      "apiName": "Collin Morikawa",
+      "bestPrice": 7000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.01001,
+      "bookOdds": {
+        "betrivers": {
+          "price": 6600,
+          "implied": 0.01493,
+          "decimal": 67.0
+        },
+        "fanduel": {
+          "price": 7000,
+          "implied": 0.01408,
+          "decimal": 71.0
+        },
+        "draftkings": {
+          "price": 6700,
+          "implied": 0.01471,
+          "decimal": 68.0
+        }
+      }
+    },
+    {
+      "player": "Nicolai Hojgaard",
+      "apiName": "Nicolai Hojgaard",
+      "bestPrice": 7800,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00988,
+      "bookOdds": {
+        "betrivers": {
+          "price": 6000,
+          "implied": 0.01639,
+          "decimal": 61.0
+        },
+        "fanduel": {
+          "price": 7000,
+          "implied": 0.01408,
+          "decimal": 71.0
+        },
+        "draftkings": {
+          "price": 7800,
+          "implied": 0.01266,
+          "decimal": 79.0
+        }
+      }
+    },
+    {
+      "player": "Min Woo Lee",
+      "apiName": "Min Woo Lee",
+      "bestPrice": 7200,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00978,
+      "bookOdds": {
+        "betrivers": {
+          "price": 6600,
+          "implied": 0.01493,
+          "decimal": 67.0
+        },
+        "fanduel": {
+          "price": 7000,
+          "implied": 0.01408,
+          "decimal": 71.0
+        },
+        "draftkings": {
+          "price": 7200,
+          "implied": 0.0137,
+          "decimal": 73.0
+        }
+      }
+    },
+    {
+      "player": "Justin Thomas",
+      "apiName": "Justin Thomas",
+      "bestPrice": 8000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00938,
+      "bookOdds": {
+        "betrivers": {
+          "price": 6600,
+          "implied": 0.01493,
+          "decimal": 67.0
+        },
+        "fanduel": {
+          "price": 8000,
+          "implied": 0.01235,
+          "decimal": 81.0
+        },
+        "draftkings": {
+          "price": 7200,
+          "implied": 0.0137,
+          "decimal": 73.0
+        }
+      }
+    },
+    {
+      "player": "Nick Taylor",
+      "apiName": "Nick Taylor",
+      "bestPrice": 8000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00938,
+      "bookOdds": {
+        "betrivers": {
+          "price": 6600,
+          "implied": 0.01493,
+          "decimal": 67.0
+        },
+        "fanduel": {
+          "price": 8000,
+          "implied": 0.01235,
+          "decimal": 81.0
+        },
+        "draftkings": {
+          "price": 7200,
+          "implied": 0.0137,
+          "decimal": 73.0
+        }
+      }
+    },
+    {
+      "player": "Sepp Straka",
+      "apiName": "Sepp Straka",
+      "bestPrice": 8000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00907,
+      "bookOdds": {
+        "betrivers": {
+          "price": 6600,
+          "implied": 0.01493,
+          "decimal": 67.0
+        },
+        "fanduel": {
+          "price": 8000,
+          "implied": 0.01235,
+          "decimal": 81.0
+        },
+        "draftkings": {
+          "price": 8000,
+          "implied": 0.01235,
+          "decimal": 81.0
+        }
+      }
+    },
+    {
+      "player": "Tyrrell Hatton",
+      "apiName": "Tyrrell Hatton",
+      "bestPrice": 10000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00851,
+      "bookOdds": {
+        "betrivers": {
+          "price": 6600,
+          "implied": 0.01493,
+          "decimal": 67.0
+        },
+        "fanduel": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "draftkings": {
+          "price": 8000,
+          "implied": 0.01235,
+          "decimal": 81.0
+        }
+      }
+    },
+    {
+      "player": "Jacob Bridgeman",
+      "apiName": "Jacob Bridgeman",
+      "bestPrice": 10500,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.0067,
+      "bookOdds": {
+        "betrivers": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "fanduel": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "draftkings": {
+          "price": 10500,
+          "implied": 0.00943,
+          "decimal": 106.0
+        }
+      }
+    },
+    {
+      "player": "Ben Griffin",
+      "apiName": "Ben Griffin",
+      "bestPrice": 11000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.0066,
+      "bookOdds": {
+        "betrivers": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "fanduel": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "draftkings": {
+          "price": 11000,
+          "implied": 0.00901,
+          "decimal": 111.0
+        }
+      }
+    },
+    {
+      "player": "J.J. Spaun",
+      "apiName": "J. J. Spaun",
+      "bestPrice": 11500,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00651,
+      "bookOdds": {
+        "betrivers": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "fanduel": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "draftkings": {
+          "price": 11500,
+          "implied": 0.00862,
+          "decimal": 116.0
+        }
+      }
+    },
+    {
+      "player": "Adam Scott",
+      "apiName": "Adam Scott",
+      "bestPrice": 12500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00645,
+      "bookOdds": {
+        "betrivers": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "fanduel": {
+          "price": 12500,
+          "implied": 0.00794,
+          "decimal": 126.0
+        },
+        "draftkings": {
+          "price": 9600,
+          "implied": 0.01031,
+          "decimal": 97.0
+        }
+      }
+    },
+    {
+      "player": "Harris English",
+      "apiName": "Harris English",
+      "bestPrice": 12500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00635,
+      "bookOdds": {
+        "betrivers": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "fanduel": {
+          "price": 12500,
+          "implied": 0.00794,
+          "decimal": 126.0
+        },
+        "draftkings": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        }
+      }
+    },
+    {
+      "player": "Maverick McNealy",
+      "apiName": "Maverick Mcnealy",
+      "bestPrice": 12500,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00635,
+      "bookOdds": {
+        "betrivers": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "fanduel": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "draftkings": {
+          "price": 12500,
+          "implied": 0.00794,
+          "decimal": 126.0
+        }
+      }
+    },
+    {
+      "player": "Marco Penge",
+      "apiName": "Marco Penge",
+      "bestPrice": 16500,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00591,
+      "bookOdds": {
+        "betrivers": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "fanduel": {
+          "price": 10000,
+          "implied": 0.0099,
+          "decimal": 101.0
+        },
+        "draftkings": {
+          "price": 16500,
+          "implied": 0.00602,
+          "decimal": 166.0
+        }
+      }
+    },
+    {
+      "player": "Gary Woodland",
+      "apiName": "Gary Woodland",
+      "bestPrice": 15000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00516,
+      "bookOdds": {
+        "betrivers": {
+          "price": 12000,
+          "implied": 0.00826,
+          "decimal": 121.0
+        },
+        "fanduel": {
+          "price": 15000,
+          "implied": 0.00662,
+          "decimal": 151.0
+        },
+        "draftkings": {
+          "price": 13000,
+          "implied": 0.00763,
+          "decimal": 131.0
+        }
+      }
+    },
+    {
+      "player": "Corey Conners",
+      "apiName": "Corey Conners",
+      "bestPrice": 16500,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00509,
+      "bookOdds": {
+        "betrivers": {
+          "price": 12000,
+          "implied": 0.00826,
+          "decimal": 121.0
+        },
+        "fanduel": {
+          "price": 12500,
+          "implied": 0.00794,
+          "decimal": 126.0
+        },
+        "draftkings": {
+          "price": 16500,
+          "implied": 0.00602,
+          "decimal": 166.0
+        }
+      }
+    },
+    {
+      "player": "Cameron Young",
+      "apiName": "Cameron Young",
+      "bestPrice": 17500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00471,
+      "bookOdds": {
+        "betrivers": {
+          "price": 12000,
+          "implied": 0.00826,
+          "decimal": 121.0
+        },
+        "fanduel": {
+          "price": 17500,
+          "implied": 0.00568,
+          "decimal": 176.0
+        },
+        "draftkings": {
+          "price": 15000,
+          "implied": 0.00662,
+          "decimal": 151.0
+        }
+      }
+    },
+    {
+      "player": "Kristoffer Reitan",
+      "apiName": "Kristoffer Reitan",
+      "bestPrice": 22500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00456,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 22500,
+          "implied": 0.00442,
+          "decimal": 226.0
+        },
+        "draftkings": {
+          "price": 9400,
+          "implied": 0.01053,
+          "decimal": 95.0
+        }
+      }
+    },
+    {
+      "player": "Harry Hall",
+      "apiName": "Harry Hall",
+      "bestPrice": 18000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00446,
+      "bookOdds": {
+        "betrivers": {
+          "price": 12000,
+          "implied": 0.00826,
+          "decimal": 121.0
+        },
+        "fanduel": {
+          "price": 17500,
+          "implied": 0.00568,
+          "decimal": 176.0
+        },
+        "draftkings": {
+          "price": 18000,
+          "implied": 0.00552,
+          "decimal": 181.0
+        }
+      }
+    },
+    {
+      "player": "Haotong Li",
+      "apiName": "Haotong Li",
+      "bestPrice": 17500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00424,
+      "bookOdds": {
+        "betrivers": {
+          "price": 16000,
+          "implied": 0.00621,
+          "decimal": 161.0
+        },
+        "fanduel": {
+          "price": 17500,
+          "implied": 0.00568,
+          "decimal": 176.0
+        },
+        "draftkings": {
+          "price": 15000,
+          "implied": 0.00662,
+          "decimal": 151.0
+        }
+      }
+    },
+    {
+      "player": "Max Homa",
+      "apiName": "Max Homa",
+      "bestPrice": 17500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.0042,
+      "bookOdds": {
+        "betrivers": {
+          "price": 15000,
+          "implied": 0.00662,
+          "decimal": 151.0
+        },
+        "fanduel": {
+          "price": 17500,
+          "implied": 0.00568,
+          "decimal": 176.0
+        },
+        "draftkings": {
+          "price": 16500,
+          "implied": 0.00602,
+          "decimal": 166.0
+        }
+      }
+    },
+    {
+      "player": "Patrick Cantlay",
+      "apiName": "Patrick Cantlay",
+      "bestPrice": 19500,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00399,
+      "bookOdds": {
+        "betrivers": {
+          "price": 15000,
+          "implied": 0.00662,
+          "decimal": 151.0
+        },
+        "fanduel": {
+          "price": 17500,
+          "implied": 0.00568,
+          "decimal": 176.0
+        },
+        "draftkings": {
+          "price": 19500,
+          "implied": 0.0051,
+          "decimal": 196.0
+        }
+      }
+    },
+    {
+      "player": "Sam Stevens",
+      "apiName": "Sam Stevens",
+      "bestPrice": 19000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00392,
+      "bookOdds": {
+        "betrivers": {
+          "price": 16000,
+          "implied": 0.00621,
+          "decimal": 161.0
+        },
+        "fanduel": {
+          "price": 17500,
+          "implied": 0.00568,
+          "decimal": 176.0
+        },
+        "draftkings": {
+          "price": 19000,
+          "implied": 0.00524,
+          "decimal": 191.0
+        }
+      }
+    },
+    {
+      "player": "Brian Harman",
+      "apiName": "Brian Harman",
+      "bestPrice": 22000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00369,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 15000,
+          "implied": 0.00662,
+          "decimal": 151.0
+        },
+        "draftkings": {
+          "price": 22000,
+          "implied": 0.00452,
+          "decimal": 221.0
+        }
+      }
+    },
+    {
+      "player": "Jake Knapp",
+      "apiName": "Jake Knapp",
+      "bestPrice": 25000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00357,
+      "bookOdds": {
+        "betrivers": {
+          "price": 15000,
+          "implied": 0.00662,
+          "decimal": 151.0
+        },
+        "fanduel": {
+          "price": 25000,
+          "implied": 0.00398,
+          "decimal": 251.0
+        },
+        "draftkings": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        }
+      }
+    },
+    {
+      "player": "Cameron Smith",
+      "apiName": "Cameron Smith",
+      "bestPrice": 22500,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00345,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 17500,
+          "implied": 0.00568,
+          "decimal": 176.0
+        },
+        "draftkings": {
+          "price": 22500,
+          "implied": 0.00442,
+          "decimal": 226.0
+        }
+      }
+    },
+    {
+      "player": "Daniel Berger",
+      "apiName": "Daniel Berger",
+      "bestPrice": 35000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00342,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 35000,
+          "implied": 0.00285,
+          "decimal": 351.0
+        },
+        "draftkings": {
+          "price": 14000,
+          "implied": 0.00709,
+          "decimal": 141.0
+        }
+      }
+    },
+    {
+      "player": "Sergio Garcia",
+      "apiName": "Sergio Garcia",
+      "bestPrice": 22500,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00335,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 22500,
+          "implied": 0.00442,
+          "decimal": 226.0
+        },
+        "draftkings": {
+          "price": 19000,
+          "implied": 0.00524,
+          "decimal": 191.0
+        }
+      }
+    },
+    {
+      "player": "Michael Kim",
+      "apiName": "Michael Kim",
+      "bestPrice": 25000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00309,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 25000,
+          "implied": 0.00398,
+          "decimal": 251.0
+        },
+        "draftkings": {
+          "price": 22000,
+          "implied": 0.00452,
+          "decimal": 221.0
+        }
+      }
+    },
+    {
+      "player": "Viktor Hovland",
+      "apiName": "Viktor Hovland",
+      "bestPrice": 25000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00304,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 25000,
+          "implied": 0.00398,
+          "decimal": 251.0
+        },
+        "draftkings": {
+          "price": 23000,
+          "implied": 0.00433,
+          "decimal": 231.0
+        }
+      }
+    },
+    {
+      "player": "Andrew Novak",
+      "apiName": "Andrew Novak",
+      "bestPrice": 31000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00279,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 25000,
+          "implied": 0.00398,
+          "decimal": 251.0
+        },
+        "draftkings": {
+          "price": 31000,
+          "implied": 0.00322,
+          "decimal": 311.0
+        }
+      }
+    },
+    {
+      "player": "Dustin Johnson",
+      "apiName": "Dustin Johnson",
+      "bestPrice": 35000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00255,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 35000,
+          "implied": 0.00285,
+          "decimal": 351.0
+        },
+        "draftkings": {
+          "price": 30000,
+          "implied": 0.00332,
+          "decimal": 301.0
+        }
+      }
+    },
+    {
+      "player": "Matt McCarty",
+      "apiName": "Matt McCarty",
+      "bestPrice": 35000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00253,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 35000,
+          "implied": 0.00285,
+          "decimal": 351.0
+        },
+        "draftkings": {
+          "price": 31000,
+          "implied": 0.00322,
+          "decimal": 311.0
+        }
+      }
+    },
+    {
+      "player": "Sungjae Im",
+      "apiName": "Sungjae Im",
+      "bestPrice": 35000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00244,
+      "bookOdds": {
+        "betrivers": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "fanduel": {
+          "price": 35000,
+          "implied": 0.00285,
+          "decimal": 351.0
+        },
+        "draftkings": {
+          "price": 35000,
+          "implied": 0.00285,
+          "decimal": 351.0
+        }
+      }
+    },
+    {
+      "player": "Alexander Noren",
+      "apiName": "Alexander Noren",
+      "bestPrice": 50000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00216,
+      "bookOdds": {
+        "betrivers": {
+          "price": 25000,
+          "implied": 0.00398,
+          "decimal": 251.0
+        },
+        "fanduel": {
+          "price": 50000,
+          "implied": 0.002,
+          "decimal": 501.0
+        },
+        "draftkings": {
+          "price": 29000,
+          "implied": 0.00344,
+          "decimal": 291.0
+        }
+      }
+    },
+    {
+      "player": "Wyndham Clark",
+      "apiName": "Wyndham Clark",
+      "bestPrice": 50000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00206,
+      "bookOdds": {
+        "betrivers": {
+          "price": 25000,
+          "implied": 0.00398,
+          "decimal": 251.0
+        },
+        "fanduel": {
+          "price": 50000,
+          "implied": 0.002,
+          "decimal": 501.0
+        },
+        "draftkings": {
+          "price": 33000,
+          "implied": 0.00302,
+          "decimal": 331.0
+        }
+      }
+    },
+    {
+      "player": "Ryan Gerard",
+      "apiName": "Ryan Gerard",
+      "bestPrice": 50000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00187,
+      "bookOdds": {
+        "betrivers": {
+          "price": 35000,
+          "implied": 0.00285,
+          "decimal": 351.0
+        },
+        "fanduel": {
+          "price": 50000,
+          "implied": 0.002,
+          "decimal": 501.0
+        },
+        "draftkings": {
+          "price": 30000,
+          "implied": 0.00332,
+          "decimal": 301.0
+        }
+      }
+    },
+    {
+      "player": "Michael Brennan",
+      "apiName": "Michael Brennan",
+      "bestPrice": 75000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00139,
+      "bookOdds": {
+        "betrivers": {
+          "price": 35000,
+          "implied": 0.00285,
+          "decimal": 351.0
+        },
+        "fanduel": {
+          "price": 75000,
+          "implied": 0.00133,
+          "decimal": 751.0
+        },
+        "draftkings": {
+          "price": 52500,
+          "implied": 0.0019,
+          "decimal": 526.0
+        }
+      }
+    },
+    {
+      "player": "Tom McKibbin",
+      "apiName": "Tom McKibbin",
+      "bestPrice": 75000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00139,
+      "bookOdds": {
+        "betrivers": {
+          "price": 35000,
+          "implied": 0.00285,
+          "decimal": 351.0
+        },
+        "fanduel": {
+          "price": 75000,
+          "implied": 0.00133,
+          "decimal": 751.0
+        },
+        "draftkings": {
+          "price": 52500,
+          "implied": 0.0019,
+          "decimal": 526.0
+        }
+      }
+    },
+    {
+      "player": "Zach Johnson",
+      "apiName": "Zach Johnson",
+      "bestPrice": 75000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00132,
+      "bookOdds": {
+        "betrivers": {
+          "price": 47500,
+          "implied": 0.0021,
+          "decimal": 476.0
+        },
+        "fanduel": {
+          "price": 75000,
+          "implied": 0.00133,
+          "decimal": 751.0
+        },
+        "draftkings": {
+          "price": 42500,
+          "implied": 0.00235,
+          "decimal": 426.0
+        }
+      }
+    },
+    {
+      "player": "Keegan Bradley",
+      "apiName": "Keegan Bradley",
+      "bestPrice": 100000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00106,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 47500,
+          "implied": 0.0021,
+          "decimal": 476.0
+        }
+      }
+    },
+    {
+      "player": "Brian Campbell",
+      "apiName": "Brian Campbell",
+      "bestPrice": 130000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00089,
+      "bookOdds": {
+        "betrivers": {
+          "price": 47500,
+          "implied": 0.0021,
+          "decimal": 476.0
+        },
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 130000,
+          "implied": 0.00077,
+          "decimal": 1301.0
+        }
+      }
+    },
+    {
+      "player": "Aldrich Potgieter",
+      "apiName": "Aldrich Potgieter",
+      "bestPrice": 100000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00069,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        }
+      }
+    },
+    {
+      "player": "Nico Echavarria",
+      "apiName": "Nicolas Echavarria",
+      "bestPrice": 100000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00069,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        }
+      }
+    },
+    {
+      "player": "Brandon Holtz",
+      "apiName": "Brandon Holtz",
+      "bestPrice": 100000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00069,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        }
+      }
+    },
+    {
+      "player": "Naoyuki Kataoka",
+      "apiName": "Naoyuki Kataoka",
+      "bestPrice": 100000,
+      "bestBook": "fanduel",
+      "consensusImplied": 0.00069,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        }
+      }
+    },
+    {
+      "player": "Danny Willett",
+      "apiName": "Danny Willett",
+      "bestPrice": 190000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00052,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 190000,
+          "implied": 0.00053,
+          "decimal": 1901.0
+        }
+      }
+    },
+    {
+      "player": "Ethan Fang",
+      "apiName": "Ethan Fang",
+      "bestPrice": 300000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00046,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 300000,
+          "implied": 0.00033,
+          "decimal": 3001.0
+        }
+      }
+    },
+    {
+      "player": "Fred Couples",
+      "apiName": "Fred Couples",
+      "bestPrice": 350000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00044,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 350000,
+          "implied": 0.00029,
+          "decimal": 3501.0
+        }
+      }
+    },
+    {
+      "player": "John Keefer",
+      "apiName": "John Keefer",
+      "bestPrice": 400000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00043,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 400000,
+          "implied": 0.00025,
+          "decimal": 4001.0
+        }
+      }
+    },
+    {
+      "player": "Charl Schwartzel",
+      "apiName": "Charl Schwartzel",
+      "bestPrice": 400000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00043,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 400000,
+          "implied": 0.00025,
+          "decimal": 4001.0
+        }
+      }
+    },
+    {
+      "player": "Jos\u00e9 Mar\u00eda Olaz\u00e1bal",
+      "apiName": "Jose Maria Olaz\u00e1bal",
+      "bestPrice": 400000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00043,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 400000,
+          "implied": 0.00025,
+          "decimal": 4001.0
+        }
+      }
+    },
+    {
+      "player": "Davis Riley",
+      "apiName": "Davis Riley",
+      "bestPrice": 450000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00042,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 450000,
+          "implied": 0.00022,
+          "decimal": 4501.0
+        }
+      }
+    },
+    {
+      "player": "Casey Jarvis",
+      "apiName": "Casey Jarvis",
+      "bestPrice": 450000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00042,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 450000,
+          "implied": 0.00022,
+          "decimal": 4501.0
+        }
+      }
+    },
+    {
+      "player": "Ryan Fox",
+      "apiName": "Ryan Fox",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Max Greyserman",
+      "apiName": "Max Greyserman",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Sami V\u00e4lim\u00e4ki",
+      "apiName": "Sami V\u00e4lim\u00e4ki",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Rasmus Hojgaard",
+      "apiName": "Rasmus Hojgaard",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Bubba Watson",
+      "apiName": "Bubba Watson",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "\u00c1ngel Cabrera",
+      "apiName": "Angel Cabrera",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Vijay Singh",
+      "apiName": "Vijay Singh",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Pongsapak Laopakdee",
+      "apiName": "Pongsapak Laopakdee",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Carlos Ortiz",
+      "apiName": "Carlos Ortiz",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Mason Howell",
+      "apiName": "Mason Howell",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Rasmus Neergaard-Petersen",
+      "apiName": "Rasmus Neergaard-Petersen",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Jackson Herrington",
+      "apiName": "Jackson Herrington",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Mike Weir",
+      "apiName": "Mike Weir",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Mateo Pulcini",
+      "apiName": "Mateo Pulcini",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00041,
+      "bookOdds": {
+        "fanduel": {
+          "price": 100000,
+          "implied": 0.001,
+          "decimal": 1001.0
+        },
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    },
+    {
+      "player": "Nico Echavarria",
+      "apiName": "Nico Echavarria",
+      "bestPrice": 500000,
+      "bestBook": "draftkings",
+      "consensusImplied": 0.00014,
+      "bookOdds": {
+        "draftkings": {
+          "price": 500000,
+          "implied": 0.0002,
+          "decimal": 5001.0
+        }
+      }
+    }
+  ],
+  "unmatched": {
+    "Si Woo Kim": "no match in predictions",
+    "Kurt Kitayama": "no match in predictions",
+    "Christopher Gotterup": "no match in predictions",
+    "Nicolai Hojgaard": "no match in predictions",
+    "Jacob Bridgeman": "no match in predictions",
+    "Ben Griffin": "no match in predictions",
+    "Marco Penge": "no match in predictions",
+    "Gary Woodland": "no match in predictions",
+    "Kristoffer Reitan": "no match in predictions",
+    "Harry Hall": "no match in predictions",
+    "Haotong Li": "no match in predictions",
+    "Sam Stevens": "no match in predictions",
+    "Jake Knapp": "no match in predictions",
+    "Andrew Novak": "no match in predictions",
+    "Alexander Noren": "no match in predictions",
+    "Ryan Gerard": "no match in predictions",
+    "Michael Brennan": "no match in predictions",
+    "Tom McKibbin": "no match in predictions",
+    "Aldrich Potgieter": "no match in predictions",
+    "Brandon Holtz": "no match in predictions",
+    "Naoyuki Kataoka": "no match in predictions",
+    "Ethan Fang": "no match in predictions",
+    "John Keefer": "no match in predictions",
+    "Casey Jarvis": "no match in predictions",
+    "Ryan Fox": "no match in predictions",
+    "Sami V\u00e4lim\u00e4ki": "no match in predictions",
+    "Rasmus Hojgaard": "no match in predictions",
+    "Vijay Singh": "no match in predictions",
+    "Pongsapak Laopakdee": "no match in predictions",
+    "Carlos Ortiz": "no match in predictions",
+    "Mason Howell": "no match in predictions",
+    "Rasmus Neergaard-Petersen": "no match in predictions",
+    "Jackson Herrington": "no match in predictions",
+    "Mateo Pulcini": "no match in predictions"
+  },
+  "apiCreditsRemaining": "490"
+}

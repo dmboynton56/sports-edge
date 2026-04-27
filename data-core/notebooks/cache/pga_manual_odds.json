@@ -1,0 +1,835 @@
+{
+  "tournament": "Masters Tournament",
+  "createdAt": "2026-04-10T02:40:05.882095+00:00",
+  "updatedAt": "2026-04-11T03:21:41.825910+00:00",
+  "entries": [
+    {
+      "id": "win_draftkings_20260410_024005",
+      "market": "win",
+      "book": "draftkings",
+      "capturedAt": "2026-04-10T02:40:05.882292+00:00",
+      "source": "screenshot",
+      "roundNum": 1,
+      "notes": "DraftKings Masters R1 outright winner",
+      "playerOdds": {
+        "Rory McIlroy": {
+          "price": 245,
+          "implied": 0.28986,
+          "decimal": 3.45
+        },
+        "Scottie Scheffler": {
+          "price": 340,
+          "implied": 0.22727,
+          "decimal": 4.4
+        },
+        "Sam Burns": {
+          "price": 1000,
+          "implied": 0.09091,
+          "decimal": 11.0
+        },
+        "Xander Schauffele": {
+          "price": 1025,
+          "implied": 0.08889,
+          "decimal": 11.25
+        },
+        "Patrick Reed": {
+          "price": 1500,
+          "implied": 0.0625,
+          "decimal": 16.0
+        },
+        "Justin Rose": {
+          "price": 1750,
+          "implied": 0.05405,
+          "decimal": 18.5
+        },
+        "Jason Day": {
+          "price": 2100,
+          "implied": 0.04545,
+          "decimal": 22.0
+        },
+        "Tommy Fleetwood": {
+          "price": 2200,
+          "implied": 0.04348,
+          "decimal": 23.0
+        },
+        "Kurt Kitayama": {
+          "price": 3000,
+          "implied": 0.03226,
+          "decimal": 31.0
+        },
+        "Shane Lowry": {
+          "price": 3300,
+          "implied": 0.02941,
+          "decimal": 34.0
+        },
+        "Brooks Koepka": {
+          "price": 4000,
+          "implied": 0.02439,
+          "decimal": 41.0
+        },
+        "Hideki Matsuyama": {
+          "price": 4200,
+          "implied": 0.02326,
+          "decimal": 43.0
+        },
+        "Cameron Young": {
+          "price": 4500,
+          "implied": 0.02174,
+          "decimal": 46.0
+        },
+        "Jordan Spieth": {
+          "price": 5300,
+          "implied": 0.01852,
+          "decimal": 54.0
+        },
+        "Ludvig Aberg": {
+          "price": 6000,
+          "implied": 0.01639,
+          "decimal": 61.0
+        }
+      }
+    },
+    {
+      "id": "top5_draftkings_20260410_024005",
+      "market": "top5",
+      "book": "draftkings",
+      "capturedAt": "2026-04-10T02:40:05.882615+00:00",
+      "source": "screenshot",
+      "roundNum": 1,
+      "notes": "DraftKings Masters R1 top 5 incl ties",
+      "playerOdds": {
+        "Rory McIlroy": {
+          "price": -230,
+          "implied": 0.69697,
+          "decimal": 1.435
+        },
+        "Scottie Scheffler": {
+          "price": -190,
+          "implied": 0.65517,
+          "decimal": 1.526
+        },
+        "Sam Burns": {
+          "price": 146,
+          "implied": 0.4065,
+          "decimal": 2.46
+        },
+        "Xander Schauffele": {
+          "price": 140,
+          "implied": 0.41667,
+          "decimal": 2.4
+        },
+        "Patrick Reed": {
+          "price": 210,
+          "implied": 0.32258,
+          "decimal": 3.1
+        },
+        "Justin Rose": {
+          "price": 235,
+          "implied": 0.29851,
+          "decimal": 3.35
+        },
+        "Jason Day": {
+          "price": 260,
+          "implied": 0.27778,
+          "decimal": 3.6
+        },
+        "Tommy Fleetwood": {
+          "price": 260,
+          "implied": 0.27778,
+          "decimal": 3.6
+        },
+        "Kurt Kitayama": {
+          "price": 355,
+          "implied": 0.21978,
+          "decimal": 4.55
+        },
+        "Shane Lowry": {
+          "price": 375,
+          "implied": 0.21053,
+          "decimal": 4.75
+        },
+        "Brooks Koepka": {
+          "price": 480,
+          "implied": 0.17241,
+          "decimal": 5.8
+        },
+        "Hideki Matsuyama": {
+          "price": 445,
+          "implied": 0.18349,
+          "decimal": 5.45
+        },
+        "Cameron Young": {
+          "price": 500,
+          "implied": 0.16667,
+          "decimal": 6.0
+        },
+        "Jordan Spieth": {
+          "price": 560,
+          "implied": 0.15152,
+          "decimal": 6.6
+        },
+        "Ludvig Aberg": {
+          "price": 650,
+          "implied": 0.13333,
+          "decimal": 7.5
+        }
+      }
+    },
+    {
+      "id": "top10_draftkings_20260410_024005",
+      "market": "top10",
+      "book": "draftkings",
+      "capturedAt": "2026-04-10T02:40:05.882644+00:00",
+      "source": "screenshot",
+      "roundNum": 1,
+      "notes": "DraftKings Masters R1 top 10 incl ties",
+      "playerOdds": {
+        "Rory McIlroy": {
+          "price": -550,
+          "implied": 0.84615,
+          "decimal": 1.182
+        },
+        "Scottie Scheffler": {
+          "price": -460,
+          "implied": 0.82143,
+          "decimal": 1.217
+        },
+        "Sam Burns": {
+          "price": -160,
+          "implied": 0.61538,
+          "decimal": 1.625
+        },
+        "Xander Schauffele": {
+          "price": -175,
+          "implied": 0.63636,
+          "decimal": 1.571
+        },
+        "Patrick Reed": {
+          "price": -112,
+          "implied": 0.5283,
+          "decimal": 1.893
+        },
+        "Justin Rose": {
+          "price": -102,
+          "implied": 0.50495,
+          "decimal": 1.98
+        },
+        "Jason Day": {
+          "price": 106,
+          "implied": 0.48544,
+          "decimal": 2.06
+        },
+        "Tommy Fleetwood": {
+          "price": 102,
+          "implied": 0.49505,
+          "decimal": 2.02
+        },
+        "Kurt Kitayama": {
+          "price": 142,
+          "implied": 0.41322,
+          "decimal": 2.42
+        },
+        "Shane Lowry": {
+          "price": 148,
+          "implied": 0.40323,
+          "decimal": 2.48
+        },
+        "Brooks Koepka": {
+          "price": 194,
+          "implied": 0.34014,
+          "decimal": 2.94
+        },
+        "Hideki Matsuyama": {
+          "price": 172,
+          "implied": 0.36765,
+          "decimal": 2.72
+        },
+        "Cameron Young": {
+          "price": 200,
+          "implied": 0.33333,
+          "decimal": 3.0
+        },
+        "Jordan Spieth": {
+          "price": 215,
+          "implied": 0.31746,
+          "decimal": 3.15
+        },
+        "Ludvig Aberg": {
+          "price": 260,
+          "implied": 0.27778,
+          "decimal": 3.6
+        }
+      }
+    },
+    {
+      "id": "top20_draftkings_20260410_024005",
+      "market": "top20",
+      "book": "draftkings",
+      "capturedAt": "2026-04-10T02:40:05.882668+00:00",
+      "source": "screenshot",
+      "roundNum": 1,
+      "notes": "DraftKings Masters R1 top 20 incl ties",
+      "playerOdds": {
+        "Rory McIlroy": {
+          "price": -1800,
+          "implied": 0.94737,
+          "decimal": 1.056
+        },
+        "Scottie Scheffler": {
+          "price": -1500,
+          "implied": 0.9375,
+          "decimal": 1.067
+        },
+        "Xander Schauffele": {
+          "price": -550,
+          "implied": 0.84615,
+          "decimal": 1.182
+        },
+        "Sam Burns": {
+          "price": -470,
+          "implied": 0.82456,
+          "decimal": 1.213
+        },
+        "Patrick Reed": {
+          "price": -320,
+          "implied": 0.7619,
+          "decimal": 1.312
+        },
+        "Tommy Fleetwood": {
+          "price": -290,
+          "implied": 0.74359,
+          "decimal": 1.345
+        },
+        "Justin Rose": {
+          "price": -285,
+          "implied": 0.74026,
+          "decimal": 1.351
+        },
+        "Jason Day": {
+          "price": -275,
+          "implied": 0.73333,
+          "decimal": 1.364
+        },
+        "Kurt Kitayama": {
+          "price": -205,
+          "implied": 0.67213,
+          "decimal": 1.488
+        },
+        "Shane Lowry": {
+          "price": -196,
+          "implied": 0.66216,
+          "decimal": 1.51
+        },
+        "Hideki Matsuyama": {
+          "price": -170,
+          "implied": 0.62963,
+          "decimal": 1.588
+        },
+        "Brooks Koepka": {
+          "price": -140,
+          "implied": 0.58333,
+          "decimal": 1.714
+        },
+        "Cameron Young": {
+          "price": -136,
+          "implied": 0.57627,
+          "decimal": 1.735
+        },
+        "Jordan Spieth": {
+          "price": -130,
+          "implied": 0.56522,
+          "decimal": 1.769
+        },
+        "Jacob Bridgeman": {
+          "price": -122,
+          "implied": 0.54955,
+          "decimal": 1.82
+        },
+        "Gary Woodland": {
+          "price": -106,
+          "implied": 0.51456,
+          "decimal": 1.943
+        }
+      }
+    },
+    {
+      "id": "win_draftkings_20260411_032141",
+      "market": "win",
+      "book": "draftkings",
+      "capturedAt": "2026-04-11T01:00:00+00:00",
+      "source": "screenshot",
+      "roundNum": 3,
+      "notes": "DraftKings post-R2 cut outright winner odds",
+      "playerOdds": {
+        "Rory McIlroy": {
+          "price": -250,
+          "implied": 0.71429,
+          "decimal": 1.4
+        },
+        "Patrick Reed": {
+          "price": 1500,
+          "implied": 0.0625,
+          "decimal": 16.0
+        },
+        "Tommy Fleetwood": {
+          "price": 1800,
+          "implied": 0.05263,
+          "decimal": 19.0
+        },
+        "Justin Rose": {
+          "price": 2050,
+          "implied": 0.04651,
+          "decimal": 21.5
+        },
+        "Sam Burns": {
+          "price": 2100,
+          "implied": 0.04545,
+          "decimal": 22.0
+        },
+        "Cameron Young": {
+          "price": 2500,
+          "implied": 0.03846,
+          "decimal": 26.0
+        },
+        "Shane Lowry": {
+          "price": 3400,
+          "implied": 0.02857,
+          "decimal": 35.0
+        },
+        "Brooks Koepka": {
+          "price": 5100,
+          "implied": 0.01923,
+          "decimal": 52.0
+        },
+        "Jason Day": {
+          "price": 5900,
+          "implied": 0.01667,
+          "decimal": 60.0
+        },
+        "Tyrrell Hatton": {
+          "price": 6200,
+          "implied": 0.01587,
+          "decimal": 63.0
+        },
+        "Scottie Scheffler": {
+          "price": 6200,
+          "implied": 0.01587,
+          "decimal": 63.0
+        },
+        "Xander Schauffele": {
+          "price": 6900,
+          "implied": 0.01429,
+          "decimal": 70.0
+        },
+        "Chris Gotterup": {
+          "price": 8000,
+          "implied": 0.01235,
+          "decimal": 81.0
+        },
+        "Wyndham Clark": {
+          "price": 9600,
+          "implied": 0.01031,
+          "decimal": 97.0
+        },
+        "Hideki Matsuyama": {
+          "price": 11000,
+          "implied": 0.00901,
+          "decimal": 111.0
+        },
+        "Kristoffer Reitan": {
+          "price": 12500,
+          "implied": 0.00794,
+          "decimal": 126.0
+        },
+        "Ben Griffin": {
+          "price": 14500,
+          "implied": 0.00685,
+          "decimal": 146.0
+        },
+        "Haotong Li": {
+          "price": 15000,
+          "implied": 0.00662,
+          "decimal": 151.0
+        },
+        "Matt Fitzpatrick": {
+          "price": 16000,
+          "implied": 0.00621,
+          "decimal": 161.0
+        },
+        "Jake Knapp": {
+          "price": 18500,
+          "implied": 0.00538,
+          "decimal": 186.0
+        },
+        "Ludvig \u00c5berg": {
+          "price": 20000,
+          "implied": 0.00498,
+          "decimal": 201.0
+        },
+        "Collin Morikawa": {
+          "price": 23000,
+          "implied": 0.00433,
+          "decimal": 231.0
+        }
+      }
+    },
+    {
+      "id": "top5_draftkings_20260411_032141",
+      "market": "top5",
+      "book": "draftkings",
+      "capturedAt": "2026-04-11T01:00:00+00:00",
+      "source": "screenshot",
+      "roundNum": 3,
+      "notes": "DraftKings post-R2 cut top 5 odds",
+      "playerOdds": {
+        "Rory McIlroy": {
+          "price": -2500,
+          "implied": 0.96154,
+          "decimal": 1.04
+        },
+        "Patrick Reed": {
+          "price": 106,
+          "implied": 0.48544,
+          "decimal": 2.06
+        },
+        "Tommy Fleetwood": {
+          "price": 110,
+          "implied": 0.47619,
+          "decimal": 2.1
+        },
+        "Justin Rose": {
+          "price": 136,
+          "implied": 0.42373,
+          "decimal": 2.36
+        },
+        "Sam Burns": {
+          "price": 136,
+          "implied": 0.42373,
+          "decimal": 2.36
+        },
+        "Cameron Young": {
+          "price": 160,
+          "implied": 0.38462,
+          "decimal": 2.6
+        },
+        "Shane Lowry": {
+          "price": 194,
+          "implied": 0.34014,
+          "decimal": 2.94
+        },
+        "Brooks Koepka": {
+          "price": 280,
+          "implied": 0.26316,
+          "decimal": 3.8
+        },
+        "Jason Day": {
+          "price": 290,
+          "implied": 0.25641,
+          "decimal": 3.9
+        },
+        "Scottie Scheffler": {
+          "price": 300,
+          "implied": 0.25,
+          "decimal": 4.0
+        },
+        "Tyrrell Hatton": {
+          "price": 315,
+          "implied": 0.24096,
+          "decimal": 4.15
+        },
+        "Xander Schauffele": {
+          "price": 310,
+          "implied": 0.2439,
+          "decimal": 4.1
+        },
+        "Chris Gotterup": {
+          "price": 395,
+          "implied": 0.20202,
+          "decimal": 4.95
+        },
+        "Wyndham Clark": {
+          "price": 470,
+          "implied": 0.17544,
+          "decimal": 5.7
+        },
+        "Hideki Matsuyama": {
+          "price": 455,
+          "implied": 0.18018,
+          "decimal": 5.55
+        },
+        "Kristoffer Reitan": {
+          "price": 550,
+          "implied": 0.15385,
+          "decimal": 6.5
+        },
+        "Ben Griffin": {
+          "price": 580,
+          "implied": 0.14706,
+          "decimal": 6.8
+        },
+        "Haotong Li": {
+          "price": 610,
+          "implied": 0.14085,
+          "decimal": 7.1
+        },
+        "Matt Fitzpatrick": {
+          "price": 590,
+          "implied": 0.14493,
+          "decimal": 6.9
+        },
+        "Jake Knapp": {
+          "price": 730,
+          "implied": 0.12048,
+          "decimal": 8.3
+        },
+        "Ludvig \u00c5berg": {
+          "price": 790,
+          "implied": 0.11236,
+          "decimal": 8.9
+        },
+        "Collin Morikawa": {
+          "price": 820,
+          "implied": 0.1087,
+          "decimal": 9.2
+        }
+      }
+    },
+    {
+      "id": "top10_draftkings_20260411_032141",
+      "market": "top10",
+      "book": "draftkings",
+      "capturedAt": "2026-04-11T01:00:00+00:00",
+      "source": "screenshot",
+      "roundNum": 3,
+      "notes": "DraftKings post-R2 cut top 10 odds",
+      "playerOdds": {
+        "Rory McIlroy": {
+          "price": -9000,
+          "implied": 0.98901,
+          "decimal": 1.011
+        },
+        "Patrick Reed": {
+          "price": -255,
+          "implied": 0.71831,
+          "decimal": 1.392
+        },
+        "Tommy Fleetwood": {
+          "price": -265,
+          "implied": 0.72603,
+          "decimal": 1.377
+        },
+        "Justin Rose": {
+          "price": -205,
+          "implied": 0.67213,
+          "decimal": 1.488
+        },
+        "Sam Burns": {
+          "price": -205,
+          "implied": 0.67213,
+          "decimal": 1.488
+        },
+        "Cameron Young": {
+          "price": -172,
+          "implied": 0.63235,
+          "decimal": 1.581
+        },
+        "Shane Lowry": {
+          "price": -148,
+          "implied": 0.59677,
+          "decimal": 1.676
+        },
+        "Brooks Koepka": {
+          "price": 100,
+          "implied": 0.5,
+          "decimal": 2.0
+        },
+        "Jason Day": {
+          "price": -102,
+          "implied": 0.50495,
+          "decimal": 1.98
+        },
+        "Tyrrell Hatton": {
+          "price": 108,
+          "implied": 0.48077,
+          "decimal": 2.08
+        },
+        "Scottie Scheffler": {
+          "price": 102,
+          "implied": 0.49505,
+          "decimal": 2.02
+        },
+        "Xander Schauffele": {
+          "price": 102,
+          "implied": 0.49505,
+          "decimal": 2.02
+        },
+        "Chris Gotterup": {
+          "price": 138,
+          "implied": 0.42017,
+          "decimal": 2.38
+        },
+        "Wyndham Clark": {
+          "price": 164,
+          "implied": 0.37879,
+          "decimal": 2.64
+        },
+        "Hideki Matsuyama": {
+          "price": 146,
+          "implied": 0.4065,
+          "decimal": 2.46
+        },
+        "Kristoffer Reitan": {
+          "price": 184,
+          "implied": 0.35211,
+          "decimal": 2.84
+        },
+        "Ben Griffin": {
+          "price": 186,
+          "implied": 0.34965,
+          "decimal": 2.86
+        },
+        "Haotong Li": {
+          "price": 200,
+          "implied": 0.33333,
+          "decimal": 3.0
+        },
+        "Matt Fitzpatrick": {
+          "price": 188,
+          "implied": 0.34722,
+          "decimal": 2.88
+        },
+        "Jake Knapp": {
+          "price": 235,
+          "implied": 0.29851,
+          "decimal": 3.35
+        },
+        "Ludvig \u00c5berg": {
+          "price": 250,
+          "implied": 0.28571,
+          "decimal": 3.5
+        },
+        "Collin Morikawa": {
+          "price": 255,
+          "implied": 0.28169,
+          "decimal": 3.55
+        }
+      }
+    },
+    {
+      "id": "top20_draftkings_20260411_032141",
+      "market": "top20",
+      "book": "draftkings",
+      "capturedAt": "2026-04-11T01:00:00+00:00",
+      "source": "screenshot",
+      "roundNum": 3,
+      "notes": "DraftKings post-R2 cut top 20 odds",
+      "playerOdds": {
+        "Rory McIlroy": {
+          "price": -20000,
+          "implied": 0.99502,
+          "decimal": 1.005
+        },
+        "Tommy Fleetwood": {
+          "price": -1200,
+          "implied": 0.92308,
+          "decimal": 1.083
+        },
+        "Patrick Reed": {
+          "price": -1000,
+          "implied": 0.90909,
+          "decimal": 1.1
+        },
+        "Sam Burns": {
+          "price": -800,
+          "implied": 0.88889,
+          "decimal": 1.125
+        },
+        "Justin Rose": {
+          "price": -800,
+          "implied": 0.88889,
+          "decimal": 1.125
+        },
+        "Cameron Young": {
+          "price": -650,
+          "implied": 0.86667,
+          "decimal": 1.154
+        },
+        "Shane Lowry": {
+          "price": -575,
+          "implied": 0.85185,
+          "decimal": 1.174
+        },
+        "Jason Day": {
+          "price": -380,
+          "implied": 0.79167,
+          "decimal": 1.263
+        },
+        "Xander Schauffele": {
+          "price": -380,
+          "implied": 0.79167,
+          "decimal": 1.263
+        },
+        "Scottie Scheffler": {
+          "price": -370,
+          "implied": 0.78723,
+          "decimal": 1.27
+        },
+        "Brooks Koepka": {
+          "price": -360,
+          "implied": 0.78261,
+          "decimal": 1.278
+        },
+        "Tyrrell Hatton": {
+          "price": -340,
+          "implied": 0.77273,
+          "decimal": 1.294
+        },
+        "Hideki Matsuyama": {
+          "price": -260,
+          "implied": 0.72222,
+          "decimal": 1.385
+        },
+        "Chris Gotterup": {
+          "price": -260,
+          "implied": 0.72222,
+          "decimal": 1.385
+        },
+        "Wyndham Clark": {
+          "price": -210,
+          "implied": 0.67742,
+          "decimal": 1.476
+        },
+        "Matt Fitzpatrick": {
+          "price": -205,
+          "implied": 0.67213,
+          "decimal": 1.488
+        },
+        "Ben Griffin": {
+          "price": -200,
+          "implied": 0.66667,
+          "decimal": 1.5
+        },
+        "Kristoffer Reitan": {
+          "price": -194,
+          "implied": 0.65986,
+          "decimal": 1.515
+        },
+        "Haotong Li": {
+          "price": -180,
+          "implied": 0.64286,
+          "decimal": 1.556
+        },
+        "Jake Knapp": {
+          "price": -152,
+          "implied": 0.60317,
+          "decimal": 1.658
+        },
+        "Collin Morikawa": {
+          "price": -148,
+          "implied": 0.59677,
+          "decimal": 1.676
+        }
+      }
+    }
+  ]
+}

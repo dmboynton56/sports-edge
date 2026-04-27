@@ -82,7 +82,9 @@ def sync_scores(conn, scores_df) -> tuple[int, int]:
     update_sql = """
         UPDATE games
         SET home_score = %s,
-            away_score = %s
+            away_score = %s,
+            status = 'final',
+            updated_at = NOW()
         WHERE league = %s
           AND home_team = %s
           AND away_team = %s

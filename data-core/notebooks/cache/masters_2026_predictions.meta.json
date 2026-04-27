@@ -3,5 +3,26 @@
   "n_players": 95,
   "n_sims": 50000,
   "feature_store": "/home/dmboynton/projects/sports-edge/data-core/notebooks/cache/pga_feature_store_event_level.csv",
-  "latest_result_start": "2026-03-26"
+  "latest_result_start": "2026-04-02",
+  "calibration": {
+    "note": "LR classifiers can disagree with MC when features are OOD; inference uses winsorized scaled inputs, clipped base SG, and optional field-median shrink.",
+    "best_model_by_market_target": {
+      "target_made_cut": "meta_ensemble",
+      "target_top10": "rf",
+      "target_top20": "meta_ensemble",
+      "target_win": "lr"
+    },
+    "scaled_feature_clip": 3.5,
+    "base_sg_clip": 3.75,
+    "final_sg_clip": 3.25,
+    "field_median_blend": 0.18,
+    "course_fit_weight": 0.18,
+    "live_feature_rows_use_start_strictly_before_as_of": true,
+    "metrics_to_monitor": [
+      "Spearman rank vs actual finish (event holdout)",
+      "Brier / log-loss on win & top20 (calibrated vs base rate)",
+      "ECE on LR win prob bins",
+      "Mean abs error on exp SG/R vs realized SG/R"
+    ]
+  }
 }

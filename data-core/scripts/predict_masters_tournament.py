@@ -5,8 +5,9 @@ Pre-tournament Masters predictions using saved v2 PGA models + rebuilt feature s
   python scripts/predict_masters_tournament.py --rebuild-store
   python scripts/predict_masters_tournament.py --field-file data/masters_field_2026.txt
 
-TSV archive ends at 2025; there is no 2026 tour data in-repo yet — run with updated
-pga_results TSV when you ingest Jan–Apr 2026 events for freshest form.
+TSV archive ends at 2025; refresh ESPN supplement for 2026 form. Live features use the
+last feature-store row with start < --as-of. Use --course-fit-weight 0 to ablate the
+Augusta course-fit head. Run scripts/audit_masters_field_data.py to verify coverage.
 """
 from __future__ import annotations
 
@@ -31,6 +32,7 @@ from sklearn.preprocessing import StandardScaler
 from src.models.train_models_v2 import (  # noqa: E402
     MODELS_DIR,
     TabularNet,
+    clip_base_preds_relative,
     print_feature_importance,
 )
 
@@ -58,6 +60,25 @@ TARGET_COLS = [
 DEFAULT_FEATURE_STORE = Path(project_root) / "notebooks" / "cache" / "pga_feature_store_event_level.csv"
 DEFAULT_RESULTS_TSV = Path(project_root) / "src" / "data" / "archive" / "pga_results_2001-2025.tsv"
 DEFAULT_RESULTS_SUPPLEMENT = Path(project_root) / "src" / "data" / "archive" / "pga_results_espn_supplement.tsv"
+
+# Saved lr_*.joblib may predate these store columns; refit a 32-dim scaler on train for LR only.
+CLASSIFIER_LEGACY_EXCLUDE = frozenset(
+    {
+        "history_5_plus",
+        "history_20_plus",
+        "liv_share_last_10",
+        "liv_share_last_20",
+        "strong_field_share_last_10",
+        "strong_field_share_last_20",
+    }
+)
+
+CALIBRATION_MODEL_BY_TARGET = {
+    "target_made_cut": "meta_ensemble",
+    "target_top10": "rf",
+    "target_top20": "meta_ensemble",
+    "target_win": "lr",
+}
 
 
 def get_feature_cols(df: pd.DataFrame) -> List[str]:
@@ -100,18 +121,57 @@ def load_field(path: Optional[Path], tsv_path: Path) -> List[str]:
     return masters_field_from_tsv(tsv_path)
 
 
-def latest_player_rows(df: pd.DataFrame, names: Sequence[str], feature_cols: Sequence[str]) -> pd.DataFrame:
+EVENT_HISTORY_FALLBACK = {
+    "prev_event_avg_sg_round": "prev_avg_sg_round",
+    "prev_event_cut_rate": "prev_cut_rate",
+    "prev_event_top20_rate": "prev_top20_rate",
+}
+
+CAREER_PEER_FALLBACK = {
+    "prev_avg_r4_sg": "prev_avg_sg_round",
+    "prev_avg_close_delta": 0.0,
+    "prev_avg_finish_num": "prev_avg_finish_num",
+}
+
+
+def latest_player_rows(
+    df: pd.DataFrame,
+    names: Sequence[str],
+    feature_cols: Sequence[str],
+    as_of: Optional[pd.Timestamp] = None,
+) -> pd.DataFrame:
+    """
+    One row per player: last feature-store row strictly before as_of (if given).
+    If as_of is None, uses globally latest start (legacy / debugging).
+
+    Applies event-history NaN fallback: when prev_event_* is NaN (new venue),
+    substitute with the player's own career averages from the same row.
+    """
     df = df.copy()
     df["start"] = pd.to_datetime(df["start"], errors="coerce")
     out = []
     for name in names:
         sub = df[df["name"] == name]
         if sub.empty:
-            # Augusta history row as fallback (same tournament string as TSV)
             sub = df[(df["name"] == name) & (df["tournament"].str.contains("Masters", case=False, na=False))]
+        if as_of is not None:
+            sub = sub[sub["start"] < as_of]
         if sub.empty:
             continue
-        out.append(sub.sort_values("start").iloc[-1])
+        row = sub.sort_values("start").iloc[-1].copy()
+        for event_col, career_col in EVENT_HISTORY_FALLBACK.items():
+            if event_col in row.index and career_col in row.index:
+                if pd.isna(row[event_col]) and pd.notna(row[career_col]):
+                    row[event_col] = row[career_col]
+        for feat, fallback in CAREER_PEER_FALLBACK.items():
+            if feat not in row.index:
+                continue
+            if pd.isna(row[feat]):
+                if isinstance(fallback, str) and fallback in row.index:
+                    row[feat] = row[fallback]
+                elif isinstance(fallback, (int, float)):
+                    row[feat] = fallback
+        out.append(row)
     if not out:
         return pd.DataFrame()
     return pd.DataFrame(out).reset_index(drop=True)
@@ -184,17 +244,87 @@ def per_player_ridge_contribs(
             print(f"    {feature_names[j]:<38} x={x[j]:>8.3f}  contrib={prod[j]:>+9.4f}")
 
 
+def _course_fit_continuous_dim(cf_path: Path) -> Optional[int]:
+    """Infer number of continuous inputs from saved BatchNorm weights (if present)."""
+    try:
+        sd = torch.load(cf_path, weights_only=True, map_location="cpu")
+        w = sd.get("continuous_bn.weight")
+        if w is not None:
+            return int(w.shape[0])
+    except Exception:
+        return None
+    return None
+
+
+def winsorize_scaled_features(X: np.ndarray, limit: float = 3.5) -> np.ndarray:
+    """
+    Clip each column to [-limit, limit] in standard-deviation space.
+    Stops Ridge / LR from extrapolating on live rows far outside train distribution
+    (e.g. LIV-only schedules, sparse history) which yields absurd SG and win probs.
+    """
+    return np.clip(X.astype(np.float64), -limit, limit)
+
+
+def clip_sg_per_round(preds: np.ndarray, lo: float = -3.75, hi: float = 3.75) -> np.ndarray:
+    """Per-round SG on Tour almost always lies in a few strokes of this band."""
+    return np.clip(preds.astype(np.float64), lo, hi)
+
+
+def model_feature_count(model) -> int:
+    if hasattr(model, "n_features_in_"):
+        return int(model.n_features_in_)
+    if hasattr(model, "num_feature"):
+        try:
+            return int(model.num_feature())
+        except Exception:
+            pass
+    if hasattr(model, "feature_importance"):
+        try:
+            return int(len(model.feature_importance()))
+        except Exception:
+            pass
+    return -1
+
+
+def classifier_probability(model, X: np.ndarray) -> np.ndarray:
+    if hasattr(model, "predict_proba"):
+        p = model.predict_proba(X)[:, 1]
+    else:
+        cls_name = model.__class__.__name__
+        cls_module = model.__class__.__module__.lower()
+        if cls_name == "Booster" and "xgboost" in cls_module:
+            import xgboost as xgb
+
+            p = model.predict(xgb.DMatrix(X))
+        elif cls_name == "Booster" and "lightgbm" in cls_module:
+            p = model.predict(np.asarray(X, dtype=np.float32))
+        else:
+            p = model.predict(X)
+    p = np.asarray(p)
+    if p.ndim == 2:
+        if p.shape[1] == 2:
+            p = p[:, 1]
+        elif p.shape[1] == 1:
+            p = p.ravel()
+    return np.clip(p.astype(np.float64), 1e-7, 1 - 1e-7)
+
+
 def run_mc(
     meta_sg_per_round: np.ndarray,
     n_players: int,
     n_sims: int,
     n_rounds: int,
     sg_std: float,
+    player_stds: Optional[np.ndarray] = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    if player_stds is not None:
+        per_player_std = np.clip(player_stds, 1.5, 3.5)
+    else:
+        per_player_std = np.full(n_players, sg_std)
     sim_totals = np.zeros((n_sims, n_players))
     for _ in range(n_rounds):
         sim_totals += np.random.normal(
-            loc=-meta_sg_per_round, scale=sg_std, size=(n_sims, n_players)
+            loc=-meta_sg_per_round, scale=per_player_std, size=(n_sims, n_players)
         )
     win = np.zeros(n_players)
     t5 = np.zeros(n_players)
@@ -231,6 +361,36 @@ def main() -> None:
     ap.add_argument("--rebuild-store", action="store_true")
     ap.add_argument("--out-csv", type=Path, default=None)
     ap.add_argument("--skip-importance", action="store_true")
+    ap.add_argument(
+        "--scaled-clip",
+        type=float,
+        default=3.5,
+        help="Winsor limit (std devs) on scaled features for Ridge/NN/LR (default 3.5)",
+    )
+    ap.add_argument(
+        "--base-sg-clip",
+        type=float,
+        default=3.75,
+        help="Clip each base regressor's SG/R prediction to [-v, v] before meta stack",
+    )
+    ap.add_argument(
+        "--final-sg-clip",
+        type=float,
+        default=3.25,
+        help="Clip blended expected SG/R before Monte Carlo (default 3.25)",
+    )
+    ap.add_argument(
+        "--field-median-blend",
+        type=float,
+        default=0.18,
+        help="Shrink exp SG/R toward field median: (1-w)*sg + w*median(sg). Dampens single-player spikes.",
+    )
+    ap.add_argument(
+        "--course-fit-weight",
+        type=float,
+        default=0.18,
+        help="Blend course-fit DL head: (1-w)*meta_sg + w*dl_cf. Use 0 to ablate Augusta embedding tail.",
+    )
     args = ap.parse_args()
 
     if args.rebuild_store:
@@ -259,7 +419,11 @@ def main() -> None:
     medians_arr, scaler_reg, scaler_cls, feature_cols = train_medians_and_scalers(df)
     medians = pd.Series(medians_arr, index=feature_cols)
 
-    rows_df = latest_player_rows(df, field, feature_cols)
+    df_fit = df.dropna(subset=["target_sg_per_round"]).copy()
+    train_mask_fit = df_fit["dataset_split"] == "train"
+    models_dir = Path(MODELS_DIR)
+
+    rows_df = latest_player_rows(df, field, feature_cols, as_of=as_of)
     found = set(rows_df["name"].tolist())
     missing = [n for n in field if n not in found]
     if missing:
@@ -267,39 +431,191 @@ def main() -> None:
     names = rows_df["name"].tolist()
     X_live = rows_df[feature_cols].fillna(medians).values.astype(np.float32)
     X_scaled_reg = scaler_reg.transform(X_live)
-    X_scaled_cls = scaler_cls.transform(X_live)
+    legacy_cols = [c for c in feature_cols if c not in CLASSIFIER_LEGACY_EXCLUDE]
+    medians_legacy = df_fit.loc[train_mask_fit, legacy_cols].median()
+    scaler_cls_legacy = StandardScaler()
+    scaler_cls_legacy.fit(
+        df_fit.loc[train_mask_fit, legacy_cols].fillna(medians_legacy).values.astype(np.float32)
+    )
 
-    models_dir = Path(MODELS_DIR)
+    X_live_full = rows_df[feature_cols].fillna(medians).values.astype(np.float32)
+    X_live_legacy = rows_df[legacy_cols].fillna(medians_legacy).values.astype(np.float32)
+
+    X_scaled_cls_full = winsorize_scaled_features(
+        scaler_cls.transform(X_live_full),
+        limit=args.scaled_clip,
+    )
+    X_scaled_cls_legacy = winsorize_scaled_features(
+        scaler_cls_legacy.transform(X_live_legacy),
+        limit=args.scaled_clip,
+    )
+
+    X_scaled_reg = winsorize_scaled_features(X_scaled_reg, limit=args.scaled_clip)
+    v = args.base_sg_clip
 
     reg_preds: Dict[str, np.ndarray] = {}
     ridge = joblib.load(models_dir / "ridge_sg_model.joblib")
-    reg_preds["ridge"] = ridge.predict(X_scaled_reg)
-    reg_preds["rf"] = joblib.load(models_dir / "rf_sg_model.joblib").predict(X_live)
-    reg_preds["lgbm"] = joblib.load(models_dir / "lgbm_sg_model_v2.joblib").predict(X_live)
-    reg_preds["xgb"] = joblib.load(models_dir / "xgb_sg_model_v2.joblib").predict(X_live)
+    reg_preds["ridge"] = clip_sg_per_round(ridge.predict(X_scaled_reg), -v, v)
+    reg_preds["rf"] = clip_sg_per_round(
+        joblib.load(models_dir / "rf_sg_model.joblib").predict(X_live), -v, v
+    )
+    reg_preds["lgbm"] = clip_sg_per_round(
+        joblib.load(models_dir / "lgbm_sg_model_v2.joblib").predict(X_live), -v, v
+    )
+    reg_preds["xgb"] = clip_sg_per_round(
+        joblib.load(models_dir / "xgb_sg_model_v2.joblib").predict(X_live), -v, v
+    )
 
     nn_path = models_dir / "pytorch_tabular_v2.pth"
     nn = TabularNet(X_scaled_reg.shape[1])
     nn.load_state_dict(torch.load(nn_path, weights_only=True, map_location="cpu"))
     nn.eval()
     with torch.no_grad():
-        reg_preds["nn"] = nn(torch.tensor(X_scaled_reg, dtype=torch.float32)).numpy()
+        reg_preds["nn"] = clip_sg_per_round(
+            nn(torch.tensor(X_scaled_reg, dtype=torch.float32)).numpy(), -v, v
+        )
+
+    cf_path = models_dir / "pytorch_course_fit.pth"
+    w_cf = float(np.clip(args.course_fit_weight, 0.0, 1.0))
+    dl_cf_preds = np.zeros(len(names))
+    if cf_path.exists() and w_cf > 0:
+        from src.models.dl_course_fit import PGACourseFitNN
+
+        player_mapping = joblib.load(models_dir / "player_mapping.joblib")
+        course_mapping = joblib.load(models_dir / "course_mapping.joblib")
+
+        num_p = len(player_mapping)
+        num_c = len(course_mapping)
+        n_cont_cf = _course_fit_continuous_dim(cf_path)
+        cols_cf = list(feature_cols)
+        X_cf = X_live
+        if n_cont_cf is not None and n_cont_cf != len(feature_cols):
+            cand = [c for c in feature_cols if c not in CLASSIFIER_LEGACY_EXCLUDE]
+            if len(cand) == n_cont_cf:
+                cols_cf = cand
+                X_cf = rows_df[cols_cf].fillna(medians[cols_cf]).values.astype(np.float32)
+            else:
+                print(
+                    f"\n*** WARN: course-fit checkpoint expects {n_cont_cf} continuous features; "
+                    f"could not align (subset len {len(cand)}). Skipping course-fit blend.\n"
+                )
+                w_cf = 0.0
+
+        if w_cf > 0:
+            cf_model = PGACourseFitNN(num_p, num_c, len(cols_cf))
+            cf_model.load_state_dict(torch.load(cf_path, weights_only=True, map_location="cpu"))
+            cf_model.eval()
+
+            course_name = "Masters Tournament"
+            c_idx = course_mapping.get(course_name, 0)
+
+            p_indices = [player_mapping.get(n, 0) for n in names]
+
+            p_tensor = torch.tensor(p_indices, dtype=torch.long)
+            c_tensor = torch.tensor([c_idx] * len(names), dtype=torch.long)
+            cont_tensor = torch.tensor(X_cf, dtype=torch.float32)
+
+            with torch.no_grad():
+                cf_preds = cf_model(p_tensor, c_tensor, cont_tensor).numpy()
+                dl_cf_preds = clip_sg_per_round(cf_preds, -v, v)
 
     meta = joblib.load(models_dir / "meta_ensemble_sg_v2.joblib")
     base_order = ["ridge", "rf", "lgbm", "xgb", "nn"]
+
+    reg_preds = clip_base_preds_relative(reg_preds, sigma=2.0)
+
     X_meta = np.column_stack([reg_preds[k] for k in base_order])
     meta_sg = meta.predict(X_meta)
 
+    # Course-fit: player×course embedding tail (skip load when weight is 0).
+    if cf_path.exists() and w_cf > 0:
+        meta_sg = (1.0 - w_cf) * meta_sg + w_cf * dl_cf_preds
+
+    meta_sg = clip_sg_per_round(meta_sg, -args.final_sg_clip, args.final_sg_clip)
+    w_med = float(np.clip(args.field_median_blend, 0.0, 0.5))
+    if w_med > 0 and len(meta_sg) > 5:
+        med = float(np.median(meta_sg))
+        meta_sg = (1.0 - w_med) * meta_sg + w_med * med
+
     cls_targets = ["target_made_cut", "target_top10", "target_top20", "target_win"]
-    cls_probs: Dict[str, np.ndarray] = {}
+    base_model_types = ["lr", "rf", "lgbm", "xgb"]
+    cls_probs_by_target: Dict[str, Dict[str, np.ndarray]] = {t: {} for t in cls_targets}
+
     for t in cls_targets:
-        p = models_dir / f"lr_{t}.joblib"
-        if p.exists():
-            cls_probs[t] = joblib.load(p).predict_proba(X_scaled_cls)[:, 1]
+        for mt in base_model_types:
+            pth = models_dir / f"{mt}_{t}.joblib"
+            if not pth.exists():
+                continue
+            model = joblib.load(pth)
+            expected = model_feature_count(model)
+            needs_scaled = mt == "lr"
+            if expected == len(legacy_cols):
+                X = X_scaled_cls_legacy if needs_scaled else X_live_legacy
+            else:
+                X = X_scaled_cls_full if needs_scaled else X_live_full
+            try:
+                cls_probs_by_target[t][mt] = classifier_probability(model, X)
+            except Exception as e:
+                print(f"*** WARN: skip {mt}_{t}: {e}\n")
+
+        meta_path = models_dir / f"meta_ensemble_{t}_v2.joblib"
+        if meta_path.exists() and all(m in cls_probs_by_target[t] for m in base_model_types):
+            try:
+                base_for_meta = {m: cls_probs_by_target[t][m] for m in base_model_types}
+                base_for_meta = clip_base_preds_relative(base_for_meta, sigma=2.0)
+                meta_model = joblib.load(meta_path)
+                X_meta_cls = np.column_stack([base_for_meta[m] for m in base_model_types])
+                cls_probs_by_target[t]["meta_ensemble"] = classifier_probability(meta_model, X_meta_cls)
+            except Exception as e:
+                print(f"*** WARN: skip meta_ensemble_{t}: {e}\n")
+
+    calibrated_market_probs: Dict[str, np.ndarray] = {}
+    calibrated_market_model: Dict[str, str] = {}
+    for t in cls_targets:
+        preferred = CALIBRATION_MODEL_BY_TARGET.get(t)
+        fallback_order = [preferred, "meta_ensemble", "lr", "rf", "lgbm", "xgb"]
+        seen = set()
+        chosen = None
+        for cand in fallback_order:
+            if cand is None or cand in seen:
+                continue
+            seen.add(cand)
+            if cand in cls_probs_by_target[t]:
+                chosen = cand
+                break
+        if chosen is not None:
+            calibrated_market_probs[t] = cls_probs_by_target[t][chosen]
+            calibrated_market_model[t] = chosen
+
+    player_stds = None
+    if "prev_round_std_10" in feature_cols:
+        std_col_idx = feature_cols.index("prev_round_std_10")
+        raw_stds = X_live[:, std_col_idx]
+        valid_stds = raw_stds[np.isfinite(raw_stds) & (raw_stds > 0)]
+        fallback = float(np.median(valid_stds)) if len(valid_stds) > 0 else args.sg_std
+        player_stds = np.where(np.isfinite(raw_stds) & (raw_stds > 0), raw_stds, fallback)
 
     win_p, t5_p, t10_p, t20_p = run_mc(
-        meta_sg, len(names), args.n_sims, args.n_rounds, args.sg_std
+        meta_sg, len(names), args.n_sims, args.n_rounds, args.sg_std,
+        player_stds=player_stds,
     )
+
+    ridge_coef = np.asarray(ridge.coef_).ravel()
+    key_features = []
+    for i, name in enumerate(names):
+        x = X_scaled_reg[i]
+        prod = ridge_coef * x
+        order = np.argsort(prod)
+        top_neg = order[:3]
+        top_pos = order[-3:][::-1]
+        kf = []
+        for j in top_pos:
+            if prod[j] > 0:
+                kf.append({"feature": feature_cols[j], "contrib": float(prod[j]), "type": "positive"})
+        for j in top_neg:
+            if prod[j] < 0:
+                kf.append({"feature": feature_cols[j], "contrib": float(prod[j]), "type": "negative"})
+        key_features.append(json.dumps(kf))
 
     out = pd.DataFrame(
         {
@@ -309,36 +625,51 @@ def main() -> None:
             "sim_top5_pct": 100 * t5_p,
             "sim_top10_pct": 100 * t10_p,
             "sim_top20_pct": 100 * t20_p,
+            "model_ridge": reg_preds.get("ridge", np.zeros(len(names))),
+            "model_rf": reg_preds.get("rf", np.zeros(len(names))),
+            "model_lgbm": reg_preds.get("lgbm", np.zeros(len(names))),
+            "model_xgb": reg_preds.get("xgb", np.zeros(len(names))),
+            "model_nn": reg_preds.get("nn", np.zeros(len(names))),
+            "key_features": key_features,
         }
     )
-    for t, probs in cls_probs.items():
-        out[f"lr_{t}_prob"] = probs
-    out = out.sort_values("sim_win_pct", ascending=False).reset_index(drop=True)
+    for t, model_map in cls_probs_by_target.items():
+        for mt, probs in model_map.items():
+            out[f"{mt}_{t}_prob"] = probs
+    for t, probs in calibrated_market_probs.items():
+        out[f"best_calibrated_{t}_prob"] = probs
+        out[f"best_calibrated_{t}_model"] = calibrated_market_model[t]
+    primary_sort = "best_calibrated_target_win_prob"
+    if primary_sort in out.columns:
+        out = out.sort_values(primary_sort, ascending=False).reset_index(drop=True)
+    else:
+        out = out.sort_values("sim_win_pct", ascending=False).reset_index(drop=True)
 
     print("\n" + "=" * 120)
-    print(f"2026 MASTERS (pre-event) — MC {args.n_sims} sims × {args.n_rounds} rounds, σ={args.sg_std}")
+    print(f"2026 MASTERS (pre-event) — classifier + MC {args.n_sims} sims × {args.n_rounds} rounds")
     print("=" * 120)
-    hdr = (
-        f"{'#':<3} {'Player':<28} {'ExpSG/R':>8} "
-        f"{'Win%':>7} {'Top5%':>7} {'Top10%':>8} {'Top20%':>8}"
-    )
-    if cls_probs:
-        hdr += f" {'P(cut)':>8} {'P T10':>8} {'P T20':>8} {'P Win':>8}"
+    has_cls = "best_calibrated_target_made_cut_prob" in out.columns
+    hdr = f"{'#':<3} {'Player':<28} {'ExpSG/R':>8}"
+    if has_cls:
+        hdr += f" {'P Win':>8} {'P T10':>8} {'P T20':>8} {'P Cut':>8}"
+    hdr += f" {'MC Win%':>8} {'MC T5%':>8} {'MC T10%':>8} {'MC T20%':>8}"
     print(hdr)
     print("-" * len(hdr))
     for i, r in out.iterrows():
-        line = (
-            f"{i+1:<3} {r['player']:<28} {r['exp_sg_per_round']:>+8.3f} "
-            f"{r['sim_win_pct']:>6.1f}% {r['sim_top5_pct']:>6.1f}% "
-            f"{r['sim_top10_pct']:>7.1f}% {r['sim_top20_pct']:>7.1f}%"
-        )
-        if "lr_target_made_cut_prob" in out.columns:
+        line = f"{i+1:<3} {r['player']:<28} {r['exp_sg_per_round']:>+8.3f}"
+        if has_cls:
             line += (
-                f" {100*r['lr_target_made_cut_prob']:>7.1f}% "
-                f"{100*r['lr_target_top10_prob']:>7.1f}% "
-                f"{100*r['lr_target_top20_prob']:>7.1f}% "
-                f"{100*r['lr_target_win_prob']:>7.1f}%"
+                f" {100*r['best_calibrated_target_win_prob']:>7.1f}%"
+                f" {100*r['best_calibrated_target_top10_prob']:>7.1f}%"
+                f" {100*r['best_calibrated_target_top20_prob']:>7.1f}%"
+                f" {100*r['best_calibrated_target_made_cut_prob']:>7.1f}%"
             )
+        line += (
+            f" {r['sim_win_pct']:>7.1f}%"
+            f" {r['sim_top5_pct']:>7.1f}%"
+            f" {r['sim_top10_pct']:>7.1f}%"
+            f" {r['sim_top20_pct']:>7.1f}%"
+        )
         print(line)
 
     print("\n" + "=" * 80)
@@ -384,6 +715,24 @@ def main() -> None:
                 "n_sims": args.n_sims,
                 "feature_store": str(args.feature_store),
                 "latest_result_start": str(latest_data.date()) if pd.notna(latest_data) else None,
+                "calibration": {
+                    "note": "LR classifiers can disagree with MC when features are OOD; inference uses winsorized scaled inputs, clipped base SG, and optional field-median shrink.",
+                    "best_model_by_market_target": {
+                        t: calibrated_market_model.get(t) for t in cls_targets
+                    },
+                    "scaled_feature_clip": args.scaled_clip,
+                    "base_sg_clip": args.base_sg_clip,
+                    "final_sg_clip": args.final_sg_clip,
+                    "field_median_blend": w_med,
+                    "course_fit_weight": w_cf,
+                    "live_feature_rows_use_start_strictly_before_as_of": True,
+                    "metrics_to_monitor": [
+                        "Spearman rank vs actual finish (event holdout)",
+                        "Brier / log-loss on win & top20 (calibrated vs base rate)",
+                        "ECE on LR win prob bins",
+                        "Mean abs error on exp SG/R vs realized SG/R",
+                    ],
+                },
             },
             indent=2,
         )

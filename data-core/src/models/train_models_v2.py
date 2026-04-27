@@ -399,14 +399,36 @@ class ClassificationSuite:
 # =========================================================================
 # PyTorch Tabular Network
 # =========================================================================
+SCHEDULE_FEATURE_PATTERNS = [
+    "liv_share_last_", "strong_field_share_last_",
+]
+
+
+def _schedule_feature_indices(feature_names: List[str]) -> List[int]:
+    """Return column indices for schedule-related features prone to OOD shift."""
+    idxs = []
+    for i, name in enumerate(feature_names):
+        if any(name.startswith(pat) for pat in SCHEDULE_FEATURE_PATTERNS):
+            idxs.append(i)
+    return idxs
+
+
 class TabularNet(nn.Module):
     """Deeper tabular network with skip connections for SG regression."""
 
-    def __init__(self, input_dim: int, hidden_dims: List[int] = None):
+    def __init__(
+        self,
+        input_dim: int,
+        hidden_dims: List[int] = None,
+        mask_indices: Optional[List[int]] = None,
+        mask_prob: float = 0.30,
+    ):
         super().__init__()
         if hidden_dims is None:
             hidden_dims = [256, 128, 64, 32]
         self.bn_input = nn.BatchNorm1d(input_dim)
+        self.mask_indices = mask_indices or []
+        self.mask_prob = mask_prob
 
         layers = []
         prev_dim = input_dim
@@ -420,6 +442,14 @@ class TabularNet(nn.Module):
         self.head = nn.Linear(hidden_dims[-1], 1)
 
     def forward(self, x):
+        if self.training and self.mask_indices:
+            mask = torch.rand(x.size(0), 1, device=x.device) < self.mask_prob
+            x = x.clone()
+            x[:, self.mask_indices] = torch.where(
+                mask.expand(-1, len(self.mask_indices)),
+                torch.zeros_like(x[:, self.mask_indices]),
+                x[:, self.mask_indices],
+            )
         x = self.bn_input(x)
         x = self.backbone(x)
         return self.head(x).squeeze(-1)
@@ -429,7 +459,8 @@ def train_pytorch_tabular(
     X_train_scaled: np.ndarray, y_train: np.ndarray,
     X_val_scaled: np.ndarray, y_val: np.ndarray,
     epochs: int = 60, batch_size: int = 512, lr: float = 1e-3,
-    models_dir: str = MODELS_DIR
+    models_dir: str = MODELS_DIR,
+    feature_names: Optional[List[str]] = None,
 ) -> np.ndarray:
     print("\n--- PyTorch Tabular NN ---")
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -445,7 +476,10 @@ def train_pytorch_tabular(
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_ds, batch_size=batch_size)
 
-    model = TabularNet(X_tr.shape[1]).to(device)
+    mask_idxs = _schedule_feature_indices(feature_names) if feature_names else []
+    if mask_idxs:
+        print(f"  Feature masking: {len(mask_idxs)} schedule features (p=0.30)")
+    model = TabularNet(X_tr.shape[1], mask_indices=mask_idxs).to(device)
     criterion = nn.HuberLoss(delta=1.5)
     optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=0.01)
     scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs)
@@ -503,6 +537,31 @@ def train_pytorch_tabular(
 # =========================================================================
 # Stacking Meta-Ensemble
 # =========================================================================
+def clip_base_preds_relative(base_preds: Dict[str, np.ndarray], sigma: float = 2.0) -> Dict[str, np.ndarray]:
+    """Clip per-model predictions that deviate >sigma from the peer median.
+
+    For each player, compute the median prediction across models. If any model
+    is more than `sigma` standard deviations (of the cross-model spread) away,
+    clip it to median +/- sigma * std. Prevents a single broken model from
+    poisoning the stack.
+    """
+    names = list(base_preds.keys())
+    stacked = np.column_stack([base_preds[n] for n in names])  # (n_players, n_models)
+    medians = np.median(stacked, axis=1, keepdims=True)
+    stds = np.std(stacked, axis=1, keepdims=True)
+    stds = np.maximum(stds, 1e-6)
+
+    lo = medians - sigma * stds
+    hi = medians + sigma * stds
+    clipped = np.clip(stacked, lo, hi)
+
+    n_clipped = int((stacked != clipped).sum())
+    if n_clipped > 0:
+        print(f"  Relative outlier clipping: {n_clipped} values clipped ({sigma:.1f}σ)")
+
+    return {n: clipped[:, i] for i, n in enumerate(names)}
+
+
 class StackingEnsemble:
     """
     Stacking meta-learner that combines base model predictions.
@@ -520,10 +579,10 @@ class StackingEnsemble:
     ) -> np.ndarray:
         """Simple weighted average via Ridge on validation predictions only."""
         print("\n--- Stacking Ensemble (Regression) ---")
+        base_preds_val = clip_base_preds_relative(base_preds_val, sigma=2.0)
         self.base_model_names = list(base_preds_val.keys())
         X_meta_val = np.column_stack(list(base_preds_val.values()))
 
-        # Split val in half: first half for fitting meta, second half for eval
         n = len(y_val)
         mid = n // 2
         meta = Ridge(alpha=10.0)
@@ -543,6 +602,7 @@ class StackingEnsemble:
         base_preds_val: Dict[str, np.ndarray], y_val: np.ndarray,
     ) -> np.ndarray:
         print(f"\n--- Stacking Ensemble ({target_name}) ---")
+        base_preds_val = clip_base_preds_relative(base_preds_val, sigma=2.0)
         X_meta_val = np.column_stack(list(base_preds_val.values()))
 
         n = len(y_val)
@@ -585,136 +645,6 @@ def print_feature_importance(models: Dict, feature_names: List[str], top_n: int 
 
 
 # =========================================================================
-# Players Championship Prediction
-# =========================================================================
-def predict_players_championship(
-    dm: DataManager, df: pd.DataFrame,
-    reg_suite: 'RegressionSuite',
-    stacking: StackingEnsemble
-):
-    """
-    Builds predictions for THE PLAYERS Championship using the trained models
-    and runs a Monte Carlo simulation for the final round.
-    """
-    print("\n" + "=" * 70)
-    print("2026 THE PLAYERS CHAMPIONSHIP — Final Round Predictions")
-    print("=" * 70)
-
-    leaderboard = [
-        ("Ludvig Åberg", -14), ("Michael Thorbjornsen", -10), ("Cameron Young", -9),
-        ("Brian Harman", -8), ("Matt Fitzpatrick", -8), ("Viktor Hovland", -8),
-        ("Corey Conners", -8), ("Justin Thomas", -8), ("Xander Schauffele", -8),
-        ("Robert MacIntyre", -7), ("Sahith Theegala", -7), ("Austin Smotherman", -7),
-        ("Jacob Bridgeman", -7), ("Sepp Straka", -7),
-        ("William Mouw", -6), ("Justin Rose", -6), ("Ryo Hisatsune", -6), ("Russell Henley", -6),
-        ("Keegan Bradley", -5), ("J.J. Spaun", -5),
-        ("Brooks Koepka", -5), ("Alex Smalley", -5), ("Patrick Rodgers", -5),
-        ("Maverick McNealy", -5),
-        ("Scottie Scheffler", -4), ("Chris Gotterup", -4), ("Min Woo Lee", -4),
-        ("Akshay Bhatia", -4), ("Keith Mitchell", -4), ("Jason Day", -4),
-        ("Tommy Fleetwood", -4),
-        ("Si Woo Kim", -3), ("Joe Highsmith", -3), ("Sam Burns", -3), ("Max Homa", -3),
-    ]
-
-    tpc_df = df[df['tournament'] == 'THE PLAYERS Championship']
-    feature_cols = dm.feature_cols
-
-    rows = []
-    for player_name, score in leaderboard:
-        player_rows = tpc_df[tpc_df['name'] == player_name]
-        if player_rows.empty:
-            player_rows = df[df['name'] == player_name]
-        if player_rows.empty:
-            continue
-        latest = player_rows.iloc[-1]
-        feat_vals = latest[feature_cols].fillna(dm._medians).values.astype(np.float32)
-        rows.append({'name': player_name, 'score': score, 'features': feat_vals})
-
-    if not rows:
-        print("  No player matches found in the feature store.")
-        return
-
-    X_live = np.vstack([r['features'] for r in rows])
-    X_live_scaled = dm.scaler.transform(X_live)
-
-    # Collect predictions from all base models (matching stacking order)
-    reg_preds = {}
-    for name, model in reg_suite.models.items():
-        if name == 'nn':
-            continue
-        if name == 'ridge':
-            reg_preds[name] = model.predict(X_live_scaled)
-        else:
-            reg_preds[name] = model.predict(X_live)
-
-    # NN prediction
-    nn_path = os.path.join(MODELS_DIR, 'pytorch_tabular_v2.pth')
-    if os.path.exists(nn_path):
-        nn_model = TabularNet(X_live_scaled.shape[1])
-        nn_model.load_state_dict(torch.load(nn_path, weights_only=True, map_location='cpu'))
-        nn_model.eval()
-        with torch.no_grad():
-            reg_preds['nn'] = nn_model(torch.tensor(X_live_scaled, dtype=torch.float32)).numpy()
-
-    # Weighted average from meta-ensemble or simple mean
-    if 'regression' in stacking.meta_models and stacking.base_model_names:
-        ordered_preds = [reg_preds[n] for n in stacking.base_model_names if n in reg_preds]
-        if len(ordered_preds) == len(stacking.base_model_names):
-            X_meta = np.column_stack(ordered_preds)
-            meta_preds = stacking.meta_models['regression'].predict(X_meta)
-        else:
-            meta_preds = np.mean(list(reg_preds.values()), axis=0)
-    else:
-        meta_preds = np.mean(list(reg_preds.values()), axis=0)
-
-    # Classification probabilities (LR best calibrated from evaluation)
-    cls_preds = {}
-    for target_name in ['target_top10', 'target_top20', 'target_win']:
-        for model_type in ['lr']:
-            model_path = os.path.join(MODELS_DIR, f'{model_type}_{target_name}.joblib')
-            if os.path.exists(model_path):
-                cls_model = joblib.load(model_path)
-                cls_preds[target_name] = cls_model.predict_proba(X_live_scaled)[:, 1]
-
-    # Monte Carlo Simulation — 50K runs for the final round
-    n_sims = 50000
-    n_players = len(rows)
-    current_scores = np.array([r['score'] for r in rows], dtype=float)
-    sg_std = np.full(n_players, 2.5)
-
-    sim_totals = np.tile(current_scores, (n_sims, 1))
-    round_sim = np.random.normal(loc=-meta_preds, scale=sg_std, size=(n_sims, n_players))
-    sim_totals += round_sim
-
-    win_counts = np.zeros(n_players)
-    top5_counts = np.zeros(n_players)
-    top10_counts = np.zeros(n_players)
-
-    for i in range(n_sims):
-        ranks = np.argsort(sim_totals[i])
-        win_counts[ranks[0]] += 1
-        for j in range(min(5, n_players)):
-            top5_counts[ranks[j]] += 1
-        for j in range(min(10, n_players)):
-            top10_counts[ranks[j]] += 1
-
-    print(f"\n{'Player':<25} {'R3 Score':>8} {'Exp SG/R':>9} {'Win%':>8} {'Top5%':>8} {'Top10%':>8} {'Cls Top10':>10} {'Cls Top20':>10} {'Cls Win':>9}")
-    print("-" * 115)
-
-    sort_idx = np.argsort(current_scores)
-    for idx in sort_idx:
-        r = rows[idx]
-        t10 = cls_preds.get('target_top10', np.full(n_players, np.nan))[idx]
-        t20 = cls_preds.get('target_top20', np.full(n_players, np.nan))[idx]
-        win = cls_preds.get('target_win', np.full(n_players, np.nan))[idx]
-        print(
-            f"{r['name']:<25} {r['score']:>+8} {meta_preds[idx]:>+9.3f} "
-            f"{100*win_counts[idx]/n_sims:>7.1f}% {100*top5_counts[idx]/n_sims:>7.1f}% "
-            f"{100*top10_counts[idx]/n_sims:>7.1f}% {t10:>9.1%} {t20:>9.1%} {win:>8.2%}"
-        )
-
-
-# =========================================================================
 # Main Pipeline
 # =========================================================================
 def main():
@@ -737,7 +667,7 @@ def main():
     reg.train_lightgbm(X_tr, y_tr, X_vl, y_vl, feature_names)
     reg.train_xgboost(X_tr, y_tr, X_vl, y_vl)
 
-    nn_preds = train_pytorch_tabular(X_tr_s, y_tr, X_vl_s, y_vl)
+    nn_preds = train_pytorch_tabular(X_tr_s, y_tr, X_vl_s, y_vl, feature_names=feature_names)
     reg.predictions['nn'] = nn_preds
     reg.models['nn'] = 'pytorch_tabular_v2.pth'
 
@@ -794,9 +724,6 @@ def main():
         cls_results[target_name]['meta_stack'] = meta_cls_preds
 
     cls.evaluate(cls_results, y_dict_val)
-
-    # ---- Players Championship Prediction ----
-    predict_players_championship(dm, df, reg, stacking)
 
     print("\n" + "=" * 70)
     print("PIPELINE COMPLETE — All models saved to", MODELS_DIR)

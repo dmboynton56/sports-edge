@@ -1,8 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PickCard, type EnrichedPick } from '@/components/PickCard';
-import { PlayersLeaderboard, type PlayerPrediction } from '@/components/PlayersLeaderboard';
+import {
+  PlayersLeaderboard,
+  type PlayerPrediction,
+  type PlayerOdds,
+  type MarketOddsDetail,
+  type RecentTournamentRow,
+} from '@/components/PlayersLeaderboard';
 import { ModelMetrics, type ModelMetricsData } from '@/components/ModelMetrics';
 
 // -----------------------------------------------------------------------
@@ -150,23 +156,23 @@ const MODEL_METRICS: ModelMetricsData = {
 // -----------------------------------------------------------------------
 const INSIGHTS = [
   {
-    title: "Åberg's Lock?",
-    body: "4-shot lead + highest win probability (53.4%). But his Expected SG is -1.56 — the model thinks he's been overperforming his baseline. Market has him higher; model says he still wins on position alone.",
+    title: "McIlroy & Burns Co-Lead",
+    body: "Both shot 67 (-5) in R1. McIlroy's model Expected SG is among the highest in the field — he's performing to his baseline. Burns is overperforming his model projection, suggesting regression risk in later rounds.",
     type: 'neutral' as const,
   },
   {
-    title: "Scheffler Sleeper",
-    body: "6 shots back but the model's #1 rated player (Expected SG +0.95). If Åberg stumbles, Scheffler has the highest intrinsic skill to capitalize. Classic contrarian upside.",
+    title: "Scheffler Lurking",
+    body: "At -2 (70) he's 3 back. But the model has Scheffler as the top Expected SG player in the field. This is a classic buy-low spot — strong model projection + reasonable deficit after R1.",
     type: 'buy' as const,
   },
   {
-    title: "JT & Xander at -8",
-    body: "Both have Expected SG over +0.90 in the -8 cluster. The model strongly separates them from Harman (-0.18 SG) and Conners (+0.16) despite identical scores. Key edge for Top 5/10 markets.",
+    title: "Reed & Day at -3",
+    body: "Patrick Reed (69) and Jason Day (69) both outperformed expectations. Reed's model projection is moderate but his Augusta history is strong. Day's form has been inconsistent — the model suggests caution for Top 5.",
     type: 'buy' as const,
   },
   {
-    title: "Bridgeman & Mouw: Fade",
-    body: "Both at -7/-6 but Expected SG below -2.3. The model has almost zero history on them — classic overachievers with massive regression risk for Sunday. Avoid in Top 10/20 bets.",
+    title: "Rahm at +6: Fade",
+    body: "Shot 78 in R1 — well below his model expectation. The model still rates his raw skill highly, but the 11-shot deficit makes any top-20 bet essentially dead money. Classic case where the math overrides reputation.",
     type: 'sell' as const,
   },
 ];
@@ -175,6 +181,107 @@ const INSIGHTS = [
 // Page
 // -----------------------------------------------------------------------
 export default function Home() {
+  const [mastersData, setMastersData] = useState<PlayerPrediction[]>([]);
+  const [mastersRecentByPlayer, setMastersRecentByPlayer] = useState<
+    Record<string, RecentTournamentRow[]>
+  >({});
+  const [loading, setLoading] = useState(true);
+  const [mastersCalibNote, setMastersCalibNote] = useState<string | null>(null);
+  const [tournamentStatus, setTournamentStatus] = useState<string>('PRE-TOURNAMENT');
+  const [currentRound, setCurrentRound] = useState<number>(0);
+
+  useEffect(() => {
+    fetch('/data/pga_masters_dashboard.json')
+      .then(r => r.json())
+      .then(data => {
+        const cal = data.predictionMeta?.calibration;
+        if (cal?.note) setMastersCalibNote(cal.note as string);
+        else setMastersCalibNote(null);
+
+        const live = data.liveLeaderboard;
+        const liveIndex: Record<string, { toPar: string; rounds: Record<string, number> }> = {};
+        if (live?.players) {
+          setTournamentStatus(live.status || 'In Progress');
+          setCurrentRound(live.currentRound || 1);
+          for (const lp of live.players) {
+            liveIndex[lp.player] = { toPar: lp.toPar, rounds: lp.rounds };
+          }
+        }
+
+        const predictions = data.predictions || [];
+        const mapped: PlayerPrediction[] = predictions.map((p: any) => {
+          let odds: PlayerOdds | undefined;
+          if (p.market_implied_win != null && p.edge_win != null) {
+            const otherMarkets: Record<string, MarketOddsDetail> = {};
+            for (const mkt of ['top5', 'top10', 'top20', 'made_cut'] as const) {
+              if (p[`market_implied_${mkt}`] != null && p[`edge_${mkt}`] != null) {
+                otherMarkets[mkt] = {
+                  marketImplied: p[`market_implied_${mkt}`],
+                  bestPrice: p[`best_price_${mkt}`] ?? 0,
+                  bestBook: p[`best_book_${mkt}`] ?? '',
+                  edge: p[`edge_${mkt}`],
+                  ev: p[`ev_${mkt}`] ?? 0,
+                  kelly: p[`kelly_${mkt}`] ?? 0,
+                  bookOdds: p[`book_odds_${mkt}`],
+                };
+              }
+            }
+            odds = {
+              marketImplied: p.market_implied_win,
+              bestPrice: p.best_price_win ?? 0,
+              bestBook: p.best_book_win ?? '',
+              edge: p.edge_win,
+              ev: p.ev_win ?? 0,
+              kelly: p.kelly_win ?? 0,
+              bookOdds: p.book_odds_win,
+              otherMarkets: Object.keys(otherMarkets).length > 0 ? otherMarkets : undefined,
+            };
+          }
+
+          const livePlayer = liveIndex[p.player];
+          let score = 0;
+          if (livePlayer) {
+            const tp = livePlayer.toPar.trim().toUpperCase();
+            if (tp === 'E') score = 0;
+            else {
+              const n = parseInt(tp.replace('+', ''), 10);
+              score = isNaN(n) ? 0 : n;
+            }
+          }
+
+          return {
+            name: p.player,
+            score,
+            expectedSG: p.exp_sg_per_round,
+            models: {
+              ridge: p.model_ridge,
+              rf: p.model_rf,
+              lgbm: p.model_lgbm,
+              xgb: p.model_xgb,
+              nn: p.model_nn
+            },
+            mcWin: p.sim_win_pct / 100,
+            mcTop5: p.sim_top5_pct / 100,
+            mcTop10: p.sim_top10_pct / 100,
+            clsTop10: p.lr_target_top10_prob || 0,
+            clsTop20: p.lr_target_top20_prob || 0,
+            clsWin: p.lr_target_win_prob || 0,
+            keyFeatures: p.key_features ? JSON.parse(p.key_features) : [],
+            odds,
+          };
+        });
+        setMastersData(mapped);
+        setMastersRecentByPlayer(
+          (data.recentByPlayer || {}) as Record<string, RecentTournamentRow[]>
+        );
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
+
   const topEdges = MOCK_PICKS.filter(p => p.edgePts > 0).sort((a, b) => b.edgePts - a.edgePts);
   const [showMetrics, setShowMetrics] = useState(false);
 
@@ -195,7 +302,7 @@ export default function Home() {
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <h3 className="text-sm font-medium text-muted-foreground">Active ML Models</h3>
             <div className="mt-2 text-3xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground mt-1">Ridge + RF + LGBM + XGB + NN + Meta Stack + 4 Classifiers</p>
+            <p className="text-xs text-muted-foreground mt-1">Ridge + RF + LGBM + XGB + NN + PyTorch Course Fit + Meta Stack + 4 Classifiers</p>
           </div>
           <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
             <h3 className="text-sm font-medium text-muted-foreground">Monte Carlo Sims</h3>
@@ -218,42 +325,51 @@ export default function Home() {
         <div>
           <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-2xl font-bold tracking-tight text-emerald-500">PGA Tour — THE PLAYERS Championship</h2>
-              <span className="bg-emerald-500/20 text-emerald-500 text-xs px-2.5 py-1 rounded-md font-bold animate-pulse">LIVE R3</span>
+              <h2 className="text-2xl font-bold tracking-tight text-emerald-500">PGA Tour — The Masters Tournament</h2>
+              <span className="bg-emerald-500/20 text-emerald-500 text-xs px-2.5 py-1 rounded-md font-bold">
+                {currentRound > 0 ? `R${currentRound} — ${tournamentStatus}` : 'PRE-TOURNAMENT'}
+              </span>
             </div>
-            <span className="text-sm text-muted-foreground hidden md:block">TPC Sawgrass — Ponte Vedra Beach, FL — March 12-15, 2026</span>
+            <span className="text-sm text-muted-foreground hidden md:block">Augusta National — Augusta, GA — April 9-12, 2026</span>
           </div>
 
           {/* Insight Cards */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            {INSIGHTS.map((ins) => (
-              <div
-                key={ins.title}
-                className={`rounded-xl border p-4 ${
-                  ins.type === 'buy' ? 'border-emerald-500/30 bg-emerald-500/5' :
-                  ins.type === 'sell' ? 'border-red-500/30 bg-red-500/5' :
-                  'border-border bg-card'
-                }`}
-              >
-                <h4 className={`font-bold text-sm mb-1.5 ${
-                  ins.type === 'buy' ? 'text-emerald-400' :
-                  ins.type === 'sell' ? 'text-red-400' :
-                  'text-foreground'
-                }`}>
-                  {ins.title}
-                </h4>
-                <p className="text-xs text-muted-foreground leading-relaxed">{ins.body}</p>
-              </div>
-            ))}
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
+              <h4 className="font-bold text-sm mb-1.5 text-emerald-400">Course Fit & Weather</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">Dry conditions expected. The newly trained PyTorch Course Fit model heavily favors long hitters with strong recent baseline SG. Scheffler and Rahm strongly benefit.</p>
+            </div>
+            <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4">
+              <h4 className="font-bold text-sm mb-1.5 text-emerald-400">Scheffler Dominance</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">The model confirms Scottie Scheffler's extreme edge. His expected SG is dominant across all models.</p>
+            </div>
+            <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4">
+              <h4 className="font-bold text-sm mb-1.5 text-red-400">Tiger Woods</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">Lack of recent volume and competitive form significantly drags down Expected SG. The model gives a very low make cut probability.</p>
+            </div>
+            <div className="rounded-xl border border-border bg-card p-4">
+              <h4 className="font-bold text-sm mb-1.5 text-foreground">Augusta Intangibles</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">Experience at Augusta is factored into the PyTorch embeddings, elevating past champions and those with strong course history.</p>
+            </div>
           </div>
 
           {/* Full Leaderboard */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold">Full Leaderboard — Model Predictions (After R3)</h3>
-              <span className="text-xs text-muted-foreground">Click any row for model breakdown</span>
+              <h3 className="text-lg font-semibold">
+                {currentRound > 0 ? `Leaderboard After R${currentRound}` : 'Full Leaderboard'} — Model Predictions
+              </h3>
+              <span className="text-xs text-muted-foreground">Sorted by To Par</span>
             </div>
-            <PlayersLeaderboard players={PLAYERS_DATA} />
+            <p className="text-xs text-muted-foreground mb-3 max-w-4xl leading-relaxed">
+              Primary read: Monte Carlo win / top-10% (field-relative). Logistic win% is trained on in-distribution rows and can spike for players with unusual tour mixes (e.g. LIV-heavy); treat it as a secondary signal.
+              {mastersCalibNote ? ` ${mastersCalibNote}` : ''}
+            </p>
+            {loading ? (
+              <div className="text-sm text-muted-foreground py-10 text-center border rounded-xl border-dashed">Loading ML predictions...</div>
+            ) : (
+              <PlayersLeaderboard players={mastersData} recentByPlayer={mastersRecentByPlayer} />
+            )}
           </div>
 
           {/* Model Metrics Toggle */}

@@ -14,12 +14,18 @@ cd data-core
 .venv/bin/python -m src.data.build_pga_feature_store
 # Optional: --no-supplement to ignore ESPN supplement
 # Optional: --weather-join inner for the old ~41k notebook-style slice only
+# Optional tour-strength tuning (for sensitivity sweeps):
+#   --liv-round-sg-scale 0.91
+#   --strong-field-sg-multiplier 1.25
 
 # 3) Retrain v2 models (needed when feature store rows/distribution change)
 .venv/bin/python -m src.models.train_models_v2
 
 # 4) Masters pre-event predictions (CSV + meta JSON)
 .venv/bin/python scripts/predict_masters_tournament.py --skip-importance
+
+# Optional: audit field vs TSV + feature store (fallback flags, stale TSV)
+.venv/bin/python scripts/audit_masters_field_data.py --json-out notebooks/cache/masters_field_audit.json
 
 # 5) Export JSON for the web UI
 .venv/bin/python scripts/export_pga_dashboard.py

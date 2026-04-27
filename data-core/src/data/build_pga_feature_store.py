@@ -24,6 +24,64 @@ DEFAULT_OUT = (
     / "pga_feature_store_event_level.csv"
 )
 
+# Majors + PLAYERS — used for SG weighting and "strong field" schedule context
+STRONG_FIELD_EVENTS = frozenset(
+    {
+        "masters tournament",
+        "pga championship",
+        "u.s. open",
+        "the open",
+        "the open championship",
+        "the players championship",
+    }
+)
+
+# Continuous field-strength SG scaling parameters
+FIELD_STRENGTH_ALPHA = 0.5          # sensitivity: how much field quality shifts the scale factor
+FIELD_STRENGTH_SCALE_MIN = 0.80     # floor: weakest fields get at most a 20% SG haircut
+FIELD_STRENGTH_SCALE_MAX = 1.15     # ceiling: strongest fields get at most a 15% SG boost
+LIV_STRUCTURAL_DISCOUNT = 0.95      # small no-cut / 3-round format discount applied on top
+
+
+def _apply_continuous_field_scaling(
+    df: pd.DataFrame,
+    alpha: float = FIELD_STRENGTH_ALPHA,
+    scale_min: float = FIELD_STRENGTH_SCALE_MIN,
+    scale_max: float = FIELD_STRENGTH_SCALE_MAX,
+    liv_structural_discount: float = LIV_STRUCTURAL_DISCOUNT,
+) -> pd.DataFrame:
+    """Replace binary SG multipliers with a continuous field-strength factor.
+
+    1. Compute each player's prior career-average SG from raw (unscaled) values.
+    2. Per-event field quality = mean of those career SGs across all entrants.
+    3. Scale = clip(1 + alpha * (field_quality - global_median), min, max).
+    4. LIV events get an additional structural discount for the no-cut format.
+    """
+    sg_cols = ["sg_total_r1", "sg_total_r2", "sg_total_r3", "sg_total_r4"]
+
+    df["start"] = pd.to_datetime(df["start"], errors="coerce")
+    df = df.sort_values(["name", "start", "tournament"]).reset_index(drop=True)
+
+    df["_raw_sg_avg"] = df[sg_cols].mean(axis=1)
+    df["_career_sg"] = _group_shift_expanding_mean(df, ["name"], "_raw_sg_avg")
+
+    df["_fs"] = df.groupby(["season", "tournament"], sort=False)["_career_sg"].transform(
+        "mean"
+    )
+    ref = df["_fs"].median()
+    df["_scale"] = np.clip(1.0 + alpha * (df["_fs"] - ref), scale_min, scale_max)
+    df["_scale"] = df["_scale"].fillna(1.0)
+
+    is_liv = df["tournament_lower"].str.contains(r"\bliv golf\b", case=False, na=False)
+    df.loc[is_liv, "_scale"] *= liv_structural_discount
+
+    for col in sg_cols:
+        df[col] *= df["_scale"]
+    df["sg_total_tournament"] = df[sg_cols].sum(axis=1)
+
+    df = df.drop(columns=["_raw_sg_avg", "_career_sg", "_fs", "_scale"])
+    return df
+
 
 def load_base_frames(
     results_path: Path = DEFAULT_RESULTS,
@@ -51,6 +109,8 @@ def load_base_frames(
 
     for r in ["round1", "round2", "round3", "round4"]:
         df_results[r] = pd.to_numeric(df_results[r], errors="coerce")
+        # A valid golf round is never 0 strokes; ESPN returns 0 for WD/DNS entries.
+        df_results.loc[df_results[r] == 0, r] = np.nan
     df_results["total"] = pd.to_numeric(df_results["total"], errors="coerce")
 
     df_weather["season"] = df_weather["year"]
@@ -88,7 +148,34 @@ def load_base_frames(
     df["sg_total_tournament"] = df[
         ["sg_total_r1", "sg_total_r2", "sg_total_r3", "sg_total_r4"]
     ].sum(axis=1)
+
+    df = _apply_continuous_field_scaling(df)
     return df
+
+
+def _group_shift_expanding_mean(
+    df: pd.DataFrame, group_cols: list[str], value_col: str
+) -> pd.Series:
+    """Per-group mean of prior rows only (same as shift().expanding().mean()); no Python lambdas."""
+    sh = df.groupby(group_cols, sort=False)[value_col].shift()
+    keys = [df[c] for c in group_cols]
+    sh_num = pd.to_numeric(sh, errors="coerce")
+    num = sh_num.groupby(keys, sort=False).cumsum()
+    den = sh.notna().astype(np.int64).groupby(keys, sort=False).cumsum()
+    return (num / den.astype(float)).where(den > 0)
+
+
+def _group_shift_rolling_mean(
+    df: pd.DataFrame,
+    group_cols: list[str],
+    value_col: str,
+    window: int,
+    min_periods: int,
+) -> pd.Series:
+    sh = df.groupby(group_cols, sort=False)[value_col].shift()
+    keys = [df[c] for c in group_cols]
+    r = sh.groupby(keys, sort=False).rolling(window, min_periods=min_periods).mean()
+    return r.reset_index(level=list(range(len(group_cols))), drop=True)
 
 
 def build_model_frame(df: pd.DataFrame) -> pd.DataFrame:
@@ -122,78 +209,104 @@ def build_model_frame(df: pd.DataFrame) -> pd.DataFrame:
     ].std(axis=1)
 
     df_model = df_model.sort_values(["name", "start", "tournament"]).reset_index(drop=True)
+    player_cols: list[str] = ["name"]
+    event_cols: list[str] = ["name", "tournament"]
     player_group = df_model.groupby("name", sort=False)
 
     df_model["starts_before"] = player_group.cumcount()
-    df_model["prev_avg_sg_total"] = player_group["sg_total_tournament"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_avg_sg_total"] = _group_shift_expanding_mean(
+        df_model, player_cols, "sg_total_tournament"
     )
-    df_model["prev_avg_sg_round"] = player_group["sg_avg_round"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_avg_sg_round"] = _group_shift_expanding_mean(
+        df_model, player_cols, "sg_avg_round"
     )
-    df_model["prev_avg_rounds_played"] = player_group["rounds_played"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_avg_rounds_played"] = _group_shift_expanding_mean(
+        df_model, player_cols, "rounds_played"
     )
-    df_model["prev_cut_rate"] = player_group["made_cut"].transform(
-        lambda s: s.shift().expanding().mean()
-    )
-    df_model["prev_win_rate"] = player_group["is_win"].transform(
-        lambda s: s.shift().expanding().mean()
-    )
-    df_model["prev_top5_rate"] = player_group["is_top5"].transform(
-        lambda s: s.shift().expanding().mean()
-    )
-    df_model["prev_top10_rate"] = player_group["is_top10"].transform(
-        lambda s: s.shift().expanding().mean()
-    )
-    df_model["prev_top20_rate"] = player_group["is_top20"].transform(
-        lambda s: s.shift().expanding().mean()
-    )
-    df_model["prev_avg_finish_num"] = player_group["position_num"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_cut_rate"] = _group_shift_expanding_mean(df_model, player_cols, "made_cut")
+    df_model["prev_win_rate"] = _group_shift_expanding_mean(df_model, player_cols, "is_win")
+    df_model["prev_top5_rate"] = _group_shift_expanding_mean(df_model, player_cols, "is_top5")
+    df_model["prev_top10_rate"] = _group_shift_expanding_mean(df_model, player_cols, "is_top10")
+    df_model["prev_top20_rate"] = _group_shift_expanding_mean(df_model, player_cols, "is_top20")
+    df_model["prev_avg_finish_num"] = _group_shift_expanding_mean(
+        df_model, player_cols, "position_num"
     )
 
-    df_model["prev_avg_r1_sg"] = player_group["sg_total_r1"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_avg_r1_sg"] = _group_shift_expanding_mean(
+        df_model, player_cols, "sg_total_r1"
     )
-    df_model["prev_avg_r4_sg"] = player_group["sg_total_r4"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_avg_r4_sg"] = _group_shift_expanding_mean(
+        df_model, player_cols, "sg_total_r4"
     )
-    df_model["prev_avg_close_delta"] = player_group["sg_close_delta"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_avg_close_delta"] = _group_shift_expanding_mean(
+        df_model, player_cols, "sg_close_delta"
     )
 
     for window in [3, 5, 10, 20]:
         min_periods = 2 if window <= 5 else 5
-        df_model[f"prev_sg_form_{window}"] = player_group["sg_avg_round"].transform(
-            lambda s, w=window, mp=min_periods: s.shift().rolling(w, min_periods=mp).mean()
+        df_model[f"prev_sg_form_{window}"] = _group_shift_rolling_mean(
+            df_model, player_cols, "sg_avg_round", window, min_periods
         )
 
     df_model["prev_form_trend_5v20"] = (
         df_model["prev_sg_form_5"] - df_model["prev_sg_form_20"]
     )
-    df_model["prev_round_std_10"] = player_group["round_score_std"].transform(
-        lambda s: s.shift().rolling(10, min_periods=5).mean()
+    df_model["prev_round_std_10"] = _group_shift_rolling_mean(
+        df_model, player_cols, "round_score_std", 10, 5
     )
 
-    event_group = df_model.groupby(["name", "tournament"], sort=False)
+    event_group = df_model.groupby(event_cols, sort=False)
     df_model["event_starts_before"] = event_group.cumcount()
-    df_model["prev_event_avg_sg_round"] = event_group["sg_avg_round"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_event_avg_sg_round"] = _group_shift_expanding_mean(
+        df_model, event_cols, "sg_avg_round"
     )
-    df_model["prev_event_cut_rate"] = event_group["made_cut"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_event_cut_rate"] = _group_shift_expanding_mean(
+        df_model, event_cols, "made_cut"
     )
-    df_model["prev_event_top20_rate"] = event_group["is_top20"].transform(
-        lambda s: s.shift().expanding().mean()
+    df_model["prev_event_top20_rate"] = _group_shift_expanding_mean(
+        df_model, event_cols, "is_top20"
     )
 
-    df_model["field_strength_prev_avg_sg"] = df_model.groupby(["season", "tournament"])[
-        "prev_avg_sg_round"
-    ].transform("mean")
+    # When event_starts_before == 0 (new venue), fall back to player career avgs
+    # instead of leaving NaN (which would later be filled with PGA-centric train medians).
+    new_venue = df_model["event_starts_before"] == 0
+    fallback_map = {
+        "prev_event_avg_sg_round": "prev_avg_sg_round",
+        "prev_event_cut_rate": "prev_cut_rate",
+        "prev_event_top20_rate": "prev_top20_rate",
+    }
+    for event_col, career_col in fallback_map.items():
+        df_model.loc[new_venue & df_model[event_col].isna(), event_col] = (
+            df_model.loc[new_venue & df_model[event_col].isna(), career_col]
+        )
+
+    g_event = df_model.groupby(["season", "tournament"], sort=False)
+    df_model["field_strength_prev_avg_sg"] = g_event["prev_avg_sg_round"].transform("mean")
+    df_model["field_strength_median_prev_sg"] = g_event["prev_avg_sg_round"].transform("median")
+
     df_model["relative_skill_vs_field"] = (
         df_model["prev_avg_sg_round"] - df_model["field_strength_prev_avg_sg"]
     )
+    df_model["relative_skill_vs_field_median"] = (
+        df_model["prev_avg_sg_round"] - df_model["field_strength_median_prev_sg"]
+    )
+
+    # Field size — lets models distinguish small LIV fields (48-54)
+    # from full PGA fields (120-156).
+    df_model["field_size"] = g_event["name"].transform("count")
+
+    tl = df_model["tournament"].str.lower().str.strip()
+    df_model["is_liv_event"] = tl.str.contains(r"\bliv golf\b", case=False, na=False).astype(
+        np.float64
+    )
+    df_model["is_strong_field_event"] = tl.isin(STRONG_FIELD_EVENTS).astype(np.float64)
+    for win, min_p in [(10, 3), (20, 5)]:
+        df_model[f"liv_share_last_{win}"] = _group_shift_rolling_mean(
+            df_model, player_cols, "is_liv_event", win, min_p
+        )
+        df_model[f"strong_field_share_last_{win}"] = _group_shift_rolling_mean(
+            df_model, player_cols, "is_strong_field_event", win, min_p
+        )
 
     df_model["target_sg_total"] = df_model["sg_total_tournament"]
     df_model["target_sg_per_round"] = df_model["sg_avg_round"]
@@ -286,6 +399,8 @@ def build_model_frame(df: pd.DataFrame) -> pd.DataFrame:
         & (df_model["normal_wind_rounds_before"].fillna(0) >= 30)
     ).astype(int)
 
+    df_model = df_model.drop(columns=["is_liv_event", "is_strong_field_event"], errors="ignore")
+
     return df_model
 
 
@@ -327,7 +442,14 @@ def assemble_feature_store(df_model: pd.DataFrame) -> pd.DataFrame:
         "prev_event_cut_rate",
         "prev_event_top20_rate",
         "field_strength_prev_avg_sg",
+        "field_strength_median_prev_sg",
         "relative_skill_vs_field",
+        "relative_skill_vs_field_median",
+        "liv_share_last_10",
+        "liv_share_last_20",
+        "strong_field_share_last_10",
+        "strong_field_share_last_20",
+        "field_size",
         "wind_premium_before",
         "high_wind_rounds_before",
         "normal_wind_rounds_before",
@@ -347,10 +469,10 @@ def assemble_feature_store(df_model: pd.DataFrame) -> pd.DataFrame:
     feature_store["history_20_plus"] = (feature_store["starts_before"] >= 20).astype(int)
     feature_store["dataset_split"] = np.select(
         [
-            feature_store["start"] < pd.Timestamp("2022-01-01"),
-            (feature_store["start"] >= pd.Timestamp("2022-01-01"))
-            & (feature_store["start"] < pd.Timestamp("2024-01-01")),
-            feature_store["start"] >= pd.Timestamp("2024-01-01"),
+            feature_store["start"] < pd.Timestamp("2023-07-01"),
+            (feature_store["start"] >= pd.Timestamp("2023-07-01"))
+            & (feature_store["start"] < pd.Timestamp("2025-01-01")),
+            feature_store["start"] >= pd.Timestamp("2025-01-01"),
         ],
         ["train", "valid", "test"],
         default="train",
@@ -400,4 +522,7 @@ if __name__ == "__main__":
         help="Ignore pga_results_espn_supplement.tsv if present",
     )
     args = p.parse_args()
-    build_and_save(weather_join=args.weather_join, use_supplement=not args.no_supplement)
+    build_and_save(
+        weather_join=args.weather_join,
+        use_supplement=not args.no_supplement,
+    )
