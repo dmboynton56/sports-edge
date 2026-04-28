@@ -95,6 +95,16 @@ def fetch_supabase_snapshot(
     from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
 
     creds = load_supabase_credentials()
+    missing = []
+    if not creds.get("url"):
+        missing.append("SUPABASE_URL")
+    if not creds.get("db_password"):
+        missing.append("SUPABASE_DB_PASSWORD or supabaseDBpass")
+    if missing:
+        raise RuntimeError(
+            "Missing Supabase connection environment: " + ", ".join(missing)
+        )
+
     conn = create_pg_connection(
         supabase_url=creds["url"],
         password=creds["db_password"],
