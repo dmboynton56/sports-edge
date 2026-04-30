@@ -156,7 +156,7 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
-          max_attempts=3
+          max_attempts=5
           attempt=1
           until [ "$attempt" -gt "$max_attempts" ]; do
             echo "sync_odds attempt ${attempt}/${max_attempts}"
@@ -167,7 +167,9 @@ jobs:
               echo "sync_odds failed after ${max_attempts} attempts"
               exit 1
             fi
-            sleep 20
+            sleep_seconds=$((30 * 2 ** (attempt - 1)))
+            echo "Retrying sync_odds in ${sleep_seconds}s"
+            sleep "$sleep_seconds"
             attempt=$((attempt + 1))
           done
 

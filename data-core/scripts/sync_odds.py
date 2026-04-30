@@ -134,11 +134,28 @@ def fetch_odds_data(api_key: str, league: str) -> List[Dict[str, Any]]:
         'bookmakers': 'draftkings,betmgm,fanduel'
     }
     
-    resp = requests.get(url, params=params)
+    resp = requests.get(url, params=params, timeout=30)
     if resp.status_code != 200:
-        LOGGER.error(f"Error fetching odds from API: {resp.text}")
-        return []
+        raise RuntimeError(f"Error fetching {league} odds from API: {resp.status_code} {resp.text}")
     return resp.json()
+
+def count_expected_games(conn, league: str) -> int:
+    """Count games in the serving window where odds should be attempted."""
+    now = datetime.now(timezone.utc)
+    start_window = (now - timedelta(days=2)).isoformat()
+    end_window = (now + timedelta(days=10)).isoformat()
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT COUNT(*)
+            FROM games
+            WHERE league = %s
+              AND game_time_utc >= %s
+              AND game_time_utc <= %s
+            """,
+            (league, start_window, end_window),
+        )
+        return int(cur.fetchone()[0])
 
 def ensure_bq_column(client: bigquery.Client, project: str, table_id: str, column_name: str, data_type: str = "FLOAT64"):
     """Add a column to a BigQuery table if it doesn't already exist."""
@@ -156,7 +173,7 @@ def ensure_bq_column(client: bigquery.Client, project: str, table_id: str, colum
     table.schema = new_schema
     client.update_table(table, ["schema"])
 
-def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]):
+def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) -> tuple[int, int]:
     """Update Supabase games table with book spreads."""
     mapping = NFL_MAPPING if league == 'NFL' else NBA_MAPPING
     updates = []
@@ -217,16 +234,29 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]):
                     home_outcome = next((o for o in market.get('outcomes', []) if get_team_code(o['name'], mapping) == home_code), None)
                     if home_outcome and 'point' in home_outcome:
                         spread = home_outcome['point']
-                        updates.append((spread, gid))
+                        price = home_outcome.get('price')
+                        book = bookmaker.get('key') or 'unknown'
+                        updates.append((spread, price, book, gid))
                         matched_count += 1
                         
     if updates:
         with conn.cursor() as cur:
-            cur.executemany("UPDATE games SET book_spread = %s WHERE id = %s", updates)
+            cur.executemany(
+                "UPDATE games SET book_spread = %s WHERE id = %s",
+                [(spread, gid) for spread, _price, _book, gid in updates],
+            )
+            cur.executemany(
+                """
+                INSERT INTO odds_snapshots (game_id, book, market, line, price, snapshot_ts)
+                VALUES (%s, %s, 'spread', %s, %s, NOW())
+                """,
+                [(gid, book, spread, price) for spread, price, book, gid in updates],
+            )
         conn.commit()
         LOGGER.info(f"Updated {len(updates)} games in Supabase with book spreads for {league}")
     else:
         LOGGER.warning(f"No odds matches found for {league} in Supabase window")
+    return matched_count, len(games)
 
 def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_data: List[Dict[str, Any]]):
     """Update BigQuery model_predictions and feature_snapshots tables with book spreads."""
@@ -338,13 +368,11 @@ def main():
     
     api_key = os.getenv("ODDS_API_KEY")
     if not api_key:
-        LOGGER.error("ODDS_API_KEY not found in environment")
-        return
+        raise SystemExit("ODDS_API_KEY not found in environment")
         
     project = args.project or os.getenv("GCP_PROJECT_ID")
     if not project:
-        LOGGER.error("Project ID not found (use --project or GCP_PROJECT_ID env var)")
-        return
+        raise SystemExit("Project ID not found (use --project or GCP_PROJECT_ID env var)")
         
     leagues = [args.league] if args.league else ["NFL", "NBA"]
     
@@ -359,16 +387,32 @@ def main():
         user=creds["db_user"],
     )
     
+    failures: list[str] = []
     try:
         for league in leagues:
             LOGGER.info(f"Starting sync for {league}...")
+            expected_games = count_expected_games(pg_conn, league)
             odds_data = fetch_odds_data(api_key, league)
             if not odds_data:
+                message = f"No odds events returned for {league}"
+                if expected_games > 0:
+                    failures.append(f"{message}; {expected_games} Supabase games are in the serving window.")
+                    LOGGER.error(failures[-1])
+                else:
+                    LOGGER.warning(f"{message}; no Supabase games are in the serving window.")
                 continue
                 
             LOGGER.info(f"Retrieved {len(odds_data)} games from The Odds API for {league}")
-            sync_odds_to_supabase(pg_conn, league, odds_data)
+            matched_count, supabase_games = sync_odds_to_supabase(pg_conn, league, odds_data)
+            if supabase_games > 0 and matched_count == 0:
+                failures.append(
+                    f"{league}: matched zero odds to {supabase_games} Supabase games in the serving window."
+                )
             sync_odds_to_bq(bq_client, project, league, odds_data)
+        if failures:
+            for failure in failures:
+                LOGGER.error(failure)
+            raise SystemExit(1)
             
     finally:
         pg_conn.close()

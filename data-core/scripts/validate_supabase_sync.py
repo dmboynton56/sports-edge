@@ -95,12 +95,12 @@ def main() -> None:
                 SELECT COUNT(*)
                 FROM games
                 WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
-                  AND status = 'final'
+                  AND game_time_utc::date < CURRENT_DATE
                   AND (home_score IS NULL OR away_score IS NULL)
                 """,
                 (args.score_lookback_days,),
             )
-            report["final_missing_scores"] = int(cur.fetchone()[0])
+            report["past_games_missing_scores"] = int(cur.fetchone()[0])
 
             cur.execute(
                 """
@@ -125,9 +125,9 @@ def main() -> None:
             failures.append("No recent model_predictions rows found.")
         if report["recent_games"] > 0 and report["recent_final_scores"] <= 0:
             failures.append("Recent games exist but none have final scores.")
-        if report["final_missing_scores"] > 0:
+        if report["past_games_missing_scores"] > 0:
             failures.append(
-                f"Found {report['final_missing_scores']} final games missing scores."
+                f"Found {report['past_games_missing_scores']} past games missing scores."
             )
         if report["orphan_predictions"] > args.max_orphans:
             failures.append(

@@ -26,7 +26,7 @@ def test_build_summary_warns_on_validation_failures():
             "recent_predictions": 12,
             "recent_games": 8,
             "recent_final_scores": 7,
-            "final_missing_scores": 1,
+            "past_games_missing_scores": 1,
             "orphan_predictions": 2,
         },
         validation_warning=None,
@@ -49,7 +49,7 @@ def test_build_summary_warns_on_validation_failures():
         generated_at="2026-04-27T13:05:00+00:00",
     )
 
-    assert "1 final games are missing scores." in summary["warnings"]
+    assert "1 past games are missing scores." in summary["warnings"]
     assert "2 orphan predictions were reported." in summary["warnings"]
 
 
@@ -95,7 +95,7 @@ def test_build_discord_payload_is_webhook_json():
             "recent_predictions": 3,
             "recent_games": 2,
             "recent_final_scores": 2,
-            "final_missing_scores": 0,
+            "past_games_missing_scores": 0,
             "orphan_predictions": 0,
         },
         validation_warning=None,
