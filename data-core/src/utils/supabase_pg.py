@@ -54,7 +54,7 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
             if res:
                 game_id = res[0]
                 cur.execute(
-                    "UPDATE games SET season = %s, week = %s, book_spread = %s WHERE id = %s",
+                    "UPDATE games SET season = %s, week = %s, book_spread = COALESCE(%s, book_spread) WHERE id = %s",
                     (_clean(row["season"]), _clean(row.get("week")), _clean(row.get("book_spread")), game_id)
                 )
             else:

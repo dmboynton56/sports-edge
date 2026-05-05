@@ -33,6 +33,7 @@ from src.utils.supabase_pg import (
     create_pg_connection,
     load_supabase_credentials,
 )
+from src.utils.team_codes import canonical_nba_abbr
 
 # Mapping of NFL abbreviations to common Odds API team strings for matching.
 NFL_TEAM_ALIASES: Dict[str, list[str]] = {
@@ -134,9 +135,12 @@ def fetch_games_missing_spread_pg(conn: psycopg.Connection, league: str, start_d
 
 
 def _canonical_team(code_or_name: str, league: str) -> Optional[str]:
-    """Map Odds API team name or code to our canonical code (NFL only for now)."""
+    """Map Odds API team name or code to the canonical code used for matching."""
     if not isinstance(code_or_name, str):
         return None
+    if league.upper() == "NBA":
+        return canonical_nba_abbr(code_or_name)
+
     token = code_or_name.strip().lower().replace(" ", "").replace(".", "").replace("-", "")
     # Direct code match
     for code in NFL_TEAM_ALIASES:
@@ -156,15 +160,21 @@ def pick_home_spread(
     home_team_code: str,
     away_team_code: str,
     bookmaker: Optional[str],
+    league: str,
 ) -> Optional[Dict]:
     """Return a dict with book, line, price for the home team spread (home perspective)."""
     odds_df = odds_df.copy()
-    odds_df["home_code"] = odds_df["home_team"].apply(lambda x: _canonical_team(x, "NFL"))
-    odds_df["away_code"] = odds_df["away_team"].apply(lambda x: _canonical_team(x, "NFL"))
+    league = league.upper()
+    home_team_code = _canonical_team(home_team_code, league) or home_team_code
+    away_team_code = _canonical_team(away_team_code, league) or away_team_code
+    odds_df["home_code"] = odds_df["home_team"].apply(lambda x: _canonical_team(x, league))
+    odds_df["away_code"] = odds_df["away_team"].apply(lambda x: _canonical_team(x, league))
+    odds_df["outcome_code"] = odds_df["outcome_name"].apply(lambda x: _canonical_team(x, league))
 
     spreads = odds_df[odds_df["market"] == "spreads"]
     if bookmaker:
-        spreads = spreads[spreads["book"] == bookmaker]
+        bookmaker_keys = [key.strip() for key in bookmaker.split(",") if key.strip()]
+        spreads = spreads[spreads["book"].isin(bookmaker_keys)]
     # Allow LA ambiguity: match either Rams or Chargers if the code is "LA"
     home_candidates = ["LAR", "LAC"] if home_team_code == "LA" else [home_team_code]
     away_candidates = ["LAR", "LAC"] if away_team_code == "LA" else [away_team_code]
@@ -182,9 +192,7 @@ def pick_home_spread(
     if spreads.empty:
         return None
     # Try to find the home-team outcome explicitly
-    home_rows = spreads[
-        spreads["outcome_name"].str.lower().str.contains(home_team_code.lower(), na=False)
-    ]
+    home_rows = spreads[spreads["outcome_code"] == home_team_code]
     if not home_rows.empty:
         row = home_rows.iloc[0]
         line = row.get("line")
@@ -195,9 +203,7 @@ def pick_home_spread(
         return {"book": book, "line": float(line), "price": float(price) if pd.notna(price) else None}
 
     # If no home outcome, try away outcome and negate the line to home perspective
-    away_rows = spreads[
-        spreads["outcome_name"].str.lower().str.contains(away_team_code.lower(), na=False)
-    ]
+    away_rows = spreads[spreads["outcome_code"] == away_team_code]
     if not away_rows.empty:
         row = away_rows.iloc[0]
         line = row.get("line")
@@ -281,7 +287,7 @@ def main():
             print(f"  No odds returned for {game_date}, skipping {len(day_games)} games.")
             continue
         for _, game in day_games.iterrows():
-            spread = pick_home_spread(odds_df, game["home_team"], game["away_team"], args.bookmakers)
+            spread = pick_home_spread(odds_df, game["home_team"], game["away_team"], args.bookmakers, args.league)
             if not spread:
                 # Fallback: re-fetch without bookmaker filter for this game/date
                 alt_df = odds_fetcher.fetch_odds(
@@ -297,7 +303,7 @@ def main():
                         markets="spreads",
                         bookmakers=None,
                     )
-                spread = pick_home_spread(alt_df, game["home_team"], game["away_team"], None)
+                spread = pick_home_spread(alt_df, game["home_team"], game["away_team"], None, args.league)
             if not spread:
                 print(f"  No spread found for {game['away_team']} @ {game['home_team']} on {game_date}.")
                 skipped_no_spread += 1

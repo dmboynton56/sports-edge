@@ -35,6 +35,18 @@ def parse_args() -> argparse.Namespace:
         default=0,
         help="Maximum allowed prediction rows with no matching game (default: 0).",
     )
+    parser.add_argument(
+        "--book-spread-lookback-days",
+        type=int,
+        default=3,
+        help="Lookback window for book_spread coverage checks (default: 3).",
+    )
+    parser.add_argument(
+        "--book-spread-lookahead-days",
+        type=int,
+        default=14,
+        help="Lookahead window for book_spread coverage checks (default: 14).",
+    )
     return parser.parse_args()
 
 
@@ -113,6 +125,24 @@ def main() -> None:
                 (args.prediction_hours,),
             )
             report["orphan_predictions"] = int(cur.fetchone()[0])
+
+            cur.execute(
+                """
+                SELECT
+                  league,
+                  COUNT(*) AS games,
+                  COUNT(*) FILTER (WHERE book_spread IS NULL) AS missing_book_spread
+                FROM games
+                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
+                  AND game_time_utc::date <= CURRENT_DATE + (%s || ' days')::interval
+                GROUP BY league
+                """,
+                (args.book_spread_lookback_days, args.book_spread_lookahead_days),
+            )
+            for league, games, missing_book_spread in cur.fetchall():
+                league_key = str(league).lower()
+                report[f"{league_key}_book_spread_window_games"] = int(games)
+                report[f"{league_key}_missing_book_spread"] = int(missing_book_spread)
     finally:
         conn.close()
 

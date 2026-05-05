@@ -31,8 +31,10 @@ from src.utils.supabase_pg import (
     game_map_key,
     load_supabase_credentials,
 )
+from src.utils.team_codes import canonical_nba_abbr
 
 LOGGER = logging.getLogger("sync_odds")
+PREFERRED_BOOKMAKERS = ["draftkings", "betmgm", "fanduel"]
 
 # Team Mappings
 NFL_MAPPING = {
@@ -121,6 +123,45 @@ def get_team_code(team_name: str, mapping: Dict[str, List[str]]) -> Optional[str
                 return code
     return None
 
+def canonical_team_code(team_code: str, league: str) -> Optional[str]:
+    if league == "NBA":
+        return canonical_nba_abbr(team_code)
+    return team_code
+
+def ordered_bookmakers(bookmakers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Keep preferred books first, then try the rest instead of giving up early."""
+    preferred = [
+        bookmaker
+        for key in PREFERRED_BOOKMAKERS
+        for bookmaker in bookmakers
+        if bookmaker.get("key") == key
+    ]
+    preferred_keys = {bookmaker.get("key") for bookmaker in preferred}
+    fallback = [bookmaker for bookmaker in bookmakers if bookmaker.get("key") not in preferred_keys]
+    return preferred + fallback
+
+def pick_home_spread_from_event(
+    event: Dict[str, Any],
+    home_code: str,
+    mapping: Dict[str, List[str]],
+) -> Optional[tuple[float, Optional[int], str]]:
+    """Return the first usable home-team spread, trying preferred books before fallbacks."""
+    for bookmaker in ordered_bookmakers(event.get("bookmakers", [])):
+        market = next((m for m in bookmaker.get("markets", []) if m.get("key") == "spreads"), None)
+        if not market:
+            continue
+        home_outcome = next(
+            (o for o in market.get("outcomes", []) if get_team_code(o.get("name", ""), mapping) == home_code),
+            None,
+        )
+        if home_outcome and "point" in home_outcome and home_outcome["point"] is not None:
+            return (
+                float(home_outcome["point"]),
+                home_outcome.get("price"),
+                bookmaker.get("key") or "unknown",
+            )
+    return None
+
 def fetch_odds_data(api_key: str, league: str) -> List[Dict[str, Any]]:
     """Fetch odds from The Odds API for a given league."""
     sport_key = 'americanfootball_nfl' if league == 'NFL' else 'basketball_nba'
@@ -195,49 +236,92 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) ->
     for gid, home, away, gtime in games:
         key = game_map_key(home, away, gtime)
         game_map[key] = gid
+        canonical_home = canonical_team_code(home, league)
+        canonical_away = canonical_team_code(away, league)
+        if canonical_home and canonical_away:
+            game_map[game_map_key(canonical_home, canonical_away, gtime)] = gid
         
+    if games:
+        sample_keys = list(game_map.keys())[:12]
+        LOGGER.info(
+            "%s: %d Supabase games in matching window; sample keys: %s",
+            league,
+            len(games),
+            sample_keys,
+        )
+
     matched_count = 0
     for event in odds_data:
-        home_code = get_team_code(event['home_team'], mapping)
-        away_code = get_team_code(event['away_team'], mapping)
+        home_raw = event.get("home_team") or ""
+        away_raw = event.get("away_team") or ""
+        home_code = get_team_code(home_raw, mapping)
+        away_code = get_team_code(away_raw, mapping)
         if not home_code or not away_code:
+            LOGGER.warning(
+                "%s: unresolved Odds API teams %r @ %r → codes %s vs %s",
+                league,
+                away_raw,
+                home_raw,
+                away_code,
+                home_code,
+            )
             continue
-            
-        # Match using the same logic as sync_bq_to_supabase
-        game_time = datetime.fromisoformat(event['commence_time'].replace('Z', '+00:00'))
+
+        game_time = datetime.fromisoformat(event["commence_time"].replace("Z", "+00:00"))
         key = game_map_key(home_code, away_code, game_time)
-        
+
         gid = game_map.get(key)
         if not gid:
-            # Try a fuzzy date match (same day)
-            day_key_prefix = key.split('_')[0]
-            fuzzy_key = next((k for k in game_map.keys() if k.startswith(day_key_prefix) and home_code in k and away_code in k), None)
+            day_key_prefix = key.split("_")[0]
+            fuzzy_key = next(
+                (
+                    k
+                    for k in game_map.keys()
+                    if k.startswith(day_key_prefix) and home_code in k and away_code in k
+                ),
+                None,
+            )
             if fuzzy_key:
                 gid = game_map[fuzzy_key]
-                
+
         if not gid:
-            # Fallback: find any game with the same home and away team in the window
-            fallback_key = next((k for k in game_map.keys() if home_code in k and away_code in k), None)
+            fallback_key = next(
+                (
+                    k
+                    for k in game_map.keys()
+                    if home_code in k and away_code in k
+                ),
+                None,
+            )
             if fallback_key:
                 gid = game_map[fallback_key]
-        
+
         if gid:
-            # Find the best bookmaker spread
-            bookmaker = next((b for b in event.get('bookmakers', []) if b['key'] in ['draftkings', 'betmgm', 'fanduel']), None)
-            if not bookmaker and event.get('bookmakers'):
-                bookmaker = event['bookmakers'][0]
-                
-            if bookmaker:
-                market = next((m for m in bookmaker.get('markets', []) if m['key'] == 'spreads'), None)
-                if market:
-                    # Spread is for the home team if 'name' matches home_team
-                    home_outcome = next((o for o in market.get('outcomes', []) if get_team_code(o['name'], mapping) == home_code), None)
-                    if home_outcome and 'point' in home_outcome:
-                        spread = home_outcome['point']
-                        price = home_outcome.get('price')
-                        book = bookmaker.get('key') or 'unknown'
-                        updates.append((spread, price, book, gid))
-                        matched_count += 1
+            spread = pick_home_spread_from_event(event, home_code, mapping)
+            if spread:
+                line, price, book = spread
+                updates.append((line, price, book, gid))
+                matched_count += 1
+            else:
+                book_keys = [b.get("key") for b in event.get("bookmakers", [])]
+                LOGGER.warning(
+                    "%s: Supabase id=%s matched but no spreads line for home %s; "
+                    "commence=%s; bookmakers=%s",
+                    league,
+                    gid,
+                    home_code,
+                    event.get("commence_time"),
+                    book_keys,
+                )
+        else:
+            LOGGER.warning(
+                "%s: no Supabase row for Odds event %s@%s commence=%s (lookup_key=%s)",
+                league,
+                away_code,
+                home_code,
+                event.get("commence_time"),
+                key,
+            )
                         
     if updates:
         with conn.cursor() as cur:
@@ -305,27 +389,22 @@ def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_dat
             
         event_time_utc = datetime.fromisoformat(event['commence_time'].replace('Z', '+00:00'))
         event_date_us = (event_time_utc - timedelta(hours=5)).date()
+        canonical_home = preds["home_team"].apply(lambda team: canonical_team_code(team, league))
+        canonical_away = preds["away_team"].apply(lambda team: canonical_team_code(team, league))
         matches = preds[
-            (preds['home_team'] == home_code) & 
-            (preds['away_team'] == away_code) & 
+            (canonical_home == home_code) &
+            (canonical_away == away_code) &
             (pd.to_datetime(preds['game_date']).dt.date == event_date_us)
         ]
         
         if not matches.empty:
-            bookmaker = next((b for b in event.get('bookmakers', []) if b['key'] in ['draftkings', 'betmgm', 'fanduel']), None)
-            if not bookmaker and event.get('bookmakers'):
-                bookmaker = event['bookmakers'][0]
-                
-            if bookmaker:
-                market = next((m for m in bookmaker.get('markets', []) if m['key'] == 'spreads'), None)
-                if market:
-                    home_outcome = next((o for o in market.get('outcomes', []) if get_team_code(o['name'], mapping) == home_code), None)
-                    if home_outcome and 'point' in home_outcome:
-                        spread = float(home_outcome['point'])
-                        for pid in matches['prediction_id']:
-                            pred_updates.append({'prediction_id': pid, 'book_spread': spread})
-                        for gid in matches['game_id'].unique():
-                            feat_updates.append({'game_id': gid, 'book_spread': spread})
+            spread = pick_home_spread_from_event(event, home_code, mapping)
+            if spread:
+                line, _price, _book = spread
+                for pid in matches['prediction_id']:
+                    pred_updates.append({'prediction_id': pid, 'book_spread': line})
+                for gid in matches['game_id'].unique():
+                    feat_updates.append({'game_id': gid, 'book_spread': line})
 
     if pred_updates:
         # Update model_predictions

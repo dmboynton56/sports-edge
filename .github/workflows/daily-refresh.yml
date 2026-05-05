@@ -173,6 +173,24 @@ jobs:
             attempt=$((attempt + 1))
           done
 
+      - name: Repair Missing Book Spreads
+        if: ${{ env.DRY_RUN != 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          START_DATE=$(date -u -d "3 days ago" +%Y-%m-%d)
+          END_DATE=$(date -u -d "14 days" +%Y-%m-%d)
+          python scripts/populate_existing_book_odds.py --league NBA --start-date "$START_DATE" --end-date "$END_DATE"
+          python scripts/populate_existing_book_odds.py --league NFL --start-date "$START_DATE" --end-date "$END_DATE"
+
       - name: Sync Final Scores
         if: ${{ env.DRY_RUN != 'true' }}
         shell: bash

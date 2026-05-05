@@ -349,6 +349,37 @@ def insert_predictions_from_bq(
     return inserted, skipped
 
 
+def patch_missing_book_spreads_from_bq(conn, predictions: pd.DataFrame, game_id_map: dict) -> int:
+    """Fill Supabase games.book_spread from BQ odds-derived prediction rows when still NULL."""
+    if "book_spread" not in predictions.columns:
+        return 0
+
+    updates = []
+    for _, row in predictions[predictions["book_spread"].notna()].iterrows():
+        key = game_map_key(row["home_team"], row["away_team"], row["game_date"])
+        game_id = game_id_map.get(key)
+        if game_id:
+            updates.append((float(row["book_spread"]), game_id))
+
+    if not updates:
+        return 0
+
+    with conn.cursor() as cur:
+        cur.executemany(
+            """
+            UPDATE games
+            SET book_spread = %s
+            WHERE id = %s
+              AND book_spread IS NULL
+            """,
+            updates,
+            prepare=False,
+        )
+        patched = cur.rowcount
+    conn.commit()
+    return max(patched, 0)
+
+
 def send_discord_alerts(preds: pd.DataFrame, league: str) -> None:
     """Format and send predictions to Discord via webhook."""
     webhook_url = os.getenv("DISCORD_WEBHOOK_URL")
@@ -482,6 +513,9 @@ def main() -> None:
     try:
         LOGGER.info("Upserting %d games into Supabase", len(games_df))
         game_id_map = upsert_games_pg(conn, games_df)
+        if args.league == "NBA":
+            patched_spreads = patch_missing_book_spreads_from_bq(conn, preds, game_id_map)
+            LOGGER.info("Patched %d missing Supabase book_spread values from BigQuery odds", patched_spreads)
         inserted, skipped = insert_predictions_from_bq(conn, preds, game_id_map, replace_existing=not args.append)
         LOGGER.info(
             "Supabase sync complete | inserted=%d skipped=%d replaced_existing=%s",
