@@ -5,6 +5,7 @@ import {
   OddsEdgePanel,
   type EdgeEntry,
   type MarketOddsData,
+  type PlacementMarkets,
 } from '@/components/OddsEdgePanel';
 
 type PredRow = {
@@ -124,7 +125,7 @@ type Dashboard = {
   recentByPlayer: Record<string, FormRow[]>;
   marketOdds?: MarketOddsData;
   edges?: EdgeEntry[];
-  placementMarkets?: Record<string, any>;
+  placementMarkets?: PlacementMarkets;
   liveLeaderboard?: LiveLeaderboard;
   midtournament?: MidTournamentData;
 };

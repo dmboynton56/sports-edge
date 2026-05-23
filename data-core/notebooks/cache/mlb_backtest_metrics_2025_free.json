@@ -1,0 +1,144 @@
+{
+  "baseline": {
+    "probability": 0.5303062526584432,
+    "test": {
+      "accuracy": 0.5412765957446809,
+      "actual_home_win_rate": 0.5412765957446809,
+      "avg_pred_home_win": 0.5303062526584431,
+      "brier": 0.24841659107116,
+      "ece_10": 0.010970343086237788,
+      "log_loss": 0.6899776040617801,
+      "roc_auc": 0.5
+    }
+  },
+  "candidate_metrics": {
+    "hist_gradient_boosting": {
+      "test": {
+        "accuracy": 0.5336170212765957,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.5213210824713868,
+        "brier": 0.2516302648679399,
+        "ece_10": 0.05484148903548413,
+        "log_loss": 0.6968595784120154,
+        "roc_auc": 0.54178189286006
+      },
+      "validation": {
+        "accuracy": 0.5348936170212766,
+        "actual_home_win_rate": 0.5255319148936171,
+        "avg_pred_home_win": 0.5316804530462543,
+        "brier": 0.2489512618038807,
+        "ece_10": 0.04977027718959246,
+        "log_loss": 0.6915680585655499,
+        "roc_auc": 0.5601220021422995
+      }
+    },
+    "logistic": {
+      "test": {
+        "accuracy": 0.5378723404255319,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.5246197674927143,
+        "brier": 0.24749089594031645,
+        "ece_10": 0.031713106942384606,
+        "log_loss": 0.690093170553136,
+        "roc_auc": 0.5500198364079765
+      },
+      "validation": {
+        "accuracy": 0.5561702127659575,
+        "actual_home_win_rate": 0.5255319148936171,
+        "avg_pred_home_win": 0.5328868574697454,
+        "brier": 0.24533688645190954,
+        "ece_10": 0.019019405335128373,
+        "log_loss": 0.6838020868462532,
+        "roc_auc": 0.5749503458542873
+      }
+    },
+    "random_forest": {
+      "test": {
+        "accuracy": 0.5417021276595745,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.5300240680813404,
+        "brier": 0.24549193414724976,
+        "ece_10": 0.024586980080432242,
+        "log_loss": 0.6839611576402269,
+        "roc_auc": 0.5600576422678849
+      },
+      "validation": {
+        "accuracy": 0.5625531914893617,
+        "actual_home_win_rate": 0.5255319148936171,
+        "avg_pred_home_win": 0.5310845176435545,
+        "brier": 0.24453855913197023,
+        "ece_10": 0.011289076615495443,
+        "log_loss": 0.6820878961483641,
+        "roc_auc": 0.579073001579492
+      }
+    }
+  },
+  "data_summary": {
+    "home_win_rate": 0.5319063329846302,
+    "max_game_date": "2026-05-21",
+    "min_game_date": "2021-04-06",
+    "rows": 12427,
+    "seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "odds_summary": {
+    "edge_buckets": [
+      {
+        "edge_bucket": "0-2%",
+        "games": 616,
+        "roi": -0.060671887666512984,
+        "units": -37.373882802572
+      },
+      {
+        "edge_bucket": "2-4%",
+        "games": 526,
+        "roi": -0.0753144607941939,
+        "units": -39.61540637774599
+      },
+      {
+        "edge_bucket": "4-6%",
+        "games": 420,
+        "roi": -0.15284901240400983,
+        "units": -64.19658520968413
+      },
+      {
+        "edge_bucket": "6%+",
+        "games": 747,
+        "roi": -0.05863251878689499,
+        "units": -43.798491533810555
+      }
+    ],
+    "flat_roi": -0.0801144936872294,
+    "flat_units": -184.98436592381267,
+    "odds_rows": 2309
+  },
+  "selected_model_name": "random_forest",
+  "selected_refit_test": {
+    "accuracy": 0.5382978723404256,
+    "actual_home_win_rate": 0.5412765957446809,
+    "avg_pred_home_win": 0.5265367258357573,
+    "brier": 0.2461084615572133,
+    "ece_10": 0.025463855019680307,
+    "log_loss": 0.6851947942464901,
+    "roc_auc": 0.5541614158527904
+  },
+  "splits": {
+    "final_train_rows": 9404,
+    "test_rows": 2350,
+    "test_season": 2025,
+    "train_rows": 7054,
+    "train_seasons": [
+      2021,
+      2022,
+      2023
+    ],
+    "validation_rows": 2350,
+    "validation_season": 2024
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "games_path": "data-core/notebooks/cache/nfl_backtest_2025_v1.csv",
+  "generated_at": "2026-05-23T03:16:18.338332+00:00",
+  "missing_games": [],
+  "notes": [
+    "nflverse spread_line is positive when the home team is favored.",
+    "Exported line is home perspective: home favorite negative, home underdog positive.",
+    "Book/source is nflverse/PFR aggregate, not a named sportsbook."
+  ],
+  "null_line_rows": 0,
+  "null_price_rows": 0,
+  "output": "data-core/notebooks/cache/nfl_nflverse_spreads_2025.csv",
+  "requested_games": 285,
+  "rows": 285,
+  "season": 2025,
+  "source": "nflreadpy.load_schedules"
+}

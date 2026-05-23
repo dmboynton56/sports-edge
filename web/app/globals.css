@@ -28,48 +28,48 @@
 
 @layer base {
   :root {
-    --background: 40 33% 96%;
-    --foreground: 40 10% 10%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 5%;
     --card: 0 0% 100%;
-    --card-foreground: 40 10% 10%;
+    --card-foreground: 0 0% 5%;
     --popover: 0 0% 100%;
-    --popover-foreground: 40 10% 10%;
-    --primary: 220 50% 40%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 40 20% 90%;
-    --secondary-foreground: 40 40% 20%;
-    --muted: 40 20% 90%;
-    --muted-foreground: 40 10% 40%;
-    --accent: 142 71% 45%; /* Neon green for edges */
-    --accent-foreground: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+    --primary: 0 0% 8%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 0 0% 92%;
+    --secondary-foreground: 0 0% 8%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 38%;
+    --accent: 187 78% 42%;
+    --accent-foreground: 0 0% 5%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 40 20% 85%;
-    --input: 40 20% 85%;
-    --ring: 40 40% 20%;
-    --radius: 0.75rem;
+    --border: 0 0% 84%;
+    --input: 0 0% 84%;
+    --ring: 187 78% 42%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 240 10% 6%;
+    --background: 0 0% 4%;
     --foreground: 0 0% 98%;
-    --card: 240 10% 10%;
+    --card: 0 0% 7%;
     --card-foreground: 0 0% 98%;
-    --popover: 240 10% 10%;
+    --popover: 0 0% 7%;
     --popover-foreground: 0 0% 98%;
-    --primary: 220 50% 50%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 10% 16%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 4%;
+    --secondary: 0 0% 13%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 10% 16%;
-    --muted-foreground: 240 5% 65%;
-    --accent: 142 71% 45%; /* Neon green */
-    --accent-foreground: 240 10% 10%;
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 68%;
+    --accent: 187 78% 48%;
+    --accent-foreground: 0 0% 4%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 10% 20%;
-    --input: 240 10% 20%;
-    --ring: 240 5% 65%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 187 78% 48%;
   }
 }
 
@@ -79,6 +79,10 @@
   }
   body {
     @apply bg-background text-foreground;
+    background-image:
+      linear-gradient(to right, hsl(var(--border) / 0.22) 1px, transparent 1px),
+      linear-gradient(to bottom, hsl(var(--border) / 0.18) 1px, transparent 1px);
+    background-size: 48px 48px;
   }
 }
 

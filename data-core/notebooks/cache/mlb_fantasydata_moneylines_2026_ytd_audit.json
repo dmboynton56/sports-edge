@@ -1,0 +1,19 @@
+{
+  "coverage_pct": 1.0,
+  "end_date": "2026-05-21",
+  "games_path": "data-core/notebooks/cache/mlb_games_2021_2026.parquet",
+  "generated_at": "2026-05-23T03:40:43.865311+00:00",
+  "matched_rows": 750,
+  "missing_rows": 0,
+  "missing_sample": [],
+  "notes": [
+    "Source is public HTML, not an official API.",
+    "Book is FantasyData consensus, not Pinnacle.",
+    "Rows join by date, teams, and final score to avoid doubleheader ambiguity."
+  ],
+  "output": "data-core/notebooks/cache/mlb_fantasydata_moneylines_2026_ytd.csv",
+  "source": "https://fantasydata.com/mlb/{team}-odds",
+  "source_rows_deduped": 778,
+  "start_date": "2026-03-01",
+  "target_games": 750
+}

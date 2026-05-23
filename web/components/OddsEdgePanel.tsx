@@ -57,6 +57,10 @@ export interface MatchupEntry {
   };
 }
 
+export type PlacementMarkets = Record<string, PlacementMarketSummary | MatchupEntry[]> & {
+  matchups?: MatchupEntry[];
+};
+
 const MARKET_LABELS: Record<string, string> = {
   win: 'Outright Win',
   top5: 'Top 5',
@@ -70,8 +74,8 @@ function formatAmerican(price: number) {
   return price > 0 ? `+${price}` : `${price}`;
 }
 
-function timeSince(isoDate: string): string {
-  const diff = Date.now() - new Date(isoDate).getTime();
+function timeSince(isoDate: string, now: number): string {
+  const diff = now - new Date(isoDate).getTime();
   const hours = Math.floor(diff / 3600000);
   const mins = Math.floor((diff % 3600000) / 60000);
   if (hours > 0) return `${hours}h ${mins}m ago`;
@@ -258,9 +262,11 @@ function OverroundBar({ overrounds }: { overrounds: Record<string, number> }) {
 function MarketSummaryCards({
   placementMarkets,
   edges,
+  now,
 }: {
-  placementMarkets: Record<string, PlacementMarketSummary>;
+  placementMarkets: PlacementMarkets;
   edges: EdgeEntry[];
+  now: number;
 }) {
   const marketKeys = Object.keys(placementMarkets).filter(k => k !== 'matchups');
   if (marketKeys.length === 0) return null;
@@ -273,6 +279,7 @@ function MarketSummaryCards({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {marketKeys.map(mkt => {
           const summary = placementMarkets[mkt];
+          if (Array.isArray(summary)) return null;
           const mktEdges = edges.filter(e => e.market === mkt);
           const posEdges = mktEdges.filter(e => e.signal === 'positive');
           const bestEdge = posEdges[0];
@@ -282,7 +289,7 @@ function MarketSummaryCards({
               <div className="flex items-center justify-between mb-3">
                 <h5 className="font-bold text-sm">{MARKET_LABELS[mkt] ?? mkt}</h5>
                 <span className="text-[10px] text-muted-foreground">
-                  {summary.books.join(', ')} &middot; {timeSince(summary.capturedAt)}
+                  {summary.books.join(', ')} &middot; {timeSince(summary.capturedAt, now)}
                 </span>
               </div>
               <div className="grid grid-cols-3 gap-2 text-center mb-3">
@@ -366,11 +373,12 @@ export function OddsEdgePanel({
 }: {
   edges: EdgeEntry[];
   marketOdds: MarketOddsData;
-  placementMarkets?: Record<string, any>;
+  placementMarkets?: PlacementMarkets;
 }) {
   const [section, setSection] = useState<'value' | 'comparison' | 'overround' | 'markets' | 'matchups'>('value');
+  const [now] = useState(() => Date.now());
 
-  const staleHours = (Date.now() - new Date(marketOdds.fetchedAt).getTime()) / 3600000;
+  const staleHours = (now - new Date(marketOdds.fetchedAt).getTime()) / 3600000;
   const isStale = staleHours > 6;
 
   const hasPlacementMarkets = placementMarkets && Object.keys(placementMarkets).some(k => k !== 'matchups');
@@ -391,7 +399,7 @@ export function OddsEdgePanel({
           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
-          Odds data is {timeSince(marketOdds.fetchedAt)} old. Re-run the fetch script for current lines.
+          Odds data is {timeSince(marketOdds.fetchedAt, now)} old. Re-run the fetch script for current lines.
         </div>
       )}
 
@@ -399,7 +407,7 @@ export function OddsEdgePanel({
         <div>
           <h3 className="text-lg font-semibold">{marketOdds.tournament} — Market Odds & Edges</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {marketOdds.books.length} books (API) &middot; {marketOdds.playerOdds.length} players &middot; Updated {timeSince(marketOdds.fetchedAt)}
+            {marketOdds.books.length} books (API) &middot; {marketOdds.playerOdds.length} players &middot; Updated {timeSince(marketOdds.fetchedAt, now)}
             {hasPlacementMarkets && (
               <> &middot; + placement markets from manual entry</>
             )}
@@ -424,7 +432,7 @@ export function OddsEdgePanel({
       {section === 'comparison' && <CrossBookComparison playerOdds={marketOdds.playerOdds} />}
       {section === 'overround' && <OverroundBar overrounds={marketOdds.overrounds} />}
       {section === 'markets' && placementMarkets && (
-        <MarketSummaryCards placementMarkets={placementMarkets} edges={edges} />
+        <MarketSummaryCards placementMarkets={placementMarkets} edges={edges} now={now} />
       )}
       {section === 'matchups' && placementMarkets?.matchups && (
         <MatchupsPanel matchups={placementMarkets.matchups} />

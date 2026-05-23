@@ -1,0 +1,163 @@
+{
+  "coverage_pct": 0.9864779874213836,
+  "matched_rows": 3137,
+  "missing_rows": 43,
+  "missing_sample": [
+    {
+      "away_team": "Los Angeles Dodgers",
+      "game_date": "2025-03-18",
+      "game_pk": 778563,
+      "home_team": "Chicago Cubs"
+    },
+    {
+      "away_team": "Los Angeles Dodgers",
+      "game_date": "2025-03-19",
+      "game_pk": 778564,
+      "home_team": "Chicago Cubs"
+    },
+    {
+      "away_team": "New York Mets",
+      "game_date": "2025-04-26",
+      "game_pk": 778173,
+      "home_team": "Washington Nationals"
+    },
+    {
+      "away_team": "Cleveland Guardians",
+      "game_date": "2025-05-16",
+      "game_pk": 777902,
+      "home_team": "Cincinnati Reds"
+    },
+    {
+      "away_team": "Cleveland Guardians",
+      "game_date": "2025-05-21",
+      "game_pk": 777829,
+      "home_team": "Minnesota Twins"
+    },
+    {
+      "away_team": "Chicago White Sox",
+      "game_date": "2025-05-30",
+      "game_pk": 777720,
+      "home_team": "Baltimore Orioles"
+    },
+    {
+      "away_team": "Philadelphia Phillies",
+      "game_date": "2025-06-08",
+      "game_pk": 777595,
+      "home_team": "Pittsburgh Pirates"
+    },
+    {
+      "away_team": "St. Louis Cardinals",
+      "game_date": "2025-06-30",
+      "game_pk": 777299,
+      "home_team": "Pittsburgh Pirates"
+    },
+    {
+      "away_team": "Chicago White Sox",
+      "game_date": "2025-07-22",
+      "game_pk": 777048,
+      "home_team": "Tampa Bay Rays"
+    },
+    {
+      "away_team": "Tampa Bay Rays",
+      "game_date": "2025-08-25",
+      "game_pk": 776601,
+      "home_team": "Cleveland Guardians"
+    },
+    {
+      "away_team": "Washington Nationals",
+      "game_date": "2025-08-25",
+      "game_pk": 776597,
+      "home_team": "New York Yankees"
+    },
+    {
+      "away_team": "Minnesota Twins",
+      "game_date": "2025-08-25",
+      "game_pk": 776596,
+      "home_team": "Toronto Blue Jays"
+    },
+    {
+      "away_team": "Philadelphia Phillies",
+      "game_date": "2025-08-25",
+      "game_pk": 776598,
+      "home_team": "New York Mets"
+    },
+    {
+      "away_team": "Arizona Diamondbacks",
+      "game_date": "2025-08-25",
+      "game_pk": 776593,
+      "home_team": "Milwaukee Brewers"
+    },
+    {
+      "away_team": "Kansas City Royals",
+      "game_date": "2025-08-25",
+      "game_pk": 776599,
+      "home_team": "Chicago White Sox"
+    },
+    {
+      "away_team": "Pittsburgh Pirates",
+      "game_date": "2025-08-25",
+      "game_pk": 776589,
+      "home_team": "St. Louis Cardinals"
+    },
+    {
+      "away_team": "Los Angeles Angels",
+      "game_date": "2025-08-25",
+      "game_pk": 776592,
+      "home_team": "Texas Rangers"
+    },
+    {
+      "away_team": "San Diego Padres",
+      "game_date": "2025-08-25",
+      "game_pk": 776595,
+      "home_team": "Seattle Mariners"
+    },
+    {
+      "away_team": "Detroit Tigers",
+      "game_date": "2025-08-25",
+      "game_pk": 776590,
+      "home_team": "Athletics"
+    },
+    {
+      "away_team": "Cincinnati Reds",
+      "game_date": "2025-08-25",
+      "game_pk": 776594,
+      "home_team": "Los Angeles Dodgers"
+    },
+    {
+      "away_team": "Boston Red Sox",
+      "game_date": "2025-08-26",
+      "game_pk": 776591,
+      "home_team": "Baltimore Orioles"
+    },
+    {
+      "away_team": "Atlanta Braves",
+      "game_date": "2025-08-26",
+      "game_pk": 776581,
+      "home_team": "Miami Marlins"
+    },
+    {
+      "away_team": "Tampa Bay Rays",
+      "game_date": "2025-08-26",
+      "game_pk": 776584,
+      "home_team": "Cleveland Guardians"
+    },
+    {
+      "away_team": "Washington Nationals",
+      "game_date": "2025-08-26",
+      "game_pk": 776588,
+      "home_team": "New York Yankees"
+    },
+    {
+      "away_team": "Minnesota Twins",
+      "game_date": "2025-08-26",
+      "game_pk": 776582,
+      "home_team": "Toronto Blue Jays"
+    }
+  ],
+  "output": "data-core/notebooks/cache/mlb_free_moneylines_2025_2026.csv",
+  "source_counts": {
+    "checkbestodds": 2387,
+    "fantasydata_consensus": 750
+  },
+  "target_games": 3180
+}

@@ -1,0 +1,145 @@
+{
+  "baseline": {
+    "probability": 0.5324995746128978,
+    "test": {
+      "accuracy": 0.5215453194650818,
+      "actual_home_win_rate": 0.5215453194650818,
+      "avg_pred_home_win": 0.5324995746128977,
+      "brier": 0.24965579491499104,
+      "ece_10": 0.010954255147815894,
+      "log_loss": 0.6924592909581578,
+      "roc_auc": 0.5
+    }
+  },
+  "candidate_metrics": {
+    "hist_gradient_boosting": {
+      "test": {
+        "accuracy": 0.5408618127786032,
+        "actual_home_win_rate": 0.5215453194650818,
+        "avg_pred_home_win": 0.5237673184606616,
+        "brier": 0.24993225208625122,
+        "ece_10": 0.0344707132187201,
+        "log_loss": 0.6935864471633211,
+        "roc_auc": 0.55345861867601
+      },
+      "validation": {
+        "accuracy": 0.5361702127659574,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.5183560015123364,
+        "brier": 0.25254389677900846,
+        "ece_10": 0.06255758132871679,
+        "log_loss": 0.6990086635206461,
+        "roc_auc": 0.5377635616853945
+      }
+    },
+    "logistic": {
+      "test": {
+        "accuracy": 0.5468053491827637,
+        "actual_home_win_rate": 0.5215453194650818,
+        "avg_pred_home_win": 0.5217736722974147,
+        "brier": 0.2512770067126963,
+        "ece_10": 0.02619495172959986,
+        "log_loss": 0.7051559365337643,
+        "roc_auc": 0.5505919201571376
+      },
+      "validation": {
+        "accuracy": 0.54,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.5240938872260316,
+        "brier": 0.24730338269403207,
+        "ece_10": 0.029710566608630164,
+        "log_loss": 0.6925571235113003,
+        "roc_auc": 0.5533366005064119
+      }
+    },
+    "random_forest": {
+      "test": {
+        "accuracy": 0.5408618127786032,
+        "actual_home_win_rate": 0.5215453194650818,
+        "avg_pred_home_win": 0.5243289890158046,
+        "brier": 0.2476942629292933,
+        "ece_10": 0.009203819646140867,
+        "log_loss": 0.6884553948346495,
+        "roc_auc": 0.5461856983596114
+      },
+      "validation": {
+        "accuracy": 0.5382978723404256,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.5265367258357573,
+        "brier": 0.2461084615572133,
+        "ece_10": 0.025463855019680265,
+        "log_loss": 0.6851947942464901,
+        "roc_auc": 0.5541614158527904
+      }
+    }
+  },
+  "data_summary": {
+    "home_win_rate": 0.5319063329846302,
+    "max_game_date": "2026-05-21",
+    "min_game_date": "2021-04-06",
+    "rows": 12427,
+    "seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "odds_summary": {
+    "edge_buckets": [
+      {
+        "edge_bucket": "0-2%",
+        "games": 136,
+        "roi": 0.011120956958830839,
+        "units": 1.512450146400994
+      },
+      {
+        "edge_bucket": "2-4%",
+        "games": 96,
+        "roi": -0.009952775534674206,
+        "units": -0.9554664513287239
+      },
+      {
+        "edge_bucket": "4-6%",
+        "games": 79,
+        "roi": 0.014445737465696329,
+        "units": 1.14121325979001
+      },
+      {
+        "edge_bucket": "6%+",
+        "games": 150,
+        "roi": -0.051522377911835684,
+        "units": -7.728356686775353
+      }
+    ],
+    "flat_roi": -0.01308060679373769,
+    "flat_units": -6.030159731913075,
+    "odds_rows": 461
+  },
+  "selected_model_name": "random_forest",
+  "selected_refit_test": {
+    "accuracy": 0.537890044576523,
+    "actual_home_win_rate": 0.5215453194650818,
+    "avg_pred_home_win": 0.531974395269179,
+    "brier": 0.2478482526040697,
+    "ece_10": 0.012030444239079195,
+    "log_loss": 0.6887680655909832,
+    "roc_auc": 0.5430889561324344
+  },
+  "splits": {
+    "final_train_rows": 11754,
+    "test_rows": 673,
+    "test_season": 2026,
+    "train_rows": 9404,
+    "train_seasons": [
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "validation_rows": 2350,
+    "validation_season": 2025
+  }
+}

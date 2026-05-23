@@ -1,0 +1,44 @@
+{
+  "coverage_pct": 0.988795518207283,
+  "end_date": "2026-05-21",
+  "games_path": "data-core/notebooks/cache/nba_backtest_2025_v3.csv",
+  "generated_at": "2026-05-23T03:36:14.718036+00:00",
+  "matched_rows": 353,
+  "missing_rows": 4,
+  "missing_sample": [
+    {
+      "away_team": "STARS",
+      "game_date": "2026-02-15",
+      "game_id": 401838141,
+      "home_team": "STRIPES"
+    },
+    {
+      "away_team": "STARS",
+      "game_date": "2026-02-15",
+      "game_id": 401838143,
+      "home_team": "STRIPES"
+    },
+    {
+      "away_team": "WORLD",
+      "game_date": "2026-02-15",
+      "game_id": 401838140,
+      "home_team": "STARS"
+    },
+    {
+      "away_team": "WORLD",
+      "game_date": "2026-02-15",
+      "game_id": 401838142,
+      "home_team": "STRIPES"
+    }
+  ],
+  "notes": [
+    "Source is public HTML, not an official API.",
+    "Book is FantasyData consensus, not Pinnacle.",
+    "Line and price are home-perspective spread values."
+  ],
+  "output": "data-core/notebooks/cache/nba_fantasydata_spreads_2026_tail.csv",
+  "source": "https://fantasydata.com/nba/{team}-odds",
+  "source_rows_deduped": 1312,
+  "start_date": "2026-02-13",
+  "target_games": 357
+}
