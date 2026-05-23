@@ -1,10 +1,17 @@
 # Data and Model Status
 
-Generated: 2026-05-22
+Generated: 2026-05-22. Service inventory spot-checked from the terminal on
+2026-05-23.
 
 This inventory is read-only except for the PGA ESPN supplement refresh noted below. BigQuery project: `learned-pier-478122-p7`.
 
 Current consolidated performance hub: `docs/PERFORMANCE_HISTORY.md`, generated from `scripts/export_performance_history.py` and `notebooks/cache/performance_history.json`.
+
+Live 2026-05-23 check: BigQuery `sports_edge_curated.feature_snapshots` had
+93,424 rows and `sports_edge_curated.model_predictions` had 972 rows. Latest
+NBA `v3` prediction timestamp was 2026-05-23T15:04:38Z; latest NFL `v1`
+prediction timestamp was 2026-02-09T14:37:51Z. Supabase serving tables had 586
+`games`, 711 `model_predictions`, and 98 `odds_snapshots` rows.
 
 ## BigQuery Inventory
 
@@ -77,7 +84,7 @@ Known ESPN gaps from the refresh: The Sentry had no board; same-week collision s
 | Feature audit | `notebooks/cache/mlb_feature_store_2021_2026_audit.json`; 6 missing home probable pitchers, 7 missing away probable pitchers |
 | Boxscore enrichment cache | `notebooks/cache/mlb_boxscores_2021_2025.parquet`; 25 rows fetched as pipeline smoke test, full 12,898-game crawl still pending |
 | Max imported game date | 2026-05-21 |
-| Model artifact | `models/mlb_winner_model_v3.pkl` plus `models/mlb_winner_model_v3_metrics.json` |
+| Model artifact | retained committed `models/mlb_winner_model_v3.pkl` plus `models/mlb_winner_model_v3_metrics.json` |
 | Test window | 2026 YTD, 673 feature rows |
 | Ship-candidate result | Random forest selected on 2025 validation; 2026 YTD refit test accuracy 53.8%, Brier 0.2478, log loss 0.6888, AUC 0.5431 |
 | Backtest outputs | `notebooks/cache/mlb_backtest_predictions_2025.csv`, `notebooks/cache/mlb_backtest_metrics_2025.json`, `notebooks/cache/mlb_backtest_predictions_2026_ytd.csv`, and `notebooks/cache/mlb_backtest_metrics_2026_ytd.json`; no odds rows yet |

@@ -47,7 +47,14 @@ data-core/web/
 data-core/notebooks/cache/pga_feature_store_event_level.csv
 
 # Models
-
+# Root-level model artifacts are legacy scratch. Production artifacts live under
+# data-core/models when intentionally versioned.
+/models/
+data-core/models/saved/
+data-core/models/*_nba_v[124].pkl
+data-core/models/*_nfl_v2.pkl
+data-core/models/mlb_winner_model_v[12]*
+data-core/models/td_scorer_model_nfl_*.pkl
 
 # IDE
 .vscode/

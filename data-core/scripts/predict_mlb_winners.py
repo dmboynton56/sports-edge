@@ -21,11 +21,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from src.data.mlb_fetcher import fetch_mlb_schedule
 from src.models.mlb_winner_model import build_mlb_prediction_features
 
+DEFAULT_MODEL_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)),
+    "models",
+    "mlb_winner_model_v3.pkl",
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Predict MLB game winners for a date.")
     parser.add_argument("--date", required=True, help="Game date in YYYY-MM-DD.")
-    parser.add_argument("--model-path", default="data-core/models/mlb_winner_model_v2.pkl")
+    parser.add_argument("--model-path", default=DEFAULT_MODEL_PATH)
     parser.add_argument("--season", type=int, help="MLB season year. Defaults to --date year.")
     parser.add_argument("--min-prior-games", type=int, default=5)
     parser.add_argument("--include-final", action="store_true", help="Score games even if already final.")

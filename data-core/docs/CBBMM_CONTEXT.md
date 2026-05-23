@@ -13,7 +13,7 @@ data-core/
 │   └── cbb_bracket_simulator.py   # Monte Carlo bracket sim with constraints
 ├── notebooks/
 │   └── cbb_march_madness.ipynb    # EDA, training, backtesting, simulation
-└── models/saved/                  # Trained model artifacts
+└── models/saved/                  # Ignored local trainer output
 
 web/
 ├── app/cbb/page.tsx               # CBB page with client-side simulation

@@ -1,118 +1,156 @@
-# Sports-Edge: NFL/NBA Betting Analysis Pipeline
+# Sports Edge
 
 ![Build Status](https://github.com/dmboynton56/sports-edge/actions/workflows/test.yml/badge.svg)
 
+Sports Edge is a sports analytics and prediction pipeline displayed on the
+portfolio. BigQuery is the warehouse/source of truth for raw data, features,
+model predictions, and historical analysis. Supabase is the serving cache that
+the portfolio and dashboard read.
 
-A machine learning pipeline to compute model spreads and home win probabilities for NFL/NBA games, compare against sportsbook lines, and display results on a personal portfolio.
+The public story is still a work in progress: NBA daily predictions are the
+most active surface, NFL has completed 2025 season coverage, and PGA/CBB/MLB
+research remains useful but is not all promoted to recruiter-facing production
+claims.
 
-The system treats BigQuery as the source of truth for scoring and historical data, while Supabase remains the lightweight cache that the frontend website reads.
+## Current Production Flow
 
-## Project Overview
+The daily workflow is `.github/workflows/daily-refresh.yml` and runs at
+13:00 UTC.
 
-- **Daily Automation**: GitHub Actions update raw data, rebuild features, and generate predictions every morning.
-- **Machine Learning**: LightGBM ensembles trained on historical rolling performance metrics, strength of schedule, and situational rest spots.
-- **Unified Pipeline**: Standardized approach for both NFL (weekly) and NBA (daily).
-- **Data Architecture**: Raw data -> Curated BigQuery features -> Python ML scoring -> Supabase Postgres -> Next.js Frontend.
-
-## Setup
-
-### 1. Prerequisites
-
-- **API Keys**:
-  - The Odds API key (for sportsbook lines)
-  - Supabase project URL and Service Role key
-  - GCP Service Account JSON key (with BigQuery Admin permissions)
-- **Python Environment**:
-  - Python 3.11+
-  - Dependencies: `pip install -r requirements.txt`
-
-### 2. Configure Environment
-
-Copy `.env.example` to `.env` and fill in your keys:
-```bash
-cp .env.example .env
+```text
+raw league data + odds
+  -> BigQuery sports_edge_raw
+  -> feature snapshots in sports_edge_curated
+  -> Python model refreshes
+  -> BigQuery sports_edge_curated.model_predictions
+  -> scripts/sync_bq_to_supabase.py
+  -> Supabase games/model_predictions/odds_snapshots
+  -> portfolio /api/sports-edges and project chat
 ```
 
-Key Variables:
-- `GCP_PROJECT_ID`: Your Google Cloud project ID.
-- `GOOGLE_APPLICATION_CREDENTIALS`: Path to your GCP service account JSON.
-- `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY`: Supabase API access.
-- `SUPABASE_DB_*`: PostgreSQL connection details for bulk sync.
-- `ODDS_API_KEY`: Key from the-odds-api.com.
+Current scheduled model versions:
 
-### 3. Initialize BigQuery
+- NBA: `refresh_nba --model-version v3`
+- NFL: `refresh_nfl --model-version v1`
 
-Create the necessary datasets and tables:
-```bash
-python gcp_setup/create_bigquery_tables.py --project your-project-id
+## Repository Layout
+
+```text
+data-core/
+  src/                 production Python package
+    data/              league/API fetchers and loaders
+    features/          feature builders
+    models/            model code
+    pipeline/          NBA/NFL refresh entry points
+    utils/             shared DB/env helpers
+  scripts/             backfills, syncs, validation, exports
+  models/              intentionally versioned model artifacts
+  notebooks/           research notebooks and selected cached evidence
+  docs/                model status, data sources, freshness, and plans
+  sql/                 BigQuery/Supabase helper SQL
+web/
+  app/, components/, lib/
+                      standalone sports dashboard surfaces
+ios/
+  SportsEdgeApp/       early iOS app shell
 ```
 
-### 4. Set Up Supabase Database
+The root-level `models/` directory was removed because it duplicated older v1
+artifacts. Active workflow commands run from `data-core`, so production model
+artifacts belong in `data-core/models`.
 
-Run the migration scripts in the `sql/` directory within your Supabase SQL editor in order:
-1. `001_initial_schema.sql`
-2. `002_add_week_column.sql`
-3. ... and so on.
+## Local Setup
 
-## Usage
-
-### Run Production Pipeline Manually
-
-The pipeline handles data fetching, feature building, and prediction in one flow.
-
-**NBA (Daily)**:
 ```bash
-python -m src.pipeline.refresh_nba --project your-project-id --model-version v3 --date 2026-01-14
-```
-The NBA refresh now fetches current odds from The Odds API (requires `ODDS_API_KEY`) and loads them into `raw_nba_odds` before generating predictions. Use `--skip-odds` to skip this step.
-
-**NFL (Weekly)**:
-```bash
-python -m src.pipeline.refresh_nfl --project your-project-id --model-version v1
+cd data-core
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt google-cloud-bigquery nflreadpy supabase
 ```
 
-**Sync to Supabase**:
-After predictions are in BigQuery, push them to the web database:
-```bash
-python scripts/sync_bq_to_supabase.py --project your-project-id --league NBA --append
-```
+Required environment variables:
 
-### Training Models
-
-Models are developed in Jupyter notebooks:
-- NBA: `notebooks/nba_eda.ipynb`
-- NFL: `notebooks/nfl_eda.ipynb`
-
-Exported model artifacts (`.pkl`) are stored in the `models/` directory and versioned.
-
-## GitHub Actions Automation
-
-The repository includes a daily refresh workflow (`.github/workflows/daily-refresh.yml`) that runs at 13:00 UTC (8:00 AM ET). 
-
-It requires the following GitHub Secrets:
 - `GCP_PROJECT_ID`
-- `GCP_SERVICE_ACCOUNT_KEY` (Entire JSON content)
+- `GOOGLE_APPLICATION_CREDENTIALS`
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
-- `SUPABASE_DB_PASSWORD`
 - `SUPABASE_DB_HOST`
+- `SUPABASE_DB_NAME`
+- `SUPABASE_DB_PORT`
 - `SUPABASE_DB_USER`
+- `SUPABASE_DB_PASSWORD` or `supabaseDBpass`
 - `ODDS_API_KEY`
 
-## Project Structure
+## Manual Operations
 
-- `src/` - Core logic
-  - `data/` - API fetchers (NBA, NFL, Odds)
-  - `features/` - Engineered rolling stats and rest calculations
-  - `models/` - Production predictor class and link functions
-  - `pipeline/` - Production refresh scripts
-- `scripts/` - Maintenance and utility scripts (backfills, syncs)
-- `sql/` - Database schemas for Supabase and BigQuery
-- `notebooks/` - Research and training environments
-- `models/` - Production model artifacts (versioned)
+Run the same commands from `data-core`, matching GitHub Actions:
 
-## Data Sources
+```bash
+python scripts/backfill_nba_raw.py --project "$GCP_PROJECT_ID" --seasons 2025 --schedule-start 2026-05-22 --schedule-window-days 3
+python scripts/build_feature_snapshots.py --project "$GCP_PROJECT_ID" --league NBA --seasons 2025
+python -m src.pipeline.refresh_nba --project "$GCP_PROJECT_ID" --model-version v3
+python scripts/sync_bq_to_supabase.py --project "$GCP_PROJECT_ID" --league NBA --append
+python scripts/sync_final_scores.py --project "$GCP_PROJECT_ID" --lookback-days 4 --lookahead-days 1
+python scripts/validate_supabase_sync.py --strict
+```
 
-- **NFL**: nflreadpy / nfl_data_py
-- **NBA**: nba_api
-- **Odds**: The Odds API
+NFL uses the same pattern with `--league NFL` and `refresh_nfl --model-version
+v1`.
+
+## Data Contracts
+
+BigQuery datasets currently used by the portfolio story:
+
+- `sports_edge_raw`
+- `sports_edge_curated`
+- `sports_edge_results`
+- `sports_edge_models`
+
+Supabase serving tables:
+
+- `games`
+- `model_predictions`
+- `odds_snapshots`
+- `features`
+- `model_runs`
+- `games_today_enriched` view
+
+The portfolio is a read-only consumer of those Supabase tables. Sports Edge
+owns writes for games, odds, predictions, and final scores.
+
+Last terminal verification: 2026-05-23. BigQuery project
+`learned-pier-478122-p7` exposed the four datasets above; curated warehouse
+tables included 93,424 `feature_snapshots` rows and 972 `model_predictions`
+rows. NBA `v3` had 464 current prediction rows with latest
+`prediction_ts=2026-05-23T15:04:38Z`; NFL `v1` remained at 7 rows with latest
+`prediction_ts=2026-02-09T14:37:51Z`. Supabase public serving counts were
+586 `games`, 711 `model_predictions`, and 98 `odds_snapshots`.
+
+## Tests
+
+```bash
+cd data-core
+pytest
+```
+
+## Documentation State
+
+Important current docs:
+
+- `data-core/docs/DATA_AND_MODEL_STATUS.md`
+- `data-core/docs/MODEL_VERSIONS.md`
+- `data-core/docs/DATA_SOURCES.md`
+- `data-core/docs/PREDICTION_AND_ROI_HISTORY.md`
+- `data-core/docs/PGA_REFRESH_PIPELINE.md`
+
+Planning docs for future work are kept under `data-core/docs/`. Root-level,
+machine-specific execution plans were removed to keep the repo focused.
+
+## Future Work
+
+- Promote a clear model registry so code, docs, and portfolio claims all point
+  at the same active artifact per league.
+- Separate reproducible evidence artifacts from notebook scratch caches.
+- Finish a unified cross-league performance board for NBA/NFL/PGA/CBB.
+- Decide whether MLB remains research-only or becomes a labeled probability
+  surface.
