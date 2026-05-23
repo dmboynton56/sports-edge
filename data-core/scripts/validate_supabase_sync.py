@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """
 Validate recent Supabase sync health for games/predictions/scores.
+
+Table/column expectations should match the checked-in inventory:
+  projects/plans/docs/supabase_tables/personal_portfolio_project_tables.json
+Queries use public tables `games`, `model_predictions`, etc. documented there.
 """
 
 from __future__ import annotations

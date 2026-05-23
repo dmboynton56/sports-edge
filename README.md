@@ -28,6 +28,14 @@ raw league data + odds
   -> portfolio /api/sports-edges and project chat
 ```
 
+### Portfolio chat
+
+The personal portfolio exposes this project via scoped chat (`scope=sports-edge`)
+on `/projects/sports-edge`. Answers use BigQuery warehouse SQL, canned metrics,
+and RAG over `personal-portfolio/docs/project-knowledge/sports-edge/`. After
+changing methodology or metrics docs, rebuild portfolio `rag_embeddings.json`
+(see `plans/04-rag-knowledge-strategy.md`).
+
 Current scheduled model versions:
 
 - NBA: `refresh_nba --model-version v3`
