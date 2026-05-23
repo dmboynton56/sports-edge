@@ -1,0 +1,30 @@
+{
+  "completed_games": 285,
+  "date_max": "2026-02-08",
+  "date_min": "2025-09-04",
+  "generated_at": "2026-05-22T20:20:48.334683+00:00",
+  "league": "NFL",
+  "metrics": {
+    "accuracy": 0.5368421052631579,
+    "actual_home_win_rate": 0.5333333333333333,
+    "avg_pred_home_win": 0.6452245656735636,
+    "brier": 0.26484671177938107,
+    "ece_10": 0.14509313106299085,
+    "games": 285,
+    "log_loss": 0.7315039688544586,
+    "roc_auc": 0.5789721013058964,
+    "spread_mae": 11.148356792670684,
+    "spread_rmse": 13.957504133352113
+  },
+  "model_version": "v1",
+  "odds_summary": {
+    "flat_roi": null,
+    "odds_rows": 0,
+    "status": "no_documented_nfl_bigquery_spread_odds_source"
+  },
+  "pbp_rows": 48771,
+  "predictions_generated": 285,
+  "project": "learned-pier-478122-p7",
+  "scored_games": 285,
+  "season": 2025
+}

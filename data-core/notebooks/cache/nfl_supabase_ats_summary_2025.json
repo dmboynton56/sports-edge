@@ -1,0 +1,83 @@
+{
+  "ats_pct": 0.48214285714285715,
+  "date_max": "2025-11-17",
+  "date_min": "2025-10-23",
+  "edge_buckets": [
+    {
+      "ats_pct": 0.5384615384615384,
+      "avg_cover_margin": 2.061464641225876,
+      "avg_edge": -0.2077661280048933,
+      "edge_bucket": "<1",
+      "games": 13,
+      "losses": 6,
+      "pushes": 0,
+      "risked_games": 13,
+      "roi": 0.027972027972027948,
+      "wins": 7
+    },
+    {
+      "ats_pct": 0.3,
+      "avg_cover_margin": 0.06656554635746917,
+      "avg_edge": -0.03343445364253106,
+      "edge_bucket": "1-2",
+      "games": 10,
+      "losses": 7,
+      "pushes": 0,
+      "risked_games": 10,
+      "roi": -0.42727272727272736,
+      "wins": 3
+    },
+    {
+      "ats_pct": 0.5,
+      "avg_cover_margin": -1.213690553220437,
+      "avg_edge": 0.7863094467795632,
+      "edge_bucket": "2-3",
+      "games": 6,
+      "losses": 3,
+      "pushes": 0,
+      "risked_games": 6,
+      "roi": -0.04545454545454549,
+      "wins": 3
+    },
+    {
+      "ats_pct": 0.5,
+      "avg_cover_margin": -1.1705144692069853,
+      "avg_edge": -0.7017644692069851,
+      "edge_bucket": "3-5",
+      "games": 16,
+      "losses": 8,
+      "pushes": 0,
+      "risked_games": 16,
+      "roi": -0.04545454545454547,
+      "wins": 8
+    },
+    {
+      "ats_pct": 0.5454545454545454,
+      "avg_cover_margin": -3.0153538973827376,
+      "avg_edge": -10.333535715564555,
+      "edge_bucket": "5+",
+      "games": 11,
+      "losses": 5,
+      "pushes": 0,
+      "risked_games": 11,
+      "roi": 0.04132231404958674,
+      "wins": 6
+    }
+  ],
+  "flat_roi_at_minus_110": -0.07954545454545459,
+  "games_output": "data-core/notebooks/cache/nfl_supabase_ats_games_2025.csv",
+  "games_rows": 56,
+  "generated_at": "2026-05-22T23:00:04.979259+00:00",
+  "graded_games": 56,
+  "joined_rows": 56,
+  "latest_asof_ts": "2025-11-18 01:07:59.891509+00:00",
+  "latest_prediction_rows": 56,
+  "league": "NFL",
+  "losses": 29,
+  "missing_book_spread": 0,
+  "net_units_at_minus_110": -4.454545454545457,
+  "prediction_rows": 100,
+  "pushes": 0,
+  "season": 2025,
+  "wins": 27
+}

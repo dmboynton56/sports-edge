@@ -15,7 +15,7 @@ Final meta-ensemble via Logistic Regression stacker.
 import os
 import sys
 import warnings
-from typing import Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Tuple, Optional
 
 import joblib
 import numpy as np
@@ -84,35 +84,62 @@ def evaluate_predictions(y_true: np.ndarray, y_prob: np.ndarray, label: str = ''
 
 def check_upset_calibration(
     y_true: np.ndarray, y_prob: np.ndarray,
-    seed_diffs: np.ndarray
-) -> None:
+    seed_diffs: np.ndarray,
+    game_keys: Optional[np.ndarray] = None,
+) -> List[Dict[str, float]]:
     """
     Checks model calibration on major upsets (1v16, 2v15, 3v14).
     Underdog probability should be 1-5%, not 0%.
+
+    The matchup feature store contains mirrored rows for each tournament game.
+    When `game_keys` are supplied, this function keeps one row per physical
+    game before counting upsets.
     """
+    y_true = np.asarray(y_true)
+    y_prob = np.asarray(y_prob)
+    seed_diffs = np.asarray(seed_diffs)
+
+    if game_keys is not None:
+        seen = set()
+        keep = []
+        for idx, key in enumerate(game_keys):
+            key_tuple = tuple(key) if isinstance(key, (list, tuple, np.ndarray)) else key
+            if key_tuple in seen:
+                continue
+            seen.add(key_tuple)
+            keep.append(idx)
+        y_true = y_true[keep]
+        y_prob = y_prob[keep]
+        seed_diffs = seed_diffs[keep]
+
+    rows = []
     print("\n  Upset Calibration Check:")
-    for matchup, sd_range in [
-        ('1v16', (-15, -15)), ('2v15', (-13, -13)), ('3v14', (-11, -11))
-    ]:
-        mask = (seed_diffs >= sd_range[0]) & (seed_diffs <= sd_range[1])
-        alt_mask = (seed_diffs >= -sd_range[1]) & (seed_diffs <= -sd_range[0])
-        combined = mask | alt_mask
+    for matchup, seed_gap in [('1v16', 15), ('2v15', 13), ('3v14', 11)]:
+        combined = np.abs(seed_diffs) == seed_gap
         if combined.sum() == 0:
             continue
+        team_a_is_underdog = seed_diffs[combined] > 0
         underdog_probs = np.where(
-            seed_diffs[combined] < 0,
+            team_a_is_underdog,
             y_prob[combined],
             1 - y_prob[combined]
         )
         avg_underdog = np.mean(underdog_probs)
-        n_games = combined.sum() // 2
-        actual_upsets = np.sum(
-            (seed_diffs[combined] < 0) & (y_true[combined] == 1)
-        ) + np.sum(
-            (seed_diffs[combined] > 0) & (y_true[combined] == 0)
+        actual_upsets = int(
+            np.sum(team_a_is_underdog & (y_true[combined] == 1))
+            + np.sum((~team_a_is_underdog) & (y_true[combined] == 0))
         )
+        n_games = int(combined.sum())
+        rows.append({
+            'matchup': matchup,
+            'games': n_games,
+            'avg_underdog_prob': float(avg_underdog),
+            'actual_upsets': actual_upsets,
+            'actual_upset_rate': float(actual_upsets / n_games) if n_games else 0.0,
+        })
         print(f"    {matchup}: Avg underdog prob = {avg_underdog:.3f} "
               f"({n_games} games, {actual_upsets} actual upsets)")
+    return rows
 
 
 # ---------------------------------------------------------------------------
@@ -245,7 +272,7 @@ class CBBMatchupTrainer:
         train_start: int = 2010,
         val_start: int = 2016,
         val_end: int = 2025
-    ) -> Dict[str, List[float]]:
+    ) -> Dict[str, List[Any]]:
         """
         Expanding Window Time-Series CV.
         Each fold trains on all seasons up to val_year - 1,
@@ -255,13 +282,33 @@ class CBBMatchupTrainer:
         print("EXPANDING WINDOW CV")
         print("=" * 70)
 
-        fold_results = {'year': [], 'lgbm_ll': [], 'xgb_ll': [], 'meta_ll': []}
+        fold_results = {
+            'year': [],
+            'lgbm_ll': [],
+            'xgb_ll': [],
+            'meta_ll': [],
+            'lgbm_brier': [],
+            'xgb_brier': [],
+            'meta_brier': [],
+            'lgbm_auc': [],
+            'xgb_auc': [],
+            'meta_auc': [],
+            'lgbm_ece': [],
+            'xgb_ece': [],
+            'meta_ece': [],
+            'lgbm_accuracy': [],
+            'xgb_accuracy': [],
+            'meta_accuracy': [],
+            'train_rows': [],
+            'validation_rows': [],
+        }
 
         all_lgbm_preds = []
         all_xgb_preds = []
         all_meta_preds = []
         all_y_val = []
         all_seed_diffs = []
+        all_game_keys = []
 
         for val_year in range(val_start, val_end + 1):
             if val_year == 2020:
@@ -288,14 +335,23 @@ class CBBMatchupTrainer:
             xgb_preds = self.train_xgboost(X_train, y_train, X_val, y_val)
             meta_preds = self.train_meta_ensemble(lgbm_preds, xgb_preds, y_val)
 
-            lgbm_ll = log_loss(y_val, np.clip(lgbm_preds, 1e-7, 1 - 1e-7))
-            xgb_ll = log_loss(y_val, np.clip(xgb_preds, 1e-7, 1 - 1e-7))
-            meta_ll = log_loss(y_val, np.clip(meta_preds, 1e-7, 1 - 1e-7))
+            lgbm_metrics = evaluate_predictions(y_val, lgbm_preds)
+            xgb_metrics = evaluate_predictions(y_val, xgb_preds)
+            meta_metrics = evaluate_predictions(y_val, meta_preds)
 
             fold_results['year'].append(val_year)
-            fold_results['lgbm_ll'].append(lgbm_ll)
-            fold_results['xgb_ll'].append(xgb_ll)
-            fold_results['meta_ll'].append(meta_ll)
+            fold_results['train_rows'].append(int(len(train_df)))
+            fold_results['validation_rows'].append(int(len(val_df)))
+            for model_name, metrics in [
+                ('lgbm', lgbm_metrics),
+                ('xgb', xgb_metrics),
+                ('meta', meta_metrics),
+            ]:
+                fold_results[f'{model_name}_ll'].append(metrics['log_loss'])
+                fold_results[f'{model_name}_brier'].append(metrics['brier'])
+                fold_results[f'{model_name}_auc'].append(metrics['auc'])
+                fold_results[f'{model_name}_ece'].append(metrics['ece'])
+                fold_results[f'{model_name}_accuracy'].append(metrics['accuracy'])
 
             all_lgbm_preds.append(lgbm_preds)
             all_xgb_preds.append(xgb_preds)
@@ -304,6 +360,16 @@ class CBBMatchupTrainer:
 
             if 'seed_diff' in val_df.columns:
                 all_seed_diffs.append(val_df['seed_diff'].values)
+            if {'Season', 'TeamA_ID', 'TeamB_ID'}.issubset(val_df.columns):
+                game_keys = val_df.apply(
+                    lambda row: (
+                        int(row['Season']),
+                        min(int(row['TeamA_ID']), int(row['TeamB_ID'])),
+                        max(int(row['TeamA_ID']), int(row['TeamB_ID'])),
+                    ),
+                    axis=1,
+                ).to_numpy()
+                all_game_keys.append(game_keys)
 
         # Summary
         print("\n" + "=" * 70)
@@ -320,7 +386,10 @@ class CBBMatchupTrainer:
             y_all = np.concatenate(all_y_val)
             meta_all = np.concatenate(all_meta_preds)
             sd_all = np.concatenate(all_seed_diffs)
-            check_upset_calibration(y_all, meta_all, sd_all)
+            game_keys_all = np.concatenate(all_game_keys) if all_game_keys else None
+            fold_results['upset_calibration'] = check_upset_calibration(
+                y_all, meta_all, sd_all, game_keys_all
+            )
 
         return fold_results
 

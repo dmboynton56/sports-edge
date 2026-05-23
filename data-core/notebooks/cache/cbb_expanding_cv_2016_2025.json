@@ -1,0 +1,75 @@
+{
+  "best_by_mean_log_loss": "xgb",
+  "feature_rows": 2002,
+  "feature_store": "data-core/notebooks/cache/cbb_matchup_feature_store.csv",
+  "folds": 9,
+  "folds_output": "data-core/notebooks/cache/cbb_expanding_cv_2016_2025.csv",
+  "generated_at": "2026-05-22T20:12:58.829568+00:00",
+  "mean_metrics": {
+    "lgbm": {
+      "accuracy": 0.6768304939946731,
+      "auc": 0.7473645971404803,
+      "brier": 0.2002504528787509,
+      "ece": 0.0884739936287343,
+      "log_loss": 0.581277208604865
+    },
+    "meta": {
+      "accuracy": 0.6876476204834414,
+      "auc": 0.7564364388874809,
+      "brier": 0.20431741835553524,
+      "ece": 0.08466099489417744,
+      "log_loss": 0.5952347169435345
+    },
+    "xgb": {
+      "accuracy": 0.6825971154329363,
+      "auc": 0.7580721415195585,
+      "brier": 0.19794510829144085,
+      "ece": 0.0714010660920789,
+      "log_loss": 0.5751342594824495
+    }
+  },
+  "raw_data_status": "kaggle_mmlm_raw_files_absent_from_repo",
+  "seasons": [
+    2010,
+    2011,
+    2012,
+    2013,
+    2014,
+    2015,
+    2016,
+    2017,
+    2018,
+    2019,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "train_start": 2010,
+  "upset_calibration": [
+    {
+      "actual_upset_rate": 0.05555555555555555,
+      "actual_upsets": 2,
+      "avg_underdog_prob": 0.2568647565209441,
+      "games": 36,
+      "matchup": "1v16"
+    },
+    {
+      "actual_upset_rate": 0.1111111111111111,
+      "actual_upsets": 4,
+      "avg_underdog_prob": 0.2650982919309817,
+      "games": 36,
+      "matchup": "2v15"
+    },
+    {
+      "actual_upset_rate": 0.08108108108108109,
+      "actual_upsets": 3,
+      "avg_underdog_prob": 0.3112491330796588,
+      "games": 37,
+      "matchup": "3v14"
+    }
+  ],
+  "validation_end": 2025,
+  "validation_start": 2016
+}

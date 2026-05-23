@@ -1,0 +1,118 @@
+{
+  "best_sweep": {
+    "accuracy": 0.5535714285714286,
+    "edge_threshold": 0.5,
+    "min_confidence": 0.4,
+    "n_bets": 112,
+    "roi": 0.08262499999999998
+  },
+  "completed_games": 1175,
+  "date_max": "2026-05-21",
+  "date_min": "2025-10-22",
+  "default_strategy": {
+    "accuracy": 0.5093062605752962,
+    "edge_threshold": 1.0,
+    "min_confidence": 0.0,
+    "n_bets": 591,
+    "n_wins": 301,
+    "roi": -0.005489001692047425,
+    "units_lost": 290.0,
+    "units_won": 286.756
+  },
+  "games_with_book_odds": 717,
+  "generated_at": "2026-05-22T20:02:02.435151+00:00",
+  "league": "NBA",
+  "model_version": "v3",
+  "odds_rows": 767,
+  "predictions_generated": 1175,
+  "project": "learned-pier-478122-p7",
+  "results_csv": "data-core/notebooks/cache/nba_backtest_2025_v3.csv",
+  "schedule_rows": 1265,
+  "season": 2025,
+  "threshold_sweep": [
+    {
+      "accuracy": 0.5083459787556904,
+      "edge_threshold": 0.5,
+      "min_confidence": 0.0,
+      "n_bets": 659,
+      "roi": -0.0075887708649469395
+    },
+    {
+      "accuracy": 0.5217391304347826,
+      "edge_threshold": 0.5,
+      "min_confidence": 0.2,
+      "n_bets": 437,
+      "roi": 0.019599542334096106
+    },
+    {
+      "accuracy": 0.5535714285714286,
+      "edge_threshold": 0.5,
+      "min_confidence": 0.4,
+      "n_bets": 112,
+      "roi": 0.08262499999999998
+    },
+    {
+      "accuracy": 0.5093062605752962,
+      "edge_threshold": 1.0,
+      "min_confidence": 0.0,
+      "n_bets": 591,
+      "roi": -0.005489001692047425
+    },
+    {
+      "accuracy": 0.5230769230769231,
+      "edge_threshold": 1.0,
+      "min_confidence": 0.2,
+      "n_bets": 390,
+      "roi": 0.022741025641025713
+    },
+    {
+      "accuracy": 0.5425531914893617,
+      "edge_threshold": 1.0,
+      "min_confidence": 0.4,
+      "n_bets": 94,
+      "roi": 0.06291489361702121
+    },
+    {
+      "accuracy": 0.5083798882681564,
+      "edge_threshold": 1.5,
+      "min_confidence": 0.0,
+      "n_bets": 537,
+      "roi": -0.007230912476722604
+    },
+    {
+      "accuracy": 0.5228571428571429,
+      "edge_threshold": 1.5,
+      "min_confidence": 0.2,
+      "n_bets": 350,
+      "roi": 0.02240000000000001
+    },
+    {
+      "accuracy": 0.5176470588235295,
+      "edge_threshold": 1.5,
+      "min_confidence": 0.4,
+      "n_bets": 85,
+      "roi": 0.014647058823529381
+    },
+    {
+      "accuracy": 0.5155925155925156,
+      "edge_threshold": 2.0,
+      "min_confidence": 0.0,
+      "n_bets": 481,
+      "roi": 0.0073409563409562945
+    },
+    {
+      "accuracy": 0.5239616613418531,
+      "edge_threshold": 2.0,
+      "min_confidence": 0.2,
+      "n_bets": 313,
+      "roi": 0.024846645367412098
+    },
+    {
+      "accuracy": 0.5394736842105263,
+      "edge_threshold": 2.0,
+      "min_confidence": 0.4,
+      "n_bets": 76,
+      "roi": 0.058605263157894744
+    }
+  ]
+}

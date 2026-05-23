@@ -1,0 +1,363 @@
+{
+  "api_requests": 72,
+  "api_version": "v4",
+  "bookmaker": "pinnacle",
+  "generated_at": "2026-05-22T22:59:25.900357+00:00",
+  "loaded_bigquery": true,
+  "matched_rows": 22,
+  "output": "data-core/notebooks/cache/nba_oddspapi_spreads_2026_tail.csv",
+  "quota_remaining": null,
+  "requested_games": 50,
+  "results": [
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-21",
+      "game_id": "401873342",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-20",
+      "game_id": "401873198",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-19",
+      "game_id": "401873341",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-18",
+      "game_id": "401873197",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-17",
+      "game_id": "401871339",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-15",
+      "game_id": "401871157",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270504996",
+      "game_date": "2026-05-15",
+      "game_id": "401871338",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-13",
+      "game_id": "401871337",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-12",
+      "game_id": "401871156",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-11",
+      "game_id": "401871336",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-11",
+      "game_id": "401871329",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270504948",
+      "game_date": "2026-05-10",
+      "game_id": "401871155",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270504980",
+      "game_date": "2026-05-10",
+      "game_id": "401871162",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-09",
+      "game_id": "401871328",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505002",
+      "game_date": "2026-05-09",
+      "game_id": "401871335",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-08",
+      "game_id": "401871154",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270504986",
+      "game_date": "2026-05-08",
+      "game_id": "401871161",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-07",
+      "game_id": "401871327",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270504994",
+      "game_date": "2026-05-07",
+      "game_id": "401871334",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270504978",
+      "game_date": "2026-05-06",
+      "game_id": "401871160",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-06",
+      "game_id": "401871153",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505000",
+      "game_date": "2026-05-05",
+      "game_id": "401871333",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-05",
+      "game_id": "401871326",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-04",
+      "game_id": "401871152",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-04",
+      "game_id": "401871159",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505100",
+      "game_date": "2026-05-03",
+      "game_id": "401869384",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505116",
+      "game_date": "2026-05-03",
+      "game_id": "401869418",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505084",
+      "game_date": "2026-05-02",
+      "game_id": "401869412",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505110",
+      "game_date": "2026-05-01",
+      "game_id": "401869417",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505092",
+      "game_date": "2026-05-01",
+      "game_id": "401869381",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-05-01",
+      "game_id": "401869409",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-30",
+      "game_id": "401869402",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-30",
+      "game_id": "401869410",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505062",
+      "game_date": "2026-04-30",
+      "game_id": "401869393",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-29",
+      "game_id": "401869407",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505090",
+      "game_date": "2026-04-29",
+      "game_id": "401869380",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505106",
+      "game_date": "2026-04-29",
+      "game_id": "401869416",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-28",
+      "game_id": "401869392",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505072",
+      "game_date": "2026-04-28",
+      "game_id": "401869408",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-28",
+      "game_id": "401869386",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-27",
+      "game_id": "401869373",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-27",
+      "game_id": "401869415",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-27",
+      "game_id": "401869401",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-26",
+      "game_id": "401869405",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505078",
+      "game_date": "2026-04-26",
+      "game_id": "401869406",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505140",
+      "game_date": "2026-04-26",
+      "game_id": "401869385",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505094",
+      "game_date": "2026-04-26",
+      "game_id": "401869377",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": null,
+      "game_date": "2026-04-25",
+      "game_id": "401869399",
+      "matched": false
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505060",
+      "game_date": "2026-04-25",
+      "game_id": "401869391",
+      "matched": true
+    },
+    {
+      "error": null,
+      "fixture_id": "id1100013270505178",
+      "game_date": "2026-04-25",
+      "game_id": "401869370",
+      "matched": true
+    }
+  ]
+}

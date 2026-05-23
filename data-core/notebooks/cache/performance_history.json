@@ -1,0 +1,195 @@
+{
+  "generated_at": "2026-05-22T23:51:21.122191+00:00",
+  "oddspapi": {
+    "api_version": "v4",
+    "cumulative_api_requests": 241,
+    "validation_match_rate": 1.0,
+    "validation_status": "pass"
+  },
+  "sports": [
+    {
+      "artifact_refs": [
+        "docs/analysis/nba_performance_2026-05-21.md",
+        "notebooks/nba_ats_roi.ipynb",
+        "scripts/backtest_nba_spread.py"
+      ],
+      "data_source": "BigQuery backtest + Supabase ATS",
+      "gaps": [
+        "raw_nba_odds stale before OddsPapi tail patch for Feb-May 2026",
+        "Supabase season still has historical rows missing book_spread"
+      ],
+      "market": "spread",
+      "metrics": {
+        "best_reported_sweep_roi": 0.08262499999999998,
+        "bigquery_best_sweep_bets": 112,
+        "bigquery_best_sweep_edge_threshold": 0.5,
+        "bigquery_best_sweep_min_confidence": 0.4,
+        "bigquery_default_accuracy": 0.5093062605752962,
+        "bigquery_default_bets": 591,
+        "bigquery_default_roi": -0.005489001692047425,
+        "bigquery_default_wins": 301,
+        "supabase_ats_losses": 33,
+        "supabase_ats_pushes": 0,
+        "supabase_ats_roi": -0.07528409090909094,
+        "supabase_ats_wins": 31
+      },
+      "model_version": "v3",
+      "odds_status": "oddspapi_tail_patch_partial",
+      "sample": {
+        "completed_games": 1175,
+        "odds_joined_games": 739,
+        "odds_rows": 789,
+        "oddspapi_tail_rows": 22,
+        "supabase_graded_games": 64
+      },
+      "season": "2025-26",
+      "sport": "NBA"
+    },
+    {
+      "artifact_refs": [
+        "docs/analysis/nfl_performance_2026-05-21.md",
+        "notebooks/nfl_ats_roi.ipynb",
+        "notebooks/cache/nfl_backtest_2025_v1_metrics.json",
+        "notebooks/cache/nfl_oddspapi_spreads_2025.csv",
+        "scripts/backfill_oddspapi_nfl_spreads.py",
+        "scripts/export_nfl_backtest_history.py"
+      ],
+      "data_source": "Supabase ATS",
+      "gaps": [
+        "OddsPapi historical NFL coverage is recent-fixture limited on this key tier",
+        "Supabase has stale v1/v2/v3 version mix",
+        "Available ATS sample is not full season"
+      ],
+      "market": "spread",
+      "metrics": {
+        "bigquery_accuracy": 0.5368421052631579,
+        "bigquery_auc": 0.5789721013058964,
+        "bigquery_brier": 0.26484671177938107,
+        "bigquery_log_loss": 0.7315039688544586,
+        "bigquery_spread_mae": 11.148356792670684,
+        "supabase_ats_losses": 29,
+        "supabase_ats_pushes": 0,
+        "supabase_ats_roi": -0.07954545454545459,
+        "supabase_ats_wins": 27
+      },
+      "model_version": "v1",
+      "odds_status": "partial_supabase_spread_odds",
+      "sample": {
+        "bigquery_scored_games": 285,
+        "odds_joined_games": 56,
+        "oddspapi_spread_rows": 0,
+        "supabase_graded_games": 56
+      },
+      "season": "2025",
+      "sport": "NFL"
+    },
+    {
+      "artifact_refs": [
+        "docs/analysis/mlb_performance_2026-05-21.md",
+        "notebooks/mlb_model_training_backtest.ipynb",
+        "notebooks/mlb_moneyline_roi.ipynb",
+        "models/mlb_winner_model_v3.pkl",
+        "scripts/backtest_mlb_winners.py",
+        "scripts/backfill_oddspapi_moneylines.py",
+        "notebooks/cache/mlb_oddspapi_moneylines_2026_ytd.csv"
+      ],
+      "data_source": "MLB Stats API feature store; historical odds probe",
+      "gaps": [
+        "OddsPapi historical MLB coverage is recent-window limited on this key tier",
+        "Full-season 2025 moneyline archive still requires additional quota/resume runs"
+      ],
+      "market": "moneyline",
+      "metrics": {
+        "accuracy": 0.537890044576523,
+        "actual_home_win_rate": 0.5215453194650818,
+        "avg_pred_home_win": 0.531974395269179,
+        "baseline_brier": 0.24965579491499104,
+        "baseline_log_loss": 0.6924592909581578,
+        "benchmark_2025_brier": 0.2461084615572133,
+        "benchmark_2025_log_loss": 0.6851947942464901,
+        "brier": 0.24784825260406979,
+        "ece_10": 0.012030444239079183,
+        "flat_roi": 0.03446884518206775,
+        "log_loss": 0.6887680655909832,
+        "roc_auc": 0.5430889561324344
+      },
+      "model_version": "v3",
+      "odds_status": "oddspapi_moneyline_partial",
+      "sample": {
+        "benchmark_2025_test_games": 2350,
+        "feature_rows": 12427,
+        "odds_joined_games": 69,
+        "test_games": 673
+      },
+      "season": "2026 YTD",
+      "sport": "MLB"
+    },
+    {
+      "artifact_refs": [
+        "docs/analysis/pga_performance_2026-05-21.md",
+        "notebooks/pga_model_evaluation.ipynb",
+        "notebooks/cache/pga_odds_masters_20260409.csv"
+      ],
+      "data_source": "PGA feature store and Masters prediction cache",
+      "gaps": [
+        "No historical event-by-event sportsbook odds ROI history",
+        "Player name normalization limits post-mortems",
+        "ESPN ingest misses no-board/same-week collision events"
+      ],
+      "market": "outright/top placement",
+      "metrics": {
+        "made_cut_brier": 0.2,
+        "masters_winner_rank_sim_win": 9,
+        "sg_lgbm_mae": 1.488,
+        "sg_lgbm_rmse": 2.406,
+        "sg_lgbm_spearman": 0.391,
+        "top10_brier": 0.113,
+        "top20_brier": 0.157,
+        "win_auc": 0.756,
+        "win_brier": 0.0058
+      },
+      "model_version": "v2 artifacts evaluated on refreshed store",
+      "odds_status": "masters_2026_pre_event_odds_cache_only",
+      "sample": {
+        "feature_store_rows": 175743,
+        "masters_exact_name_join_rows": 39,
+        "test_rows_regression": 15172
+      },
+      "season": "test >= 2025",
+      "sport": "PGA"
+    },
+    {
+      "artifact_refs": [
+        "docs/analysis/cbb_performance_2026-05-21.md",
+        "notebooks/cbb_march_madness.ipynb",
+        "notebooks/cache/cbb_expanding_cv_2016_2025.json",
+        "scripts/export_cbb_cv_history.py"
+      ],
+      "data_source": "Cached Kaggle MMLM-derived matchup feature store",
+      "gaps": [
+        "Raw Kaggle MMLM files are absent from the repo",
+        "2026 tournament labels are not present in the matchup feature store",
+        "No sportsbook odds or ROI history is available"
+      ],
+      "market": "tournament winner probability",
+      "metrics": {
+        "accuracy": 0.6825971154329363,
+        "auc": 0.7580721415195585,
+        "best_by_mean_log_loss": "xgb",
+        "brier": 0.19794510829144085,
+        "ece": 0.0714010660920789,
+        "log_loss": 0.5751342594824495
+      },
+      "model_version": "manual matchup artifacts",
+      "odds_status": "no_sportsbook_odds",
+      "sample": {
+        "feature_rows": 2002,
+        "folds": 9,
+        "validation_end": 2025,
+        "validation_start": 2016
+      },
+      "season": "CV 2016-2025",
+      "sport": "CBB"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "api_requests": 0,
+  "api_version": "v4",
+  "bookmaker": "pinnacle",
+  "generated_at": "2026-05-22T23:50:00+00:00",
+  "matched_rows": 0,
+  "notes": [
+    "OddsPapi quota/rate limit was exhausted during the initial 285-game pull.",
+    "Resume with: PYTHONPATH=data-core python3 data-core/scripts/backfill_oddspapi_nfl_spreads.py --limit-games 285 --resume",
+    "Historical NFL spreads are available for recent fixtures such as Super Bowl 2026-02-08 on this key tier."
+  ],
+  "output": "data-core/notebooks/cache/nfl_oddspapi_spreads_2025.csv",
+  "requested_games": 285,
+  "results": [],
+  "status": "quota_blocked_initial_run"
+}

@@ -373,7 +373,6 @@ def patch_missing_book_spreads_from_bq(conn, predictions: pd.DataFrame, game_id_
               AND book_spread IS NULL
             """,
             updates,
-            prepare=False,
         )
         patched = cur.rowcount
     conn.commit()

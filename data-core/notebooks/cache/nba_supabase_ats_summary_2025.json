@@ -1,0 +1,83 @@
+{
+  "ats_pct": 0.484375,
+  "date_max": "2026-05-21",
+  "date_min": "2026-04-20",
+  "edge_buckets": [
+    {
+      "ats_pct": 0.75,
+      "avg_cover_margin": 5.472111585537791,
+      "avg_edge": -0.27788841446220736,
+      "edge_bucket": "<1",
+      "games": 4,
+      "losses": 1,
+      "pushes": 0,
+      "risked_games": 4,
+      "roi": 0.43181818181818177,
+      "wins": 3
+    },
+    {
+      "ats_pct": 0.3333333333333333,
+      "avg_cover_margin": -6.769265217856625,
+      "avg_edge": 0.39740144881004164,
+      "edge_bucket": "1-2",
+      "games": 6,
+      "losses": 4,
+      "pushes": 0,
+      "risked_games": 6,
+      "roi": -0.3636363636363636,
+      "wins": 2
+    },
+    {
+      "ats_pct": 0.5,
+      "avg_cover_margin": -11.344311095077735,
+      "avg_edge": -2.344311095077735,
+      "edge_bucket": "2-3",
+      "games": 2,
+      "losses": 1,
+      "pushes": 0,
+      "risked_games": 2,
+      "roi": -0.04545454545454547,
+      "wins": 1
+    },
+    {
+      "ats_pct": 0.3076923076923077,
+      "avg_cover_margin": -3.8779885500277875,
+      "avg_edge": 0.9297037576645202,
+      "edge_bucket": "3-5",
+      "games": 13,
+      "losses": 9,
+      "pushes": 0,
+      "risked_games": 13,
+      "roi": -0.41258741258741255,
+      "wins": 4
+    },
+    {
+      "ats_pct": 0.6,
+      "avg_cover_margin": 2.7340318576051628,
+      "avg_edge": -2.49930147572817,
+      "edge_bucket": "5+",
+      "games": 30,
+      "losses": 12,
+      "pushes": 0,
+      "risked_games": 30,
+      "roi": 0.14545454545454545,
+      "wins": 18
+    }
+  ],
+  "flat_roi_at_minus_110": -0.07528409090909094,
+  "games_output": "data-core/notebooks/cache/nba_supabase_ats_games_2025.csv",
+  "games_rows": 64,
+  "generated_at": "2026-05-22T23:00:04.795278+00:00",
+  "graded_games": 64,
+  "joined_rows": 64,
+  "latest_asof_ts": "2026-05-21 16:44:33.790153+00:00",
+  "latest_prediction_rows": 64,
+  "league": "NBA",
+  "losses": 33,
+  "missing_book_spread": 9,
+  "net_units_at_minus_110": -4.81818181818182,
+  "prediction_rows": 69,
+  "pushes": 0,
+  "season": 2025,
+  "wins": 31
+}
