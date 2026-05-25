@@ -10,7 +10,7 @@ ignored unless they are promoted through `data-core/docs/MODEL_VERSIONS.md`.
 | --- | --- | --- |
 | NBA daily pipeline | `win_prob_model_nba_v3.pkl`, `spread_model_nba_v3.pkl`, `link_function_nba_v3.pkl`, `feature_medians_nba_v3.pkl`, `meta_ensemble_nba_v3.pkl` | Active daily workflow version |
 | NFL daily pipeline | `win_prob_model_nfl_v1.pkl`, `spread_model_nfl_v1.pkl`, `link_function_nfl_v1.pkl`, `feature_medians_nfl_v1.pkl` | Active daily workflow version |
-| MLB probability display | `mlb_winner_model_v3.pkl`, `mlb_winner_model_v3_metrics.json` | Active probability-only daily workflow version, not a betting surface |
+| MLB probability display | `mlb_winner_model_v3.pkl`, `mlb_winner_model_v3_metrics.json` | Active probability-only daily workflow version, not a betting surface. Requires `scikit-learn==1.6.1` at inference time. |
 
 ## Ignored Or Removed Artifacts
 

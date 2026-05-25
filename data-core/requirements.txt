@@ -2,7 +2,8 @@ nba_api>=1.2.1
 requests>=2.31.0
 pandas>=2.0.0
 numpy>=1.24.0
-scikit-learn>=1.3.0
+# Pin to the version used to train committed sklearn artifacts (MLB v3, NBA/NFL pickles).
+scikit-learn==1.6.1
 lightgbm>=4.0.0
 python-dotenv>=1.0.0
 supabase>=2.0.0

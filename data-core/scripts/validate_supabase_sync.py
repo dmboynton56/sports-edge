@@ -147,6 +147,29 @@ def main() -> None:
                 league_key = str(league).lower()
                 report[f"{league_key}_book_spread_window_games"] = int(games)
                 report[f"{league_key}_missing_book_spread"] = int(missing_book_spread)
+
+            cur.execute(
+                """
+                SELECT COUNT(*)
+                FROM games
+                WHERE league = 'MLB'
+                  AND game_time_utc::date >= CURRENT_DATE - 1
+                  AND game_time_utc::date <= CURRENT_DATE + 9
+                """
+            )
+            report["mlb_window_games"] = int(cur.fetchone()[0])
+
+            cur.execute(
+                """
+                SELECT COUNT(*)
+                FROM model_predictions p
+                JOIN games g ON g.id = p.game_id
+                WHERE g.league = 'MLB'
+                  AND p.asof_ts >= NOW() - (%s || ' hours')::interval
+                """,
+                (args.prediction_hours,),
+            )
+            report["mlb_recent_predictions"] = int(cur.fetchone()[0])
     finally:
         conn.close()
 
@@ -167,6 +190,8 @@ def main() -> None:
             failures.append(
                 f"Found {report['orphan_predictions']} orphan predictions (max {args.max_orphans})."
             )
+        if report.get("mlb_recent_predictions", 0) <= 0:
+            failures.append("No recent MLB model_predictions rows found.")
         if failures:
             for failure in failures:
                 LOGGER.error(failure)
