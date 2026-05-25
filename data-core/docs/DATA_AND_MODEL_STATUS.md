@@ -90,6 +90,8 @@ Known ESPN gaps from the refresh: The Sentry had no board; same-week collision s
 | Backtest outputs | `notebooks/cache/mlb_backtest_predictions_2025.csv`, `notebooks/cache/mlb_backtest_metrics_2025.json`, `notebooks/cache/mlb_backtest_predictions_2026_ytd.csv`, and `notebooks/cache/mlb_backtest_metrics_2026_ytd.json`; no odds rows yet |
 | Historical odds probe | `notebooks/cache/mlb_moneylines_historical_audit.json`; `HISTORICAL_UNAVAILABLE_ON_FREE_USAGE_PLAN` from The Odds API |
 | Serving smoke test | `predict_mlb_winners.py --date 2026-05-21 --include-final --model-path models/mlb_winner_model_v3.pkl` scored 7 games with probable pitchers and wrote `notebooks/cache/mlb_predictions_2026-05-21_v3.csv` |
+| Daily serving path | `python -m src.pipeline.refresh_mlb --project "$PROJECT_ID" --model-version v3` writes MLB `raw_schedules`, minimal `feature_snapshots`, and probability-only `model_predictions`; Supabase sync uses `sync_bq_to_supabase.py --league MLB --append` |
+| Local dry run | `refresh_mlb --date 2026-05-24 --lookback-days 1 --lookahead-days 1 --dry-run` scored 43 MLB games for 2026-05-23 through 2026-05-25 |
 | MLB notebooks | `mlb_data_audit.ipynb`, `mlb_model_training_backtest.ipynb`, `mlb_moneyline_roi.ipynb`, `sports_model_performance_hub.ipynb` |
 
 ## Gap Table
@@ -109,4 +111,5 @@ Known ESPN gaps from the refresh: The Sentry had no board; same-week collision s
 | MLB | Full boxscore enrichment is only smoke-tested for 25/12,898 games | Medium | Run `backfill_mlb_raw.py --fetch-boxscores` without `--limit-boxscores`; then rebuild feature store |
 | MLB | v3 winner model has rolling team, probable starter, and venue features, but no bullpen availability, lineup, injury, weather, or market features | Medium | Add the missing pregame inputs incrementally and require held-out Brier/log-loss lift |
 | MLB | OddsPapi moneyline archive covers recent 2026 window only (69 games) | Medium | Resume `backfill_oddspapi_moneylines.py` across quota windows for full-season ROI |
+| MLB | Daily serving path is probability-only and has not yet been confirmed by a completed GitHub Actions run | Medium | Verify the next daily refresh writes MLB BigQuery and Supabase rows before treating the live portfolio tab as fully populated |
 | NBA | `raw_nba_odds` Feb–Apr 2026 gap remains after OddsPapi May tail patch (+22 rows) | High | Continue OddsPapi spread backfill as historical coverage/quota allows |

@@ -59,7 +59,7 @@ def fetch_final_scores(
             home_score,
             away_score
         FROM `{project}.sports_edge_raw.raw_schedules`
-        WHERE league IN ('NFL', 'NBA')
+        WHERE league IN ('NFL', 'NBA', 'MLB')
           AND DATE(game_date) BETWEEN @start_date AND @end_date
           AND home_score IS NOT NULL
           AND away_score IS NOT NULL

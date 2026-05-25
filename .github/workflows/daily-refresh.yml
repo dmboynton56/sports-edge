@@ -128,6 +128,11 @@ jobs:
           # NFL weekly refresh logic can stay here, or run daily to catch line movements
           python -m src.pipeline.refresh_nfl --project "$PROJECT_ID" --model-version v1
 
+      - name: Generate MLB Predictions
+        shell: bash
+        run: |
+          python -m src.pipeline.refresh_mlb --project "$PROJECT_ID" --model-version v3
+
       - name: Sync Predictions to Supabase
         if: ${{ env.DRY_RUN != 'true' }}
         shell: bash
@@ -142,6 +147,7 @@ jobs:
         run: |
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
+          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --append
 
       - name: Sync Market Odds
         if: ${{ env.DRY_RUN != 'true' }}

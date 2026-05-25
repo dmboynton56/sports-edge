@@ -50,7 +50,7 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--league",
-        choices=["NFL", "NBA"],
+        choices=["NFL", "NBA", "MLB"],
         default="NFL",
         help="League to sync (default: NFL).",
     )
@@ -175,8 +175,36 @@ def fetch_latest_predictions(
         ) AS o
           ON p.game_id = o.game_id AND o.rn = 1
         """
+    elif league.upper() == "MLB":
+        odds_join = "CROSS JOIN (SELECT CAST(NULL AS FLOAT64) AS book_spread) AS o"
     else:
         odds_join = "CROSS JOIN (SELECT CAST(NULL AS FLOAT64) AS book_spread) AS o"
+
+    raw_join = ""
+    raw_select = """
+            CAST(NULL AS TIMESTAMP) AS game_time_utc,
+            CAST(NULL AS STRING) AS home_probable_pitcher,
+            CAST(NULL AS STRING) AS away_probable_pitcher,
+    """
+    if league.upper() == "MLB":
+        raw_join = f"""
+        LEFT JOIN (
+            SELECT
+                r.game_id,
+                TIMESTAMP(JSON_VALUE(r.raw_record, '$.game_datetime')) AS game_time_utc,
+                JSON_VALUE(r.raw_record, '$.home_probable_pitcher') AS home_probable_pitcher,
+                JSON_VALUE(r.raw_record, '$.away_probable_pitcher') AS away_probable_pitcher,
+                ROW_NUMBER() OVER (PARTITION BY r.game_id ORDER BY r.game_date DESC) AS rn
+            FROM `{project}.sports_edge_raw.raw_schedules` AS r
+            WHERE r.league = @league
+        ) AS r
+          ON p.game_id = r.game_id AND r.rn = 1
+        """
+        raw_select = """
+            r.game_time_utc,
+            r.home_probable_pitcher,
+            r.away_probable_pitcher,
+        """
 
     query = f"""
         WITH latest_preds AS (
@@ -213,6 +241,7 @@ def fetch_latest_predictions(
             f.week_number,
             f.home_team,
             f.away_team,
+            {raw_select}
             p.model_version,
             p.predicted_spread,
             p.home_win_prob,
@@ -221,6 +250,7 @@ def fetch_latest_predictions(
         FROM latest_preds AS p
         JOIN latest_features AS f
           ON p.game_id = f.game_id
+        {raw_join}
         {odds_join}
         WHERE p.rn = 1
           AND f.rn = 1
@@ -279,12 +309,26 @@ def fetch_latest_predictions(
 def _prepare_games(preds: pd.DataFrame) -> pd.DataFrame:
     """Deduplicate games and coerce week/time columns before upserting."""
     games = (
-        preds[["league", "season", "home_team", "away_team", "game_date", "season_week", "book_spread"]]
+        preds[
+            [
+                "league",
+                "season",
+                "home_team",
+                "away_team",
+                "game_date",
+                "season_week",
+                "book_spread",
+                "game_time_utc",
+                "home_probable_pitcher",
+                "away_probable_pitcher",
+            ]
+        ]
         .drop_duplicates(subset=["league", "season", "home_team", "away_team", "game_date"])
         .rename(columns={"season_week": "week"})
     )
     games["week"] = games["week"].astype("Int64")
-    games["game_time_utc"] = pd.to_datetime(games["game_date"], utc=True)
+    game_time = pd.to_datetime(games["game_time_utc"], utc=True, errors="coerce")
+    games["game_time_utc"] = game_time.fillna(pd.to_datetime(games["game_date"], utc=True))
     LOGGER.debug("Prepared %d unique games for upsert (including book_spread).", len(games))
     return games
 
@@ -414,19 +458,16 @@ def send_discord_alerts(preds: pd.DataFrame, league: str) -> None:
             # Confidence is absolute distance from 50% * 2
             confidence = abs(prob - 0.5) * 2
             
-            # Formatting spread (standard notation: negative for favorite)
-            # In our data, predicted_spread is home_margin (positive = home win)
-            # So negative home_margin means away is favorite. 
-            # Standard spread = -predicted_spread
-            display_spread = spread if spread is not None else 0
-            spread_sign = "-" if display_spread <= 0 else "+"
-            spread_val = abs(display_spread)
-            
             line = (
                 f"{home} vs {away}:\n"
                 f"Win prob: **{winner} {prob:.1%}** ({confidence:.0%} confidence)\n"
-                f"**{home} {spread_sign}{spread_val:.1f}**\n"
             )
+            if league.upper() != "MLB" and pd.notna(spread):
+                # In our data, predicted_spread is home_margin (positive = home win).
+                display_spread = float(spread)
+                spread_sign = "-" if display_spread <= 0 else "+"
+                spread_val = abs(display_spread)
+                line += f"**{home} {spread_sign}{spread_val:.1f}**\n"
             message_lines.append(line)
 
         full_message = "\n".join(message_lines)

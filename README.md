@@ -8,9 +8,9 @@ model predictions, and historical analysis. Supabase is the serving cache that
 the portfolio and dashboard read.
 
 The public story is still a work in progress: NBA daily predictions are the
-most active surface, NFL has completed 2025 season coverage, and PGA/CBB/MLB
-research remains useful but is not all promoted to recruiter-facing production
-claims.
+most active spread surface, NFL has completed 2025 season coverage, MLB v3 is
+promoted as a probability-only display, and PGA/CBB research remains useful but
+is not all promoted to recruiter-facing production claims.
 
 ## Current Production Flow
 
@@ -40,6 +40,7 @@ Current scheduled model versions:
 
 - NBA: `refresh_nba --model-version v3`
 - NFL: `refresh_nfl --model-version v1`
+- MLB: `refresh_mlb --model-version v3` for home-win probability display only
 
 ## Repository Layout
 
@@ -49,7 +50,7 @@ data-core/
     data/              league/API fetchers and loaders
     features/          feature builders
     models/            model code
-    pipeline/          NBA/NFL refresh entry points
+    pipeline/          NBA/NFL/MLB refresh entry points
     utils/             shared DB/env helpers
   scripts/             backfills, syncs, validation, exports
   models/              intentionally versioned model artifacts
@@ -103,7 +104,11 @@ python scripts/validate_supabase_sync.py --strict
 ```
 
 NFL uses the same pattern with `--league NFL` and `refresh_nfl --model-version
-v1`.
+v1`. MLB uses `python -m src.pipeline.refresh_mlb --project "$GCP_PROJECT_ID"
+--model-version v3` followed by `sync_bq_to_supabase.py --league MLB --append`.
+MLB rows intentionally set `predicted_spread`/`book_spread` to null; the
+portfolio displays only model home-win probabilities, probable pitchers, final
+scores, and winner-hit status.
 
 ## Data Contracts
 
@@ -134,6 +139,10 @@ rows. NBA `v3` had 464 current prediction rows with latest
 `prediction_ts=2026-02-09T14:37:51Z`. Supabase public serving counts were
 586 `games`, 711 `model_predictions`, and 98 `odds_snapshots`.
 
+MLB serving was added after that verification. Before claiming the live surface
+is fully populated, confirm the next daily workflow writes MLB rows through
+BigQuery and Supabase.
+
 ## Tests
 
 ```bash
@@ -160,5 +169,5 @@ machine-specific execution plans were removed to keep the repo focused.
   at the same active artifact per league.
 - Separate reproducible evidence artifacts from notebook scratch caches.
 - Finish a unified cross-league performance board for NBA/NFL/PGA/CBB.
-- Decide whether MLB remains research-only or becomes a labeled probability
-  surface.
+- Add moneyline odds and ROI only after MLB v3 is evaluated against a stable
+  market source.

@@ -12,7 +12,7 @@ Cross-sport measured performance is summarized in `docs/PERFORMANCE_HISTORY.md`.
 | NFL | `python -m src.pipeline.refresh_nfl --project "$PROJECT_ID" --model-version v1` | `v1` | Supabase also contains stale v2/v3 rows |
 | PGA | Manual `train_models_v2` / prediction scripts | local regenerated artifacts | Not promoted to daily workflow |
 | CBB | Manual matchup trainer | local regenerated artifacts | CV run used temp model dir to avoid overwriting artifacts |
-| MLB | Manual `scripts/train_mlb_winner_model.py`; score via `scripts/predict_mlb_winners.py` | `v3` ship candidate | Not in daily workflow; trained through 2025 and evaluated on 2026 YTD |
+| MLB | `python -m src.pipeline.refresh_mlb --project "$PROJECT_ID" --model-version v3` | `v3` probability display | Daily workflow writes home-win probabilities only; trained through 2025 and evaluated on 2026 YTD |
 
 ## Committed Runtime Artifacts
 
@@ -20,7 +20,7 @@ NBA artifacts retained in `data-core/models`: `win_prob_model_nba_v3.pkl`, `spre
 
 NFL artifacts retained in `data-core/models`: `win_prob_model_nfl_v1.pkl`, `spread_model_nfl_v1.pkl`, `link_function_nfl_v1.pkl`, and `feature_medians_nfl_v1.pkl`. Daily CI uses NFL `v1`. Full-season 2025 model-vs-results export for v1: 285 games, Brier 0.2648, log loss 0.7315, AUC 0.5790, spread MAE 11.15; no BigQuery odds-backed ROI.
 
-MLB artifacts retained in `data-core/models`: `mlb_winner_model_v3.pkl` and `mlb_winner_model_v3_metrics.json`. The v3 model is a random forest selected by 2025 validation Brier and refit on 2021-2025 before testing on 2026 YTD. It is a ship candidate for probability display, not for betting/ROI recommendations.
+MLB artifacts retained in `data-core/models`: `mlb_winner_model_v3.pkl` and `mlb_winner_model_v3_metrics.json`. The v3 model is a random forest selected by 2025 validation Brier and refit on 2021-2025 before testing on 2026 YTD. It is promoted only for probability display, not for betting/ROI recommendations.
 
 See `data-core/models/README.md` for the retained artifact registry.
 
@@ -46,4 +46,4 @@ Promote a new version only when:
 
 No NBA/NFL retrain was promoted in this pass. PGA retrain remains pending because the refreshed feature store changed materially and needs a controlled v2/v3 experiment first.
 
-MLB v3 may be promoted only to a clearly labeled probability surface after a serving dry run because it now has a prediction CLI and reproducible artifact. It should not be promoted to betting/ROI surfaces until it is compared against moneyline markets. Its 2026 YTD test edge over the home-rate baseline is modest: Brier 0.2478 vs 0.2497 and log loss 0.6888 vs 0.6925.
+MLB v3 is promoted only to a clearly labeled probability surface. It should not be promoted to betting/ROI surfaces until it is compared against moneyline markets. Its 2026 YTD test edge over the home-rate baseline is modest: Brier 0.2478 vs 0.2497 and log loss 0.6888 vs 0.6925.

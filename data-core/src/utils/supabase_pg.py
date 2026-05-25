@@ -43,6 +43,20 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
         return val
 
     with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_schema = 'public'
+              AND table_name = 'games'
+            """
+        )
+        game_columns = {row[0] for row in cur.fetchall()}
+        has_pitcher_columns = {
+            "home_probable_pitcher",
+            "away_probable_pitcher",
+        }.issubset(game_columns)
+
         for _, row in games_df.iterrows():
             # Check if game exists
             cur.execute(
@@ -53,15 +67,68 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
             
             if res:
                 game_id = res[0]
-                cur.execute(
-                    "UPDATE games SET season = %s, week = %s, book_spread = COALESCE(%s, book_spread) WHERE id = %s",
-                    (_clean(row["season"]), _clean(row.get("week")), _clean(row.get("book_spread")), game_id)
-                )
+                if has_pitcher_columns:
+                    cur.execute(
+                        """
+                        UPDATE games
+                        SET season = %s,
+                            week = %s,
+                            game_time_utc = %s,
+                            book_spread = COALESCE(%s, book_spread),
+                            home_probable_pitcher = COALESCE(%s, home_probable_pitcher),
+                            away_probable_pitcher = COALESCE(%s, away_probable_pitcher)
+                        WHERE id = %s
+                        """,
+                        (
+                            _clean(row["season"]),
+                            _clean(row.get("week")),
+                            _clean(row["game_time_utc"]),
+                            _clean(row.get("book_spread")),
+                            _clean(row.get("home_probable_pitcher")),
+                            _clean(row.get("away_probable_pitcher")),
+                            game_id,
+                        )
+                    )
+                else:
+                    cur.execute(
+                        "UPDATE games SET season = %s, week = %s, book_spread = COALESCE(%s, book_spread) WHERE id = %s",
+                        (_clean(row["season"]), _clean(row.get("week")), _clean(row.get("book_spread")), game_id)
+                    )
             else:
-                cur.execute(
-                    "INSERT INTO games (league, season, week, home_team, away_team, game_time_utc, book_spread) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
-                    (_clean(row["league"]), _clean(row["season"]), _clean(row.get("week")), _clean(row["home_team"]), _clean(row["away_team"]), _clean(row["game_time_utc"]), _clean(row.get("book_spread")))
-                )
+                if has_pitcher_columns:
+                    cur.execute(
+                        """
+                        INSERT INTO games (
+                            league,
+                            season,
+                            week,
+                            home_team,
+                            away_team,
+                            game_time_utc,
+                            book_spread,
+                            home_probable_pitcher,
+                            away_probable_pitcher
+                        )
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                        """,
+                        (
+                            _clean(row["league"]),
+                            _clean(row["season"]),
+                            _clean(row.get("week")),
+                            _clean(row["home_team"]),
+                            _clean(row["away_team"]),
+                            _clean(row["game_time_utc"]),
+                            _clean(row.get("book_spread")),
+                            _clean(row.get("home_probable_pitcher")),
+                            _clean(row.get("away_probable_pitcher")),
+                        )
+                    )
+                else:
+                    cur.execute(
+                        "INSERT INTO games (league, season, week, home_team, away_team, game_time_utc, book_spread) VALUES (%s, %s, %s, %s, %s, %s, %s) RETURNING id",
+                        (_clean(row["league"]), _clean(row["season"]), _clean(row.get("week")), _clean(row["home_team"]), _clean(row["away_team"]), _clean(row["game_time_utc"]), _clean(row.get("book_spread")))
+                    )
                 game_id = cur.fetchone()[0]
             
             key = game_map_key(row["home_team"], row["away_team"], row["game_time_utc"])
