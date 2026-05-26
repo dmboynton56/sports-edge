@@ -393,6 +393,30 @@ def insert_predictions_from_bq(
     return inserted, skipped
 
 
+def purge_mlb_predictions_outside_window(
+    conn,
+    *,
+    start_date: date,
+    end_date: date,
+) -> int:
+    """Drop MLB predictions for games outside the daily serving window."""
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            DELETE FROM model_predictions AS p
+            USING games AS g
+            WHERE p.game_id = g.id
+              AND g.league = 'MLB'
+              AND g.game_time_utc::date NOT BETWEEN %s AND %s
+            """,
+            (start_date, end_date),
+            prepare=False,
+        )
+        removed = cur.rowcount
+    conn.commit()
+    return max(removed, 0)
+
+
 def patch_missing_book_spreads_from_bq(conn, predictions: pd.DataFrame, game_id_map: dict) -> int:
     """Fill Supabase games.book_spread from BQ odds-derived prediction rows when still NULL."""
     if "book_spread" not in predictions.columns:
@@ -563,6 +587,19 @@ def main() -> None:
             skipped,
             not args.append,
         )
+
+        if args.league.upper() == "MLB" and start_date and end_date:
+            removed = purge_mlb_predictions_outside_window(
+                conn,
+                start_date=start_date,
+                end_date=end_date,
+            )
+            LOGGER.info(
+                "Purged %d MLB predictions outside %s to %s",
+                removed,
+                start_date,
+                end_date,
+            )
         
         # Send Discord alerts for the predictions we just synced
         if inserted > 0:

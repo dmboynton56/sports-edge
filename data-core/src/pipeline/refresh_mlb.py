@@ -100,8 +100,8 @@ def _parse_args() -> argparse.Namespace:
         help="Anchor date in YYYY-MM-DD. Default: today UTC.",
     )
     parser.add_argument("--season", type=int, default=None, help="MLB season override.")
-    parser.add_argument("--lookback-days", type=int, default=1, help="Days before anchor date to score.")
-    parser.add_argument("--lookahead-days", type=int, default=9, help="Days after anchor date to score.")
+    parser.add_argument("--lookback-days", type=int, default=0, help="Days before anchor date to score.")
+    parser.add_argument("--lookahead-days", type=int, default=0, help="Days after anchor date to score.")
     parser.add_argument("--min-prior-games", type=int, default=5)
     parser.add_argument("--dry-run", action="store_true", help="Compute but do not write BigQuery rows.")
     return parser.parse_args()

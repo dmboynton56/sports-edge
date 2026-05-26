@@ -131,7 +131,11 @@ jobs:
       - name: Generate MLB Predictions
         shell: bash
         run: |
-          python -m src.pipeline.refresh_mlb --project "$PROJECT_ID" --model-version v3
+          python -m src.pipeline.refresh_mlb \
+            --project "$PROJECT_ID" \
+            --model-version v3 \
+            --lookback-days 0 \
+            --lookahead-days 0
 
       - name: Sync Predictions to Supabase
         if: ${{ env.DRY_RUN != 'true' }}
@@ -147,7 +151,7 @@ jobs:
         run: |
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
           python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
-          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --append
+          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --window-days 0
 
       - name: Sync Market Odds
         if: ${{ env.DRY_RUN != 'true' }}
