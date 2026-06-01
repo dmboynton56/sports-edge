@@ -99,7 +99,7 @@ python scripts/backfill_nba_raw.py --project "$GCP_PROJECT_ID" --seasons 2025 --
 python scripts/build_feature_snapshots.py --project "$GCP_PROJECT_ID" --league NBA --seasons 2025
 python -m src.pipeline.refresh_nba --project "$GCP_PROJECT_ID" --model-version v3
 python scripts/sync_bq_to_supabase.py --project "$GCP_PROJECT_ID" --league NBA --append
-python scripts/sync_final_scores.py --project "$GCP_PROJECT_ID" --lookback-days 4 --lookahead-days 1
+python scripts/sync_final_scores.py --project "$GCP_PROJECT_ID" --lookback-days 10 --lookahead-days 1
 python scripts/validate_supabase_sync.py --strict
 ```
 

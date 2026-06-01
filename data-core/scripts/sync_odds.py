@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import logging
 import os
+from dataclasses import dataclass
 from datetime import datetime, timezone, timedelta
 from typing import Dict, List, Optional, Any, Tuple
 
@@ -31,10 +32,18 @@ from src.utils.supabase_pg import (
     game_map_key,
     load_supabase_credentials,
 )
-from src.utils.team_codes import canonical_nba_abbr
+from src.utils.team_codes import canonical_team_abbr
 
 LOGGER = logging.getLogger("sync_odds")
 PREFERRED_BOOKMAKERS = ["draftkings", "betmgm", "fanduel"]
+
+
+@dataclass(frozen=True)
+class OddsSyncResult:
+    matched_count: int
+    supabase_games: int
+    supabase_dates: set[str]
+    odds_dates: set[str]
 
 # Team Mappings
 NFL_MAPPING = {
@@ -124,9 +133,7 @@ def get_team_code(team_name: str, mapping: Dict[str, List[str]]) -> Optional[str
     return None
 
 def canonical_team_code(team_code: str, league: str) -> Optional[str]:
-    if league == "NBA":
-        return canonical_nba_abbr(team_code)
-    return team_code
+    return canonical_team_abbr(league, team_code)
 
 def ordered_bookmakers(bookmakers: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Keep preferred books first, then try the rest instead of giving up early."""
@@ -183,7 +190,7 @@ def fetch_odds_data(api_key: str, league: str) -> List[Dict[str, Any]]:
 def count_expected_games(conn, league: str) -> int:
     """Count games in the serving window where odds should be attempted."""
     now = datetime.now(timezone.utc)
-    start_window = (now - timedelta(days=2)).isoformat()
+    start_window = now.isoformat()
     end_window = (now + timedelta(days=10)).isoformat()
     with conn.cursor() as cur:
         cur.execute(
@@ -197,6 +204,15 @@ def count_expected_games(conn, league: str) -> int:
             (league, start_window, end_window),
         )
         return int(cur.fetchone()[0])
+
+
+def should_fail_zero_odds_match(result: OddsSyncResult) -> bool:
+    """Fail only when Supabase and Odds API have games on the same dates."""
+    return (
+        result.supabase_games > 0
+        and result.matched_count == 0
+        and bool(result.supabase_dates & result.odds_dates)
+    )
 
 def ensure_bq_column(client: bigquery.Client, project: str, table_id: str, column_name: str, data_type: str = "FLOAT64"):
     """Add a column to a BigQuery table if it doesn't already exist."""
@@ -214,7 +230,7 @@ def ensure_bq_column(client: bigquery.Client, project: str, table_id: str, colum
     table.schema = new_schema
     client.update_table(table, ["schema"])
 
-def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) -> tuple[int, int]:
+def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) -> OddsSyncResult:
     """Update Supabase games table with book spreads."""
     mapping = NFL_MAPPING if league == 'NFL' else NBA_MAPPING
     updates = []
@@ -250,6 +266,11 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) ->
             sample_keys,
         )
 
+    supabase_dates = {
+        game_time.strftime("%Y-%m-%d") if hasattr(game_time, "strftime") else str(game_time).split(" ")[0]
+        for _gid, _home, _away, game_time in games
+    }
+    odds_dates: set[str] = set()
     matched_count = 0
     for event in odds_data:
         home_raw = event.get("home_team") or ""
@@ -268,6 +289,7 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) ->
             continue
 
         game_time = datetime.fromisoformat(event["commence_time"].replace("Z", "+00:00"))
+        odds_dates.add(game_time.date().isoformat())
         key = game_map_key(home_code, away_code, game_time)
 
         gid = game_map.get(key)
@@ -340,7 +362,12 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) ->
         LOGGER.info(f"Updated {len(updates)} games in Supabase with book spreads for {league}")
     else:
         LOGGER.warning(f"No odds matches found for {league} in Supabase window")
-    return matched_count, len(games)
+    return OddsSyncResult(
+        matched_count=matched_count,
+        supabase_games=len(games),
+        supabase_dates=supabase_dates,
+        odds_dates=odds_dates,
+    )
 
 def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_data: List[Dict[str, Any]]):
     """Update BigQuery model_predictions and feature_snapshots tables with book spreads."""
@@ -482,11 +509,24 @@ def main():
                 continue
                 
             LOGGER.info(f"Retrieved {len(odds_data)} games from The Odds API for {league}")
-            matched_count, supabase_games = sync_odds_to_supabase(pg_conn, league, odds_data)
-            if supabase_games > 0 and matched_count == 0:
-                failures.append(
-                    f"{league}: matched zero odds to {supabase_games} Supabase games in the serving window."
+            result = sync_odds_to_supabase(pg_conn, league, odds_data)
+            if result.supabase_games > 0 and result.matched_count == 0:
+                overlapping_dates = result.supabase_dates & result.odds_dates
+                message = (
+                    f"{league}: matched zero odds to {result.supabase_games} Supabase games "
+                    "in the serving window."
                 )
+                if should_fail_zero_odds_match(result):
+                    failures.append(
+                        f"{message} Overlapping game dates: {sorted(overlapping_dates)}."
+                    )
+                else:
+                    LOGGER.warning(
+                        "%s Supabase dates=%s Odds API dates=%s; treating as schedule drift.",
+                        message,
+                        sorted(result.supabase_dates),
+                        sorted(result.odds_dates),
+                    )
             sync_odds_to_bq(bq_client, project, league, odds_data)
         if failures:
             for failure in failures:

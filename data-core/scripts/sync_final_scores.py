@@ -10,11 +10,19 @@ from __future__ import annotations
 
 import argparse
 import logging
+from collections import defaultdict
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
+import sys
 
 from google.cloud import bigquery
 
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
+from src.utils.team_codes import canonical_team_abbr
 
 LOGGER = logging.getLogger("sync_final_scores")
 
@@ -73,40 +81,115 @@ def fetch_final_scores(
     return client.query(query, job_config=job_config).to_dataframe()
 
 
+def _score_date(value) -> str:
+    if hasattr(value, "date") and not isinstance(value, datetime):
+        return value.isoformat()
+    if hasattr(value, "to_pydatetime"):
+        value = value.to_pydatetime()
+    if hasattr(value, "date"):
+        return value.date().isoformat()
+    return str(value).split(" ")[0]
+
+
+def _game_date(value) -> str:
+    if hasattr(value, "date"):
+        return value.date().isoformat()
+    return str(value).split(" ")[0]
+
+
+def _match_key(league, home_team, away_team, game_date) -> tuple[str, str, str, str]:
+    league_key = str(league).upper()
+    home_key = canonical_team_abbr(league_key, home_team) or str(home_team).upper()
+    away_key = canonical_team_abbr(league_key, away_team) or str(away_team).upper()
+    return (league_key, _game_date(game_date), home_key, away_key)
+
+
+def _fetch_game_id_map(conn, start_date: str, end_date: str) -> dict[tuple[str, str, str, str], list[str]]:
+    game_ids_by_key: dict[tuple[str, str, str, str], list[str]] = defaultdict(list)
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT id, league, home_team, away_team, game_time_utc
+            FROM games
+            WHERE league IN ('NFL', 'NBA', 'MLB')
+              AND game_time_utc::date BETWEEN %s AND %s
+            """,
+            (start_date, end_date),
+        )
+        for game_id, league, home_team, away_team, game_time_utc in cur.fetchall():
+            game_ids_by_key[_match_key(league, home_team, away_team, game_time_utc)].append(
+                game_id
+            )
+    return dict(game_ids_by_key)
+
+
 def sync_scores(conn, scores_df) -> tuple[int, int]:
     if scores_df.empty:
         return 0, 0
 
+    start_date = min(_score_date(row["game_date"]) for _, row in scores_df.iterrows())
+    end_date = max(_score_date(row["game_date"]) for _, row in scores_df.iterrows())
+    game_ids_by_key = _fetch_game_id_map(conn, start_date, end_date)
+
     updated = 0
     unmatched = 0
+    ambiguous = 0
+    unmatched_samples = []
     update_sql = """
         UPDATE games
         SET home_score = %s,
             away_score = %s
-        WHERE league = %s
-          AND home_team = %s
-          AND away_team = %s
-          AND game_time_utc::date = %s
+        WHERE id = %s
     """
 
     with conn.cursor() as cur:
         for _, row in scores_df.iterrows():
-            cur.execute(
-                update_sql,
-                (
-                    int(row["home_score"]),
-                    int(row["away_score"]),
-                    row["league"],
-                    row["home_team"],
-                    row["away_team"],
-                    row["game_date"],
-                ),
+            match_key = _match_key(
+                row["league"],
+                row["home_team"],
+                row["away_team"],
+                row["game_date"],
             )
-            if cur.rowcount > 0:
-                updated += int(cur.rowcount)
-            else:
+            game_ids = game_ids_by_key.get(match_key, [])
+            if not game_ids:
                 unmatched += 1
+                if len(unmatched_samples) < 10:
+                    unmatched_samples.append(
+                        {
+                            "league": row["league"],
+                            "game_date": _score_date(row["game_date"]),
+                            "away_team": row["away_team"],
+                            "home_team": row["home_team"],
+                            "match_key": match_key,
+                        }
+                    )
+                continue
+            if len(game_ids) > 1:
+                ambiguous += 1
+                LOGGER.warning(
+                    "Multiple Supabase games matched %s; updating %d rows",
+                    match_key,
+                    len(game_ids),
+                )
+            for game_id in game_ids:
+                cur.execute(
+                    update_sql,
+                    (
+                        int(row["home_score"]),
+                        int(row["away_score"]),
+                        game_id,
+                    ),
+                )
+                updated += int(cur.rowcount)
     conn.commit()
+    if unmatched_samples:
+        LOGGER.warning(
+            "Unmatched final-score rows (first %d): %s",
+            len(unmatched_samples),
+            unmatched_samples,
+        )
+    if ambiguous:
+        LOGGER.warning("Final score sync found %d ambiguous score rows.", ambiguous)
     return updated, unmatched
 
 
