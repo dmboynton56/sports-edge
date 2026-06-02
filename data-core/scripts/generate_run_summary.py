@@ -268,7 +268,10 @@ def build_warnings(
         recent_predictions = int_value(validation, "recent_predictions")
         recent_games = int_value(validation, "recent_games")
         recent_final_scores = int_value(validation, "recent_final_scores")
-        past_games_missing_scores = int_value(validation, "past_games_missing_scores")
+        past_game_groups_missing_scores = int_value(
+            validation,
+            "past_game_groups_missing_scores",
+        )
         orphan_predictions = int_value(validation, "orphan_predictions")
 
         if status == "success" and recent_predictions is not None and recent_predictions <= 0:
@@ -281,8 +284,10 @@ def build_warnings(
             and recent_final_scores <= 0
         ):
             warnings.append("Recent games exist, but no final scores were reported.")
-        if past_games_missing_scores is not None and past_games_missing_scores > 0:
-            warnings.append(f"{past_games_missing_scores} past games are missing scores.")
+        if past_game_groups_missing_scores is not None and past_game_groups_missing_scores > 0:
+            warnings.append(
+                f"{past_game_groups_missing_scores} past game groups are missing scores."
+            )
         if orphan_predictions is not None and orphan_predictions > 0:
             warnings.append(f"{orphan_predictions} orphan predictions were reported.")
 
@@ -356,7 +361,8 @@ def render_markdown(summary: dict[str, Any]) -> str:
         "recent_predictions",
         "recent_games",
         "recent_final_scores",
-        "past_games_missing_scores",
+        "past_game_groups_missing_scores",
+        "duplicate_recent_game_rows",
         "orphan_predictions",
     ):
         value = validation.get(key, "n/a")
@@ -407,7 +413,8 @@ def compact_validation_text(validation: dict[str, Any] | None) -> str:
         ("recent_predictions", "Predictions"),
         ("recent_games", "Games"),
         ("recent_final_scores", "Final scores"),
-        ("past_games_missing_scores", "Past games missing scores"),
+        ("past_game_groups_missing_scores", "Past game groups missing scores"),
+        ("duplicate_recent_game_rows", "Duplicate recent game rows"),
         ("orphan_predictions", "Orphan predictions"),
     ]
     return "\n".join(f"{label}: {validation.get(key, 'n/a')}" for key, label in labels)

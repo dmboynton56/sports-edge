@@ -1,4 +1,5 @@
 import os
+from datetime import date, datetime
 import psycopg
 from typing import Dict, Optional
 import pandas as pd
@@ -30,6 +31,17 @@ def game_map_key(home_team: str, away_team: str, game_date) -> str:
         date_str = str(game_date).split(" ")[0]
     return f"{date_str}_{away_team}_{home_team}"
 
+def _date_only(val):
+    if pd.isna(val):
+        return None
+    if hasattr(val, "to_pydatetime"):
+        val = val.to_pydatetime()
+    if isinstance(val, datetime):
+        return val.date()
+    if isinstance(val, date):
+        return val
+    return str(val).split(" ")[0]
+
 def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
     """Upsert games into Supabase and return a map of keys to IDs."""
     game_id_map = {}
@@ -59,9 +71,10 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
 
         for _, row in games_df.iterrows():
             # Check if game exists
+            lookup_date = _date_only(row.get("game_date", row["game_time_utc"]))
             cur.execute(
                 "SELECT id FROM games WHERE league = %s AND home_team = %s AND away_team = %s AND game_time_utc::date = %s",
-                (_clean(row["league"]), _clean(row["home_team"]), _clean(row["away_team"]), _clean(row["game_time_utc"]))
+                (_clean(row["league"]), _clean(row["home_team"]), _clean(row["away_team"]), lookup_date)
             )
             res = cur.fetchone()
             

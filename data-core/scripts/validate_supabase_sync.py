@@ -108,15 +108,32 @@ def main() -> None:
 
             cur.execute(
                 """
-                SELECT COUNT(*)
-                FROM games
-                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
-                  AND game_time_utc::date < CURRENT_DATE
-                  AND (home_score IS NULL OR away_score IS NULL)
+                WITH game_groups AS (
+                    SELECT
+                      league,
+                      game_time_utc::date AS game_date,
+                      home_team,
+                      away_team,
+                      COUNT(*) AS row_count,
+                      BOOL_OR(home_score IS NOT NULL AND away_score IS NOT NULL) AS has_score,
+                      BOOL_OR(home_score IS NULL OR away_score IS NULL) AS has_missing_score
+                    FROM games
+                    WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
+                      AND game_time_utc::date < CURRENT_DATE
+                    GROUP BY league, game_time_utc::date, home_team, away_team
+                )
+                SELECT
+                  COUNT(*) FILTER (WHERE NOT has_score) AS missing_score_groups,
+                  COALESCE(SUM(row_count - 1) FILTER (WHERE row_count > 1), 0) AS duplicate_rows,
+                  COALESCE(SUM(row_count) FILTER (WHERE has_score AND has_missing_score), 0) AS duplicate_rows_with_score
+                FROM game_groups
                 """,
                 (args.score_lookback_days,),
             )
-            report["past_games_missing_scores"] = int(cur.fetchone()[0])
+            missing_score_groups, duplicate_rows, duplicate_rows_with_score = cur.fetchone()
+            report["past_game_groups_missing_scores"] = int(missing_score_groups)
+            report["duplicate_recent_game_rows"] = int(duplicate_rows)
+            report["duplicate_scored_game_rows_with_unscored_copy"] = int(duplicate_rows_with_score)
 
             cur.execute(
                 """
@@ -182,9 +199,9 @@ def main() -> None:
             failures.append("No recent model_predictions rows found.")
         if report["recent_games"] > 0 and report["recent_final_scores"] <= 0:
             failures.append("Recent games exist but none have final scores.")
-        if report["past_games_missing_scores"] > 0:
+        if report["past_game_groups_missing_scores"] > 0:
             failures.append(
-                f"Found {report['past_games_missing_scores']} past games missing scores."
+                f"Found {report['past_game_groups_missing_scores']} past game groups missing scores."
             )
         if report["orphan_predictions"] > args.max_orphans:
             failures.append(
