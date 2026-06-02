@@ -15,6 +15,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import sys
 
+from dotenv import load_dotenv
 from google.cloud import bigquery
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -109,15 +110,20 @@ def _fetch_game_id_map(conn, start_date: str, end_date: str) -> dict[tuple[str, 
     with conn.cursor() as cur:
         cur.execute(
             """
-            SELECT id, league, home_team, away_team, game_time_utc
+            SELECT
+              id,
+              league,
+              home_team,
+              away_team,
+              COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date) AS game_date
             FROM games
             WHERE league IN ('NFL', 'NBA', 'MLB')
-              AND game_time_utc::date BETWEEN %s AND %s
+              AND COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date) BETWEEN %s AND %s
             """,
             (start_date, end_date),
         )
-        for game_id, league, home_team, away_team, game_time_utc in cur.fetchall():
-            game_ids_by_key[_match_key(league, home_team, away_team, game_time_utc)].append(
+        for game_id, league, home_team, away_team, game_date in cur.fetchall():
+            game_ids_by_key[_match_key(league, home_team, away_team, game_date)].append(
                 game_id
             )
     return dict(game_ids_by_key)
@@ -195,6 +201,7 @@ def sync_scores(conn, scores_df) -> tuple[int, int]:
 
 def main() -> None:
     args = parse_args()
+    load_dotenv(ROOT / ".env")
     logging.basicConfig(
         level=getattr(logging, args.log_level),
         format="%(asctime)s %(levelname)s %(name)s - %(message)s",

@@ -407,7 +407,7 @@ def purge_mlb_predictions_outside_window(
             USING games AS g
             WHERE p.game_id = g.id
               AND g.league = 'MLB'
-              AND g.game_time_utc::date NOT BETWEEN %s AND %s
+              AND COALESCE(g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date) NOT BETWEEN %s AND %s
             """,
             (start_date, end_date),
             prepare=False,

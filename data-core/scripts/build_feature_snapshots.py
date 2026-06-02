@@ -87,6 +87,13 @@ FEATURE_COLUMNS = [
     "form_net_rating_diff_3",
     "form_net_rating_diff_5",
     "form_net_rating_diff_10",
+    # Injury-aware adjustments
+    "home_injury_epa_delta",
+    "away_injury_epa_delta",
+    "home_injury_net_rating_delta",
+    "away_injury_net_rating_delta",
+    "home_injured_players",
+    "away_injured_players",
     "feature_version",
 ]
 
@@ -160,7 +167,10 @@ def _delete_existing_features(client: bigquery.Client, table_id: str, seasons: L
 
 
 def _load_features(client: bigquery.Client, df: pd.DataFrame, table_id: str) -> None:
-    job_config = bigquery.LoadJobConfig(write_disposition="WRITE_APPEND")
+    job_config = bigquery.LoadJobConfig(
+        write_disposition="WRITE_APPEND",
+        schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+    )
     job = client.load_table_from_dataframe(df, table_id, job_config=job_config)
     job.result()
     print(f"Wrote {len(df):,} feature rows to {table_id}")
@@ -258,6 +268,19 @@ def main() -> None:
     for column in FEATURE_COLUMNS:
         if column not in feature_rows.columns:
             feature_rows[column] = None
+
+    injury_delta_columns = [
+        "home_injury_epa_delta",
+        "away_injury_epa_delta",
+        "home_injury_net_rating_delta",
+        "away_injury_net_rating_delta",
+    ]
+    for col in injury_delta_columns:
+        feature_rows[col] = pd.to_numeric(feature_rows[col], errors="coerce").fillna(0.0)
+
+    injury_count_columns = ["home_injured_players", "away_injured_players"]
+    for col in injury_count_columns:
+        feature_rows[col] = pd.to_numeric(feature_rows[col], errors="coerce").fillna(0).astype("Int64")
             
     feature_rows["game_date"] = pd.to_datetime(feature_rows["game_date"], utc=True).dt.date
     

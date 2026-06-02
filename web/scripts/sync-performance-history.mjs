@@ -36,6 +36,94 @@ function sampleSize(sample) {
   return Object.values(sample ?? {}).find((value) => typeof value === "number") ?? null;
 }
 
+function gateStatus(gates) {
+  if (gates.some((gate) => gate.status === "blocked")) return "blocked";
+  if (gates.some((gate) => gate.status === "warning")) return "candidate";
+  return "approved";
+}
+
+function metricMax(metrics, names) {
+  const values = names
+    .map((name) => metrics?.[name])
+    .filter((value) => typeof value === "number" && Number.isFinite(value));
+  return values.length ? Math.max(...values) : null;
+}
+
+function deriveProductionGates(sport) {
+  const sportName = (sport.sport ?? "Unknown").toUpperCase();
+  const metrics = sport.metrics ?? {};
+  const sample = sampleSize(sport.sample);
+  const oddsStatus = sport.odds_status ?? sport.oddsStatus ?? "missing";
+  const bestRoi = metricMax(metrics, [
+    "supabase_ats_roi",
+    "flat_roi",
+    "bigquery_default_roi",
+    "best_reported_sweep_roi",
+  ]);
+  const hasCalibration =
+    metric(metrics, ["brier", "bigquery_brier", "baseline_brier"]) != null ||
+    metric(metrics, ["log_loss", "bigquery_log_loss", "baseline_log_loss"]) != null ||
+    metric(metrics, ["auc", "roc_auc", "bigquery_auc", "win_auc"]) != null;
+  const hasThresholds =
+    (sport.threshold_performance ?? sport.thresholdPerformance ?? []).length > 0 ||
+    (sport.mode_performance ?? sport.modePerformance ?? []).length > 0;
+  const sampleTarget = sportName === "PGA" || sportName === "CBB" ? 500 : 100;
+  const oddsLower = oddsStatus.toLowerCase();
+
+  return [
+    {
+      id: "sample",
+      label: "Sample",
+      status: sample != null && sample >= sampleTarget ? "pass" : "warning",
+      detail:
+        sample == null
+          ? "No sample size recorded."
+          : `${sample.toLocaleString("en-US")} rows/games recorded.`,
+    },
+    {
+      id: "calibration",
+      label: "Calibration",
+      status: hasCalibration ? "pass" : "warning",
+      detail: hasCalibration ? "Calibration metrics are recorded." : "Needs Brier, log loss, or AUC evidence.",
+    },
+    {
+      id: "strategy",
+      label: "Strategy ROI",
+      status: bestRoi == null ? "warning" : bestRoi > 0 ? "pass" : "blocked",
+      detail:
+        bestRoi == null
+          ? "No strategy ROI recorded."
+          : `Best recorded ROI ${(bestRoi * 100).toFixed(1)}%.`,
+    },
+    {
+      id: "odds",
+      label: "Odds",
+      status:
+        oddsLower.includes("missing") || oddsLower.includes("no_sportsbook")
+          ? "blocked"
+          : oddsLower.includes("partial") || oddsLower.includes("free")
+            ? "warning"
+            : "pass",
+      detail: oddsStatus,
+    },
+    {
+      id: "thresholds",
+      label: "Thresholds",
+      status: hasThresholds ? "pass" : "warning",
+      detail: hasThresholds ? "Threshold or mode sweeps are available." : "No threshold sweep evidence recorded.",
+    },
+    {
+      id: "injuries",
+      label: "Injuries",
+      status: sportName === "NFL" || sportName === "NBA" ? "warning" : "pass",
+      detail:
+        sportName === "NFL" || sportName === "NBA"
+          ? "Injury schema and feature path exist; live impact coverage still needs rows."
+          : "No active injury gate for this sport.",
+    },
+  ];
+}
+
 function normalizeSport(sport) {
   const metrics = sport.metrics ?? {};
   const wins = metric(metrics, ["supabase_ats_wins", "wins", "bigquery_default_wins"]);
@@ -44,6 +132,9 @@ function normalizeSport(sport) {
   const bets =
     metric(metrics, ["bigquery_default_bets", "bets", "n_bets"]) ??
     (wins != null && losses != null && pushes != null ? wins + losses + pushes : null);
+
+  const productionGates =
+    sport.production_gates ?? sport.productionGates ?? deriveProductionGates(sport);
 
   return {
     sport: sport.sport ?? "Unknown",
@@ -87,6 +178,8 @@ function normalizeSport(sport) {
     modePerformance: sport.mode_performance ?? sport.modePerformance ?? [],
     artifactRefs: sport.artifact_refs ?? sport.artifactRefs ?? [],
     gaps: sport.gaps ?? [],
+    productionGates,
+    productionStatus: sport.production_status ?? sport.productionStatus ?? gateStatus(productionGates),
   };
 }
 

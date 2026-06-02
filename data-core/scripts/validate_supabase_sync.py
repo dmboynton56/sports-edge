@@ -12,7 +12,11 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+from pathlib import Path
 
+from dotenv import load_dotenv
+
+ROOT = Path(__file__).resolve().parent.parent
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
 
 LOGGER = logging.getLogger("validate_supabase_sync")
@@ -60,6 +64,7 @@ def main() -> None:
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(name)s - %(message)s",
     )
+    load_dotenv(ROOT / ".env")
 
     creds = load_supabase_credentials()
     conn = create_pg_connection(
@@ -88,7 +93,8 @@ def main() -> None:
                 """
                 SELECT COUNT(*)
                 FROM games
-                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
+                WHERE COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                  >= (now() AT TIME ZONE 'America/Denver')::date - (%s || ' days')::interval
                   AND home_score IS NOT NULL
                   AND away_score IS NOT NULL
                 """,
@@ -100,7 +106,8 @@ def main() -> None:
                 """
                 SELECT COUNT(*)
                 FROM games
-                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
+                WHERE COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                  >= (now() AT TIME ZONE 'America/Denver')::date - (%s || ' days')::interval
                 """,
                 (args.score_lookback_days,),
             )
@@ -111,16 +118,18 @@ def main() -> None:
                 WITH game_groups AS (
                     SELECT
                       league,
-                      game_time_utc::date AS game_date,
+                      COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date) AS game_date,
                       home_team,
                       away_team,
                       COUNT(*) AS row_count,
                       BOOL_OR(home_score IS NOT NULL AND away_score IS NOT NULL) AS has_score,
                       BOOL_OR(home_score IS NULL OR away_score IS NULL) AS has_missing_score
                     FROM games
-                    WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
-                      AND game_time_utc::date < CURRENT_DATE
-                    GROUP BY league, game_time_utc::date, home_team, away_team
+                    WHERE COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                      >= (now() AT TIME ZONE 'America/Denver')::date - (%s || ' days')::interval
+                      AND COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                      < (now() AT TIME ZONE 'America/Denver')::date
+                    GROUP BY league, COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date), home_team, away_team
                 )
                 SELECT
                   COUNT(*) FILTER (WHERE NOT has_score) AS missing_score_groups,
@@ -154,8 +163,10 @@ def main() -> None:
                   COUNT(*) AS games,
                   COUNT(*) FILTER (WHERE book_spread IS NULL) AS missing_book_spread
                 FROM games
-                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
-                  AND game_time_utc::date <= CURRENT_DATE + (%s || ' days')::interval
+                WHERE COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                  >= (now() AT TIME ZONE 'America/Denver')::date - (%s || ' days')::interval
+                  AND COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                  <= (now() AT TIME ZONE 'America/Denver')::date + (%s || ' days')::interval
                 GROUP BY league
                 """,
                 (args.book_spread_lookback_days, args.book_spread_lookahead_days),
@@ -170,8 +181,10 @@ def main() -> None:
                 SELECT COUNT(*)
                 FROM games
                 WHERE league = 'MLB'
-                  AND game_time_utc::date >= CURRENT_DATE - 1
-                  AND game_time_utc::date <= CURRENT_DATE + 9
+                  AND COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                    >= (now() AT TIME ZONE 'America/Denver')::date - 1
+                  AND COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                    <= (now() AT TIME ZONE 'America/Denver')::date + 9
                 """
             )
             report["mlb_window_games"] = int(cur.fetchone()[0])

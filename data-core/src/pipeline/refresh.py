@@ -28,6 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from src.data import nfl_fetcher, nba_fetcher, odds_fetcher
 from src.data.pbp_loader import load_pbp
 from src.features import rest_schedule, form_metrics, strength
+from src.features.injury_impact import add_injury_adjustment_features
 from src.models.spread_model import SpreadModel
 from src.models.win_prob_model import WinProbModel
 from src.models.link_function import spread_to_win_prob
@@ -168,6 +169,11 @@ def build_features(games_df: pd.DataFrame, league: str, historical_data: dict) -
                 print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding NBA form features (window={window})...")
                 df = form_metrics.add_form_features_nba(df, game_logs, window=window)
     
+    injury_impacts = historical_data.get("injury_impacts")
+    if injury_impacts is not None:
+        print(f"[{datetime.now().strftime('%H:%M:%S')}] Applying injury adjustments...")
+        df = add_injury_adjustment_features(df, injury_impacts, league=league)
+
     # Add form interaction features
     print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding form interaction features...")
     df = _add_form_interactions(df, league)
@@ -333,6 +339,9 @@ def upsert_games(supabase: Client, games_df: pd.DataFrame) -> dict:
         game_data = {
             'league': game['league'],
             'season': game['season'],
+            'game_date': pd.to_datetime(game['game_date']).date().isoformat()
+            if 'game_date' in game.index and pd.notna(game['game_date'])
+            else pd.to_datetime(game['game_time_utc'], utc=True).tz_convert('America/Denver').date().isoformat(),
             'game_time_utc': game['game_time_utc'].isoformat() if hasattr(game['game_time_utc'], 'isoformat') else str(game['game_time_utc']),
             'home_team': game['home_team'],
             'away_team': game['away_team']

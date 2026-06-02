@@ -147,7 +147,8 @@ def fetch_supabase_snapshot(
                 """
                 SELECT league, COUNT(*), MAX(game_time_utc)
                 FROM games
-                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
+                WHERE COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                  >= (now() AT TIME ZONE 'America/Denver')::date - (%s || ' days')::interval
                 GROUP BY league
                 ORDER BY league
                 """,
@@ -163,7 +164,8 @@ def fetch_supabase_snapshot(
                 """
                 SELECT league, COUNT(*)
                 FROM games
-                WHERE game_time_utc::date >= CURRENT_DATE - (%s || ' days')::interval
+                WHERE COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
+                  >= (now() AT TIME ZONE 'America/Denver')::date - (%s || ' days')::interval
                   AND home_score IS NOT NULL
                   AND away_score IS NOT NULL
                 GROUP BY league

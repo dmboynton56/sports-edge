@@ -40,7 +40,69 @@ def _date_only(val):
         return val.date()
     if isinstance(val, date):
         return val
+    parsed = pd.to_datetime(val, errors="coerce")
+    if not pd.isna(parsed):
+        return parsed.date()
     return str(val).split(" ")[0]
+
+def fetch_injury_impacts_pg(
+    conn,
+    *,
+    league: str,
+    start_date,
+    end_date,
+    model_version: Optional[str] = None,
+) -> pd.DataFrame:
+    """Fetch model-ready player injury impacts for a league/date window."""
+    start = _date_only(start_date)
+    end = _date_only(end_date)
+    if start is None or end is None:
+        raise ValueError("start_date and end_date are required to fetch injury impacts.")
+
+    sql = """
+        SELECT
+            pie.league,
+            pie.season,
+            pie.game_id::text AS game_id,
+            COALESCE(pie.game_date, g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date) AS game_date,
+            pie.team,
+            pie.player_name,
+            pie.player_id,
+            pie.position,
+            pie.metric_name,
+            pie.player_value,
+            pie.replacement_value,
+            pie.usage_share,
+            pie.team_delta,
+            pie.sample_size,
+            pie.model_version,
+            pie.estimated_at,
+            pie.raw_record
+        FROM player_impact_estimates pie
+        LEFT JOIN games g ON g.id = pie.game_id
+        WHERE pie.league = %s
+          AND COALESCE(pie.game_date, g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date)
+              BETWEEN %s AND %s
+          AND (%s IS NULL OR pie.model_version = %s)
+        ORDER BY game_date, pie.team, pie.player_name, pie.estimated_at DESC
+    """
+    params = (league.upper(), start, end, model_version, model_version)
+    with conn.cursor() as cur:
+        cur.execute(sql, params, prepare=False)
+        rows = cur.fetchall()
+        columns = [desc[0] for desc in cur.description]
+
+    impacts = pd.DataFrame(rows, columns=columns)
+    if impacts.empty:
+        return impacts
+    impacts["league"] = impacts["league"].astype(str).str.upper()
+    impacts["game_date"] = pd.to_datetime(impacts["game_date"], errors="coerce")
+    for col in ["player_value", "replacement_value", "usage_share", "team_delta"]:
+        impacts[col] = pd.to_numeric(impacts[col], errors="coerce")
+    if "sample_size" in impacts.columns:
+        impacts["sample_size"] = pd.to_numeric(impacts["sample_size"], errors="coerce").astype("Int64")
+    impacts["available"] = True
+    return impacts
 
 def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
     """Upsert games into Supabase and return a map of keys to IDs."""
@@ -64,6 +126,7 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
             """
         )
         game_columns = {row[0] for row in cur.fetchall()}
+        has_game_date_column = "game_date" in game_columns
         has_pitcher_columns = {
             "home_probable_pitcher",
             "away_probable_pitcher",
@@ -72,15 +135,95 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
         for _, row in games_df.iterrows():
             # Check if game exists
             lookup_date = _date_only(row.get("game_date", row["game_time_utc"]))
-            cur.execute(
-                "SELECT id FROM games WHERE league = %s AND home_team = %s AND away_team = %s AND game_time_utc::date = %s",
-                (_clean(row["league"]), _clean(row["home_team"]), _clean(row["away_team"]), lookup_date)
-            )
+            if has_game_date_column:
+                cur.execute(
+                    """
+                    SELECT id
+                    FROM games
+                    WHERE league = %s
+                      AND home_team = %s
+                      AND away_team = %s
+                      AND (
+                        game_date = %s
+                        OR (
+                          game_date IS NULL
+                          AND (game_time_utc AT TIME ZONE 'America/Denver')::date = %s
+                        )
+                      )
+                    ORDER BY game_time_utc DESC, created_at DESC, id DESC
+                    LIMIT 1
+                    """,
+                    (
+                        _clean(row["league"]),
+                        _clean(row["home_team"]),
+                        _clean(row["away_team"]),
+                        lookup_date,
+                        lookup_date,
+                    )
+                )
+            else:
+                cur.execute(
+                    """
+                    SELECT id
+                    FROM games
+                    WHERE league = %s
+                      AND home_team = %s
+                      AND away_team = %s
+                      AND (game_time_utc AT TIME ZONE 'America/Denver')::date = %s
+                    ORDER BY game_time_utc DESC, created_at DESC, id DESC
+                    LIMIT 1
+                    """,
+                    (_clean(row["league"]), _clean(row["home_team"]), _clean(row["away_team"]), lookup_date)
+                )
             res = cur.fetchone()
             
             if res:
                 game_id = res[0]
-                if has_pitcher_columns:
+                if has_game_date_column and has_pitcher_columns:
+                    cur.execute(
+                        """
+                        UPDATE games
+                        SET season = %s,
+                            week = %s,
+                            game_date = %s,
+                            game_time_utc = %s,
+                            book_spread = COALESCE(%s, book_spread),
+                            home_probable_pitcher = COALESCE(%s, home_probable_pitcher),
+                            away_probable_pitcher = COALESCE(%s, away_probable_pitcher)
+                        WHERE id = %s
+                        """,
+                        (
+                            _clean(row["season"]),
+                            _clean(row.get("week")),
+                            lookup_date,
+                            _clean(row["game_time_utc"]),
+                            _clean(row.get("book_spread")),
+                            _clean(row.get("home_probable_pitcher")),
+                            _clean(row.get("away_probable_pitcher")),
+                            game_id,
+                        )
+                    )
+                elif has_game_date_column:
+                    cur.execute(
+                        """
+                        UPDATE games
+                        SET season = %s,
+                            week = %s,
+                            game_date = %s,
+                            game_time_utc = %s,
+                            book_spread = COALESCE(%s, book_spread)
+                        WHERE id = %s
+                        """,
+                        (
+                            _clean(row["season"]),
+                            _clean(row.get("week")),
+                            lookup_date,
+                            _clean(row["game_time_utc"]),
+                            _clean(row.get("book_spread")),
+                            game_id,
+                        )
+                    )
+                elif has_pitcher_columns:
                     cur.execute(
                         """
                         UPDATE games
@@ -108,7 +251,65 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
                         (_clean(row["season"]), _clean(row.get("week")), _clean(row.get("book_spread")), game_id)
                     )
             else:
-                if has_pitcher_columns:
+                if has_game_date_column and has_pitcher_columns:
+                    cur.execute(
+                        """
+                        INSERT INTO games (
+                            league,
+                            season,
+                            week,
+                            game_date,
+                            home_team,
+                            away_team,
+                            game_time_utc,
+                            book_spread,
+                            home_probable_pitcher,
+                            away_probable_pitcher
+                        )
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                        """,
+                        (
+                            _clean(row["league"]),
+                            _clean(row["season"]),
+                            _clean(row.get("week")),
+                            lookup_date,
+                            _clean(row["home_team"]),
+                            _clean(row["away_team"]),
+                            _clean(row["game_time_utc"]),
+                            _clean(row.get("book_spread")),
+                            _clean(row.get("home_probable_pitcher")),
+                            _clean(row.get("away_probable_pitcher")),
+                        )
+                    )
+                elif has_game_date_column:
+                    cur.execute(
+                        """
+                        INSERT INTO games (
+                            league,
+                            season,
+                            week,
+                            game_date,
+                            home_team,
+                            away_team,
+                            game_time_utc,
+                            book_spread
+                        )
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                        RETURNING id
+                        """,
+                        (
+                            _clean(row["league"]),
+                            _clean(row["season"]),
+                            _clean(row.get("week")),
+                            lookup_date,
+                            _clean(row["home_team"]),
+                            _clean(row["away_team"]),
+                            _clean(row["game_time_utc"]),
+                            _clean(row.get("book_spread")),
+                        )
+                    )
+                elif has_pitcher_columns:
                     cur.execute(
                         """
                         INSERT INTO games (
@@ -144,7 +345,7 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
                     )
                 game_id = cur.fetchone()[0]
             
-            key = game_map_key(row["home_team"], row["away_team"], row["game_time_utc"])
+            key = game_map_key(row["home_team"], row["away_team"], lookup_date)
             game_id_map[key] = game_id
     conn.commit()
     return game_id_map

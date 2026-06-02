@@ -13,13 +13,14 @@ export default async function PerformancePage() {
   const roiRecords = history.records.filter((record) => typeof record.roi === "number");
   const positiveRoi = roiRecords.filter((record) => (record.roi ?? 0) > 0).length;
   const bestRoi = roiRecords.toSorted((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity))[0];
-  const warnings = history.records.filter((record) => record.gaps.length > 0).length;
+  const blocked = history.records.filter((record) => record.productionStatus === "blocked").length;
+  const candidates = history.records.filter((record) => record.productionStatus === "candidate").length;
 
   return (
     <div>
       <PageHeader
         title="Performance"
-        description="Cross-sport model metrics, measured ROI, odds coverage status, and documented threshold/mode availability."
+        description="Cross-sport model metrics, measured ROI, production gates, injury readiness, odds coverage status, and documented threshold/mode availability."
         meta={history.generatedAt}
       />
 
@@ -27,7 +28,7 @@ export default async function PerformancePage() {
         <MetricCard title="Sports" value={formatNumber(history.records.length)} detail="Performance records loaded." icon={Activity} />
         <MetricCard title="Positive ROI Records" value={formatNumber(positiveRoi)} detail="Only measured ROI values count." icon={LineChart} tone={positiveRoi ? "accent" : "default"} />
         <MetricCard title="Top ROI" value={bestRoi ? formatPct(bestRoi.roi) : "n/a"} detail={bestRoi ? `${bestRoi.sport} ${bestRoi.market}` : "Missing ROI data"} icon={BarChart3} />
-        <MetricCard title="Odds Warnings" value={formatNumber(warnings)} detail="Partial or missing odds coverage." icon={AlertTriangle} tone={warnings ? "warning" : "accent"} />
+        <MetricCard title="Production Blocks" value={formatNumber(blocked)} detail={`${formatNumber(candidates)} candidate records.`} icon={AlertTriangle} tone={blocked ? "warning" : "accent"} />
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[0.8fr_1.2fr]">

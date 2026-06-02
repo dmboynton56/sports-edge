@@ -56,6 +56,15 @@ export type Performance = {
   modePerformance?: Record<string, string | number | null>[];
   artifactRefs: string[];
   gaps: string[];
+  productionStatus: "approved" | "candidate" | "blocked";
+  productionGates: ProductionGate[];
+};
+
+export type ProductionGate = {
+  id: string;
+  label: string;
+  status: "pass" | "warning" | "blocked";
+  detail: string;
 };
 
 export type PerformanceHistory = {

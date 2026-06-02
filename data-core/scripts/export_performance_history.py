@@ -27,8 +27,12 @@ def _pct(value: float | None) -> str:
 
 def build_history(cache_dir: Path) -> dict[str, Any]:
     cbb_cv = _load_json(cache_dir / "cbb_expanding_cv_2016_2025.json")
-    mlb_metrics = _load_json(cache_dir / "mlb_backtest_metrics_2025.json")
-    mlb_ytd_metrics = _load_json(cache_dir / "mlb_backtest_metrics_2026_ytd.json")
+    mlb_metrics = _load_json(cache_dir / "mlb_backtest_metrics_2025_free.json") or _load_json(
+        cache_dir / "mlb_backtest_metrics_2025.json"
+    )
+    mlb_ytd_metrics = _load_json(cache_dir / "mlb_backtest_metrics_2026_ytd_free.json") or _load_json(
+        cache_dir / "mlb_backtest_metrics_2026_ytd.json"
+    )
     mlb_odds_audit = _load_json(cache_dir / "mlb_oddspapi_moneylines_2026_ytd_audit.json")
     oddspapi_validation = _load_json(cache_dir / "oddspapi_validation_audit.json")
     nba_oddspapi_audit = _load_json(cache_dir / "nba_oddspapi_spreads_2026_tail_audit.json")
@@ -87,6 +91,7 @@ def build_history(cache_dir: Path) -> dict[str, Any]:
                     "supabase_ats_roi": nba_ats.get("flat_roi_at_minus_110", -0.07528409090909094),
                     "best_reported_sweep_roi": nba_best.get("roi", 0.08262499999999998),
                 },
+                "threshold_performance": nba_bq.get("threshold_sweep", []),
                 "odds_status": "oddspapi_tail_patch_partial"
                 if nba_oddspapi_audit.get("matched_rows")
                 else "partial_historical_spread_odds",
@@ -160,7 +165,10 @@ def build_history(cache_dir: Path) -> dict[str, Any]:
                     "benchmark_2025_brier": mlb_metrics.get("selected_refit_test", {}).get("brier"),
                     "benchmark_2025_log_loss": mlb_metrics.get("selected_refit_test", {}).get("log_loss"),
                 },
-                "odds_status": "oddspapi_moneyline_partial"
+                "threshold_performance": mlb_ytd_metrics.get("odds_summary", {}).get("edge_buckets", []),
+                "odds_status": "free_historical_moneylines"
+                if mlb_ytd_metrics.get("odds_summary", {}).get("odds_rows", 0) >= 100
+                else "oddspapi_moneyline_partial"
                 if mlb_ytd_metrics.get("odds_summary", {}).get("odds_rows")
                 else mlb_odds_audit.get("status", "missing_historical_moneylines"),
                 "artifact_refs": [
@@ -171,10 +179,11 @@ def build_history(cache_dir: Path) -> dict[str, Any]:
                     "scripts/backtest_mlb_winners.py",
                     "scripts/backfill_oddspapi_moneylines.py",
                     "notebooks/cache/mlb_oddspapi_moneylines_2026_ytd.csv",
+                    "notebooks/cache/mlb_free_moneylines_2025_2026.csv",
                 ],
                 "gaps": [
-                    "OddsPapi historical MLB coverage is recent-window limited on this key tier",
-                    "Full-season 2025 moneyline archive still requires additional quota/resume runs",
+                    "Free historical moneylines are consensus/comparison sources, not sharp-book closing lines",
+                    "MLB strategy remains negative ROI on broader free-history backtests",
                 ],
             },
             {

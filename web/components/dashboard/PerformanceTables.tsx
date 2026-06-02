@@ -15,12 +15,59 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Performance } from "@/lib/data/types";
 import { formatMaybePctMetric, formatNumber, formatPct } from "@/lib/format";
 
+type ThresholdRow = {
+  sport: string;
+  segment: string;
+  edgeThreshold: number | null;
+  minConfidence: number | null;
+  sample: number | null;
+  accuracy: number | null;
+  roi: number | null;
+  units: number | null;
+};
+
+function numberValue(row: Record<string, string | number | null>, keys: string[]) {
+  for (const key of keys) {
+    const value = row[key];
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+  }
+  return null;
+}
+
+function thresholdRows(records: Performance[]): ThresholdRow[] {
+  return records.flatMap((record) =>
+    (record.thresholdPerformance ?? []).map((row) => ({
+      sport: record.sport,
+      segment: String(row.edge_bucket ?? row.segment ?? row.strategy_id ?? "threshold"),
+      edgeThreshold: numberValue(row, ["edge_threshold"]),
+      minConfidence: numberValue(row, ["min_confidence"]),
+      sample: numberValue(row, ["n_bets", "bets", "games", "sample_size"]),
+      accuracy: numberValue(row, ["accuracy"]),
+      roi: numberValue(row, ["roi"]),
+      units: numberValue(row, ["units"]),
+    })),
+  );
+}
+
 export function PerformanceTables({ records }: { records: Performance[] }) {
+  const thresholds = thresholdRows(records);
+  const gateBadge = (status: "pass" | "warning" | "blocked") => {
+    if (status === "pass") return "accent";
+    if (status === "blocked") return "destructive";
+    return "outline";
+  };
+  const statusBadge = (status: Performance["productionStatus"]) => {
+    if (status === "approved") return "accent";
+    if (status === "blocked") return "destructive";
+    return "outline";
+  };
+
   return (
     <Tabs defaultValue="roi" className="w-full">
       <TabsList>
         <TabsTrigger value="roi">ROI</TabsTrigger>
         <TabsTrigger value="metrics">Metrics</TabsTrigger>
+        <TabsTrigger value="gates">Gates</TabsTrigger>
         <TabsTrigger value="thresholds">Thresholds</TabsTrigger>
         <TabsTrigger value="warnings">Warnings</TabsTrigger>
       </TabsList>
@@ -91,12 +138,78 @@ export function PerformanceTables({ records }: { records: Performance[] }) {
         </Table>
       </TabsContent>
 
+      <TabsContent value="gates">
+        <Table className="table-fixed">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Sport</TableHead>
+              <TableHead>Model</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Gate</TableHead>
+              <TableHead>Result</TableHead>
+              <TableHead className="w-[34%]">Detail</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {records.flatMap((record) =>
+              record.productionGates.map((gate) => (
+                <TableRow key={`${record.sport}-${gate.id}`}>
+                  <TableCell className="font-medium">{record.sport}</TableCell>
+                  <TableCell>{record.modelVersion}</TableCell>
+                  <TableCell>
+                    <Badge variant={statusBadge(record.productionStatus)}>
+                      {record.productionStatus}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{gate.label}</TableCell>
+                  <TableCell>
+                    <Badge variant={gateBadge(gate.status)}>{gate.status}</Badge>
+                  </TableCell>
+                  <TableCell className="whitespace-normal text-sm text-muted-foreground">
+                    {gate.detail}
+                  </TableCell>
+                </TableRow>
+              )),
+            )}
+          </TableBody>
+        </Table>
+      </TabsContent>
+
       <TabsContent value="thresholds">
-        <div className="rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">
-          {records.some((record) => record.thresholdPerformance?.length || record.modePerformance?.length)
-            ? "Threshold/mode artifacts are present but not yet shaped for display."
-            : "No threshold or mode performance arrays are available in the current local artifact."}
-        </div>
+        {thresholds.length ? (
+          <Table className="table-fixed">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Sport</TableHead>
+                <TableHead>Segment</TableHead>
+                <TableHead>Edge</TableHead>
+                <TableHead>Confidence</TableHead>
+                <TableHead>Sample</TableHead>
+                <TableHead>Accuracy</TableHead>
+                <TableHead>ROI</TableHead>
+                <TableHead>Units</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {thresholds.map((row, index) => (
+                <TableRow key={`${row.sport}-${row.segment}-${index}`}>
+                  <TableCell className="font-medium">{row.sport}</TableCell>
+                  <TableCell>{row.segment}</TableCell>
+                  <TableCell>{formatNumber(row.edgeThreshold, 1)}</TableCell>
+                  <TableCell>{formatMaybePctMetric(row.minConfidence)}</TableCell>
+                  <TableCell>{formatNumber(row.sample)}</TableCell>
+                  <TableCell>{formatMaybePctMetric(row.accuracy)}</TableCell>
+                  <TableCell>{formatPct(row.roi)}</TableCell>
+                  <TableCell>{formatNumber(row.units, 2)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">
+            No threshold or mode performance arrays are available in the current local artifact.
+          </div>
+        )}
       </TabsContent>
 
       <TabsContent value="warnings">

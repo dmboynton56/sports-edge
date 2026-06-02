@@ -17,6 +17,11 @@ from dotenv import load_dotenv
 from src.data import nfl_fetcher
 from src.data.pbp_loader import load_pbp
 from src.models.predictor import GamePredictor
+from src.utils.supabase_pg import (
+    create_pg_connection as create_shared_pg_connection,
+    fetch_injury_impacts_pg,
+    load_supabase_credentials as load_shared_supabase_credentials,
+)
 
 
 MODEL_VERSION = 'v1'
@@ -104,6 +109,7 @@ def predict_games(games: pd.DataFrame,
                   schedule: pd.DataFrame,
                   completed_games: pd.DataFrame,
                   play_by_play: Optional[pd.DataFrame],
+                  injury_impacts: Optional[pd.DataFrame] = None,
                   include_explanations: bool = False,
                   is_neutral: bool = False) -> List[dict]:
     """Predict a batch of games, skipping any without sufficient data."""
@@ -130,7 +136,8 @@ def predict_games(games: pd.DataFrame,
             schedule, 
             play_by_play=play_by_play, 
             include_explanations=include_explanations,
-            is_neutral=is_neutral
+            is_neutral=is_neutral,
+            injury_impacts=injury_impacts,
         )
         predictions.append(result)
     
@@ -258,7 +265,62 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Treat games as neutral site (ignores home field advantage by averaging swapped predictions).",
     )
+    parser.add_argument(
+        "--injury-aware",
+        action="store_true",
+        help="Load player impact estimates from Supabase and apply injury-aware feature adjustments.",
+    )
+    parser.add_argument(
+        "--injury-model-version",
+        default=None,
+        help="Optional player_impact_estimates model_version filter.",
+    )
     return parser.parse_args()
+
+
+def load_week_injury_impacts(
+    games: pd.DataFrame,
+    *,
+    model_version: Optional[str] = None,
+) -> pd.DataFrame:
+    """Load Supabase player impact estimates for the selected NFL week."""
+    if games.empty:
+        return pd.DataFrame()
+    load_dotenv()
+    creds = load_shared_supabase_credentials()
+    missing = [
+        name
+        for name, value in {
+            "SUPABASE_URL": creds["url"],
+            "SUPABASE_DB_PASSWORD or supabaseDBpass": creds["db_password"],
+        }.items()
+        if not value
+    ]
+    if missing:
+        raise EnvironmentError(f"Missing Supabase credentials: {', '.join(missing)}")
+
+    start_date = pd.to_datetime(games["game_date"]).min().date()
+    end_date = pd.to_datetime(games["game_date"]).max().date()
+    conn = create_shared_pg_connection(
+        supabase_url=creds["url"],
+        password=creds["db_password"],
+        host_override=creds.get("db_host"),
+        port=creds["db_port"],
+        database=creds["db_name"],
+        user=creds["db_user"],
+    )
+    try:
+        impacts = fetch_injury_impacts_pg(
+            conn,
+            league="NFL",
+            start_date=start_date,
+            end_date=end_date,
+            model_version=model_version,
+        )
+    finally:
+        conn.close()
+    print(f"Loaded {len(impacts)} injury impact rows for {start_date} through {end_date}.")
+    return impacts
 
 
 def load_supabase_credentials() -> dict:
@@ -444,19 +506,20 @@ def upsert_games_pg(conn: psycopg.Connection, games_df: pd.DataFrame) -> dict:
           and season = %s
           and home_team = %s
           and away_team = %s
-          and game_time_utc::date = %s
-        order by game_time_utc desc
+          and coalesce(game_date, (game_time_utc at time zone 'America/Denver')::date) = %s
+        order by game_time_utc desc, created_at desc, id desc
         limit 1
     """
     update_sql = """
         update games
         set game_time_utc = %s,
-            week = coalesce(%s, week)
+            week = coalesce(%s, week),
+            game_date = %s
         where id = %s
     """
     insert_sql = """
-        insert into games (league, season, week, game_time_utc, home_team, away_team)
-        values (%s, %s, %s, %s, %s, %s)
+        insert into games (league, season, week, game_date, game_time_utc, home_team, away_team)
+        values (%s, %s, %s, %s, %s, %s, %s)
         returning id
     """
     
@@ -481,11 +544,19 @@ def upsert_games_pg(conn: psycopg.Connection, games_df: pd.DataFrame) -> dict:
             existing = cur.fetchone()
             if existing:
                 game_id = existing[0]
-                cur.execute(update_sql, (game_time, week_val, game_id), prepare=False)
+                cur.execute(update_sql, (game_time, week_val, game_date, game_id), prepare=False)
             else:
                 cur.execute(
                     insert_sql,
-                    (row['league'], int(row['season']), week_val, game_time, row['home_team'], row['away_team']),
+                    (
+                        row['league'],
+                        int(row['season']),
+                        week_val,
+                        game_date,
+                        game_time,
+                        row['home_team'],
+                        row['away_team'],
+                    ),
                     prepare=False
                 )
                 game_id = cur.fetchone()[0]
@@ -562,12 +633,24 @@ def main():
     except Exception as err:
         print(f"ERROR: {err}")
         sys.exit(1)
+
+    injury_impacts = None
+    if args.injury_aware:
+        try:
+            injury_impacts = load_week_injury_impacts(
+                week_games,
+                model_version=args.injury_model_version,
+            )
+        except Exception as err:
+            print(f"ERROR loading injury impacts: {err}")
+            sys.exit(1)
     
     predictions = predict_games(
         week_games, 
         schedule_df, 
         completed_games, 
         play_by_play, 
+        injury_impacts=injury_impacts,
         include_explanations=args.show_features,
         is_neutral=args.neutral
     )

@@ -15,6 +15,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from src.features import rest_schedule, form_metrics, strength
+from src.features.injury_impact import add_injury_adjustment_features
 from src.models.link_function import spread_to_win_prob, win_prob_to_spread
 
 DEFAULT_LINK_PARAMS = (0.15, 2.5)
@@ -161,7 +162,8 @@ class GamePredictor:
 
     def build_features_for_game(self, game_row: pd.DataFrame, historical_games: pd.DataFrame,
                                 play_by_play: Optional[pd.DataFrame] = None,
-                                game_logs: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+                                game_logs: Optional[pd.DataFrame] = None,
+                                injury_impacts: Optional[pd.DataFrame] = None) -> pd.DataFrame:
         """
         Build features for a single game or games.
         """
@@ -208,6 +210,13 @@ class GamePredictor:
                 for window in [3, 5, 10]:
                     df = form_metrics.add_form_features_nba(df, logs, window=window)
             
+            if injury_impacts is not None:
+                df = add_injury_adjustment_features(
+                    df,
+                    injury_impacts,
+                    league=self.league,
+                )
+
             # Add form interaction features if form features exist
             df = self._add_form_interactions(df)
             
@@ -374,7 +383,8 @@ class GamePredictor:
                 game_logs: Optional[pd.DataFrame] = None,
                 fill_missing_with_median: bool = True,
                 include_explanations: bool = False,
-                is_neutral: bool = False) -> Dict:
+                is_neutral: bool = False,
+                injury_impacts: Optional[pd.DataFrame] = None) -> Dict:
         """
         Predict outcome for a game.
         
@@ -393,14 +403,16 @@ class GamePredictor:
         if is_neutral:
             # Predict both ways and average to cancel out Home Field Advantage
             res1 = self.predict(game_row, historical_games, play_by_play, game_logs, 
-                              fill_missing_with_median, include_explanations, is_neutral=False)
+                              fill_missing_with_median, include_explanations, is_neutral=False,
+                              injury_impacts=injury_impacts)
             
             # Swap teams
             swapped_row = game_row.copy()
             swapped_row['home_team'], swapped_row['away_team'] = game_row['away_team'], game_row['home_team']
             
             res2 = self.predict(swapped_row, historical_games, play_by_play, game_logs, 
-                              fill_missing_with_median, include_explanations, is_neutral=False)
+                              fill_missing_with_median, include_explanations, is_neutral=False,
+                              injury_impacts=injury_impacts)
             
             # Combine: res1['home_win_probability'] is Team A win prob
             # res2['away_win_probability'] is also Team A win prob (when Team A is away)
@@ -438,7 +450,13 @@ class GamePredictor:
             return final_res
 
         # Build features
-        features_df = self.build_features_for_game(game_row, historical_games, play_by_play, game_logs)
+        features_df = self.build_features_for_game(
+            game_row,
+            historical_games,
+            play_by_play,
+            game_logs,
+            injury_impacts,
+        )
         
         medians = self._load_feature_medians() if fill_missing_with_median else None
         spread_cols = self.spread_feature_names or self.feature_names
@@ -628,7 +646,8 @@ class GamePredictor:
     
     def predict_batch(self, games_df: pd.DataFrame, historical_games: pd.DataFrame,
                      play_by_play: Optional[pd.DataFrame] = None,
-                     game_logs: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+                     game_logs: Optional[pd.DataFrame] = None,
+                     injury_impacts: Optional[pd.DataFrame] = None) -> pd.DataFrame:
         """
         Predict outcomes for multiple games.
         
@@ -642,7 +661,8 @@ class GamePredictor:
                     pd.DataFrame([game]),
                     historical_games,
                     play_by_play,
-                    game_logs
+                    game_logs,
+                    injury_impacts=injury_impacts,
                 )
                 results.append(pred)
             except Exception as e:
@@ -656,6 +676,7 @@ def predict_single_game(home_team: str, away_team: str, game_date: str,
                        league: str, historical_games: pd.DataFrame,
                        play_by_play: Optional[pd.DataFrame] = None,
                        game_logs: Optional[pd.DataFrame] = None,
+                       injury_impacts: Optional[pd.DataFrame] = None,
                        model_version: str = 'v1') -> Dict:
     """
     Convenience function to predict a single game.
@@ -682,4 +703,10 @@ def predict_single_game(home_team: str, away_team: str, game_date: str,
         'season': [pd.to_datetime(game_date).year]
     })
     
-    return predictor.predict(game_row, historical_games, play_by_play, game_logs)
+    return predictor.predict(
+        game_row,
+        historical_games,
+        play_by_play,
+        game_logs,
+        injury_impacts=injury_impacts,
+    )

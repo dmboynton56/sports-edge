@@ -11,6 +11,10 @@ if project_root not in sys.path:
 
 from src.data import nfl_fetcher
 from src.data.pbp_loader import load_pbp
+from src.features.injury_impact import (
+    apply_injury_adjustments_to_features,
+    estimate_nfl_player_epa_impact,
+)
 from src.models.predictor import GamePredictor
 
 def run_what_if(team: str, qb_name: str, replacement_epa: float = 0.0, week: str = 'CON', season: int = 2025):
@@ -40,18 +44,24 @@ def run_what_if(team: str, qb_name: str, replacement_epa: float = 0.0, week: str
         return
 
     # 1. Calculate QB Delta
-    nix_plays = pbp[pbp['passer_player_name'] == qb_name]
-    if nix_plays.empty:
+    impact = estimate_nfl_player_epa_impact(
+        pbp,
+        qb_name,
+        position="QB",
+        replacement_epa=replacement_epa,
+        side="offense",
+    )
+    if not impact["available"]:
         print(f"No PBP data found for QB {qb_name}")
         return
-    
-    current_qb_epa = nix_plays['epa'].mean()
-    delta = replacement_epa - current_qb_epa
+    delta = impact["team_delta"]
     
     print(f"\nQB Analysis:")
-    print(f"  {qb_name} current avg EPA/play: {current_qb_epa:.3f}")
+    print(f"  {qb_name} current avg EPA/play: {impact['player_value']:.3f}")
     print(f"  Simulated replacement EPA: {replacement_epa:.3f}")
-    print(f"  Estimated impact per play: {delta:.3f}")
+    if impact["usage_share"] is not None:
+        print(f"  Estimated play share: {impact['usage_share']:.1%}")
+    print(f"  Estimated team EPA impact: {delta:.3f}")
 
     # 2. Base Prediction
     print("\nRunning Base Prediction (Bo Nix Active)...")
@@ -71,7 +81,13 @@ def run_what_if(team: str, qb_name: str, replacement_epa: float = 0.0, week: str
     for col in epa_cols:
         if col.startswith(prefix):
             print(f"  Adjusting {col}: {features_df[col].iloc[0]:.3f} -> {features_df[col].iloc[0] + delta:.3f}")
-            features_df[col] += delta
+    features_df = apply_injury_adjustments_to_features(
+        features_df,
+        team=team,
+        impact=impact,
+        league="NFL",
+        is_home=is_home,
+    )
             
     # Now use a modified predict that takes features_df directly (internal hack)
     # We'll replicate the core of predictor.predict but with our adjusted features

@@ -17,7 +17,7 @@ class FakeCursor:
         return False
 
     def execute(self, sql, params=None):
-        if "SELECT id, league, home_team, away_team, game_time_utc" in sql:
+        if "SELECT" in sql and "FROM games" in sql:
             self.conn.select_params = params
             self.rowcount = 0
             return
@@ -100,3 +100,36 @@ def test_sync_scores_reports_unmatched_rows_without_update():
     assert unmatched == 1
     assert conn.updates == []
     assert conn.commits == 1
+
+
+def test_sync_scores_matches_late_utc_game_by_schedule_date():
+    conn = FakeConnection(
+        games=[
+            (
+                "game-mlb",
+                "MLB",
+                "Arizona Diamondbacks",
+                "Los Angeles Dodgers",
+                pd.Timestamp("2026-06-01").date(),
+            )
+        ]
+    )
+    scores = pd.DataFrame(
+        [
+            {
+                "league": "MLB",
+                "game_date": pd.Timestamp("2026-06-01"),
+                "home_team": "Arizona Diamondbacks",
+                "away_team": "Los Angeles Dodgers",
+                "home_score": 4,
+                "away_score": 6,
+            }
+        ]
+    )
+
+    updated, unmatched = sync_scores(conn, scores)
+
+    assert updated == 1
+    assert unmatched == 0
+    assert conn.updates == [(4, 6, "game-mlb")]
+    assert conn.select_params == ("2026-06-01", "2026-06-01")
