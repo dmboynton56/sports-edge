@@ -266,7 +266,7 @@ def upsert_games_pg(conn, games_df: pd.DataFrame) -> Dict[str, str]:
                             home_probable_pitcher,
                             away_probable_pitcher
                         )
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
                         RETURNING id
                         """,
                         (

@@ -17,6 +17,8 @@ class FakeCursor:
         return False
 
     def execute(self, sql, params=None):
+        if params is not None:
+            assert sql.count("%s") == len(params)
         if "information_schema.columns" in sql:
             self.pending_fetch = "columns"
             return
@@ -41,6 +43,8 @@ class FakeCursor:
 
     def fetchone(self):
         if self.pending_fetch == "game":
+            if self.conn.existing_game_id is None:
+                return None
             return ("existing-game-id",)
         if self.pending_fetch == "insert":
             return ("inserted-game-id",)
@@ -131,6 +135,64 @@ def test_upsert_games_persists_schedule_date_for_late_utc_mlb_game():
     assert conn.inserts == []
     assert conn.updates == [(2026, None, game_date, game_time, None, "existing-game-id")]
     assert game_id_map == {"2026-06-01_Los Angeles Dodgers_Arizona Diamondbacks": "existing-game-id"}
+
+
+def test_upsert_games_inserts_game_date_and_probable_pitchers_when_game_is_new():
+    conn = FakeConnection(
+        columns=[
+            ("id",),
+            ("league",),
+            ("season",),
+            ("week",),
+            ("game_date",),
+            ("home_team",),
+            ("away_team",),
+            ("game_time_utc",),
+            ("book_spread",),
+            ("home_probable_pitcher",),
+            ("away_probable_pitcher",),
+            ("created_at",),
+        ],
+        existing_game_id=None,
+    )
+    game_time = datetime(2026, 6, 8, 0, 5, tzinfo=timezone.utc)
+    game_date = pd.Timestamp("2026-06-07").date()
+    games = pd.DataFrame(
+        [
+            {
+                "league": "MLB",
+                "season": 2026,
+                "week": None,
+                "home_team": "Chicago Cubs",
+                "away_team": "Athletics",
+                "game_date": game_date,
+                "game_time_utc": game_time,
+                "book_spread": None,
+                "home_probable_pitcher": "Home Starter",
+                "away_probable_pitcher": "Away Starter",
+            }
+        ]
+    )
+
+    game_id_map = upsert_games_pg(conn, games)
+
+    assert conn.inserts == [
+        (
+            "MLB",
+            2026,
+            None,
+            game_date,
+            "Chicago Cubs",
+            "Athletics",
+            game_time,
+            None,
+            "Home Starter",
+            "Away Starter",
+        )
+    ]
+    assert conn.updates == []
+    assert game_id_map == {"2026-06-07_Athletics_Chicago Cubs": "inserted-game-id"}
+    assert conn.commits == 1
 
 
 class FakeImpactCursor:

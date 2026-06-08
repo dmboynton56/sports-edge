@@ -134,7 +134,7 @@ jobs:
           python -m src.pipeline.refresh_mlb \
             --project "$PROJECT_ID" \
             --model-version v3 \
-            --lookback-days 0 \
+            --lookback-days 10 \
             --lookahead-days 0
 
       - name: Sync Predictions to Supabase

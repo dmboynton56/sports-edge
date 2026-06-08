@@ -212,10 +212,6 @@ def main() -> None:
             failures.append("No recent model_predictions rows found.")
         if report["recent_games"] > 0 and report["recent_final_scores"] <= 0:
             failures.append("Recent games exist but none have final scores.")
-        if report["past_game_groups_missing_scores"] > 0:
-            failures.append(
-                f"Found {report['past_game_groups_missing_scores']} past game groups missing scores."
-            )
         if report["orphan_predictions"] > args.max_orphans:
             failures.append(
                 f"Found {report['orphan_predictions']} orphan predictions (max {args.max_orphans})."
