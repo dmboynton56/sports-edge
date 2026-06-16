@@ -55,90 +55,107 @@ jobs:
         env:
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      - name: Update NBA Raw Data
+      - name: Plan league refresh gates
+        id: plan
         shell: bash
         run: |
-          # NBA season is usually referred to by the year it started (e.g., Jan 2026 is 2025-26 season)
-          MONTH=$(date +%m)
-          YEAR=$(date +%Y)
-          if [ "$MONTH" -lt "08" ]; then
-            SEASON=$((YEAR - 1))
-          else
-            SEASON=$YEAR
-          fi
+          python scripts/plan_daily_refresh.py \
+            --project "$PROJECT_ID" \
+            --force-full-rebuild "$FORCE_FULL_REBUILD" \
+            --lookback-days 1 \
+            --lookahead-days 10 \
+            --github-output | tee /tmp/sports_edge_refresh_plan.json
+          echo "### Sports Edge Refresh Plan" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`json" >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/sports_edge_refresh_plan.json >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Update NBA Raw Data
+        if: ${{ steps.plan.outputs.run_nba == 'true' }}
+        shell: bash
+        run: |
+          SEASON="${{ steps.plan.outputs.nba_season }}"
           # Fetch Yesterday, Today, and Tomorrow to ensure BigQuery is perfectly in sync
           START_DATE=$(date -u -d "yesterday" +%Y-%m-%d)
           python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --schedule-start "$START_DATE" --schedule-window-days 3
 
       - name: Update NFL Raw Data
+        if: ${{ steps.plan.outputs.run_nfl == 'true' }}
         shell: bash
         run: |
-          # NFL season is the year it started (e.g., Jan 2026 is still 2025 season)
-          MONTH=$(date +%m)
-          YEAR=$(date +%Y)
-          if [ "$MONTH" -lt "08" ]; then
-            SEASON=$((YEAR - 1))
-          else
-            SEASON=$YEAR
-          fi
+          SEASON="${{ steps.plan.outputs.nfl_season }}"
           python scripts/backfill_nfl_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --replace
 
       - name: Build NBA Feature Snapshots
+        if: ${{ steps.plan.outputs.run_nba == 'true' }}
         shell: bash
         run: |
-          # NBA season is usually referred to by the year it started (e.g., Jan 2026 is 2025-26 season)
-          MONTH=$(date +%m)
-          YEAR=$(date +%Y)
-          if [ "$MONTH" -lt "08" ]; then
-            SEASON=$((YEAR - 1))
-          else
-            SEASON=$YEAR
-          fi
+          SEASON="${{ steps.plan.outputs.nba_season }}"
+          ANCHOR_DATE="${{ steps.plan.outputs.anchor_date }}"
           if [ "$FORCE_FULL_REBUILD" = "true" ]; then
             python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons "$SEASON" --replace
           else
-            python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons "$SEASON"
+            python scripts/build_feature_snapshots.py \
+              --project "$PROJECT_ID" \
+              --league NBA \
+              --seasons "$SEASON" \
+              --date "$ANCHOR_DATE" \
+              --lookback-days 0 \
+              --lookahead-days 0
           fi
 
       - name: Build NFL Feature Snapshots
+        if: ${{ steps.plan.outputs.run_nfl == 'true' }}
         shell: bash
         run: |
-          # NFL season is the year it started (e.g., Jan 2026 is still 2025 season)
-          MONTH=$(date +%m)
-          YEAR=$(date +%Y)
-          if [ "$MONTH" -lt "08" ]; then
-            SEASON=$((YEAR - 1))
-          else
-            SEASON=$YEAR
-          fi
+          SEASON="${{ steps.plan.outputs.nfl_season }}"
+          ANCHOR_DATE="${{ steps.plan.outputs.anchor_date }}"
           if [ "$FORCE_FULL_REBUILD" = "true" ]; then
             python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$SEASON" --replace
           else
-            python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$SEASON"
+            python scripts/build_feature_snapshots.py \
+              --project "$PROJECT_ID" \
+              --league NFL \
+              --seasons "$SEASON" \
+              --date "$ANCHOR_DATE" \
+              --lookback-days 0 \
+              --lookahead-days 10
           fi
 
       - name: Generate NBA Predictions
+        if: ${{ steps.plan.outputs.run_nba == 'true' }}
         shell: bash
         run: |
-          python -m src.pipeline.refresh_nba --project "$PROJECT_ID" --model-version v3
+          python -m src.pipeline.refresh_nba \
+            --project "$PROJECT_ID" \
+            --model-version v3 \
+            --date "${{ steps.plan.outputs.anchor_date }}" \
+            --season "${{ steps.plan.outputs.nba_season }}"
 
       - name: Generate NFL Predictions
+        if: ${{ steps.plan.outputs.run_nfl == 'true' }}
         shell: bash
         run: |
           # NFL weekly refresh logic can stay here, or run daily to catch line movements
-          python -m src.pipeline.refresh_nfl --project "$PROJECT_ID" --model-version v1
+          python -m src.pipeline.refresh_nfl \
+            --project "$PROJECT_ID" \
+            --model-version v1 \
+            --season "${{ steps.plan.outputs.nfl_season }}"
 
       - name: Generate MLB Predictions
+        if: ${{ steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         run: |
           python -m src.pipeline.refresh_mlb \
             --project "$PROJECT_ID" \
             --model-version v3 \
+            --date "${{ steps.plan.outputs.anchor_date }}" \
+            --season "${{ steps.plan.outputs.mlb_season }}" \
             --lookback-days 10 \
             --lookahead-days 0
 
-      - name: Sync Predictions to Supabase
-        if: ${{ env.DRY_RUN != 'true' }}
+      - name: Generate World Cup Predictions
+        if: ${{ steps.plan.outputs.run_world_cup == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -149,12 +166,50 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
-          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
-          python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --window-days 0
+          WORLD_CUP_ARGS=(
+            --season "${{ steps.plan.outputs.world_cup_season }}"
+            --start-date "${{ steps.plan.outputs.world_cup_start_date }}"
+            --end-date "${{ steps.plan.outputs.world_cup_end_date }}"
+            --model-version world-cup-v0-live
+            --n-sims 50000
+            --output-dir notebooks/cache/world_cup
+            --project "$PROJECT_ID"
+            --write-bigquery
+          )
+          if [ "$DRY_RUN" = "true" ]; then
+            WORLD_CUP_ARGS+=(--dry-run)
+          else
+            WORLD_CUP_ARGS+=(--sync-supabase)
+          fi
+          python scripts/refresh_world_cup.py "${WORLD_CUP_ARGS[@]}"
+
+      - name: Sync Predictions to Supabase
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          RUN_NBA: ${{ steps.plan.outputs.run_nba }}
+          RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
+          RUN_MLB: ${{ steps.plan.outputs.run_mlb }}
+        run: |
+          if [ "$RUN_NBA" = "true" ]; then
+            python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
+          fi
+          if [ "$RUN_NFL" = "true" ]; then
+            python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
+          fi
+          if [ "$RUN_MLB" = "true" ]; then
+            python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --window-days 0
+          fi
 
       - name: Sync Market Odds
-        if: ${{ env.DRY_RUN != 'true' }}
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -165,12 +220,28 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          RUN_NBA: ${{ steps.plan.outputs.run_nba }}
+          RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
         run: |
+          run_sync_odds() {
+            status=0
+            if [ "$RUN_NBA" = "true" ]; then
+              python scripts/sync_odds.py --project "$PROJECT_ID" --league NBA || status=$?
+            fi
+            if [ "$RUN_NFL" = "true" ]; then
+              python scripts/sync_odds.py --project "$PROJECT_ID" --league NFL || status=$?
+            fi
+            if [ "$RUN_NBA" != "true" ] && [ "$RUN_NFL" != "true" ]; then
+              echo "No market-odds leagues are active; skipping sync_odds."
+            fi
+            return "$status"
+          }
+
           max_attempts=5
           attempt=1
           until [ "$attempt" -gt "$max_attempts" ]; do
             echo "sync_odds attempt ${attempt}/${max_attempts}"
-            if python scripts/sync_odds.py --project "$PROJECT_ID"; then
+            if run_sync_odds; then
               break
             fi
             if [ "$attempt" -eq "$max_attempts" ]; then
@@ -184,7 +255,7 @@ jobs:
           done
 
       - name: Repair Missing Book Spreads
-        if: ${{ env.DRY_RUN != 'true' }}
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -195,14 +266,20 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          RUN_NBA: ${{ steps.plan.outputs.run_nba }}
+          RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
         run: |
           START_DATE=$(date -u -d "3 days ago" +%Y-%m-%d)
           END_DATE=$(date -u -d "14 days" +%Y-%m-%d)
-          python scripts/populate_existing_book_odds.py --league NBA --start-date "$START_DATE" --end-date "$END_DATE"
-          python scripts/populate_existing_book_odds.py --league NFL --start-date "$START_DATE" --end-date "$END_DATE"
+          if [ "$RUN_NBA" = "true" ]; then
+            python scripts/populate_existing_book_odds.py --league NBA --start-date "$START_DATE" --end-date "$END_DATE"
+          fi
+          if [ "$RUN_NFL" = "true" ]; then
+            python scripts/populate_existing_book_odds.py --league NFL --start-date "$START_DATE" --end-date "$END_DATE"
+          fi
 
       - name: Sync Final Scores
-        if: ${{ env.DRY_RUN != 'true' }}
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -216,7 +293,7 @@ jobs:
           python scripts/sync_final_scores.py --project "$PROJECT_ID" --lookback-days 10 --lookahead-days 1
 
       - name: Post-sync validation
-        if: ${{ env.DRY_RUN != 'true' }}
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
