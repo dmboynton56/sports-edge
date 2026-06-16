@@ -158,9 +158,8 @@ def build_features(games_df: pd.DataFrame, league: str, historical_data: dict) -
     if league == 'NFL':
         play_by_play = historical_data.get('play_by_play')
         if play_by_play is not None and len(play_by_play) > 0:
-            for window in [3, 5, 10]:
-                print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding NFL form features (window={window})...")
-                df = form_metrics.add_form_features_nfl(df, play_by_play, window=window)
+            print(f"[{datetime.now().strftime('%H:%M:%S')}] Adding NFL form features (windows=3,5,10)...")
+            df = form_metrics.add_form_features_nfl(df, play_by_play, windows=[3, 5, 10])
     else:  # NBA
         game_logs = historical_data.get('game_logs')
         if game_logs is not None and len(game_logs) > 0:

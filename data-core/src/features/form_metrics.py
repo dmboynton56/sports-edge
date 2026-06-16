@@ -338,48 +338,152 @@ def add_form_features_nba(games_df: pd.DataFrame, game_logs: pd.DataFrame,
     return df
 
 
+def _prepare_nfl_team_epa_lookup(play_by_play: pd.DataFrame, windows: list[int]) -> pd.DataFrame:
+    """Precompute postgame rolling EPA by team for all requested windows."""
+    required = {'game_id', 'game_date', 'epa'}
+    if play_by_play.empty or not required.issubset(play_by_play.columns):
+        return pd.DataFrame()
+
+    pbp = play_by_play.copy()
+    pbp['game_date'] = pd.to_datetime(pbp['game_date'], errors='coerce').dt.normalize()
+    pbp['epa'] = pd.to_numeric(pbp['epa'], errors='coerce')
+
+    side_frames = []
+    for side, team_col in [('off', 'posteam'), ('def', 'defteam')]:
+        if team_col not in pbp.columns:
+            continue
+
+        side_df = pbp.dropna(subset=[team_col, 'game_id', 'game_date', 'epa'])
+        if side_df.empty:
+            continue
+
+        side_epa = (
+            side_df.groupby([team_col, 'game_id', 'game_date'], as_index=False)['epa']
+            .mean()
+            .rename(columns={team_col: 'team', 'epa': f'epa_{side}'})
+        )
+        side_frames.append(side_epa)
+
+    if not side_frames:
+        return pd.DataFrame()
+
+    lookup = side_frames[0]
+    for side_df in side_frames[1:]:
+        lookup = lookup.merge(side_df, on=['team', 'game_id', 'game_date'], how='outer')
+
+    lookup = lookup.sort_values(['team', 'game_date', 'game_id']).reset_index(drop=True)
+    team_groups = lookup.groupby('team', group_keys=False)
+
+    for window in windows:
+        if 'epa_off' in lookup.columns:
+            lookup[f'form_epa_off_{window}'] = team_groups['epa_off'].transform(
+                lambda values: values.rolling(window=window, min_periods=window).mean()
+            )
+        if 'epa_def' in lookup.columns:
+            lookup[f'form_epa_def_{window}'] = team_groups['epa_def'].transform(
+                lambda values: values.rolling(window=window, min_periods=window).mean()
+            )
+
+    form_cols = [col for col in lookup.columns if col.startswith('form_epa_')]
+    if not form_cols:
+        return pd.DataFrame()
+
+    return lookup[['team', 'game_date', *form_cols]].drop_duplicates(
+        subset=['team', 'game_date'],
+        keep='last',
+    )
+
+
+def _merge_nfl_team_form(
+    games_df: pd.DataFrame,
+    lookup: pd.DataFrame,
+    *,
+    team_column: str,
+    output_prefix: str,
+    windows: list[int],
+) -> pd.DataFrame:
+    """As-of merge the latest prior team EPA form values onto game rows."""
+    df = games_df.copy()
+    form_cols = [f'form_epa_{side}_{window}' for window in windows for side in ('off', 'def')]
+    available_cols = [col for col in form_cols if col in lookup.columns]
+
+    rename_map = {}
+    for window in windows:
+        rename_map[f'form_epa_off_{window}'] = f'form_{output_prefix}_epa_off_{window}'
+        rename_map[f'form_epa_def_{window}'] = f'form_{output_prefix}_epa_def_{window}'
+
+    for output_col in rename_map.values():
+        if output_col not in df.columns:
+            df[output_col] = np.nan
+
+    if lookup.empty or not available_cols:
+        return df
+
+    left = df.reset_index().rename(columns={team_column: 'team'})
+    left['game_date'] = pd.to_datetime(left['game_date'], errors='coerce').dt.normalize()
+    right = lookup[['team', 'game_date', *available_cols]].copy()
+    right['game_date'] = pd.to_datetime(right['game_date'], errors='coerce').dt.normalize()
+
+    merged_parts = []
+    for team, team_games in left.groupby('team', dropna=False):
+        team_lookup = right[right['team'] == team].sort_values('game_date')
+        team_games = team_games.sort_values('game_date')
+
+        if team_lookup.empty:
+            merged = team_games
+            for col in available_cols:
+                merged[col] = np.nan
+        else:
+            merged = pd.merge_asof(
+                team_games,
+                team_lookup,
+                on='game_date',
+                by='team',
+                direction='backward',
+                allow_exact_matches=False,
+            )
+        merged_parts.append(merged)
+
+    merged_all = pd.concat(merged_parts, ignore_index=True).set_index('index')
+    for source_col, output_col in rename_map.items():
+        if source_col in merged_all.columns:
+            df[output_col] = merged_all[source_col].reindex(df.index).to_numpy()
+
+    return df
+
+
 def add_form_features_nfl(games_df: pd.DataFrame, play_by_play: pd.DataFrame,
-                          window: int = 3) -> pd.DataFrame:
+                          window: int = 3, windows: Optional[list[int]] = None) -> pd.DataFrame:
     """
     Add form features for NFL games.
     
     Args:
         games_df: DataFrame with games
         play_by_play: DataFrame with play-by-play data
-        window: Rolling window size
+        window: Rolling window size when windows is not provided
+        windows: Optional list of rolling window sizes to compute in one pass
     
     Returns:
         DataFrame with added columns: form_home_epa_off_3, form_away_epa_off_3, etc.
     """
+    target_windows = sorted(set(windows or [window]))
     df = games_df.copy()
-    
-    df[f'form_home_epa_off_{window}'] = df.apply(
-        lambda row: compute_rolling_epa(
-            row['home_team'], pd.to_datetime(row['game_date']), play_by_play, window, 'offense'
-        ),
-        axis=1
-    )
-    
-    df[f'form_away_epa_off_{window}'] = df.apply(
-        lambda row: compute_rolling_epa(
-            row['away_team'], pd.to_datetime(row['game_date']), play_by_play, window, 'offense'
-        ),
-        axis=1
-    )
-    
-    df[f'form_home_epa_def_{window}'] = df.apply(
-        lambda row: compute_rolling_epa(
-            row['home_team'], pd.to_datetime(row['game_date']), play_by_play, window, 'defense'
-        ),
-        axis=1
-    )
-    
-    df[f'form_away_epa_def_{window}'] = df.apply(
-        lambda row: compute_rolling_epa(
-            row['away_team'], pd.to_datetime(row['game_date']), play_by_play, window, 'defense'
-        ),
-        axis=1
-    )
-    
-    return df
+    df['game_date'] = pd.to_datetime(df['game_date'], errors='coerce').dt.normalize()
 
+    lookup = _prepare_nfl_team_epa_lookup(play_by_play, target_windows)
+    df = _merge_nfl_team_form(
+        df,
+        lookup,
+        team_column='home_team',
+        output_prefix='home',
+        windows=target_windows,
+    )
+    df = _merge_nfl_team_form(
+        df,
+        lookup,
+        team_column='away_team',
+        output_prefix='away',
+        windows=target_windows,
+    )
+
+    return df

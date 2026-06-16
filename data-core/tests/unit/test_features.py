@@ -1,6 +1,11 @@
 import pandas as pd
 import pytest
-from src.features.form_metrics import compute_possessions, compute_rolling_net_rating
+from src.features.form_metrics import (
+    add_form_features_nfl,
+    compute_possessions,
+    compute_rolling_epa,
+    compute_rolling_net_rating,
+)
 
 def test_compute_possessions():
     df = pd.DataFrame({
@@ -57,3 +62,43 @@ def test_compute_rolling_net_rating_insufficient_data():
     # Window is 3, but only 1 game exists
     rating = compute_rolling_net_rating('BOS', pd.Timestamp('2024-01-05'), logs, window=3)
     assert rating is None
+
+
+def test_add_form_features_nfl_vectorized_matches_scalar_and_avoids_current_game_leakage():
+    play_by_play = pd.DataFrame(
+        [
+            {"game_id": "G1", "game_date": "2024-01-01", "posteam": "AAA", "defteam": "BBB", "epa": 0.10},
+            {"game_id": "G1", "game_date": "2024-01-01", "posteam": "BBB", "defteam": "AAA", "epa": -0.20},
+            {"game_id": "G2", "game_date": "2024-01-08", "posteam": "AAA", "defteam": "BBB", "epa": 0.20},
+            {"game_id": "G2", "game_date": "2024-01-08", "posteam": "BBB", "defteam": "AAA", "epa": -0.10},
+            {"game_id": "G3", "game_date": "2024-01-15", "posteam": "AAA", "defteam": "BBB", "epa": 0.30},
+            {"game_id": "G3", "game_date": "2024-01-15", "posteam": "BBB", "defteam": "AAA", "epa": 0.00},
+        ]
+    )
+    games = pd.DataFrame(
+        [
+            {"game_id": "G3", "game_date": "2024-01-15", "home_team": "AAA", "away_team": "BBB"},
+            {"game_id": "G4", "game_date": "2024-01-22", "home_team": "AAA", "away_team": "BBB"},
+        ]
+    )
+
+    features = add_form_features_nfl(games, play_by_play, windows=[2, 3])
+
+    for row in features.itertuples(index=False):
+        game_date = pd.Timestamp(row.game_date)
+        assert row.form_home_epa_off_2 == pytest.approx(
+            compute_rolling_epa("AAA", game_date, play_by_play, window=2, side="offense")
+        )
+        assert row.form_home_epa_def_2 == pytest.approx(
+            compute_rolling_epa("AAA", game_date, play_by_play, window=2, side="defense")
+        )
+
+    jan_15 = features.iloc[0]
+    assert jan_15.form_home_epa_off_2 == pytest.approx(0.15)
+    assert jan_15.form_home_epa_def_2 == pytest.approx(-0.15)
+    assert pd.isna(jan_15.form_home_epa_off_3)
+
+    jan_22 = features.iloc[1]
+    assert jan_22.form_home_epa_off_2 == pytest.approx(0.25)
+    assert jan_22.form_home_epa_def_2 == pytest.approx(-0.05)
+    assert jan_22.form_home_epa_off_3 == pytest.approx(0.20)

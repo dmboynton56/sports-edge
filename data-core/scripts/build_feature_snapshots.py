@@ -12,8 +12,8 @@ import argparse
 import os
 import sys
 import time
-from datetime import datetime, timezone
-from typing import Dict, List
+from datetime import date, datetime, timedelta, timezone
+from typing import Dict, List, Optional
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -128,7 +128,57 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Delete existing rows for the provided seasons before inserting.",
     )
+    parser.add_argument(
+        "--date",
+        type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
+        default=None,
+        help="Anchor date for incremental builds. Default: today UTC when lookback/lookahead is provided.",
+    )
+    parser.add_argument(
+        "--start-date",
+        type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
+        default=None,
+        help="First game_date to build, inclusive.",
+    )
+    parser.add_argument(
+        "--end-date",
+        type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
+        default=None,
+        help="Last game_date to build, inclusive.",
+    )
+    parser.add_argument(
+        "--lookback-days",
+        type=int,
+        default=None,
+        help="Days before --date to include in an incremental build.",
+    )
+    parser.add_argument(
+        "--lookahead-days",
+        type=int,
+        default=None,
+        help="Days after --date to include in an incremental build.",
+    )
     return parser.parse_args()
+
+
+def _resolve_date_window(args: argparse.Namespace) -> Optional[tuple[date, date]]:
+    if args.start_date or args.end_date:
+        if not args.start_date or not args.end_date:
+            raise ValueError("--start-date and --end-date must be provided together.")
+        if args.start_date > args.end_date:
+            raise ValueError("--start-date must be on or before --end-date.")
+        return args.start_date, args.end_date
+
+    if args.lookback_days is None and args.lookahead_days is None:
+        return None
+
+    lookback_days = args.lookback_days or 0
+    lookahead_days = args.lookahead_days or 0
+    if lookback_days < 0 or lookahead_days < 0:
+        raise ValueError("--lookback-days and --lookahead-days must be non-negative.")
+
+    anchor = args.date or datetime.now(tz=timezone.utc).date()
+    return anchor - timedelta(days=lookback_days), anchor + timedelta(days=lookahead_days)
 
 
 def _fetch_table(client: bigquery.Client, project: str, dataset: str, table: str, seasons: List[int]) -> pd.DataFrame:
@@ -166,6 +216,30 @@ def _delete_existing_features(client: bigquery.Client, table_id: str, seasons: L
     print(f"Cleared {table_id} for {league} seasons: {', '.join(map(str, seasons))}")
 
 
+def _delete_existing_feature_window(
+    client: bigquery.Client,
+    table_id: str,
+    *,
+    league: str,
+    start_date: date,
+    end_date: date,
+) -> None:
+    query = f"""
+        DELETE FROM `{table_id}`
+        WHERE league = @league
+          AND game_date BETWEEN @start_date AND @end_date
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("league", "STRING", league),
+            bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
+            bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
+        ]
+    )
+    client.query(query, job_config=job_config).result()
+    print(f"Cleared {table_id} for {league} game_date {start_date} to {end_date}")
+
+
 def _load_features(client: bigquery.Client, df: pd.DataFrame, table_id: str) -> None:
     job_config = bigquery.LoadJobConfig(
         write_disposition="WRITE_APPEND",
@@ -176,12 +250,69 @@ def _load_features(client: bigquery.Client, df: pd.DataFrame, table_id: str) -> 
     print(f"Wrote {len(df):,} feature rows to {table_id}")
 
 
+def _filter_schedules_for_window(
+    schedules: pd.DataFrame,
+    date_window: Optional[tuple[date, date]],
+) -> pd.DataFrame:
+    if date_window is None or schedules.empty:
+        return schedules.copy()
+
+    start_date, end_date = date_window
+    schedule_dates = pd.to_datetime(schedules["game_date"], errors="coerce").dt.date
+    return schedules[
+        (schedule_dates >= start_date)
+        & (schedule_dates <= end_date)
+    ].copy()
+
+
+def _ensure_nba_window_games(
+    schedules: pd.DataFrame,
+    date_window: Optional[tuple[date, date]],
+) -> pd.DataFrame:
+    if date_window is None:
+        target_days = [datetime.now(tz=timezone.utc).date()]
+    else:
+        start_date, end_date = date_window
+        target_days = [day.date() for day in pd.date_range(start=start_date, end=end_date, freq="D")]
+
+    if schedules.empty:
+        existing_dates = set()
+    else:
+        existing_dates = set(pd.to_datetime(schedules["game_date"], errors="coerce").dt.date.dropna())
+
+    fetched_frames = []
+    for target_day in target_days:
+        if target_day in existing_dates:
+            continue
+
+        target_str = target_day.strftime("%Y-%m-%d")
+        print(f"No NBA games for {target_str} found in BQ. Fetching from API...")
+        api_games = fetch_nba_games_for_date(target_str, raise_on_error=True)
+        if api_games.empty:
+            continue
+
+        print(f"Found {len(api_games)} NBA games on API for {target_str}. Adding to processing queue.")
+        api_games["game_date"] = pd.to_datetime(api_games["game_date"], utc=True).dt.tz_localize(None)
+        fetched_frames.append(api_games)
+
+    if fetched_frames:
+        schedules = pd.concat([schedules, *fetched_frames], ignore_index=True)
+        schedules = schedules.drop_duplicates(subset=["game_id"])
+        schedules = schedules.drop_duplicates(subset=["home_team", "away_team", "game_date"])
+        schedules = schedules.reset_index(drop=True)
+
+    return schedules
+
+
 def main() -> None:
     load_dotenv()
     args = _parse_args()
     client = bigquery.Client(project=args.project)
+    date_window = _resolve_date_window(args)
 
     print(f"Processing {args.league} for seasons: {args.seasons}")
+    if date_window is not None:
+        print(f"Incremental feature window: {date_window[0]} to {date_window[1]}")
     schedules = _fetch_table(client, args.project, "sports_edge_raw", "raw_schedules", args.seasons)
     
     # 1. Aggressive deduplication of schedules to avoid row explosion
@@ -196,26 +327,7 @@ def main() -> None:
         schedules = schedules.reset_index(drop=True)
     
     if args.league == "NBA":
-        # Ensure today's games are included even if not in raw_schedules
-        today_str = datetime.now(tz=timezone.utc).strftime("%Y-%m-%d")
-        print(f"Checking for NBA games on {today_str}...")
-        
-        # We already converted game_date to datetime above
-        today_games = schedules[schedules["game_date"].dt.strftime("%Y-%m-%d") == today_str]
-        
-        if today_games.empty:
-            print(f"No NBA games for {today_str} found in BQ. Fetching from API...")
-            api_games = fetch_nba_games_for_date(today_str, raise_on_error=True)
-            if not api_games.empty:
-                print(f"Found {len(api_games)} games on API. Adding to processing queue.")
-                # Standardize api_games dates
-                api_games["game_date"] = pd.to_datetime(api_games["game_date"], utc=True).dt.tz_localize(None)
-                
-                # Combine and deduplicate again
-                schedules = pd.concat([schedules, api_games])
-                schedules = schedules.drop_duplicates(subset=["game_id"])
-                schedules = schedules.drop_duplicates(subset=["home_team", "away_team", "game_date"])
-                schedules = schedules.reset_index(drop=True)
+        schedules = _ensure_nba_window_games(schedules, date_window)
     
     historical_data: Dict[str, pd.DataFrame] = {
         "historical_games": schedules,
@@ -245,7 +357,14 @@ def main() -> None:
     schedules = schedules.drop_duplicates(subset=["home_team", "away_team", "game_date"])
     schedules = schedules.reset_index(drop=True)
 
-    feature_rows = build_features(schedules, args.league, historical_data)
+    target_schedules = _filter_schedules_for_window(schedules, date_window)
+    if target_schedules.empty:
+        window_text = "requested window" if date_window is not None else "requested seasons"
+        print(f"No {args.league} games found for {window_text}. Exiting.")
+        return
+
+    print(f"Building {args.league} features for {len(target_schedules):,} target games.")
+    feature_rows = build_features(target_schedules, args.league, historical_data)
     
     # Ensure no duplicates in feature_rows index labels
     feature_rows = feature_rows.reset_index(drop=True)
@@ -298,7 +417,15 @@ def main() -> None:
     feature_rows = feature_rows[FEATURE_COLUMNS]
 
     table_id = f"{args.project}.sports_edge_curated.feature_snapshots"
-    if args.replace:
+    if date_window is not None:
+        _delete_existing_feature_window(
+            client,
+            table_id,
+            league=args.league,
+            start_date=date_window[0],
+            end_date=date_window[1],
+        )
+    elif args.replace:
         _delete_existing_features(client, table_id, args.seasons, args.league)
 
     _load_features(client, feature_rows, table_id)
