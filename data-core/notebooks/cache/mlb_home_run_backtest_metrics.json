@@ -1,0 +1,184 @@
+{
+  "generatedAt": "2026-06-16T20:59:50.638225+00:00",
+  "modelVersion": "mlb-hr-v1",
+  "note": "Daily prediction file has no actual_home_run column yet; run after completed-game outcome join.",
+  "rows": 120,
+  "status": "pending_outcomes",
+  "time_split_backtest": {
+    "feature_columns": [
+      "batter_pa_lag",
+      "batter_games_lag",
+      "batter_hr_per_pa",
+      "batter_recent_pa_28",
+      "batter_recent_hr_per_pa_28",
+      "batter_rate_over_league",
+      "recent_rate_over_league",
+      "pitcher_bf_lag",
+      "pitcher_hr_factor",
+      "venue_factor",
+      "league_hr_per_pa",
+      "lineup_slot",
+      "expected_pa",
+      "is_home",
+      "baseline_probability",
+      "heuristic_probability"
+    ],
+    "leakage_controls": [
+      "games are processed chronologically",
+      "batter, pitcher, venue, and league stats are updated only after each game is scored",
+      "actual plate appearances are retained for audit only and excluded from model features"
+    ],
+    "test": {
+      "auc": 0.6048154641367123,
+      "baseline_brier": 0.10237401505219759,
+      "baseline_log_loss": 0.35751638356828314,
+      "brier": 0.10174780215380966,
+      "calibration": [
+        {
+          "actual_rate": 0.057387057387057384,
+          "avg_probability": 0.05278786533755518,
+          "bucket": "(0.0247, 0.0601]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.07701711491442542,
+          "avg_probability": 0.06416775356388041,
+          "bucket": "(0.0601, 0.0678]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.09035409035409035,
+          "avg_probability": 0.07119714682065749,
+          "bucket": "(0.0678, 0.0745]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.10513447432762836,
+          "avg_probability": 0.07755653851651549,
+          "bucket": "(0.0745, 0.0808]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.09645909645909646,
+          "avg_probability": 0.08425651348031743,
+          "bucket": "(0.0808, 0.0876]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.11613691931540342,
+          "avg_probability": 0.09117500913325753,
+          "bucket": "(0.0876, 0.0954]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.1234718826405868,
+          "avg_probability": 0.10060906968343448,
+          "bucket": "(0.0954, 0.107]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.15018315018315018,
+          "avg_probability": 0.11514601122028678,
+          "bucket": "(0.107, 0.124]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.16136919315403422,
+          "avg_probability": 0.13562064004663088,
+          "bucket": "(0.124, 0.151]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.1855921855921856,
+          "avg_probability": 0.1822781868899192,
+          "bucket": "(0.151, 0.256]",
+          "rows": 819
+        }
+      ],
+      "log_loss": 0.3547680926632346,
+      "positive_rate": 0.11631032376298106,
+      "rows": 8185,
+      "top_10_hit_rate": 0.1875,
+      "top_25_hit_rate": 0.1875
+    },
+    "train": {
+      "auc": 0.7442416099297751,
+      "baseline_brier": 0.09096645753832322,
+      "baseline_log_loss": 0.3273994349143232,
+      "brier": 0.08617671821775137,
+      "calibration": [
+        {
+          "actual_rate": 0.006737247353224254,
+          "avg_probability": 0.046086132301750925,
+          "bucket": "(0.0191, 0.0576]",
+          "rows": 1039
+        },
+        {
+          "actual_rate": 0.017324350336862367,
+          "avg_probability": 0.06366845747655914,
+          "bucket": "(0.0576, 0.0694]",
+          "rows": 1039
+        },
+        {
+          "actual_rate": 0.03468208092485549,
+          "avg_probability": 0.07385415310050245,
+          "bucket": "(0.0694, 0.0782]",
+          "rows": 1038
+        },
+        {
+          "actual_rate": 0.04331087584215592,
+          "avg_probability": 0.08196268099399473,
+          "bucket": "(0.0782, 0.086]",
+          "rows": 1039
+        },
+        {
+          "actual_rate": 0.0741097208854668,
+          "avg_probability": 0.08976365399768028,
+          "bucket": "(0.086, 0.0938]",
+          "rows": 1039
+        },
+        {
+          "actual_rate": 0.11368015414258188,
+          "avg_probability": 0.09841201505086122,
+          "bucket": "(0.0938, 0.103]",
+          "rows": 1038
+        },
+        {
+          "actual_rate": 0.12127045235803657,
+          "avg_probability": 0.1083803075894713,
+          "bucket": "(0.103, 0.114]",
+          "rows": 1039
+        },
+        {
+          "actual_rate": 0.14258188824662812,
+          "avg_probability": 0.12013529915219223,
+          "bucket": "(0.114, 0.127]",
+          "rows": 1038
+        },
+        {
+          "actual_rate": 0.20019249278152068,
+          "avg_probability": 0.13889004879304606,
+          "bucket": "(0.127, 0.156]",
+          "rows": 1039
+        },
+        {
+          "actual_rate": 0.2598652550529355,
+          "avg_probability": 0.1953025917386879,
+          "bucket": "(0.156, 0.272]",
+          "rows": 1039
+        }
+      ],
+      "log_loss": 0.30272510318530155,
+      "positive_rate": 0.10137672090112641,
+      "rows": 10387,
+      "top_10_hit_rate": 0.3237885462555066,
+      "top_25_hit_rate": 0.24269264836138174
+    },
+    "training_window": {
+      "end_date_exclusive": "2026-06-16",
+      "min_prior_pa": 20,
+      "start_date": "2026-03-01",
+      "test_start_date": "2026-05-15"
+    }
+  }
+}

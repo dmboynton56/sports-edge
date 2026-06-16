@@ -15,13 +15,13 @@ import {
 } from "@/components/ui/table";
 import { deriveDataQuality } from "@/lib/data/data-quality";
 import { getPerformanceHistory } from "@/lib/data/performance";
-import { getLocalPredictions } from "@/lib/data/predictions";
+import { getProductionPredictionFeed } from "@/lib/data/player-markets";
 import { formatNumber, formatPct, formatPctFromWhole } from "@/lib/format";
 
 export default async function Home() {
   const [history, predictionFeed] = await Promise.all([
     getPerformanceHistory(),
-    getLocalPredictions(),
+    getProductionPredictionFeed(),
   ]);
   const quality = deriveDataQuality(history);
   const activeWarnings = quality.filter((row) => row.status !== "ok").length;

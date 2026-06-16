@@ -10,11 +10,17 @@ import {
 
 type PredRow = {
   player: string;
+  player_id?: string | null;
   exp_sg_per_round: number;
   sim_win_pct: number;
   sim_top5_pct: number;
   sim_top10_pct: number;
   sim_top20_pct: number;
+  projected_total_strokes?: number | null;
+  projected_score_to_par?: number | null;
+  confidence?: number | null;
+  quality_flags?: string | string[] | null;
+  source?: string | null;
   best_calibrated_target_made_cut_prob?: number;
   best_calibrated_target_top10_prob?: number;
   best_calibrated_target_top20_prob?: number;
@@ -117,7 +123,20 @@ type MidTournamentData = {
 
 type Dashboard = {
   generatedAt: string;
+  event?: {
+    eventKey: string;
+    name: string;
+    season: number;
+    course: string;
+    par: number;
+    yardage?: number;
+    startDate: string;
+    endDate: string;
+    status: string;
+  };
   predictions: PredRow[];
+  normalizedMarkets?: Record<string, unknown>[];
+  gaps?: string[];
   predictionMeta: Record<string, unknown>;
   espnSupplement: { path: string; rows: number; seasons?: number[] };
   mergedResults?: { mainPath: string; supplementPath: string; mergedRows: number };
@@ -140,10 +159,12 @@ type PredictionSortKey =
   | 'best_calibrated_target_top10_prob'
   | 'best_calibrated_target_top20_prob'
   | 'best_calibrated_target_win_prob'
+  | 'projected_total_strokes'
+  | 'projected_score_to_par'
   | 'edge_win'
   | 'ev_win';
 
-const DATA_URL = '/data/pga_masters_dashboard.json';
+const DATA_URL = '/data/pga_tournaments/us_open_2026.json';
 
 function toParColor(tp: string) {
   const s = tp.trim().toUpperCase();
@@ -512,7 +533,7 @@ export default function PGAPage() {
         setData(j);
         setPlayerPick((prev) => prev || j.predictions?.[0]?.player || '');
       })
-      .catch(() => setErr(`Missing ${DATA_URL}. Run: cd data-core && python scripts/export_pga_dashboard.py`));
+      .catch(() => setErr(`Missing ${DATA_URL}. Run: cd data-core && python scripts/export_pga_tournament_dashboard.py`));
   }, []);
 
   const sortedPreds = useMemo(() => {
@@ -539,6 +560,9 @@ export default function PGAPage() {
   );
 
   const hasOdds = data?.edges != null && data.edges.length > 0;
+  const eventName = data?.event?.name ?? 'PGA Tournament';
+  const eventCourse = data?.event?.course ?? 'Tournament course';
+  const eventPar = data?.event?.par;
 
   const formRows = data?.recentByPlayer[playerPick] ?? [];
   const marketSortButtons: { key: PredictionSortKey; label: string }[] = [
@@ -564,15 +588,12 @@ export default function PGAPage() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-[1400px]">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">PGA — Masters model</h1>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">PGA — {eventName}</h1>
         <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
-          Pre-event Monte Carlo and logistic targets from the v2 feature store.{' '}
-          <strong className="text-foreground">ESPN 2026</strong> results are merged via{' '}
-          <code className="text-xs bg-secondary px-1 rounded">pga_results_espn_supplement.tsv</code> — refresh with{' '}
-          <code className="text-xs bg-secondary px-1 rounded">python scripts/fetch_espn_pga_results.py</code>, then{' '}
-          <code className="text-xs bg-secondary px-1 rounded">python -m src.data.build_pga_feature_store</code>, retrain,{' '}
-          <code className="text-xs bg-secondary px-1 rounded">predict_masters_tournament.py</code>, and{' '}
-          <code className="text-xs bg-secondary px-1 rounded">export_pga_dashboard.py</code>.
+          Tournament probabilities for {eventCourse}
+          {eventPar ? `, par ${eventPar}` : ''}. The U.S. Open fast path uses a source-backed field,
+          recent form, projected SG per round, Monte Carlo placement probabilities, and explicit data
+          quality flags while the full PGA model artifacts are promoted.
         </p>
         {data && (
           <p className="text-xs text-muted-foreground mt-3">
@@ -583,6 +604,9 @@ export default function PGAPage() {
             )}
             {data.predictionMeta?.latest_result_start != null && (
               <> · Latest result start: {String(data.predictionMeta.latest_result_start)}</>
+            )}
+            {data.predictionMeta?.model_version != null && (
+              <> · Model: {String(data.predictionMeta.model_version)}</>
             )}
           </p>
         )}
@@ -600,7 +624,7 @@ export default function PGAPage() {
             ['leaderboard', 'Live Leaderboard'],
             ['predictions', 'Predictions'],
             ['odds', 'Odds & Edges'],
-            ['schedule', '2026 ESPN events'],
+            ['schedule', '2026 events'],
             ['form', 'Recent form'],
           ] as const
         ).map(([id, label]) => (
@@ -662,6 +686,8 @@ export default function PGAPage() {
                       ['best_calibrated_target_top10_prob', 'Top 10%'],
                       ['best_calibrated_target_top20_prob', 'Top 20%'],
                       ['best_calibrated_target_made_cut_prob', 'Cut%'],
+                      ['projected_total_strokes', 'Proj Tot'],
+                      ['projected_score_to_par', 'Proj Par'],
                       ['sim_win_pct', 'MC Win%'],
                       ['sim_top10_pct', 'MC T10%'],
                       ['sim_top20_pct', 'MC T20%'],
@@ -729,13 +755,21 @@ export default function PGAPage() {
                         <td className="px-3 py-2 text-right">
                           {pctProb(calibOrLR(r, 'best_calibrated_target_made_cut_prob', 'lr_target_made_cut_prob'))}
                         </td>
+                        <td className="px-3 py-2 text-right font-mono text-muted-foreground">
+                          {r.projected_total_strokes != null ? r.projected_total_strokes.toFixed(1) : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-right font-mono text-muted-foreground">
+                          {r.projected_score_to_par != null
+                            ? `${r.projected_score_to_par > 0 ? '+' : ''}${r.projected_score_to_par.toFixed(1)}`
+                            : '—'}
+                        </td>
                         <td className="px-3 py-2 text-right text-muted-foreground">{r.sim_win_pct.toFixed(1)}%</td>
                         <td className="px-3 py-2 text-right text-muted-foreground">{r.sim_top10_pct.toFixed(1)}%</td>
                         <td className="px-3 py-2 text-right text-muted-foreground">{r.sim_top20_pct.toFixed(1)}%</td>
                       </tr>
                       {open && (
                         <tr className="bg-secondary/20 border-b border-border/50">
-                          <td colSpan={hasOdds ? 12 : 10} className="px-4 py-3">
+                          <td colSpan={hasOdds ? 14 : 12} className="px-4 py-3">
                             <div className="mb-3">
                               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                                 Best calibrated probabilities by market
@@ -823,7 +857,7 @@ export default function PGAPage() {
           {data.edges && data.edges.length > 0 ? (
             <OddsEdgePanel
               edges={data.edges}
-              marketOdds={data.marketOdds ?? { tournament: 'Masters Tournament', fetchedAt: data.generatedAt, commenceTime: '', books: [], overrounds: {}, playerOdds: [] }}
+              marketOdds={data.marketOdds ?? { tournament: eventName, fetchedAt: data.generatedAt, commenceTime: '', books: [], overrounds: {}, playerOdds: [] }}
               placementMarkets={data.placementMarkets}
             />
           ) : (

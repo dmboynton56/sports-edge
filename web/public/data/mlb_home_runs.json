@@ -1,0 +1,6511 @@
+{
+  "gaps": [],
+  "generatedAt": "2026-06-16T20:59:49.375512+00:00",
+  "market": "MLB batter home runs",
+  "modelVersion": "mlb-hr-v1",
+  "predictions": [
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-668709-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.22815133677500624,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYM",
+      "opposingProbablePitcher": "Kodai Senga",
+      "player": "JJ Bleday",
+      "playerId": "668709",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 1,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "JJ Bleday HR",
+      "team": "CIN",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0632
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0635
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.779433+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-701762-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.22431334298653274,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "PIT",
+      "opposingProbablePitcher": "Mitch Keller",
+      "player": "Nick Kurtz",
+      "playerId": "701762",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 2,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Nick Kurtz HR",
+      "team": "ATH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0652
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.08
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.981
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.410879+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_822888",
+      "id": "MLB_822888-621439-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.21996708926845798,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TEX",
+      "opposingProbablePitcher": "Kumar Rocker",
+      "player": "Byron Buxton",
+      "playerId": "621439",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 3,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Byron Buxton HR",
+      "team": "MIN",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0867
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0771
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.824
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.101
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.286102+00:00",
+      "venue": "Globe Life Field"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-670541-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.21317825833682902,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "DET",
+      "opposingProbablePitcher": "Framber Valdez",
+      "player": "Yordan Alvarez",
+      "playerId": "670541",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 4,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Yordan Alvarez HR",
+      "team": "HOU",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0638
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0777
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.282
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.778902+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:15:00+00:00",
+      "gameId": "MLB_824912",
+      "id": "MLB_824912-669477-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.21265872260370852,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATL",
+      "opposingProbablePitcher": "Grant Holmes",
+      "player": "Casey Schmitt",
+      "playerId": "669477",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 5,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Casey Schmitt HR",
+      "team": "SF",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0595
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0581
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.294711+00:00",
+      "venue": "Truist Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-693307-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.2107054614310278,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "HOU",
+      "opposingProbablePitcher": "Hunter Brown",
+      "player": "Dillon Dingler",
+      "playerId": "693307",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 6,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Dillon Dingler HR",
+      "team": "DET",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0577
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0651
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.928959+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_824667",
+      "id": "MLB_824667-691718-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.209133531904786,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "COL",
+      "opposingProbablePitcher": "Ryan Feltner",
+      "player": "Pete Crow-Armstrong",
+      "playerId": "691718",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 7,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Pete Crow-Armstrong HR",
+      "team": "CHC",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0523
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0653
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.723
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.176
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.436324+00:00",
+      "venue": "Wrigley Field"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-665742-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.20091729641012068,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CIN",
+      "opposingProbablePitcher": "Brady Singer",
+      "player": "Juan Soto",
+      "playerId": "665742",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 8,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Juan Soto HR",
+      "team": "NYM",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0674
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0846
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.953289+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-572233-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.19823069268455398,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "DET",
+      "opposingProbablePitcher": "Framber Valdez",
+      "player": "Christian Walker",
+      "playerId": "572233",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 9,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Christian Walker HR",
+      "team": "HOU",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0595
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0614
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.282
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.793481+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-641487-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.19178327922001015,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "BAL",
+      "opposingProbablePitcher": "Brandon Young",
+      "player": "J.P. Crawford",
+      "playerId": "641487",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 10,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "J.P. Crawford HR",
+      "team": "SEA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0561
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0599
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.053890+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:40:00+00:00",
+      "gameId": "MLB_823775",
+      "id": "MLB_823775-694192-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1911823449771562,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CLE",
+      "opposingProbablePitcher": "Slade Cecconi",
+      "player": "Jackson Chourio",
+      "playerId": "694192",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 11,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jackson Chourio HR",
+      "team": "MIL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0504
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0679
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.786
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.447165+00:00",
+      "venue": "American Family Field"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_824667",
+      "id": "MLB_824667-696100-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.18941311058033813,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CHC",
+      "opposingProbablePitcher": "Edward Cabrera",
+      "player": "Hunter Goodman",
+      "playerId": "696100",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 12,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Hunter Goodman HR",
+      "team": "COL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0623
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.079
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.176
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.644292+00:00",
+      "venue": "Wrigley Field"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:40:00+00:00",
+      "gameId": "MLB_823451",
+      "id": "MLB_823451-656941-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.18722786131144883,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIA",
+      "opposingProbablePitcher": "Tyler Phillips",
+      "player": "Kyle Schwarber",
+      "playerId": "656941",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 13,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Kyle Schwarber HR",
+      "team": "PHI",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0697
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0393
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.155
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.399464+00:00",
+      "venue": "Citizens Bank Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-624413-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.18613892394552362,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SEA",
+      "opposingProbablePitcher": "Logan Gilbert",
+      "player": "Pete Alonso",
+      "playerId": "624413",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 14,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Pete Alonso HR",
+      "team": "BAL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0578
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0684
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.267761+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_822723",
+      "id": "MLB_822723-695578-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.18543478300060856,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "KC",
+      "opposingProbablePitcher": "Michael Wacha",
+      "player": "James Wood",
+      "playerId": "695578",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 15,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "James Wood HR",
+      "team": "WSH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0513
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0658
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.946
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.119
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.736311+00:00",
+      "venue": "Nationals Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-669127-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.18427585820645137,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "PIT",
+      "opposingProbablePitcher": "Mitch Keller",
+      "player": "Shea Langeliers",
+      "playerId": "669127",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 16,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Shea Langeliers HR",
+      "team": "ATH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0574
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0524
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.981
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.424559+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-678246-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.18358492198182358,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYY",
+      "opposingProbablePitcher": "Gerrit Cole",
+      "player": "Miguel Vargas",
+      "playerId": "678246",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 17,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Miguel Vargas HR",
+      "team": "CWS",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0554
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0463
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.061
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.581521+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_822723",
+      "id": "MLB_822723-671277-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.18229659837950984,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "KC",
+      "opposingProbablePitcher": "Michael Wacha",
+      "player": "Luis Garc\u00eda Jr.",
+      "playerId": "671277",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 18,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Luis Garc\u00eda Jr. HR",
+      "team": "WSH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0568
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0643
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.946
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.119
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.761961+00:00",
+      "venue": "Nationals Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-660271-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.17892888860699369,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TB",
+      "opposingProbablePitcher": "Drew Rasmussen",
+      "player": "Shohei Ohtani",
+      "playerId": "660271",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 19,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Shohei Ohtani HR",
+      "team": "LAD",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0445
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.06
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.034392+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-518692-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.175834495629247,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TB",
+      "opposingProbablePitcher": "Drew Rasmussen",
+      "player": "Freddie Freeman",
+      "playerId": "518692",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 20,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Freddie Freeman HR",
+      "team": "LAD",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0432
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0581
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.075548+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-681624-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1748694568019651,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TB",
+      "opposingProbablePitcher": "Drew Rasmussen",
+      "player": "Andy Pages",
+      "playerId": "681624",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 21,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Andy Pages HR",
+      "team": "LAD",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.052
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0431
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.060815+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:15:00+00:00",
+      "gameId": "MLB_824912",
+      "id": "MLB_824912-621566-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.16969848576162003,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SF",
+      "opposingProbablePitcher": "Adrian Houser",
+      "player": "Matt Olson",
+      "playerId": "621566",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 22,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Matt Olson HR",
+      "team": "ATL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0557
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0542
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.045
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.162735+00:00",
+      "venue": "Truist Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_824750",
+      "id": "MLB_824750-680776-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.16672898716806586,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TOR",
+      "opposingProbablePitcher": "Dylan Cease",
+      "player": "Jarren Duran",
+      "playerId": "680776",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 23,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jarren Duran HR",
+      "team": "BOS",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0487
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.063
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.107
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.809
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.062821+00:00",
+      "venue": "Fenway Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-691016-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1651288964145692,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "PIT",
+      "opposingProbablePitcher": "Mitch Keller",
+      "player": "Tyler Soderstrom",
+      "playerId": "691016",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 24,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Tyler Soderstrom HR",
+      "team": "ATH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0512
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.063
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.981
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.438125+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-664040-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.16419140441619332,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATH",
+      "opposingProbablePitcher": "Jack Perkins",
+      "player": "Brandon Lowe",
+      "playerId": "664040",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 25,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Brandon Lowe HR",
+      "team": "PIT",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0497
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0431
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.134
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.559573+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_824750",
+      "id": "MLB_824750-575929-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1626462575048339,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TOR",
+      "opposingProbablePitcher": "Dylan Cease",
+      "player": "Willson Contreras",
+      "playerId": "575929",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 26,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Willson Contreras HR",
+      "team": "BOS",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0557
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0613
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.107
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.809
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.128627+00:00",
+      "venue": "Fenway Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:45:00+00:00",
+      "gameId": "MLB_823045",
+      "id": "MLB_823045-592518-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.15768856380587587,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "STL",
+      "opposingProbablePitcher": "Andre Pallante",
+      "player": "Manny Machado",
+      "playerId": "592518",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 27,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Manny Machado HR",
+      "team": "SD",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0454
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.056
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.944
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.976378+00:00",
+      "venue": "Busch Stadium"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:45:00+00:00",
+      "gameId": "MLB_823045",
+      "id": "MLB_823045-676475-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.15737193189854987,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SD",
+      "opposingProbablePitcher": "Michael King",
+      "player": "Alec Burleson",
+      "playerId": "676475",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 28,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Alec Burleson HR",
+      "team": "STL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.047
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.064
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.147
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.810359+00:00",
+      "venue": "Busch Stadium"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_822888",
+      "id": "MLB_822888-592626-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.15700227155632906,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIN",
+      "opposingProbablePitcher": "Zebby Matthews",
+      "player": "Joc Pederson",
+      "playerId": "592626",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 29,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Joc Pederson HR",
+      "team": "TEX",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0505
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0643
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.101
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.123913+00:00",
+      "venue": "Globe Life Field"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-677594-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.15700001934847585,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "BAL",
+      "opposingProbablePitcher": "Brandon Young",
+      "player": "Julio Rodr\u00edguez",
+      "playerId": "677594",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 30,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Julio Rodr\u00edguez HR",
+      "team": "SEA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0473
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0441
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.068401+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_822888",
+      "id": "MLB_822888-665019-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.15337821899034704,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TEX",
+      "opposingProbablePitcher": "Kumar Rocker",
+      "player": "Kody Clemens",
+      "playerId": "665019",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 31,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Kody Clemens HR",
+      "team": "MIN",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0434
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0551
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.824
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.101
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.326318+00:00",
+      "venue": "Globe Life Field"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-687462-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1517363912558874,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATH",
+      "opposingProbablePitcher": "Jack Perkins",
+      "player": "Spencer Horwitz",
+      "playerId": "687462",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 32,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Spencer Horwitz HR",
+      "team": "PIT",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0369
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0512
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.134
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.534082+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_825070",
+      "id": "MLB_825070-682998-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1510702409914575,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "LAA",
+      "opposingProbablePitcher": "Reid Detmers",
+      "player": "Corbin Carroll",
+      "playerId": "682998",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 33,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Corbin Carroll HR",
+      "team": "AZ",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0432
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0434
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.743
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.720650+00:00",
+      "venue": "Chase Field"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_822888",
+      "id": "MLB_822888-686797-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.15076127734452724,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TEX",
+      "opposingProbablePitcher": "Kumar Rocker",
+      "player": "Brooks Lee",
+      "playerId": "686797",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 34,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Brooks Lee HR",
+      "team": "MIN",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0361
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.056
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.824
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.101
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.300541+00:00",
+      "venue": "Globe Life Field"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-502671-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14987017343292144,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CWS",
+      "opposingProbablePitcher": "Davis Martin",
+      "player": "Paul Goldschmidt",
+      "playerId": "502671",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 35,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Paul Goldschmidt HR",
+      "team": "NYY",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0528
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0407
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.446113+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_824667",
+      "id": "MLB_824667-664023-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.149668167801473,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "COL",
+      "opposingProbablePitcher": "Ryan Feltner",
+      "player": "Ian Happ",
+      "playerId": "664023",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 36,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ian Happ HR",
+      "team": "CHC",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0499
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.057
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.723
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.176
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.504589+00:00",
+      "venue": "Wrigley Field"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:15:00+00:00",
+      "gameId": "MLB_824912",
+      "id": "MLB_824912-642715-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.149243966248296,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATL",
+      "opposingProbablePitcher": "Grant Holmes",
+      "player": "Willy Adames",
+      "playerId": "642715",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 37,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Willy Adames HR",
+      "team": "SF",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.045
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0635
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.337172+00:00",
+      "venue": "Truist Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_822723",
+      "id": "MLB_822723-678554-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1480876796040986,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "KC",
+      "opposingProbablePitcher": "Michael Wacha",
+      "player": "Curtis Mead",
+      "playerId": "678554",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 38,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Curtis Mead HR",
+      "team": "WSH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0434
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0613
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.946
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.119
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.776391+00:00",
+      "venue": "Nationals Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:15:00+00:00",
+      "gameId": "MLB_824912",
+      "id": "MLB_824912-671739-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14625775981792913,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SF",
+      "opposingProbablePitcher": "Adrian Houser",
+      "player": "Michael Harris II",
+      "playerId": "671739",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 39,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Michael Harris II HR",
+      "team": "ATL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0439
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.057
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.045
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.123570+00:00",
+      "venue": "Truist Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-650490-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14485029298628518,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "LAD",
+      "opposingProbablePitcher": "Justin Wrobleski",
+      "player": "Yandy D\u00edaz",
+      "playerId": "650490",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 40,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Yandy D\u00edaz HR",
+      "team": "TB",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0423
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0483
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.083
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.185981+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:40:00+00:00",
+      "gameId": "MLB_823775",
+      "id": "MLB_823775-641343-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14242312562274162,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CLE",
+      "opposingProbablePitcher": "Slade Cecconi",
+      "player": "Jake Bauers",
+      "playerId": "641343",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 41,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jake Bauers HR",
+      "team": "MIL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0554
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0618
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.786
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.512646+00:00",
+      "venue": "American Family Field"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-670042-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14178735886383242,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "BAL",
+      "opposingProbablePitcher": "Brandon Young",
+      "player": "Luke Raley",
+      "playerId": "670042",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 42,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Luke Raley HR",
+      "team": "SEA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0663
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.048
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.109738+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_825070",
+      "id": "MLB_825070-687263-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14124866613339576,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "AZ",
+      "opposingProbablePitcher": "Merrill Kelly",
+      "player": "Zach Neto",
+      "playerId": "687263",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 43,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Zach Neto HR",
+      "team": "LAA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.045
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0467
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.202
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.846166+00:00",
+      "venue": "Chase Field"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-553993-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14064550200471826,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYM",
+      "opposingProbablePitcher": "Kodai Senga",
+      "player": "Eugenio Su\u00e1rez",
+      "playerId": "553993",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 44,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Eugenio Su\u00e1rez HR",
+      "team": "CIN",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0462
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.049
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.822239+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:40:00+00:00",
+      "gameId": "MLB_823451",
+      "id": "MLB_823451-547180-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14037471587082662,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIA",
+      "opposingProbablePitcher": "Tyler Phillips",
+      "player": "Bryce Harper",
+      "playerId": "547180",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 45,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Bryce Harper HR",
+      "team": "PHI",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0512
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0307
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.155
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.428771+00:00",
+      "venue": "Citizens Bank Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-666182-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.14006559200614793,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CIN",
+      "opposingProbablePitcher": "Brady Singer",
+      "player": "Bo Bichette",
+      "playerId": "666182",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 46,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Bo Bichette HR",
+      "team": "NYM",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0345
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0452
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.926708+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-700250-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1396934768928269,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CWS",
+      "opposingProbablePitcher": "Davis Martin",
+      "player": "Ben Rice",
+      "playerId": "700250",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 47,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ben Rice HR",
+      "team": "NYY",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0486
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0389
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.405198+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_822723",
+      "id": "MLB_822723-686611-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1385571488195652,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "KC",
+      "opposingProbablePitcher": "Michael Wacha",
+      "player": "Dylan Crews",
+      "playerId": "686611",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 48,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Dylan Crews HR",
+      "team": "WSH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.04
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0414
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.946
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.119
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.806665+00:00",
+      "venue": "Nationals Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-545341-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13804858207813558,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYY",
+      "opposingProbablePitcher": "Gerrit Cole",
+      "player": "Randal Grichuk",
+      "playerId": "545341",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 49,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Randal Grichuk HR",
+      "team": "CWS",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0738
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0624
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.061
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.623896+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-670623-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13761209849038447,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "DET",
+      "opposingProbablePitcher": "Framber Valdez",
+      "player": "Isaac Paredes",
+      "playerId": "670623",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 50,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Isaac Paredes HR",
+      "team": "HOU",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0408
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0551
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.282
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.807949+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_822723",
+      "id": "MLB_822723-682928-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13686030695627438,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "KC",
+      "opposingProbablePitcher": "Michael Wacha",
+      "player": "CJ Abrams",
+      "playerId": "682928",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 51,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "CJ Abrams HR",
+      "team": "WSH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0347
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0467
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.946
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.119
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.790717+00:00",
+      "venue": "Nationals Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_825070",
+      "id": "MLB_825070-606466-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13382639861736292,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "LAA",
+      "opposingProbablePitcher": "Reid Detmers",
+      "player": "Ketel Marte",
+      "playerId": "606466",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 52,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ketel Marte HR",
+      "team": "AZ",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.034
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0493
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.743
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.706227+00:00",
+      "venue": "Chase Field"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:40:00+00:00",
+      "gameId": "MLB_823451",
+      "id": "MLB_823451-664761-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13347906884599178,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIA",
+      "opposingProbablePitcher": "Tyler Phillips",
+      "player": "Alec Bohm",
+      "playerId": "664761",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 53,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Alec Bohm HR",
+      "team": "PHI",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0442
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.041
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.155
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.443453+00:00",
+      "venue": "Citizens Bank Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-695657-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13319795678070562,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYY",
+      "opposingProbablePitcher": "Gerrit Cole",
+      "player": "Colson Montgomery",
+      "playerId": "695657",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 54,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Colson Montgomery HR",
+      "team": "CWS",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0491
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0422
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.061
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.609602+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:45:00+00:00",
+      "gameId": "MLB_823045",
+      "id": "MLB_823045-691023-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1329948711226776,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SD",
+      "opposingProbablePitcher": "Michael King",
+      "player": "Jordan Walker",
+      "playerId": "691023",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 55,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jordan Walker HR",
+      "team": "STL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.047
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0393
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.147
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.824326+00:00",
+      "venue": "Busch Stadium"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_825070",
+      "id": "MLB_825070-672515-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13260230149105373,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "LAA",
+      "opposingProbablePitcher": "Reid Detmers",
+      "player": "Gabriel Moreno",
+      "playerId": "672515",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 56,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Gabriel Moreno HR",
+      "team": "AZ",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0409
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0418
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.743
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.749966+00:00",
+      "venue": "Chase Field"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-543760-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13201005986925682,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CIN",
+      "opposingProbablePitcher": "Brady Singer",
+      "player": "Marcus Semien",
+      "playerId": "543760",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 57,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Marcus Semien HR",
+      "team": "NYM",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0475
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.057
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.994822+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_824750",
+      "id": "MLB_824750-672960-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.13184502170106588,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "BOS",
+      "opposingProbablePitcher": "Payton Tolle",
+      "player": "Kazuma Okamoto",
+      "playerId": "672960",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 58,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Kazuma Okamoto HR",
+      "team": "TOR",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0468
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0479
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.809
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.306709+00:00",
+      "venue": "Fenway Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_822888",
+      "id": "MLB_822888-669394-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1288888407643406,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIN",
+      "opposingProbablePitcher": "Zebby Matthews",
+      "player": "Jake Burger",
+      "playerId": "669394",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 59,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jake Burger HR",
+      "team": "TEX",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0437
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0389
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.101
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.178024+00:00",
+      "venue": "Globe Life Field"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:15:00+00:00",
+      "gameId": "MLB_824912",
+      "id": "MLB_824912-660670-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12878392856391838,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SF",
+      "opposingProbablePitcher": "Adrian Houser",
+      "player": "Ronald Acu\u00f1a Jr.",
+      "playerId": "660670",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 60,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ronald Acu\u00f1a Jr. HR",
+      "team": "ATL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0503
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0545
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.045
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.099340+00:00",
+      "venue": "Truist Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:40:00+00:00",
+      "gameId": "MLB_823451",
+      "id": "MLB_823451-689414-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12734762509713335,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "PHI",
+      "opposingProbablePitcher": "Jes\u00fas Luzardo",
+      "player": "Liam Hicks",
+      "playerId": "689414",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 61,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Liam Hicks HR",
+      "team": "MIA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0354
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0376
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.877
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.155
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.593522+00:00",
+      "venue": "Citizens Bank Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:15:00+00:00",
+      "gameId": "MLB_824912",
+      "id": "MLB_824912-646240-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12722470867309238,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATL",
+      "opposingProbablePitcher": "Grant Holmes",
+      "player": "Rafael Devers",
+      "playerId": "646240",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 62,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Rafael Devers HR",
+      "team": "SF",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0385
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0359
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.322076+00:00",
+      "venue": "Truist Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-701807-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12541311497505336,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CIN",
+      "opposingProbablePitcher": "Brady Singer",
+      "player": "Carson Benge",
+      "playerId": "701807",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 63,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Carson Benge HR",
+      "team": "NYM",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0297
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0356
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.912959+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_824667",
+      "id": "MLB_824667-681198-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12531014783331434,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CHC",
+      "opposingProbablePitcher": "Edward Cabrera",
+      "player": "TJ Rumfield",
+      "playerId": "681198",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 64,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "TJ Rumfield HR",
+      "team": "COL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0391
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0332
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.176
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.629878+00:00",
+      "venue": "Wrigley Field"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-656811-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12505331070786946,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATH",
+      "opposingProbablePitcher": "Jack Perkins",
+      "player": "Ryan O'Hearn",
+      "playerId": "656811",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 65,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ryan O'Hearn HR",
+      "team": "PIT",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0441
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0501
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.134
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.603082+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-667670-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12471604007673488,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "PIT",
+      "opposingProbablePitcher": "Mitch Keller",
+      "player": "Brent Rooker",
+      "playerId": "667670",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 66,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Brent Rooker HR",
+      "team": "ATH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0475
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0512
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.981
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.452704+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-668715-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12367284444086625,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYM",
+      "opposingProbablePitcher": "Kodai Senga",
+      "player": "Spencer Steer",
+      "playerId": "668715",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 67,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Spencer Steer HR",
+      "team": "CIN",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.032
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0342
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.808262+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:45:00+00:00",
+      "gameId": "MLB_823045",
+      "id": "MLB_823045-671056-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12265861180813299,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SD",
+      "opposingProbablePitcher": "Michael King",
+      "player": "Iv\u00e1n Herrera",
+      "playerId": "671056",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 68,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Iv\u00e1n Herrera HR",
+      "team": "STL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0304
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0459
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.147
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.795680+00:00",
+      "venue": "Busch Stadium"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-682848-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1223653728419566,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATH",
+      "opposingProbablePitcher": "Jack Perkins",
+      "player": "Endy Rodr\u00edguez",
+      "playerId": "682848",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 69,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Endy Rodr\u00edguez HR",
+      "team": "PIT",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0381
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0439
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.134
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.643013+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_825070",
+      "id": "MLB_825070-545361-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.12230414910075155,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "AZ",
+      "opposingProbablePitcher": "Merrill Kelly",
+      "player": "Mike Trout",
+      "playerId": "545361",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 70,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Mike Trout HR",
+      "team": "LAA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0332
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0418
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.202
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.872863+00:00",
+      "venue": "Chase Field"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-643217-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11980423572684686,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYY",
+      "opposingProbablePitcher": "Gerrit Cole",
+      "player": "Andrew Benintendi",
+      "playerId": "643217",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 71,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Andrew Benintendi HR",
+      "team": "CWS",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0385
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0485
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.061
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.595226+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.12406378772740434,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-679529-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 6,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11947980731383874,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "HOU",
+      "opposingProbablePitcher": "Hunter Brown",
+      "player": "Spencer Torkelson",
+      "playerId": "679529",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 72,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Spencer Torkelson HR",
+      "team": "DET",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0444
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.063
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.22
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.985191+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:40:00+00:00",
+      "gameId": "MLB_823775",
+      "id": "MLB_823775-668930-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11935697202561844,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CLE",
+      "opposingProbablePitcher": "Slade Cecconi",
+      "player": "Brice Turang",
+      "playerId": "668930",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 73,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Brice Turang HR",
+      "team": "MIL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0359
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0376
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.786
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.461522+00:00",
+      "venue": "American Family Field"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:40:00+00:00",
+      "gameId": "MLB_823775",
+      "id": "MLB_823775-700932-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11928784855304632,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIL",
+      "opposingProbablePitcher": "Robert Gasser",
+      "player": "Kyle Manzardo",
+      "playerId": "700932",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 74,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Kyle Manzardo HR",
+      "team": "CLE",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0482
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0413
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.636700+00:00",
+      "venue": "American Family Field"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_824750",
+      "id": "MLB_824750-676391-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11802417928866568,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "BOS",
+      "opposingProbablePitcher": "Payton Tolle",
+      "player": "Ernie Clement",
+      "playerId": "676391",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 75,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ernie Clement HR",
+      "team": "TOR",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0369
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0389
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.809
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.292252+00:00",
+      "venue": "Fenway Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-683002-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11750336720061005,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SEA",
+      "opposingProbablePitcher": "Logan Gilbert",
+      "player": "Gunnar Henderson",
+      "playerId": "683002",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 76,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Gunnar Henderson HR",
+      "team": "BAL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0287
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0356
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.238615+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-690993-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11720692873747988,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "HOU",
+      "opposingProbablePitcher": "Hunter Brown",
+      "player": "Colt Keith",
+      "playerId": "690993",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 77,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Colt Keith HR",
+      "team": "DET",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0348
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0542
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.999364+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_822723",
+      "id": "MLB_822723-677951-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11710341732002866,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "WSH",
+      "opposingProbablePitcher": "Foster Griffin",
+      "player": "Bobby Witt Jr.",
+      "playerId": "677951",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 78,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Bobby Witt Jr. HR",
+      "team": "KC",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0374
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0198
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.119
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.925978+00:00",
+      "venue": "Nationals Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-668804-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.1169452748953703,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATH",
+      "opposingProbablePitcher": "Jack Perkins",
+      "player": "Bryan Reynolds",
+      "playerId": "668804",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 79,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Bryan Reynolds HR",
+      "team": "PIT",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.025
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.035
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.134
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.574046+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.12406378772740434,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-571970-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 6,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11590202762120588,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TB",
+      "opposingProbablePitcher": "Drew Rasmussen",
+      "player": "Max Muncy",
+      "playerId": "571970",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 80,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Max Muncy HR",
+      "team": "LAD",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0473
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.048
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.22
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.118185+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-605141-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11511224681652775,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TB",
+      "opposingProbablePitcher": "Drew Rasmussen",
+      "player": "Mookie Betts",
+      "playerId": "605141",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 81,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Mookie Betts HR",
+      "team": "LAD",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0362
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0287
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.089831+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-691406-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11336349789620269,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "LAD",
+      "opposingProbablePitcher": "Justin Wrobleski",
+      "player": "Junior Caminero",
+      "playerId": "691406",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 82,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Junior Caminero HR",
+      "team": "TB",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0345
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0213
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.083
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.236899+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-668901-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11334943005579881,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CIN",
+      "opposingProbablePitcher": "Brady Singer",
+      "player": "Mark Vientos",
+      "playerId": "668901",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 83,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Mark Vientos HR",
+      "team": "NYM",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0385
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0192
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.979736+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-665161-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11303068640452243,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "DET",
+      "opposingProbablePitcher": "Framber Valdez",
+      "player": "Jeremy Pe\u00f1a",
+      "playerId": "665161",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 84,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jeremy Pe\u00f1a HR",
+      "team": "HOU",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0285
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0294
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.282
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.752880+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-668723-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11298628716894886,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "LAD",
+      "opposingProbablePitcher": "Justin Wrobleski",
+      "player": "Ryan Vilade",
+      "playerId": "668723",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 85,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ryan Vilade HR",
+      "team": "TB",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0423
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.035
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.083
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.265806+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-681297-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11224573359429191,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SEA",
+      "opposingProbablePitcher": "Logan Gilbert",
+      "player": "Colton Cowser",
+      "playerId": "681297",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 86,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Colton Cowser HR",
+      "team": "BAL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0599
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0713
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.319562+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_825070",
+      "id": "MLB_825070-666176-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11126497825810425,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "AZ",
+      "opposingProbablePitcher": "Merrill Kelly",
+      "player": "Jo Adell",
+      "playerId": "666176",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 87,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jo Adell HR",
+      "team": "LAA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0358
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0364
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.202
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.938296+00:00",
+      "venue": "Chase Field"
+    },
+    {
+      "baselineProbability": 0.12406378772740434,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-665833-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 6,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11120029052500781,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATH",
+      "opposingProbablePitcher": "Jack Perkins",
+      "player": "Oneil Cruz",
+      "playerId": "665833",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 88,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Oneil Cruz HR",
+      "team": "PIT",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0345
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0485
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.134
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.22
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.617542+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:40:00+00:00",
+      "gameId": "MLB_823451",
+      "id": "MLB_823451-683357-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11106209756627025,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "PHI",
+      "opposingProbablePitcher": "Jes\u00fas Luzardo",
+      "player": "Owen Caissie",
+      "playerId": "683357",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 89,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Owen Caissie HR",
+      "team": "MIA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0394
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0444
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.877
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.155
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.673645+00:00",
+      "venue": "Citizens Bank Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-641355-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11053250088767755,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CWS",
+      "opposingProbablePitcher": "Davis Martin",
+      "player": "Cody Bellinger",
+      "playerId": "641355",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 90,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Cody Bellinger HR",
+      "team": "NYY",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0402
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0403
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.460690+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.11827767543005985,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-680574-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 8,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.11014409955796255,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYM",
+      "opposingProbablePitcher": "Kodai Senga",
+      "player": "Matt McLain",
+      "playerId": "680574",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 91,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Matt McLain HR",
+      "team": "CIN",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0429
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0391
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.01
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.873618+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-694212-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10892055251832503,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SEA",
+      "opposingProbablePitcher": "Logan Gilbert",
+      "player": "Samuel Basallo",
+      "playerId": "694212",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 92,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Samuel Basallo HR",
+      "team": "BAL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0405
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0524
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.282080+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:45:00+00:00",
+      "gameId": "MLB_823045",
+      "id": "MLB_823045-657757-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10890860743648537,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "STL",
+      "opposingProbablePitcher": "Andre Pallante",
+      "player": "Gavin Sheets",
+      "playerId": "657757",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 93,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Gavin Sheets HR",
+      "team": "SD",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0457
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0239
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.944
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.962204+00:00",
+      "venue": "Busch Stadium"
+    },
+    {
+      "baselineProbability": 0.11827767543005985,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-672761-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 8,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10857457797080633,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "HOU",
+      "opposingProbablePitcher": "Hunter Brown",
+      "player": "Wenceel P\u00e9rez",
+      "playerId": "672761",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 94,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Wenceel P\u00e9rez HR",
+      "team": "DET",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0411
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0686
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.01
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.013818+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:40:00+00:00",
+      "gameId": "MLB_823451",
+      "id": "MLB_823451-669065-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10797345223414119,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "PHI",
+      "opposingProbablePitcher": "Jes\u00fas Luzardo",
+      "player": "Kyle Stowers",
+      "playerId": "669065",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 95,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Kyle Stowers HR",
+      "team": "MIA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0306
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.038
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.877
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.155
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.619813+00:00",
+      "venue": "Citizens Bank Park"
+    },
+    {
+      "baselineProbability": 0.12406378772740434,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:15:00+00:00",
+      "gameId": "MLB_824912",
+      "id": "MLB_824912-656305-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 6,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10626025747679402,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "ATL",
+      "opposingProbablePitcher": "Grant Holmes",
+      "player": "Matt Chapman",
+      "playerId": "656305",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 96,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Matt Chapman HR",
+      "team": "SF",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0359
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0551
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.22
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.363873+00:00",
+      "venue": "Truist Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_824667",
+      "id": "MLB_824667-650489-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10577651603791617,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CHC",
+      "opposingProbablePitcher": "Edward Cabrera",
+      "player": "Willi Castro",
+      "playerId": "650489",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 97,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Willi Castro HR",
+      "team": "COL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0281
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0312
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.176
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.615175+00:00",
+      "venue": "Wrigley Field"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-592450-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10535420517206227,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CWS",
+      "opposingProbablePitcher": "Davis Martin",
+      "player": "Aaron Judge",
+      "playerId": "592450",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 98,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Aaron Judge HR",
+      "team": "NYY",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.039
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0236
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.419930+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_822888",
+      "id": "MLB_822888-673962-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10381912636944898,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIN",
+      "opposingProbablePitcher": "Zebby Matthews",
+      "player": "Josh Jung",
+      "playerId": "673962",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 99,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Josh Jung HR",
+      "team": "TEX",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0251
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0294
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.101
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.138118+00:00",
+      "venue": "Globe Life Field"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-686527-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10305794270371582,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "BAL",
+      "opposingProbablePitcher": "Brandon Young",
+      "player": "Dominic Canzone",
+      "playerId": "686527",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 100,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Dominic Canzone HR",
+      "team": "SEA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0577
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0762
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.149160+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-682985-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10195099806019003,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "HOU",
+      "opposingProbablePitcher": "Hunter Brown",
+      "player": "Riley Greene",
+      "playerId": "682985",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 101,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Riley Greene HR",
+      "team": "DET",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0259
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0389
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.943115+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_822723",
+      "id": "MLB_822723-696285-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10164134940088058,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "KC",
+      "opposingProbablePitcher": "Michael Wacha",
+      "player": "Jacob Young",
+      "playerId": "696285",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 102,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jacob Young HR",
+      "team": "WSH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0434
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0404
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.946
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.119
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.835985+00:00",
+      "venue": "Nationals Park"
+    },
+    {
+      "baselineProbability": 0.11537030217375177,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-806068-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 9,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10135193422378332,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "BAL",
+      "opposingProbablePitcher": "Brandon Young",
+      "player": "Colt Emerson",
+      "playerId": "806068",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 103,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Colt Emerson HR",
+      "team": "SEA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0595
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0585
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 3.91
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.188891+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.12981192991263468,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_824667",
+      "id": "MLB_824667-683737-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 4,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10130376547422174,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "COL",
+      "opposingProbablePitcher": "Ryan Feltner",
+      "player": "Michael Busch",
+      "playerId": "683737",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 104,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Michael Busch HR",
+      "team": "CHC",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0326
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0353
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.723
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.176
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.43
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.490110+00:00",
+      "venue": "Wrigley Field"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-701358-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10121959641175805,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "DET",
+      "opposingProbablePitcher": "Framber Valdez",
+      "player": "Cam Smith",
+      "playerId": "701358",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 105,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Cam Smith HR",
+      "team": "HOU",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0223
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0315
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.282
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.822510+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:40:00+00:00",
+      "gameId": "MLB_823775",
+      "id": "MLB_823775-656555-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10076437502293184,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIL",
+      "opposingProbablePitcher": "Robert Gasser",
+      "player": "Rhys Hoskins",
+      "playerId": "656555",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 106,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Rhys Hoskins HR",
+      "team": "CLE",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0358
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0312
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.651148+00:00",
+      "venue": "American Family Field"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:45:00+00:00",
+      "gameId": "MLB_824750",
+      "id": "MLB_824750-678882-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10053656452492551,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "TOR",
+      "opposingProbablePitcher": "Dylan Cease",
+      "player": "Ceddanne Rafaela",
+      "playerId": "678882",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 107,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ceddanne Rafaela HR",
+      "team": "BOS",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0383
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0317
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.107
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.809
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.076081+00:00",
+      "venue": "Fenway Park"
+    },
+    {
+      "baselineProbability": 0.11827767543005985,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_824991",
+      "id": "MLB_824991-680869-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 8,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.10041390509144943,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "PIT",
+      "opposingProbablePitcher": "Mitch Keller",
+      "player": "Zack Gelof",
+      "playerId": "680869",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 108,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Zack Gelof HR",
+      "team": "ATH",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0456
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0364
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.981
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.01
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.494785+00:00",
+      "venue": "Sutter Health Park"
+    },
+    {
+      "baselineProbability": 0.1383634938436833,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_824667",
+      "id": "MLB_824667-664983-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 1,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09979486855195659,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CHC",
+      "opposingProbablePitcher": "Edward Cabrera",
+      "player": "Jake McCarthy",
+      "playerId": "664983",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 109,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jake McCarthy HR",
+      "team": "COL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0257
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0237
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.176
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.75
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.600686+00:00",
+      "venue": "Wrigley Field"
+    },
+    {
+      "baselineProbability": 0.12406378772740434,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:10:00+00:00",
+      "gameId": "MLB_824504",
+      "id": "MLB_824504-663993-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 6,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.0991541142830822,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "NYM",
+      "opposingProbablePitcher": "Kodai Senga",
+      "player": "Nathaniel Lowe",
+      "playerId": "663993",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 110,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Nathaniel Lowe HR",
+      "team": "CIN",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0285
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0328
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.22
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.836245+00:00",
+      "venue": "Great American Ball Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T22:40:00+00:00",
+      "gameId": "MLB_823451",
+      "id": "MLB_823451-669016-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09889797933450356,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIA",
+      "opposingProbablePitcher": "Tyler Phillips",
+      "player": "Brandon Marsh",
+      "playerId": "669016",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 111,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Brandon Marsh HR",
+      "team": "PHI",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0276
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.043
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.155
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:44.457859+00:00",
+      "venue": "Citizens Bank Park"
+    },
+    {
+      "baselineProbability": 0.12406378772740434,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:05:00+00:00",
+      "gameId": "MLB_823535",
+      "id": "MLB_823535-665862-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 6,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09882756617051515,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CWS",
+      "opposingProbablePitcher": "Davis Martin",
+      "player": "Jazz Chisholm Jr.",
+      "playerId": "665862",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 112,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jazz Chisholm Jr. HR",
+      "team": "NYY",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0385
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0447
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 0.72
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.987
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.22
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:45.485781+00:00",
+      "venue": "Yankee Stadium"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_822888",
+      "id": "MLB_822888-607043-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.097529494061643,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIN",
+      "opposingProbablePitcher": "Zebby Matthews",
+      "player": "Brandon Nimmo",
+      "playerId": "607043",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 113,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Brandon Nimmo HR",
+      "team": "TEX",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0211
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0296
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.101
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.152675+00:00",
+      "venue": "Globe Life Field"
+    },
+    {
+      "baselineProbability": 0.12406378772740434,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:05:00+00:00",
+      "gameId": "MLB_824667",
+      "id": "MLB_824667-678662-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 6,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09720712134602093,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "CHC",
+      "opposingProbablePitcher": "Edward Cabrera",
+      "player": "Ezequiel Tovar",
+      "playerId": "678662",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 114,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Ezequiel Tovar HR",
+      "team": "COL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0301
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0414
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.176
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.22
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.685048+00:00",
+      "venue": "Wrigley Field"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-16T23:40:00+00:00",
+      "gameId": "MLB_823775",
+      "id": "MLB_823775-682657-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09683995158143195,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "MIL",
+      "opposingProbablePitcher": "Robert Gasser",
+      "player": "Angel Mart\u00ednez",
+      "playerId": "682657",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 115,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Angel Mart\u00ednez HR",
+      "team": "CLE",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0407
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0258
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.75
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:46.691885+00:00",
+      "venue": "American Family Field"
+    },
+    {
+      "baselineProbability": 0.13267184014303635,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_823128",
+      "id": "MLB_823128-668939-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 3,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09659039140130059,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "SEA",
+      "opposingProbablePitcher": "Logan Gilbert",
+      "player": "Adley Rutschman",
+      "playerId": "668939",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 116,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Adley Rutschman HR",
+      "team": "BAL",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0284
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.015
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.35
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.096
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.54
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.253315+00:00",
+      "venue": "T-Mobile Park"
+    },
+    {
+      "baselineProbability": 0.1269425894724181,
+      "book": "model",
+      "confidence": 0.64,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-663330-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 5,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09635584944531006,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "HOU",
+      "opposingProbablePitcher": "Hunter Brown",
+      "player": "Jahmai Jones",
+      "playerId": "663330",
+      "price": null,
+      "qualityFlags": [
+        "low_pitcher_history"
+      ],
+      "rank": 117,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jahmai Jones HR",
+      "team": "DET",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0124
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0103
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.0
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.33
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.970646+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.13552235115640987,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T02:10:00+00:00",
+      "gameId": "MLB_823939",
+      "id": "MLB_823939-666018-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 2,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09627188899384492,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "LAD",
+      "opposingProbablePitcher": "Justin Wrobleski",
+      "player": "Jonathan Aranda",
+      "playerId": "666018",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 118,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jonathan Aranda HR",
+      "team": "TB",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0255
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0309
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.083
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.25
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.64
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:49.211995+00:00",
+      "venue": "UNIQLO Field at Dodger Stadium"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T00:10:00+00:00",
+      "gameId": "MLB_824182",
+      "id": "MLB_824182-676694-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09593821862070073,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "DET",
+      "opposingProbablePitcher": "Framber Valdez",
+      "player": "Jake Meyers",
+      "playerId": "676694",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 119,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jake Meyers HR",
+      "team": "HOU",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0278
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0272
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.282
+        },
+        {
+          "feature": "venue_factor",
+          "value": 1.159
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:47.851622+00:00",
+      "venue": "Daikin Park"
+    },
+    {
+      "baselineProbability": 0.12117549348007961,
+      "book": "model",
+      "confidence": 0.72,
+      "edge": null,
+      "ev": null,
+      "eventTime": "2026-06-17T01:40:00+00:00",
+      "gameId": "MLB_825070",
+      "id": "MLB_825070-642350-hr",
+      "impliedProbability": null,
+      "kelly": null,
+      "league": "MLB",
+      "line": 0.5,
+      "lineupSlot": 7,
+      "lineupStatus": "projected",
+      "market": "home_run",
+      "modelProbability": 0.09562534870329457,
+      "modelVersion": "mlb-hr-v1",
+      "opponent": "AZ",
+      "opposingProbablePitcher": "Merrill Kelly",
+      "player": "Jose Siri",
+      "playerId": "642350",
+      "price": null,
+      "qualityFlags": [],
+      "rank": 120,
+      "source": "MLB Stats API projected lineup",
+      "sport": "MLB",
+      "subject": "Jose Siri HR",
+      "team": "LAA",
+      "topFeatures": [
+        {
+          "feature": "batter_hr_per_pa",
+          "value": 0.0458
+        },
+        {
+          "feature": "recent_hr_per_pa",
+          "value": 0.0515
+        },
+        {
+          "feature": "pitcher_hr_factor",
+          "value": 1.202
+        },
+        {
+          "feature": "venue_factor",
+          "value": 0.808
+        },
+        {
+          "feature": "expected_pa",
+          "value": 4.12
+        }
+      ],
+      "updatedAt": "2026-06-16T20:59:48.980593+00:00",
+      "venue": "Chase Field"
+    }
+  ],
+  "productionStatus": "candidate"
+}
