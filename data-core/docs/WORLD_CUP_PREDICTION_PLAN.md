@@ -1,7 +1,7 @@
 # World Cup Prediction Pipeline
 
 Generated: 2026-06-13
-Last live sync: 2026-06-15
+Last live sync: 2026-06-16
 
 ## Scope
 
@@ -165,10 +165,12 @@ PYTHONPATH=data-core python3 data-core/scripts/refresh_world_cup.py \
   --sync-supabase
 ```
 
-The daily GitHub Actions refresh now gates this command with
-`scripts/plan_daily_refresh.py` during the June/July World Cup window. Dry-run
-workflow executions still build the payload and report would-write row counts
-without writing BigQuery or Supabase.
+The dedicated `.github/workflows/world-cup-refresh.yml` GitHub Actions workflow
+gates this command with `scripts/plan_daily_refresh.py` during the June/July
+World Cup window. It runs at 03:00, 13:00, 17:00, and 21:00 UTC so the
+portfolio can pick up same-day final results and refreshed next-match
+probabilities. Dry-run workflow executions still build the payload and report
+would-write row counts without writing BigQuery or Supabase.
 
 ## Portfolio
 
@@ -180,9 +182,9 @@ payload as NFL/NBA/MLB. `SportsEdgeCard` renders a `World Cup` tab with:
 - projected goals;
 - group winner probabilities.
 
-Verified live serving state on 2026-06-15:
+Verified live serving state on 2026-06-16:
 
-- model version: `world-cup-v0-live-2026-06-15`;
+- model version: `world-cup-v0-live`;
 - simulations: 50,000;
 - bracket source: `configured_round_of_32_slots`;
 - Supabase rows: 72 enriched match predictions and 48 team probability rows;

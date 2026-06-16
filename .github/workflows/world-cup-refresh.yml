@@ -1,0 +1,105 @@
+name: World Cup Refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build predictions but skip BigQuery and Supabase writes"
+        required: false
+        default: "false"
+      n_sims:
+        description: "Monte Carlo simulations to run"
+        required: false
+        default: "50000"
+  schedule:
+    # Frequent tournament refreshes: pre-match, midday, afternoon, and post-match.
+    # Times are UTC. In MDT these are roughly 07:00, 11:00, 15:00, and 21:00.
+    - cron: "0 3,13,17,21 * * *"
+
+concurrency:
+  group: sports-edge-world-cup-refresh
+  cancel-in-progress: false
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PYTHONPATH: ${{ github.workspace }}/data-core
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+  N_SIMS: ${{ github.event.inputs.n_sims || '50000' }}
+
+jobs:
+  refresh-world-cup:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: data-core
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-key.json
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: data-core/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt google-cloud-bigquery supabase
+
+      - name: Configure GCP credentials
+        shell: bash
+        run: |
+          echo "$GCP_SERVICE_ACCOUNT_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
+        env:
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Plan World Cup refresh gate
+        id: plan
+        shell: bash
+        run: |
+          python scripts/plan_daily_refresh.py \
+            --project "$PROJECT_ID" \
+            --lookback-days 0 \
+            --lookahead-days 1 \
+            --github-output | tee /tmp/world_cup_refresh_plan.json
+          echo "### World Cup Refresh Plan" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`json" >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/world_cup_refresh_plan.json >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Skip outside World Cup window
+        if: ${{ steps.plan.outputs.run_world_cup != 'true' }}
+        run: |
+          echo "World Cup window is inactive; no refresh needed." >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Refresh World Cup predictions and results
+        if: ${{ steps.plan.outputs.run_world_cup == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          WORLD_CUP_ARGS=(
+            --season "${{ steps.plan.outputs.world_cup_season }}"
+            --start-date "${{ steps.plan.outputs.world_cup_start_date }}"
+            --end-date "${{ steps.plan.outputs.world_cup_end_date }}"
+            --model-version world-cup-v0-live
+            --n-sims "$N_SIMS"
+            --output-dir notebooks/cache/world_cup
+            --project "$PROJECT_ID"
+            --write-bigquery
+          )
+          if [ "$DRY_RUN" = "true" ]; then
+            WORLD_CUP_ARGS+=(--dry-run)
+          else
+            WORLD_CUP_ARGS+=(--sync-supabase)
+          fi
+          python scripts/refresh_world_cup.py "${WORLD_CUP_ARGS[@]}"

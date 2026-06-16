@@ -154,35 +154,6 @@ jobs:
             --lookback-days 10 \
             --lookahead-days 0
 
-      - name: Generate World Cup Predictions
-        if: ${{ steps.plan.outputs.run_world_cup == 'true' }}
-        shell: bash
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
-          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
-          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
-          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: |
-          WORLD_CUP_ARGS=(
-            --season "${{ steps.plan.outputs.world_cup_season }}"
-            --start-date "${{ steps.plan.outputs.world_cup_start_date }}"
-            --end-date "${{ steps.plan.outputs.world_cup_end_date }}"
-            --model-version world-cup-v0-live
-            --n-sims 50000
-            --output-dir notebooks/cache/world_cup
-            --project "$PROJECT_ID"
-            --write-bigquery
-          )
-          if [ "$DRY_RUN" = "true" ]; then
-            WORLD_CUP_ARGS+=(--dry-run)
-          else
-            WORLD_CUP_ARGS+=(--sync-supabase)
-          fi
-          python scripts/refresh_world_cup.py "${WORLD_CUP_ARGS[@]}"
-
       - name: Sync Predictions to Supabase
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
         shell: bash
