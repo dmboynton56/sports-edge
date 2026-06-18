@@ -27,8 +27,6 @@ on:
         description: "Sync generated player markets to BigQuery"
         required: false
         default: "true"
-  schedule:
-    - cron: "30 12 * * *"
 
 concurrency:
   group: sports-edge-player-markets

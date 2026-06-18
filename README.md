@@ -15,11 +15,16 @@ recruiter-facing production claims.
 
 ## Current Production Flow
 
-The daily workflow is `.github/workflows/daily-refresh.yml` and runs at
-13:00 UTC for the normal league stack. World Cup uses its own lightweight
+Google Cloud Scheduler owns production timing through the Cloud Run bridge in
+`gcp/scheduler-trigger/`, which calls GitHub `workflow_dispatch` for the
+Actions workers. The daily workflow is `.github/workflows/daily-refresh.yml`
+and runs at 13:00 UTC for the normal league stack, including MLB home-run
+player markets when MLB is active. World Cup uses its own lightweight
 `.github/workflows/world-cup-refresh.yml` workflow during the tournament, with
-scheduled runs at 03:00, 13:00, 17:00, and 21:00 UTC so results and next-match
-probabilities refresh several times per day.
+Scheduler runs at 03:00, 13:00, 17:00, and 21:00 UTC so results and next-match
+probabilities refresh several times per day. `.github/workflows/player-markets-refresh.yml`
+remains available for manual player-market refreshes and scheduled PGA
+refreshes.
 
 ```text
 raw league data + odds
@@ -52,6 +57,7 @@ Current scheduled model versions:
 - NBA: `refresh_nba --model-version v3`
 - NFL: `refresh_nfl --model-version v1`
 - MLB: `refresh_mlb --model-version v3` for home-win probability display only
+- MLB HR: `predict_mlb_home_runs.py` for daily player home-run probabilities
 - World Cup: `world-cup-v0-live` candidate baseline via `refresh_world_cup.py`
 
 ## Repository Layout
@@ -121,6 +127,16 @@ v1`. MLB uses `python -m src.pipeline.refresh_mlb --project "$GCP_PROJECT_ID"
 MLB rows intentionally set `predicted_spread`/`book_spread` to null; the
 portfolio displays only model home-win probabilities, probable pitchers, final
 scores, and winner-hit status.
+
+MLB home-run markets run in the daily workflow after the MLB game-level refresh:
+
+```bash
+python scripts/predict_mlb_home_runs.py --date "$(date -u +%Y-%m-%d)" --history-days 45 --top-n 120
+python scripts/export_prediction_feed.py
+python scripts/validate_public_json.py ../web/public/data/mlb_home_runs.json ../web/public/data/predictions.json
+python scripts/sync_player_markets_to_bigquery.py --project "$GCP_PROJECT_ID" --skip-pga
+python scripts/sync_player_markets_to_supabase.py --skip-pga
+```
 
 World Cup candidate refresh:
 

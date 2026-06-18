@@ -11,8 +11,6 @@ on:
         description: "Force full feature snapshot rebuild"
         required: false
         default: "false"
-  schedule:
-    - cron: "0 13 * * *" # Daily at 13:00 UTC (08:00 ET)
 
 concurrency:
   group: sports-edge-daily-refresh
@@ -153,6 +151,37 @@ jobs:
             --season "${{ steps.plan.outputs.mlb_season }}" \
             --lookback-days 10 \
             --lookahead-days 0
+
+      - name: Generate MLB HR Markets
+        if: ${{ steps.plan.outputs.run_mlb == 'true' }}
+        shell: bash
+        run: |
+          python scripts/predict_mlb_home_runs.py \
+            --date "${{ steps.plan.outputs.anchor_date }}" \
+            --history-days 45 \
+            --top-n 120
+          python scripts/export_prediction_feed.py
+          python scripts/validate_public_json.py \
+            ../web/public/data/mlb_home_runs.json \
+            ../web/public/data/predictions.json
+
+      - name: Sync MLB HR Markets to BigQuery
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
+        shell: bash
+        run: python scripts/sync_player_markets_to_bigquery.py --project "$PROJECT_ID" --skip-pga
+
+      - name: Sync MLB HR Markets to Supabase
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: python scripts/sync_player_markets_to_supabase.py --skip-pga
 
       - name: Sync Predictions to Supabase
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}

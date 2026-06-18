@@ -11,10 +11,6 @@ on:
         description: "Monte Carlo simulations to run"
         required: false
         default: "50000"
-  schedule:
-    # Frequent tournament refreshes: pre-match, midday, afternoon, and post-match.
-    # Times are UTC. In MDT these are roughly 07:00, 11:00, 15:00, and 21:00.
-    - cron: "0 3,13,17,21 * * *"
 
 concurrency:
   group: sports-edge-world-cup-refresh
