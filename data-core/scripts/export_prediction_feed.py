@@ -5,12 +5,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-
 ROOT = Path(__file__).resolve().parents[2]
+SCRIPTS = Path(__file__).resolve().parent
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from json_utils import dumps_strict  # noqa: E402
 DEFAULT_PGA_JSON = ROOT / "web" / "public" / "data" / "pga_tournaments" / "us_open_2026.json"
 DEFAULT_MLB_JSON = ROOT / "web" / "public" / "data" / "mlb_home_runs.json"
 DEFAULT_OUT = ROOT / "web" / "public" / "data" / "predictions.json"
@@ -47,7 +52,7 @@ def main() -> None:
         "gaps": gaps,
     }
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    args.out.write_text(dumps_strict(payload, indent=2, sort_keys=True), encoding="utf-8")
     print(f"Wrote {args.out} with {len(predictions)} predictions")
 
 

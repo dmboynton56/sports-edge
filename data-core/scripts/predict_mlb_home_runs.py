@@ -27,10 +27,14 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = ROOT.parent
+SCRIPTS = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
 
 from src.data.mlb_fetcher import fetch_mlb_schedule  # noqa: E402
+from json_utils import dumps_strict  # noqa: E402
 from src.models.mlb_home_run_model import (  # noqa: E402
     MODEL_VERSION as TRAINED_MODEL_VERSION,
     build_hr_feature_values,
@@ -510,7 +514,10 @@ def main() -> None:
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(args.out_csv, index=False)
     args.web_out.parent.mkdir(parents=True, exist_ok=True)
-    args.web_out.write_text(json.dumps(_to_web_payload(predictions, gaps), indent=2, sort_keys=True), encoding="utf-8")
+    args.web_out.write_text(
+        dumps_strict(_to_web_payload(predictions, gaps), indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
     print(f"Wrote {len(predictions)} MLB HR predictions to {args.out_csv} and {args.web_out}")
 
 
