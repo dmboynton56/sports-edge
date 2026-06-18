@@ -116,6 +116,7 @@ with (security_invoker = true) as
 select distinct on (game_date, game_id, player_id, model_version)
   *
 from mlb_home_run_predictions
+where game_date = ((now() at time zone 'America/Denver')::date)
 order by game_date, game_id, player_id, model_version, prediction_ts desc;
 
 alter table pga_tournaments enable row level security;

@@ -134,7 +134,7 @@ def sync_mlb(conn, path: Path) -> int:
         rows.append(
             (
                 pred.get("gameId"),
-                pred.get("eventTime", "")[:10],
+                pred.get("gameDate") or pred.get("eventTime", "")[:10],
                 pred.get("eventTime"),
                 str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id")),
                 pred.get("player"),

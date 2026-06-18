@@ -422,6 +422,7 @@ def _to_web_payload(predictions: pd.DataFrame, gaps: list[str]) -> dict[str, Any
                 "sport": "MLB",
                 "league": "MLB",
                 "gameId": row["game_id"],
+                "gameDate": row["game_date"],
                 "eventTime": row["event_time"],
                 "subject": f"{row['player_name']} HR",
                 "playerId": str(row["player_id"]),

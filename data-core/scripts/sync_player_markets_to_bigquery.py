@@ -194,7 +194,7 @@ def build_mlb_rows(path: Path) -> tuple[list[dict[str, Any]], str | None, str | 
         rows.append(
             {
                 "game_id": pred.get("gameId"),
-                "game_date": pred.get("eventTime", "")[:10],
+                "game_date": pred.get("gameDate") or pred.get("eventTime", "")[:10],
                 "event_time": pred.get("eventTime"),
                 "player_id": str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id")),
                 "player_name": pred.get("player"),

@@ -162,6 +162,7 @@ jobs:
             --top-n 120
           python scripts/export_prediction_feed.py
           python scripts/validate_public_json.py \
+            --mlb-hr-date "${{ steps.plan.outputs.anchor_date }}" \
             ../web/public/data/mlb_home_runs.json \
             ../web/public/data/predictions.json
 
@@ -181,7 +182,9 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: python scripts/sync_player_markets_to_supabase.py --skip-pga
+        run: |
+          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql
+          python scripts/sync_player_markets_to_supabase.py --skip-pga
 
       - name: Sync Predictions to Supabase
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}

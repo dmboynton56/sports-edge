@@ -125,7 +125,12 @@ jobs:
 
       - name: Validate public JSON
         shell: bash
-        run: python scripts/validate_public_json.py
+        run: |
+          if [ "$RUN_MLB_HR" = "true" ]; then
+            python scripts/validate_public_json.py --mlb-hr-date "${{ steps.dates.outputs.date }}"
+          else
+            python scripts/validate_public_json.py
+          fi
 
       - name: Sync player markets to BigQuery
         if: ${{ env.SYNC_BIGQUERY == 'true' }}
@@ -143,4 +148,6 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: python scripts/sync_player_markets_to_supabase.py
+        run: |
+          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql
+          python scripts/sync_player_markets_to_supabase.py

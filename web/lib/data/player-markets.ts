@@ -5,6 +5,7 @@ import type { Prediction } from "@/lib/data/types";
 import { getSupabaseRuntimeConfig } from "@/lib/data/supabase";
 
 export type MlbHomeRunPrediction = Prediction & {
+  gameDate?: string | null;
   team?: string | null;
   opponent?: string | null;
   venue?: string | null;
@@ -26,6 +27,7 @@ export type MlbHomeRunFeed = {
 };
 
 const MLB_HR_PATH = path.join(process.cwd(), "public", "data", "mlb_home_runs.json");
+const MLB_SLATE_TIME_ZONE = "America/Denver";
 const PGA_TOURNAMENT_PATH = path.join(
   process.cwd(),
   "public",
@@ -47,6 +49,22 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   });
   if (!response.ok) return null;
   return (await response.json()) as T[];
+}
+
+function todayInTimeZone(timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function predictionGameDate(row: Pick<MlbHomeRunPrediction, "gameDate">): string | null {
+  if (row.gameDate) return row.gameDate.slice(0, 10);
+  return null;
 }
 
 type SupabaseMlbHrRow = {
@@ -77,6 +95,7 @@ function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
     sport: "MLB",
     league: "MLB",
     gameId: row.game_id,
+    gameDate: row.game_date,
     eventTime: row.event_time,
     subject: `${row.player_name} HR`,
     player: row.player_name,
@@ -107,8 +126,9 @@ function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
 }
 
 export async function getMlbHomeRunFeed(): Promise<MlbHomeRunFeed> {
+  const slateDate = todayInTimeZone(MLB_SLATE_TIME_ZONE);
   const rows = await supabaseRest<SupabaseMlbHrRow>(
-    "mlb_home_run_predictions_latest?select=*&order=game_date.desc,rank.asc&limit=120",
+    `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}&order=rank.asc&limit=120`,
   );
   if (rows && rows.length) {
     return {
@@ -121,7 +141,21 @@ export async function getMlbHomeRunFeed(): Promise<MlbHomeRunFeed> {
   }
 
   try {
-    return JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
+    const payload = JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
+    const predictions = (payload.predictions ?? []).filter(
+      (row) => predictionGameDate(row) === slateDate,
+    );
+    const existingGaps = payload.gaps ?? [];
+    return {
+      ...payload,
+      predictions,
+      gaps: predictions.length
+        ? existingGaps
+        : [
+            ...existingGaps,
+            `No MLB home run predictions available for ${slateDate}.`,
+          ],
+    };
   } catch {
     return {
       generatedAt: null,
