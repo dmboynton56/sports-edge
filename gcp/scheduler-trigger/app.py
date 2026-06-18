@@ -36,7 +36,7 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
         "inputs": {
             "date": "",
             "run_pga": "true",
-            "run_mlb_hr": "false",
+            "run_mlb_hr": "true",
             "train_mlb_hr": "false",
             "sync_supabase": "true",
             "sync_bigquery": "true",

@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, LineChart } from "lucide-react";
+import { Activity, AlertTriangle, DollarSign, LineChart, Percent } from "lucide-react";
 
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { PageHeader } from "@/components/dashboard/PageHeader";
@@ -15,6 +15,11 @@ import {
 import { getMlbHomeRunFeed } from "@/lib/data/player-markets";
 import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 
+function formatAmerican(price: number | null | undefined) {
+  if (typeof price !== "number" || !Number.isFinite(price)) return "n/a";
+  return price > 0 ? `+${price}` : `${price}`;
+}
+
 export default async function MlbHomeRunsPage() {
   const feed = await getMlbHomeRunFeed();
   const rows = feed.predictions.toSorted(
@@ -22,6 +27,11 @@ export default async function MlbHomeRunsPage() {
   );
   const best = rows[0];
   const flagged = rows.filter((row) => (row.qualityFlags?.length ?? 0) > 0).length;
+  const rowsWithOdds = rows.filter((row) => row.oddsStatus && row.oddsStatus !== "missing_odds");
+  const positiveEdges = rows.filter((row) => (row.edge ?? 0) > 0).length;
+  const bestEdge = rows
+    .filter((row) => typeof row.edge === "number")
+    .toSorted((a, b) => ((b.edge ?? -Infinity) - (a.edge ?? -Infinity)))[0];
 
   return (
     <div>
@@ -31,7 +41,7 @@ export default async function MlbHomeRunsPage() {
         meta={feed.generatedAt}
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <MetricCard
           title="Candidates"
           value={formatNumber(rows.length)}
@@ -51,6 +61,20 @@ export default async function MlbHomeRunsPage() {
           detail="Flags cover lineup, pitcher, and player-history gaps."
           icon={AlertTriangle}
           tone={flagged ? "warning" : "accent"}
+        />
+        <MetricCard
+          title="Odds Coverage"
+          value={formatPct(rows.length ? rowsWithOdds.length / rows.length : null)}
+          detail={`${formatNumber(rowsWithOdds.length)} candidates with sportsbook odds`}
+          icon={Percent}
+          tone={rowsWithOdds.length ? "accent" : "warning"}
+        />
+        <MetricCard
+          title="Positive Edges"
+          value={formatNumber(positiveEdges)}
+          detail={bestEdge ? `${bestEdge.player} ${formatAmerican(bestEdge.bestPrice)}` : "No priced edges"}
+          icon={DollarSign}
+          tone={positiveEdges ? "accent" : "default"}
         />
       </div>
 
@@ -78,6 +102,10 @@ export default async function MlbHomeRunsPage() {
                 <TableHead>Slot</TableHead>
                 <TableHead>Pitcher</TableHead>
                 <TableHead>HR Prob</TableHead>
+                <TableHead>Best Price</TableHead>
+                <TableHead>Market Prob</TableHead>
+                <TableHead>Edge / EV</TableHead>
+                <TableHead>Odds</TableHead>
                 <TableHead>Baseline</TableHead>
                 <TableHead>Flags</TableHead>
               </TableRow>
@@ -100,6 +128,39 @@ export default async function MlbHomeRunsPage() {
                   </TableCell>
                   <TableCell className="truncate">{row.opposingProbablePitcher ?? "n/a"}</TableCell>
                   <TableCell className="font-mono font-semibold">{formatPct(row.modelProbability)}</TableCell>
+                  <TableCell>
+                    <div className="font-mono font-semibold">{formatAmerican(row.bestPrice)}</div>
+                    <div className="text-xs text-muted-foreground">{row.bestBook ?? "missing"}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-mono">{formatPct(row.marketProbability ?? row.impliedProbability)}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {row.noVigProbability != null ? "no-vig" : row.impliedProbability != null ? "raw" : "n/a"}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div
+                      className={
+                        row.edge != null && row.edge > 0
+                          ? "font-mono font-semibold text-emerald-400"
+                          : row.edge != null && row.edge < 0
+                            ? "font-mono text-red-400"
+                            : "font-mono text-muted-foreground"
+                      }
+                    >
+                      {row.edge != null && row.edge > 0 ? "+" : ""}
+                      {formatPct(row.edge)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">EV {formatPct(row.ev)}</div>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={row.oddsStatus === "missing_odds" ? "missing" : "outline"}>
+                      {row.oddsStatus ?? "model only"}
+                    </Badge>
+                    <div className="mt-1 text-xs text-muted-foreground">
+                      {formatNumber(row.oddsBooksCount)} books | {formatDateTime(row.oddsSnapshotTs)}
+                    </div>
+                  </TableCell>
                   <TableCell className="font-mono text-muted-foreground">
                     {formatPct(row.baselineProbability)}
                   </TableCell>

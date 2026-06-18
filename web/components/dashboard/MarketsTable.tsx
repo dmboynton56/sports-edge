@@ -84,7 +84,7 @@ export function MarketsTable({
 }) {
   const [predictions, setPredictions] = useState(initialPredictions);
   const [gaps, setGaps] = useState(initialGaps);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(initialPredictions.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [sport, setSport] = useState("all");
   const [market, setMarket] = useState("all");
@@ -95,6 +95,9 @@ export function MarketsTable({
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   useEffect(() => {
+    if (initialPredictions.length > 0) {
+      return;
+    }
     let active = true;
     fetch("/data/predictions.json", { cache: "no-store" })
       .then((response) => {
@@ -118,7 +121,7 @@ export function MarketsTable({
     return () => {
       active = false;
     };
-  }, []);
+  }, [initialPredictions.length]);
 
   const filtered = useMemo(() => {
     return predictions

@@ -119,6 +119,39 @@ jobs:
             --history-days 45 \
             --top-n 120
 
+      - name: Apply player market serving schema
+        if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql
+
+      - name: Fetch MLB home run odds
+        if: ${{ env.RUN_MLB_HR == 'true' }}
+        shell: bash
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          if [ "$SYNC_SUPABASE" = "true" ]; then
+            python scripts/fetch_mlb_home_run_odds.py \
+              --date "${{ steps.dates.outputs.date }}" \
+              --sync-supabase
+          else
+            python scripts/fetch_mlb_home_run_odds.py \
+              --date "${{ steps.dates.outputs.date }}"
+          fi
+
       - name: Export combined prediction feed
         shell: bash
         run: python scripts/export_prediction_feed.py

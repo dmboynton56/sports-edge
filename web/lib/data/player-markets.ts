@@ -16,6 +16,14 @@ export type MlbHomeRunPrediction = Prediction & {
   rank?: number | null;
   qualityFlags?: string[];
   topFeatures?: { feature: string; value: number }[];
+  bestBook?: string | null;
+  bestBookTitle?: string | null;
+  bestPrice?: number | null;
+  noVigProbability?: number | null;
+  marketProbability?: number | null;
+  oddsBooksCount?: number | null;
+  oddsSnapshotTs?: string | null;
+  oddsStatus?: string | null;
 };
 
 export type MlbHomeRunFeed = {
@@ -89,6 +97,21 @@ type SupabaseMlbHrRow = {
   top_features: { feature: string; value: number }[] | null;
 };
 
+type SupabaseMlbHrEdgeRow = SupabaseMlbHrRow & {
+  best_book: string | null;
+  best_book_title: string | null;
+  best_price: number | null;
+  implied_probability: number | null;
+  no_vig_probability: number | null;
+  market_probability: number | null;
+  edge: number | null;
+  ev: number | null;
+  kelly: number | null;
+  odds_books_count: number | null;
+  odds_snapshot_ts: string | null;
+  odds_status: string | null;
+};
+
 function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
   return {
     id: `${row.game_id}-${row.player_id}-hr`,
@@ -125,8 +148,46 @@ function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
   };
 }
 
+function mapSupabaseMlbEdge(row: SupabaseMlbHrEdgeRow): MlbHomeRunPrediction {
+  const base = mapSupabaseMlb(row);
+  return {
+    ...base,
+    book: row.best_book ?? "missing",
+    price: row.best_price,
+    impliedProbability: row.market_probability ?? row.implied_probability,
+    edge: row.edge,
+    ev: row.ev,
+    kelly: row.kelly,
+    source: "Supabase mlb_home_run_edges_latest",
+    bestBook: row.best_book,
+    bestBookTitle: row.best_book_title,
+    bestPrice: row.best_price,
+    noVigProbability: row.no_vig_probability,
+    marketProbability: row.market_probability,
+    oddsBooksCount: row.odds_books_count,
+    oddsSnapshotTs: row.odds_snapshot_ts,
+    oddsStatus: row.odds_status,
+  };
+}
+
 export async function getMlbHomeRunFeed(): Promise<MlbHomeRunFeed> {
   const slateDate = todayInTimeZone(MLB_SLATE_TIME_ZONE);
+  const edgeRows = await supabaseRest<SupabaseMlbHrEdgeRow>(
+    `mlb_home_run_edges_latest?select=*&game_date=eq.${slateDate}&order=rank.asc&limit=120`,
+  );
+  if (edgeRows && edgeRows.length) {
+    const missingOdds = edgeRows.filter((row) => row.odds_status === "missing_odds").length;
+    return {
+      generatedAt: edgeRows[0]?.prediction_ts ?? null,
+      modelVersion: edgeRows[0]?.model_version ?? "mlb-hr-v1-heuristic",
+      productionStatus: "candidate",
+      predictions: edgeRows.map(mapSupabaseMlbEdge),
+      gaps: missingOdds
+        ? [`Missing sportsbook odds for ${missingOdds} MLB home run candidates.`]
+        : [],
+    };
+  }
+
   const rows = await supabaseRest<SupabaseMlbHrRow>(
     `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}&order=rank.asc&limit=120`,
   );
