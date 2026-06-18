@@ -1,0 +1,399 @@
+{
+  "baseline": {
+    "categoricalColumns": [],
+    "estimator": "random_forest",
+    "featureColumns": [
+      "batter_pa_lag",
+      "batter_games_lag",
+      "batter_hr_per_pa",
+      "batter_recent_pa_28",
+      "batter_recent_hr_per_pa_28",
+      "batter_rate_over_league",
+      "recent_rate_over_league",
+      "pitcher_bf_lag",
+      "pitcher_hr_factor",
+      "venue_factor",
+      "league_hr_per_pa",
+      "lineup_slot",
+      "expected_pa",
+      "is_home",
+      "baseline_probability",
+      "heuristic_probability"
+    ],
+    "generatedAt": "2026-06-16T20:59:33.170425+00:00",
+    "leakageControls": [
+      "games are processed chronologically",
+      "batter, pitcher, venue, and league stats are updated only after each game is scored",
+      "actual plate appearances are retained for audit only and excluded from model features"
+    ],
+    "modelVersion": "mlb-hr-v1",
+    "test": {
+      "auc": 0.6048154641367123,
+      "baselineBrier": 0.10237401505219759,
+      "baselineLogLoss": 0.35751638356828314,
+      "brier": 0.10174780215380966,
+      "logLoss": 0.3547680926632346,
+      "positiveRate": 0.11631032376298106,
+      "rows": 8185,
+      "top10HitRate": 0.1875,
+      "top25HitRate": 0.1875
+    },
+    "trainingWindow": {
+      "end_date_exclusive": "2026-06-16",
+      "min_prior_pa": 20,
+      "start_date": "2026-03-01",
+      "test_start_date": "2026-05-15"
+    }
+  },
+  "baselineMetricsPath": "/home/dmboynton/projects/sports-edge/data-core/models/mlb_hr_model_v1_metrics.json",
+  "blendComparison": {
+    "aucDelta": 0.0008521865818083008,
+    "brierDelta": -0.0002047648383496914,
+    "interpretation": "Blend weights are selected on the inner validation split, then scored once on the held-out test split.",
+    "logLossDelta": -0.0013026264392895781,
+    "top10HitRateDelta": -0.009374999999999994,
+    "top25HitRateDelta": -0.0050000000000000044
+  },
+  "blogDraft": {
+    "publishWhen": [
+      "Probability and ranking objectives are reported separately.",
+      "Daily predictions are joined to completed-game outcomes.",
+      "Statcast and handedness features are rerun on the same held-out split."
+    ],
+    "summary": "The current random-forest HR model is calibrated and leakage-aware. A validation-chosen PyTorch + heuristic blend improves Brier and log loss, a handedness-enriched blend improves top-10 ranking, and a Statcast-enriched blend has the best AUC/top-25 ranking so far.",
+    "title": "Can a GPU model find better MLB home-run probabilities?"
+  },
+  "comparison": {
+    "aucDelta": -0.008200553137057365,
+    "brierDelta": 0.00010493830255489667,
+    "interpretation": "Lower Brier/log loss and higher AUC/top-K hit rate are better.",
+    "logLossDelta": 0.0002586917362858432,
+    "top10HitRateDelta": -0.021875000000000006
+  },
+  "dailyOutcomeMetricsPath": "/home/dmboynton/projects/sports-edge/data-core/notebooks/cache/mlb_home_run_prediction_outcome_metrics.json",
+  "dailyOutcomes": {
+    "baselineProbability": {
+      "auc": 0.6051136363636365,
+      "brier": 0.1641139635709098,
+      "log_loss": 0.5160267110313137,
+      "positive_rate": 0.2,
+      "rows": 110,
+      "top_10_hit_rate": 0.4,
+      "top_25_hit_rate": 0.24
+    },
+    "evaluatedDates": [
+      "2026-06-16"
+    ],
+    "evaluatedRows": 110,
+    "generatedAt": "2026-06-18T03:39:35.586898+00:00",
+    "missingOutcomeRows": 10,
+    "modelProbability": {
+      "auc": 0.559400826446281,
+      "brier": 0.16420036751867725,
+      "log_loss": 0.515781672730515,
+      "positive_rate": 0.2,
+      "rows": 110,
+      "top_10_hit_rate": 0.1,
+      "top_25_hit_rate": 0.2
+    },
+    "modelVersions": [
+      "mlb-hr-v1"
+    ],
+    "predictionRows": 120,
+    "status": "evaluated"
+  },
+  "dataExpansion": [
+    {
+      "name": "Baseball Savant Statcast CSV",
+      "url": "https://baseballsavant.mlb.com/csv-docs",
+      "use": "Pitch-level pitch type, velocity, launch angle, exit velocity, batted-ball events, and outcomes."
+    },
+    {
+      "name": "pybaseball",
+      "url": "https://github.com/jldbc/pybaseball",
+      "use": "Python access to Baseball Savant, FanGraphs, and Baseball Reference data for reproducible feature backfills."
+    },
+    {
+      "name": "MLB Stats API boxscores",
+      "url": "https://statsapi.mlb.com/api/",
+      "use": "Current repo source for schedules, probable pitchers, lineups, batter outcomes, and starter history."
+    }
+  ],
+  "experimentStatus": "pytorch_evaluated",
+  "generatedAt": "2026-06-18T03:40:34.374541+00:00",
+  "handedBlendComparison": {
+    "aucDelta": -0.005045589368057435,
+    "brierDelta": -0.00015645965746008406,
+    "interpretation": "Handedness enrichment adds batter/pitcher platoon context from MLB Stats API player metadata.",
+    "logLossDelta": -0.0009889036985015753,
+    "top10HitRateDelta": 0.024999999999999994,
+    "top25HitRateDelta": -0.0012500000000000011
+  },
+  "market": "MLB batter home runs",
+  "pytorch": {
+    "categoricalColumns": [
+      "player_id",
+      "opposing_starter_id",
+      "team_id",
+      "opponent_id"
+    ],
+    "estimator": "pytorch_wide_deep",
+    "featureColumns": [
+      "batter_pa_lag",
+      "batter_games_lag",
+      "batter_hr_per_pa",
+      "batter_recent_pa_28",
+      "batter_recent_hr_per_pa_28",
+      "batter_rate_over_league",
+      "recent_rate_over_league",
+      "pitcher_bf_lag",
+      "pitcher_hr_factor",
+      "venue_factor",
+      "league_hr_per_pa",
+      "lineup_slot",
+      "expected_pa",
+      "is_home",
+      "baseline_probability",
+      "heuristic_probability"
+    ],
+    "generatedAt": "2026-06-18T03:04:30.895567+00:00",
+    "leakageControls": [
+      "training rows are generated chronologically by train_mlb_home_run_model.py",
+      "only pregame lagged batter, pitcher, venue, and league features are used",
+      "time split is preserved for PyTorch and baseline comparisons"
+    ],
+    "modelVersion": "mlb-hr-torch-v1",
+    "test": {
+      "auc": 0.5966149109996549,
+      "baselineBrier": null,
+      "baselineLogLoss": null,
+      "brier": 0.10185274045636455,
+      "logLoss": 0.35502678439952046,
+      "positiveRate": 0.11631032376298106,
+      "rows": 8185,
+      "top10HitRate": 0.165625,
+      "top25HitRate": 0.1725
+    },
+    "trainingWindow": {
+      "dataset": "/home/dmboynton/projects/sports-edge/data-core/notebooks/cache/mlb_home_run_training_rows.csv",
+      "fit_rows": 8173,
+      "test_rows": 8185,
+      "test_start_date": "2026-05-15",
+      "train_rows": 10387,
+      "validation_rows": 2214
+    }
+  },
+  "pytorchBlend": {
+    "estimator": "pytorch_heuristic_blend",
+    "generatedAt": "2026-06-18T03:04:30.895567+00:00",
+    "heuristicWeight": 0.16000000000000003,
+    "modelVersion": "mlb-hr-torch-v1_heuristic_blend",
+    "pytorchWeight": 0.84,
+    "test": {
+      "auc": 0.6056676507185206,
+      "brier": 0.10154303731545997,
+      "logLoss": 0.35346546622394504,
+      "positiveRate": 0.11631032376298106,
+      "rows": 8185,
+      "top10HitRate": 0.178125,
+      "top25HitRate": 0.1825
+    },
+    "validationLogLoss": 0.2990449644748066
+  },
+  "pytorchHanded": {
+    "categoricalColumns": [
+      "player_id",
+      "opposing_starter_id",
+      "team_id",
+      "opponent_id",
+      "batter_bat_side",
+      "pitcher_throw_hand"
+    ],
+    "estimator": "pytorch_wide_deep",
+    "featureColumns": [
+      "batter_pa_lag",
+      "batter_games_lag",
+      "batter_hr_per_pa",
+      "batter_recent_pa_28",
+      "batter_recent_hr_per_pa_28",
+      "batter_rate_over_league",
+      "recent_rate_over_league",
+      "pitcher_bf_lag",
+      "pitcher_hr_factor",
+      "venue_factor",
+      "league_hr_per_pa",
+      "lineup_slot",
+      "expected_pa",
+      "is_home",
+      "baseline_probability",
+      "heuristic_probability",
+      "batter_bats_left",
+      "batter_bats_right",
+      "batter_switch_hitter",
+      "pitcher_throws_left",
+      "pitcher_throws_right",
+      "known_handedness_matchup",
+      "batter_platoon_advantage",
+      "same_side_matchup"
+    ],
+    "generatedAt": "2026-06-18T03:10:05.308678+00:00",
+    "leakageControls": [
+      "training rows are generated chronologically by train_mlb_home_run_model.py",
+      "only pregame lagged batter, pitcher, venue, and league features are used",
+      "time split is preserved for PyTorch and baseline comparisons"
+    ],
+    "modelVersion": "mlb-hr-torch-handed-v1",
+    "test": {
+      "auc": 0.585215608433336,
+      "baselineBrier": null,
+      "baselineLogLoss": null,
+      "brier": 0.10196864217779505,
+      "logLoss": 0.3556220920992776,
+      "positiveRate": 0.11631032376298106,
+      "rows": 8185,
+      "top10HitRate": 0.1875,
+      "top25HitRate": 0.17875
+    },
+    "trainingWindow": {
+      "dataset": "data-core/notebooks/cache/mlb_home_run_training_rows_enriched.csv",
+      "fit_rows": 8173,
+      "test_rows": 8185,
+      "test_start_date": "2026-05-15",
+      "train_rows": 10387,
+      "validation_rows": 2214
+    }
+  },
+  "pytorchHandedBlend": {
+    "estimator": "pytorch_heuristic_blend",
+    "generatedAt": "2026-06-18T03:10:05.308678+00:00",
+    "heuristicWeight": 0.19999999999999996,
+    "modelVersion": "mlb-hr-torch-handed-v1_heuristic_blend",
+    "pytorchWeight": 0.8,
+    "test": {
+      "auc": 0.5997698747686548,
+      "brier": 0.10159134249634957,
+      "logLoss": 0.35377918896473304,
+      "positiveRate": 0.11631032376298106,
+      "rows": 8185,
+      "top10HitRate": 0.2125,
+      "top25HitRate": 0.18625
+    },
+    "validationLogLoss": 0.3005927875212735
+  },
+  "pytorchHandedMetricsPath": "/home/dmboynton/projects/sports-edge/data-core/models/mlb_hr_torch_handed_model_v1_metrics.json",
+  "pytorchMetricsPath": "/home/dmboynton/projects/sports-edge/data-core/models/mlb_hr_torch_model_v1_metrics.json",
+  "pytorchStatcast": {
+    "categoricalColumns": [
+      "player_id",
+      "opposing_starter_id",
+      "team_id",
+      "opponent_id",
+      "batter_bat_side",
+      "pitcher_throw_hand"
+    ],
+    "estimator": "pytorch_wide_deep",
+    "featureColumns": [
+      "batter_pa_lag",
+      "batter_games_lag",
+      "batter_hr_per_pa",
+      "batter_recent_pa_28",
+      "batter_recent_hr_per_pa_28",
+      "batter_rate_over_league",
+      "recent_rate_over_league",
+      "pitcher_bf_lag",
+      "pitcher_hr_factor",
+      "venue_factor",
+      "league_hr_per_pa",
+      "lineup_slot",
+      "expected_pa",
+      "is_home",
+      "baseline_probability",
+      "heuristic_probability",
+      "batter_bats_left",
+      "batter_bats_right",
+      "batter_switch_hitter",
+      "pitcher_throws_left",
+      "pitcher_throws_right",
+      "known_handedness_matchup",
+      "batter_platoon_advantage",
+      "same_side_matchup",
+      "batter_statcast_pitches_lag",
+      "batter_statcast_bbe_lag",
+      "batter_avg_ev_lag",
+      "batter_avg_la_lag",
+      "batter_hard_hit_rate_lag",
+      "batter_barrel_proxy_rate_lag",
+      "batter_sweet_spot_rate_lag",
+      "batter_fb_ld_rate_lag",
+      "batter_statcast_hr_per_pitch_lag",
+      "batter_fastball_share_lag",
+      "batter_breaking_share_lag",
+      "batter_offspeed_share_lag",
+      "pitcher_statcast_pitches_lag",
+      "pitcher_statcast_bbe_lag",
+      "pitcher_avg_ev_lag",
+      "pitcher_avg_la_lag",
+      "pitcher_hard_hit_rate_lag",
+      "pitcher_barrel_proxy_rate_lag",
+      "pitcher_sweet_spot_rate_lag",
+      "pitcher_fb_ld_rate_lag",
+      "pitcher_statcast_hr_per_pitch_lag",
+      "pitcher_fastball_share_lag",
+      "pitcher_breaking_share_lag",
+      "pitcher_offspeed_share_lag",
+      "statcast_feature_ready"
+    ],
+    "generatedAt": "2026-06-18T03:37:27.627752+00:00",
+    "leakageControls": [
+      "training rows are generated chronologically by train_mlb_home_run_model.py",
+      "only pregame lagged batter, pitcher, venue, and league features are used",
+      "time split is preserved for PyTorch and baseline comparisons"
+    ],
+    "modelVersion": "mlb-hr-torch-statcast-v1",
+    "test": {
+      "auc": 0.5993056596342394,
+      "baselineBrier": null,
+      "baselineLogLoss": null,
+      "brier": 0.10192871604944329,
+      "logLoss": 0.35530553120471264,
+      "positiveRate": 0.11631032376298106,
+      "rows": 8185,
+      "top10HitRate": 0.203125,
+      "top25HitRate": 0.18375
+    },
+    "trainingWindow": {
+      "dataset": "data-core/notebooks/cache/mlb_home_run_training_rows_statcast.csv",
+      "fit_rows": 8173,
+      "test_rows": 8185,
+      "test_start_date": "2026-05-15",
+      "train_rows": 10387,
+      "validation_rows": 2214
+    }
+  },
+  "pytorchStatcastBlend": {
+    "estimator": "pytorch_heuristic_blend",
+    "generatedAt": "2026-06-18T03:37:27.627752+00:00",
+    "heuristicWeight": 0.17999999999999994,
+    "modelVersion": "mlb-hr-torch-statcast-v1_heuristic_blend",
+    "pytorchWeight": 0.8200000000000001,
+    "test": {
+      "auc": 0.6080688185684892,
+      "brier": 0.10157767261100496,
+      "logLoss": 0.3535908481624028,
+      "positiveRate": 0.11631032376298106,
+      "rows": 8185,
+      "top10HitRate": 0.1875,
+      "top25HitRate": 0.19875
+    },
+    "validationLogLoss": 0.29861192179701546
+  },
+  "pytorchStatcastMetricsPath": "/home/dmboynton/projects/sports-edge/data-core/models/mlb_hr_torch_statcast_model_v1_metrics.json",
+  "statcastBlendComparison": {
+    "aucDelta": 0.003253354431776878,
+    "brierDelta": -0.00017012954280469506,
+    "interpretation": "Statcast enrichment adds prior pitch-level contact quality and pitch-mix aggregates from Baseball Savant.",
+    "logLossDelta": -0.0011772445008317867,
+    "top10HitRateDelta": 0.0,
+    "top25HitRateDelta": 0.01125000000000001
+  }
+}

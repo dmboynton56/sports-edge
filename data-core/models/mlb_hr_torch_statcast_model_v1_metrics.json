@@ -1,0 +1,704 @@
+{
+  "blend": {
+    "heuristic_weight": 0.17999999999999994,
+    "name": "mlb-hr-torch-statcast-v1_heuristic_blend",
+    "pytorch_weight": 0.8200000000000001,
+    "test": {
+      "auc": 0.6080688185684892,
+      "brier": 0.10157767261100496,
+      "calibration": [
+        {
+          "actual_rate": 0.06105006105006105,
+          "avg_probability": 0.0689663906841115,
+          "bucket": "(0.0474, 0.0748]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.07334963325183375,
+          "avg_probability": 0.07832281811045656,
+          "bucket": "(0.0748, 0.0815]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.07326007326007326,
+          "avg_probability": 0.08453666046526151,
+          "bucket": "(0.0815, 0.0875]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.0941320293398533,
+          "avg_probability": 0.09032255926868282,
+          "bucket": "(0.0875, 0.093]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.11843711843711843,
+          "avg_probability": 0.09602981463729952,
+          "bucket": "(0.093, 0.099]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.1198044009779951,
+          "avg_probability": 0.10220512099716043,
+          "bucket": "(0.099, 0.106]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.14180929095354522,
+          "avg_probability": 0.10951825710196675,
+          "bucket": "(0.106, 0.114]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.14041514041514042,
+          "avg_probability": 0.11852487072956819,
+          "bucket": "(0.114, 0.124]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.1295843520782396,
+          "avg_probability": 0.1314991909005576,
+          "bucket": "(0.124, 0.141]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.21123321123321123,
+          "avg_probability": 0.16355970792194902,
+          "bucket": "(0.141, 0.257]",
+          "rows": 819
+        }
+      ],
+      "log_loss": 0.3535908481624028,
+      "positive_rate": 0.11631032376298106,
+      "rows": 8185,
+      "top_10_hit_rate": 0.1875,
+      "top_25_hit_rate": 0.19875
+    },
+    "validation_log_loss": 0.29861192179701546
+  },
+  "categorical_columns": [
+    "player_id",
+    "opposing_starter_id",
+    "team_id",
+    "opponent_id",
+    "batter_bat_side",
+    "pitcher_throw_hand"
+  ],
+  "cuda_device_name": "NVIDIA GeForce RTX 5070",
+  "device": "cuda",
+  "epoch_history": [
+    {
+      "epoch": 1.0,
+      "train_loss": 0.3467839507698998,
+      "validation_log_loss": 0.3028986422095426
+    },
+    {
+      "epoch": 2.0,
+      "train_loss": 0.3311809255139533,
+      "validation_log_loss": 0.30068756835360977
+    },
+    {
+      "epoch": 3.0,
+      "train_loss": 0.32225890400563434,
+      "validation_log_loss": 0.29920223166635884
+    },
+    {
+      "epoch": 4.0,
+      "train_loss": 0.3201500262235991,
+      "validation_log_loss": 0.2992648882251155
+    },
+    {
+      "epoch": 5.0,
+      "train_loss": 0.31632409527648053,
+      "validation_log_loss": 0.3002179684628862
+    },
+    {
+      "epoch": 6.0,
+      "train_loss": 0.3133968798924321,
+      "validation_log_loss": 0.30171513445436204
+    },
+    {
+      "epoch": 7.0,
+      "train_loss": 0.3082490557959449,
+      "validation_log_loss": 0.30255227580460103
+    },
+    {
+      "epoch": 8.0,
+      "train_loss": 0.303150020606308,
+      "validation_log_loss": 0.30383315567146296
+    },
+    {
+      "epoch": 9.0,
+      "train_loss": 0.3002199108198342,
+      "validation_log_loss": 0.3043906366915648
+    }
+  ],
+  "estimator": "pytorch_wide_deep",
+  "feature_columns": [
+    "batter_pa_lag",
+    "batter_games_lag",
+    "batter_hr_per_pa",
+    "batter_recent_pa_28",
+    "batter_recent_hr_per_pa_28",
+    "batter_rate_over_league",
+    "recent_rate_over_league",
+    "pitcher_bf_lag",
+    "pitcher_hr_factor",
+    "venue_factor",
+    "league_hr_per_pa",
+    "lineup_slot",
+    "expected_pa",
+    "is_home",
+    "baseline_probability",
+    "heuristic_probability",
+    "batter_bats_left",
+    "batter_bats_right",
+    "batter_switch_hitter",
+    "pitcher_throws_left",
+    "pitcher_throws_right",
+    "known_handedness_matchup",
+    "batter_platoon_advantage",
+    "same_side_matchup",
+    "batter_statcast_pitches_lag",
+    "batter_statcast_bbe_lag",
+    "batter_avg_ev_lag",
+    "batter_avg_la_lag",
+    "batter_hard_hit_rate_lag",
+    "batter_barrel_proxy_rate_lag",
+    "batter_sweet_spot_rate_lag",
+    "batter_fb_ld_rate_lag",
+    "batter_statcast_hr_per_pitch_lag",
+    "batter_fastball_share_lag",
+    "batter_breaking_share_lag",
+    "batter_offspeed_share_lag",
+    "pitcher_statcast_pitches_lag",
+    "pitcher_statcast_bbe_lag",
+    "pitcher_avg_ev_lag",
+    "pitcher_avg_la_lag",
+    "pitcher_hard_hit_rate_lag",
+    "pitcher_barrel_proxy_rate_lag",
+    "pitcher_sweet_spot_rate_lag",
+    "pitcher_fb_ld_rate_lag",
+    "pitcher_statcast_hr_per_pitch_lag",
+    "pitcher_fastball_share_lag",
+    "pitcher_breaking_share_lag",
+    "pitcher_offspeed_share_lag",
+    "statcast_feature_ready"
+  ],
+  "generatedAt": "2026-06-18T03:37:27.627752+00:00",
+  "leakage_controls": [
+    "training rows are generated chronologically by train_mlb_home_run_model.py",
+    "only pregame lagged batter, pitcher, venue, and league features are used",
+    "time split is preserved for PyTorch and baseline comparisons"
+  ],
+  "model_version": "mlb-hr-torch-statcast-v1",
+  "rf_artifact_status": "failed: AttributeError: 'SimpleImputer' object has no attribute '_fill_dtype'",
+  "same_split_comparison": {
+    "baseline_probability": {
+      "auc": 0.5892308914440932,
+      "brier": 0.10237401505219759,
+      "calibration": [
+        {
+          "actual_rate": 0.05982905982905983,
+          "avg_probability": 0.10535874209456461,
+          "bucket": "(0.102, 0.107]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.07814407814407814,
+          "avg_probability": 0.10840502019144194,
+          "bucket": "(0.107, 0.11]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.0843520782396088,
+          "avg_probability": 0.1108074347578602,
+          "bucket": "(0.11, 0.112]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.09634146341463415,
+          "avg_probability": 0.11317829929943295,
+          "bucket": "(0.112, 0.114]",
+          "rows": 820
+        },
+        {
+          "actual_rate": 0.12239902080783353,
+          "avg_probability": 0.11560142585483185,
+          "bucket": "(0.114, 0.117]",
+          "rows": 817
+        },
+        {
+          "actual_rate": 0.13080684596577016,
+          "avg_probability": 0.11804709924328116,
+          "bucket": "(0.117, 0.119]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.15384615384615385,
+          "avg_probability": 0.12047318705157166,
+          "bucket": "(0.119, 0.122]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.1234718826405868,
+          "avg_probability": 0.12289765251202353,
+          "bucket": "(0.122, 0.124]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.15158924205378974,
+          "avg_probability": 0.12525553247449484,
+          "bucket": "(0.124, 0.127]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.1623931623931624,
+          "avg_probability": 0.12891371166614304,
+          "bucket": "(0.127, 0.133]",
+          "rows": 819
+        }
+      ],
+      "log_loss": 0.35751638356828314,
+      "positive_rate": 0.11631032376298106,
+      "rows": 8185,
+      "top_10_hit_rate": 0.11875,
+      "top_25_hit_rate": 0.13
+    },
+    "heuristic_probability": {
+      "auc": 0.5976863889479476,
+      "brier": 0.10241933648283283,
+      "calibration": [
+        {
+          "actual_rate": 0.054945054945054944,
+          "avg_probability": 0.042676734629404335,
+          "bucket": "(0.0266, 0.0514]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.08312958435207823,
+          "avg_probability": 0.05877731944806796,
+          "bucket": "(0.0514, 0.0652]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.08669108669108669,
+          "avg_probability": 0.07151166903838689,
+          "bucket": "(0.0652, 0.0779]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.09657701711491443,
+          "avg_probability": 0.08414510158561499,
+          "bucket": "(0.0779, 0.0905]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.11233211233211234,
+          "avg_probability": 0.0973272367437688,
+          "bucket": "(0.0905, 0.105]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.13202933985330073,
+          "avg_probability": 0.11156004815301603,
+          "bucket": "(0.105, 0.119]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.1332518337408313,
+          "avg_probability": 0.12742952978544048,
+          "bucket": "(0.119, 0.137]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.12576312576312576,
+          "avg_probability": 0.14906148387884338,
+          "bucket": "(0.137, 0.163]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.15770171149144255,
+          "avg_probability": 0.18067624880810612,
+          "bucket": "(0.163, 0.203]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.1807081807081807,
+          "avg_probability": 0.25602999809481697,
+          "bucket": "(0.203, 0.378]",
+          "rows": 819
+        }
+      ],
+      "log_loss": 0.3564791130944545,
+      "positive_rate": 0.11631032376298106,
+      "rows": 8185,
+      "top_10_hit_rate": 0.20625,
+      "top_25_hit_rate": 0.1825
+    },
+    "mlb-hr-torch-statcast-v1": {
+      "auc": 0.5993056596342394,
+      "brier": 0.10192871604944329,
+      "calibration": [
+        {
+          "actual_rate": 0.06715506715506715,
+          "avg_probability": 0.0706470943305082,
+          "bucket": "(0.0419, 0.0765]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.07701711491442542,
+          "avg_probability": 0.07950194209158275,
+          "bucket": "(0.0765, 0.0823]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.06105006105006105,
+          "avg_probability": 0.08474255813529058,
+          "bucket": "(0.0823, 0.0874]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.10635696821515893,
+          "avg_probability": 0.08974754977925774,
+          "bucket": "(0.0874, 0.0921]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.11843711843711843,
+          "avg_probability": 0.09444208434067658,
+          "bucket": "(0.0921, 0.0968]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.1356968215158924,
+          "avg_probability": 0.09965580767407685,
+          "bucket": "(0.0968, 0.103]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.12591687041564792,
+          "avg_probability": 0.10585485420629273,
+          "bucket": "(0.103, 0.109]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.14163614163614163,
+          "avg_probability": 0.11347270580474855,
+          "bucket": "(0.109, 0.118]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.14180929095354522,
+          "avg_probability": 0.12439368548632251,
+          "bucket": "(0.118, 0.132]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.18803418803418803,
+          "avg_probability": 0.15123519283220155,
+          "bucket": "(0.132, 0.239]",
+          "rows": 819
+        }
+      ],
+      "log_loss": 0.35530553120471264,
+      "positive_rate": 0.11631032376298106,
+      "rows": 8185,
+      "top_10_hit_rate": 0.203125,
+      "top_25_hit_rate": 0.18375
+    },
+    "mlb-hr-torch-statcast-v1_heuristic_blend": {
+      "auc": 0.6080688185684892,
+      "brier": 0.10157767261100496,
+      "calibration": [
+        {
+          "actual_rate": 0.06105006105006105,
+          "avg_probability": 0.0689663906841115,
+          "bucket": "(0.0474, 0.0748]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.07334963325183375,
+          "avg_probability": 0.07832281811045656,
+          "bucket": "(0.0748, 0.0815]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.07326007326007326,
+          "avg_probability": 0.08453666046526151,
+          "bucket": "(0.0815, 0.0875]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.0941320293398533,
+          "avg_probability": 0.09032255926868282,
+          "bucket": "(0.0875, 0.093]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.11843711843711843,
+          "avg_probability": 0.09602981463729952,
+          "bucket": "(0.093, 0.099]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.1198044009779951,
+          "avg_probability": 0.10220512099716043,
+          "bucket": "(0.099, 0.106]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.14180929095354522,
+          "avg_probability": 0.10951825710196675,
+          "bucket": "(0.106, 0.114]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.14041514041514042,
+          "avg_probability": 0.11852487072956819,
+          "bucket": "(0.114, 0.124]",
+          "rows": 819
+        },
+        {
+          "actual_rate": 0.1295843520782396,
+          "avg_probability": 0.1314991909005576,
+          "bucket": "(0.124, 0.141]",
+          "rows": 818
+        },
+        {
+          "actual_rate": 0.21123321123321123,
+          "avg_probability": 0.16355970792194902,
+          "bucket": "(0.141, 0.257]",
+          "rows": 819
+        }
+      ],
+      "log_loss": 0.3535908481624028,
+      "positive_rate": 0.11631032376298106,
+      "rows": 8185,
+      "top_10_hit_rate": 0.1875,
+      "top_25_hit_rate": 0.19875
+    }
+  },
+  "test": {
+    "auc": 0.5993056596342394,
+    "brier": 0.10192871604944329,
+    "calibration": [
+      {
+        "actual_rate": 0.06715506715506715,
+        "avg_probability": 0.0706470943305082,
+        "bucket": "(0.0419, 0.0765]",
+        "rows": 819
+      },
+      {
+        "actual_rate": 0.07701711491442542,
+        "avg_probability": 0.07950194209158275,
+        "bucket": "(0.0765, 0.0823]",
+        "rows": 818
+      },
+      {
+        "actual_rate": 0.06105006105006105,
+        "avg_probability": 0.08474255813529058,
+        "bucket": "(0.0823, 0.0874]",
+        "rows": 819
+      },
+      {
+        "actual_rate": 0.10635696821515893,
+        "avg_probability": 0.08974754977925774,
+        "bucket": "(0.0874, 0.0921]",
+        "rows": 818
+      },
+      {
+        "actual_rate": 0.11843711843711843,
+        "avg_probability": 0.09444208434067658,
+        "bucket": "(0.0921, 0.0968]",
+        "rows": 819
+      },
+      {
+        "actual_rate": 0.1356968215158924,
+        "avg_probability": 0.09965580767407685,
+        "bucket": "(0.0968, 0.103]",
+        "rows": 818
+      },
+      {
+        "actual_rate": 0.12591687041564792,
+        "avg_probability": 0.10585485420629273,
+        "bucket": "(0.103, 0.109]",
+        "rows": 818
+      },
+      {
+        "actual_rate": 0.14163614163614163,
+        "avg_probability": 0.11347270580474855,
+        "bucket": "(0.109, 0.118]",
+        "rows": 819
+      },
+      {
+        "actual_rate": 0.14180929095354522,
+        "avg_probability": 0.12439368548632251,
+        "bucket": "(0.118, 0.132]",
+        "rows": 818
+      },
+      {
+        "actual_rate": 0.18803418803418803,
+        "avg_probability": 0.15123519283220155,
+        "bucket": "(0.132, 0.239]",
+        "rows": 819
+      }
+    ],
+    "log_loss": 0.35530553120471264,
+    "positive_rate": 0.11631032376298106,
+    "rows": 8185,
+    "top_10_hit_rate": 0.203125,
+    "top_25_hit_rate": 0.18375
+  },
+  "train": {
+    "auc": 0.6742301272334841,
+    "brier": 0.0889478643753057,
+    "calibration": [
+      {
+        "actual_rate": 0.03849855630413859,
+        "avg_probability": 0.06445701083632704,
+        "bucket": "(0.037399999999999996, 0.0697]",
+        "rows": 1039
+      },
+      {
+        "actual_rate": 0.04523580365736285,
+        "avg_probability": 0.07271298317953988,
+        "bucket": "(0.0697, 0.0753]",
+        "rows": 1039
+      },
+      {
+        "actual_rate": 0.05684007707129094,
+        "avg_probability": 0.07782080733649763,
+        "bucket": "(0.0753, 0.0802]",
+        "rows": 1038
+      },
+      {
+        "actual_rate": 0.05678537054860443,
+        "avg_probability": 0.08236790132189853,
+        "bucket": "(0.0802, 0.0846]",
+        "rows": 1039
+      },
+      {
+        "actual_rate": 0.07699711260827719,
+        "avg_probability": 0.08694217336131932,
+        "bucket": "(0.0846, 0.0895]",
+        "rows": 1039
+      },
+      {
+        "actual_rate": 0.09441233140655106,
+        "avg_probability": 0.09208561610681702,
+        "bucket": "(0.0895, 0.0948]",
+        "rows": 1038
+      },
+      {
+        "actual_rate": 0.12030798845043311,
+        "avg_probability": 0.09772426166049096,
+        "bucket": "(0.0948, 0.101]",
+        "rows": 1039
+      },
+      {
+        "actual_rate": 0.13776493256262043,
+        "avg_probability": 0.10482429688606189,
+        "bucket": "(0.101, 0.109]",
+        "rows": 1038
+      },
+      {
+        "actual_rate": 0.14436958614051973,
+        "avg_probability": 0.1153442775391408,
+        "bucket": "(0.109, 0.122]",
+        "rows": 1039
+      },
+      {
+        "actual_rate": 0.24254090471607315,
+        "avg_probability": 0.14086380785938865,
+        "bucket": "(0.122, 0.271]",
+        "rows": 1039
+      }
+    ],
+    "log_loss": 0.31664391334385467,
+    "positive_rate": 0.10137672090112641,
+    "rows": 10387,
+    "top_10_hit_rate": 0.30616740088105726,
+    "top_25_hit_rate": 0.2391496899911426
+  },
+  "training_rows": 18572,
+  "training_window": {
+    "dataset": "data-core/notebooks/cache/mlb_home_run_training_rows_statcast.csv",
+    "fit_rows": 8173,
+    "test_rows": 8185,
+    "test_start_date": "2026-05-15",
+    "train_rows": 10387,
+    "validation_rows": 2214
+  },
+  "validation": {
+    "auc": 0.5917924528301887,
+    "brier": 0.0814338299474453,
+    "calibration": [
+      {
+        "actual_rate": 0.07207207207207207,
+        "avg_probability": 0.06797364612554645,
+        "bucket": "(0.048, 0.0733]",
+        "rows": 222
+      },
+      {
+        "actual_rate": 0.05429864253393665,
+        "avg_probability": 0.07621670274982625,
+        "bucket": "(0.0733, 0.079]",
+        "rows": 221
+      },
+      {
+        "actual_rate": 0.049773755656108594,
+        "avg_probability": 0.08141402384409538,
+        "bucket": "(0.079, 0.0838]",
+        "rows": 221
+      },
+      {
+        "actual_rate": 0.07207207207207207,
+        "avg_probability": 0.08615711650198644,
+        "bucket": "(0.0838, 0.0887]",
+        "rows": 222
+      },
+      {
+        "actual_rate": 0.09954751131221719,
+        "avg_probability": 0.09116917595739278,
+        "bucket": "(0.0887, 0.0933]",
+        "rows": 221
+      },
+      {
+        "actual_rate": 0.11764705882352941,
+        "avg_probability": 0.0957638474004301,
+        "bucket": "(0.0933, 0.0981]",
+        "rows": 221
+      },
+      {
+        "actual_rate": 0.06756756756756757,
+        "avg_probability": 0.10113430647431193,
+        "bucket": "(0.0981, 0.105]",
+        "rows": 222
+      },
+      {
+        "actual_rate": 0.09502262443438914,
+        "avg_probability": 0.10828076380545197,
+        "bucket": "(0.105, 0.112]",
+        "rows": 221
+      },
+      {
+        "actual_rate": 0.10407239819004525,
+        "avg_probability": 0.11840523084903734,
+        "bucket": "(0.112, 0.127]",
+        "rows": 221
+      },
+      {
+        "actual_rate": 0.17117117117117117,
+        "avg_probability": 0.14648974445220586,
+        "bucket": "(0.127, 0.25]",
+        "rows": 222
+      }
+    ],
+    "log_loss": 0.29920223166635884,
+    "positive_rate": 0.09033423667570009,
+    "rows": 2214,
+    "top_10_hit_rate": 0.18888888888888888,
+    "top_25_hit_rate": 0.16444444444444445
+  }
+}
