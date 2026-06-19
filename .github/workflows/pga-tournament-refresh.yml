@@ -155,6 +155,8 @@ jobs:
             data-core/notebooks/cache/pga_refresh_state*.json
           )
           git -C "$GITHUB_WORKSPACE" add "${paths[@]}"
+          git -C "$GITHUB_WORKSPACE" add -u
+          git -C "$GITHUB_WORKSPACE" status --short
           if git -C "$GITHUB_WORKSPACE" diff --cached --quiet; then
             echo "No refreshed PGA data changes to publish."
             exit 0
