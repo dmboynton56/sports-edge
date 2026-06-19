@@ -19,11 +19,9 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.pga.live_leaderboard import (  # noqa: E402
-    active_players_for_round_state,
     fetch_live_leaderboard,
     format_cut_line,
     normalize_name,
-    parse_to_par_value,
     rounds_completed_from_leaderboard,
 )
 
@@ -100,6 +98,43 @@ def run_mc_from_actual(
     return win / denom, t5 / denom, t10 / denom, t20 / denom
 
 
+def run_make_cut_from_actual(
+    actual_totals: np.ndarray,
+    updated_sg_per_round: np.ndarray,
+    n_rounds_to_cut: int,
+    n_sims: int,
+    player_stds: np.ndarray,
+    *,
+    course_par: int,
+    cut_size: int,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    """Estimate make-cut probability from the current completed-round state."""
+
+    n_players = len(actual_totals)
+    if n_rounds_to_cut <= 0:
+        return np.ones(n_players)
+
+    sim_cut_totals = np.tile(actual_totals, (n_sims, 1)).astype(np.float64)
+    for _ in range(n_rounds_to_cut):
+        round_scores = rng.normal(
+            loc=course_par - updated_sg_per_round,
+            scale=player_stds,
+            size=(n_sims, n_players),
+        )
+        sim_cut_totals += round_scores
+
+    made_cut = np.zeros(n_players)
+    for sim in range(n_sims):
+        totals = sim_cut_totals[sim]
+        if n_players <= cut_size:
+            made_cut += 1
+            continue
+        cut_line = np.partition(totals, cut_size - 1)[cut_size - 1]
+        made_cut += totals <= cut_line
+    return made_cut / float(n_sims)
+
+
 def _safe_prob(row: pd.Series, *keys: str) -> Any:
     for key in keys:
         value = row.get(key)
@@ -118,18 +153,93 @@ def _safe_float(value: Any) -> float | None:
     return out
 
 
-def _total_strokes(player: dict[str, Any], *, course_par: int, rounds_completed: int) -> float:
-    total = player.get("totalStrokes")
-    if total is not None:
-        return float(total)
+def _round_score(rounds: dict[Any, Any], round_no: int) -> float | None:
+    value = rounds.get(round_no)
+    if value is None:
+        value = rounds.get(str(round_no))
+    score = _safe_float(value)
+    if score is None or score <= 0:
+        return None
+    return score
+
+
+def _completed_round_scores(player: dict[str, Any], rounds_completed: int) -> list[float]:
     rounds = player.get("rounds") or {}
-    round_total = sum(float(value) for value in rounds.values() if value is not None)
-    if round_total:
-        return round_total
-    to_par = parse_to_par_value(player.get("toPar"))
-    if to_par is not None:
-        return (course_par * max(rounds_completed, 1)) + to_par
+    holes_by_round = player.get("roundHoles") or {}
+    return [
+        score
+        for round_no in range(1, rounds_completed + 1)
+        if holes_by_round.get(round_no, 18) >= 18 and (score := _round_score(rounds, round_no)) is not None
+    ]
+
+
+def _format_to_par_value(value: float) -> str:
+    if value == 0:
+        return "E"
+    if float(value).is_integer():
+        number = int(value)
+        return f"+{number}" if number > 0 else str(number)
+    return f"+{value:.1f}" if value > 0 else f"{value:.1f}"
+
+
+def _total_strokes(player: dict[str, Any], *, course_par: int, rounds_completed: int) -> float:
+    completed_scores = _completed_round_scores(player, rounds_completed)
+    if len(completed_scores) == rounds_completed:
+        return float(sum(completed_scores))
+    if completed_scores:
+        missing_rounds = rounds_completed - len(completed_scores)
+        return float(sum(completed_scores) + (course_par * missing_rounds))
     return float(course_par * max(rounds_completed, 1))
+
+
+def _completed_to_par(player: dict[str, Any], *, course_par: int, rounds_completed: int) -> float:
+    total = _total_strokes(player, course_par=course_par, rounds_completed=rounds_completed)
+    return total - (course_par * max(rounds_completed, 1))
+
+
+def _active_players_for_completed_state(
+    players: list[dict[str, Any]],
+    *,
+    rounds_completed: int,
+    cut_after_round: int,
+    cut_size: int,
+    course_par: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], float | None, bool]:
+    active: list[dict[str, Any]] = []
+    inactive: list[dict[str, Any]] = []
+    inactive_statuses = {"WD", "DQ", "DNS", "CUT", "MDF", ""}
+
+    for player in players:
+        if str(player.get("toPar") or "").upper() in inactive_statuses:
+            inactive.append(player)
+            continue
+        completed = dict(player)
+        completed["_completed_total_strokes"] = _total_strokes(
+            player,
+            course_par=course_par,
+            rounds_completed=rounds_completed,
+        )
+        completed["_completed_to_par"] = _completed_to_par(
+            player,
+            course_par=course_par,
+            rounds_completed=rounds_completed,
+        )
+        completed["_completed_to_par_display"] = _format_to_par_value(float(completed["_completed_to_par"]))
+        active.append(completed)
+
+    active.sort(key=lambda player: (player["_completed_to_par"], player["_completed_total_strokes"], player["player"]))
+    if rounds_completed < cut_after_round:
+        return active, inactive, None, False
+    if not active:
+        return [], inactive, None, True
+    if len(active) <= cut_size:
+        return active, inactive, float(active[-1]["_completed_to_par"]), True
+
+    cut_line = float(active[cut_size - 1]["_completed_to_par"])
+    made = [player for player in active if float(player["_completed_to_par"]) <= cut_line]
+    missed = [player for player in active if float(player["_completed_to_par"]) > cut_line]
+    missed.extend(inactive)
+    return made, missed, cut_line, True
 
 
 def _assign_tied_positions(df: pd.DataFrame) -> pd.Series:
@@ -183,11 +293,12 @@ def main() -> tuple[pd.DataFrame, dict[str, Any], list[dict[str, Any]], list[dic
     if remaining_rounds is None:
         remaining_rounds = max(args.total_rounds - rounds_completed, 0)
 
-    active, out_players, cut_line, cut_applied = active_players_for_round_state(
+    active, out_players, cut_line, cut_applied = _active_players_for_completed_state(
         leaderboard["players"],
         rounds_completed=rounds_completed,
         cut_after_round=args.cut_after_round,
         cut_size=args.cut_size,
+        course_par=args.course_par,
     )
 
     print(f"Event: {leaderboard['event']}")
@@ -230,9 +341,7 @@ def main() -> tuple[pd.DataFrame, dict[str, Any], list[dict[str, Any]], list[dic
             pre_top20 = _safe_prob(pre_row, "best_calibrated_target_top20_prob")
 
         total_strokes = _total_strokes(player, course_par=args.course_par, rounds_completed=rounds_completed)
-        to_par_val = parse_to_par_value(player["toPar"])
-        if to_par_val is None:
-            to_par_val = total_strokes - (args.course_par * rounds_completed)
+        to_par_val = total_strokes - (args.course_par * rounds_completed)
         actual_sg_per_round = (args.course_par * rounds_completed - total_strokes) / max(rounds_completed, 1)
         rounds = player.get("rounds") or {}
         row = {
@@ -240,7 +349,7 @@ def main() -> tuple[pd.DataFrame, dict[str, Any], list[dict[str, Any]], list[dic
             "pred_name": pred_name or espn_name,
             "total_strokes": total_strokes,
             "to_par": to_par_val,
-            "to_par_display": player["toPar"],
+            "to_par_display": _format_to_par_value(to_par_val),
             "actual_sg_per_round": actual_sg_per_round,
             "pre_sg_per_round": pre_sg,
             "pre_win_prob": pre_win if pre_win is not None and not pd.isna(pre_win) else None,
@@ -249,7 +358,7 @@ def main() -> tuple[pd.DataFrame, dict[str, Any], list[dict[str, Any]], list[dic
             "pre_top20_prob": pre_top20 if pre_top20 is not None and not pd.isna(pre_top20) else None,
         }
         for round_no in range(1, args.total_rounds + 1):
-            row[f"r{round_no}"] = rounds.get(round_no)
+            row[f"r{round_no}"] = _round_score(rounds, round_no) if round_no <= rounds_completed else None
         rows.append(row)
 
     df = pd.DataFrame(rows)
@@ -258,17 +367,29 @@ def main() -> tuple[pd.DataFrame, dict[str, Any], list[dict[str, Any]], list[dic
 
     alpha = args.actual_weight
     df["updated_sg_per_round"] = alpha * df["actual_sg_per_round"] + (1 - alpha) * df["pre_sg_per_round"]
+    player_stds = np.full(len(df), args.sg_std_default)
     rng = np.random.default_rng(args.seed + rounds_completed)
     win_p, t5_p, t10_p, t20_p = run_mc_from_actual(
         df["total_strokes"].to_numpy(dtype=float),
         df["updated_sg_per_round"].to_numpy(dtype=float),
         remaining_rounds,
         args.n_sims,
-        np.full(len(df), args.sg_std_default),
+        player_stds,
         course_par=args.course_par,
         rng=rng,
     )
+    make_cut_p = run_make_cut_from_actual(
+        df["total_strokes"].to_numpy(dtype=float),
+        df["updated_sg_per_round"].to_numpy(dtype=float),
+        max(args.cut_after_round - rounds_completed, 0),
+        args.n_sims,
+        player_stds,
+        course_par=args.course_par,
+        cut_size=args.cut_size,
+        rng=np.random.default_rng(args.seed + 1000 + rounds_completed),
+    )
 
+    df["sim_make_cut_pct"] = 100 * make_cut_p
     df["sim_win_pct"] = 100 * win_p
     df["sim_top5_pct"] = 100 * t5_p
     df["sim_top10_pct"] = 100 * t10_p
@@ -308,6 +429,7 @@ def main() -> tuple[pd.DataFrame, dict[str, Any], list[dict[str, Any]], list[dic
         "pre_sg_per_round",
         "updated_sg_per_round",
         "sim_win_pct",
+        "sim_make_cut_pct",
         "sim_top5_pct",
         "sim_top10_pct",
         "sim_top20_pct",
@@ -341,6 +463,8 @@ def main() -> tuple[pd.DataFrame, dict[str, Any], list[dict[str, Any]], list[dic
         "pretournament_weight": 1 - alpha,
         "sg_std": args.sg_std_default,
         "seed": args.seed,
+        "round_complete_validated": True,
+        "score_source": "espn_completed_round_scores_v1",
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "pretournament_predictions": str(pred_csv),
         "leaderboard_fetched_at": leaderboard.get("fetchedAt", ""),

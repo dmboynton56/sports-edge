@@ -21,7 +21,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.data.pga_odds_fetcher import fetch_and_summarize  # noqa: E402
-from src.pga.live_leaderboard import fetch_live_leaderboard  # noqa: E402
+from src.pga.live_leaderboard import fetch_live_leaderboard, rounds_completed_from_leaderboard  # noqa: E402
 
 
 ARCHIVE = ROOT / "src" / "data" / "archive"
@@ -77,6 +77,8 @@ def _load_midtournament(path: Path | None) -> dict[str, Any] | None:
     df = pd.read_csv(path)
     meta_path = path.with_suffix(".meta.json")
     meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    if meta.get("score_source") != "espn_completed_round_scores_v1":
+        return None
     return {"meta": meta, "predictions": df.to_dict(orient="records")}
 
 
@@ -234,6 +236,11 @@ def main() -> None:
 
     live_leaderboard = None if args.skip_leaderboard else fetch_live_leaderboard(espn_match=args.espn_match)
     midtournament = _load_midtournament(args.midtournament_csv)
+    if midtournament and live_leaderboard:
+        current_completed = rounds_completed_from_leaderboard(live_leaderboard)
+        meta_completed = int(midtournament.get("meta", {}).get("rounds_completed") or 0)
+        if current_completed < meta_completed:
+            midtournament = None
     normalized_markets = _build_normalized_markets(
         predictions,
         args.start_date,

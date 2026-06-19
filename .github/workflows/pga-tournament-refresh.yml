@@ -32,7 +32,8 @@ on:
         required: false
         default: "false"
   schedule:
-    - cron: "0 3,13,17,21 * * *"
+    # Light daytime checks plus tighter evening/overnight windows so completed rounds publish quickly.
+    - cron: "0 2-6,13,17,21,23 * * *"
 
 permissions:
   contents: write

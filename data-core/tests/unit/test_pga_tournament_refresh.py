@@ -116,12 +116,39 @@ def test_fetch_live_leaderboard_selects_matched_espn_event():
     assert leaderboard["event"] == "U.S. Open Championship"
     assert leaderboard["players"][0]["player"] == "Test Player"
     assert leaderboard["players"][0]["positionDisplay"] == "1"
+    assert leaderboard["players"][0]["roundHoles"][1] == 0
 
 
 def test_rounds_completed_detection_handles_in_progress_and_complete_statuses():
-    assert rounds_completed_from_leaderboard({"currentRound": 2, "status": "In Progress"}, total_rounds=4) == 1
-    assert rounds_completed_from_leaderboard({"currentRound": 2, "status": "Round 2 Complete"}, total_rounds=4) == 2
-    assert rounds_completed_from_leaderboard({"currentRound": 4, "isCompleted": True}, total_rounds=4) == 4
+    full_round_players = [
+        {"player": "A", "toPar": "-2", "rounds": {1: 68, 2: 70, 3: 71, 4: 72}, "roundHoles": {1: 18, 2: 18, 3: 18, 4: 18}},
+        {"player": "B", "toPar": "+1", "rounds": {1: 71, 2: 70, 3: 70, 4: 72}, "roundHoles": {1: 18, 2: 18, 3: 18, 4: 18}},
+    ]
+    assert rounds_completed_from_leaderboard(
+        {"currentRound": 2, "status": "In Progress", "players": full_round_players},
+        total_rounds=4,
+    ) == 1
+    assert rounds_completed_from_leaderboard(
+        {"currentRound": 2, "status": "Round 2 Complete", "players": full_round_players},
+        total_rounds=4,
+    ) == 2
+    assert rounds_completed_from_leaderboard(
+        {"currentRound": 4, "isCompleted": True, "players": full_round_players},
+        total_rounds=4,
+    ) == 4
+
+
+def test_rounds_completed_waits_for_full_completed_round_scores():
+    leaderboard = {
+        "currentRound": 2,
+        "status": "In Progress",
+        "players": [
+            {"player": "A", "toPar": "-2", "rounds": {1: 68}, "roundHoles": {1: 18}},
+            {"player": "B", "toPar": "+7", "rounds": {1: 46}, "roundHoles": {1: 10}},
+        ],
+    }
+
+    assert rounds_completed_from_leaderboard(leaderboard, total_rounds=4) == 0
 
 
 def test_cut_is_applied_only_after_configured_cut_round():

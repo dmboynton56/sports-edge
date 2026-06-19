@@ -64,6 +64,8 @@ def _existing_midtournament_state(tournament: PgaTournament) -> str | None:
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
     except json.JSONDecodeError:
         return None
+    if meta.get("score_source") != "espn_completed_round_scores_v1":
+        return None
     return meta.get("round_state_key")
 
 
@@ -148,10 +150,11 @@ def run_midtournament_update(
 
     state_key = f"{tournament.key}:R{rounds_completed}"
     state = _load_state()
-    last_state = (
-        state.get(tournament.key, {}).get("last_midtournament_state_key")
-        or _existing_midtournament_state(tournament)
-    )
+    tournament_state = state.get(tournament.key, {})
+    last_state = None
+    if tournament_state.get("score_source") == "espn_completed_round_scores_v1":
+        last_state = tournament_state.get("last_midtournament_state_key")
+    last_state = last_state or _existing_midtournament_state(tournament)
     if last_state == state_key and not args.force_mid:
         print(f"Mid-tournament simulation already processed for {state_key}; skipping.")
         return False
@@ -187,6 +190,7 @@ def run_midtournament_update(
 
     state[tournament.key] = {
         "last_midtournament_state_key": state_key,
+        "score_source": "espn_completed_round_scores_v1",
         "updated_at": _now_utc().isoformat(),
     }
     if not dry_run:

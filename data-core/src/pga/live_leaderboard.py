@@ -111,11 +111,13 @@ def parse_leaderboard_event(event: dict[str, Any]) -> dict[str, Any] | None:
     for competitor in competitors:
         athlete = competitor.get("athlete") or {}
         rounds: dict[int, int] = {}
+        round_holes: dict[int, int] = {}
         for line in competitor.get("linescores") or []:
             period = _safe_int(line.get("period"))
             value = _safe_int(line.get("value"))
             if period is not None and value is not None:
                 rounds[period] = value
+                round_holes[period] = len(line.get("linescores") or [])
         to_par = score_to_par_str(competitor.get("score"))
         total_strokes = sum(rounds.values()) if rounds else None
         rows.append(
@@ -125,6 +127,7 @@ def parse_leaderboard_event(event: dict[str, Any]) -> dict[str, Any] | None:
                 "thru": str((competitor.get("status") or {}).get("displayThru") or ""),
                 "totalStrokes": total_strokes,
                 "rounds": rounds,
+                "roundHoles": round_holes,
                 "status": ((competitor.get("status") or {}).get("type") or {}).get("description", ""),
             }
         )
@@ -185,8 +188,33 @@ def rounds_completed_from_leaderboard(leaderboard: dict[str, Any], *, total_roun
     status = str(leaderboard.get("status") or "").lower()
     state = str(leaderboard.get("statusState") or "").lower()
     if leaderboard.get("isCompleted") or "complete" in status or state == "post":
-        return min(current_round, total_rounds)
-    return max(0, min(current_round - 1, total_rounds))
+        candidate = min(current_round, total_rounds)
+    else:
+        candidate = max(0, min(current_round - 1, total_rounds))
+
+    players = leaderboard.get("players") or []
+    for round_no in range(candidate, 0, -1):
+        if _round_complete_for_field(players, round_no):
+            return round_no
+    return 0
+
+
+def _round_complete_for_field(players: list[dict[str, Any]], round_no: int) -> bool:
+    relevant = [
+        player
+        for player in players
+        if str(player.get("toPar") or "").upper() not in {"WD", "DQ", "DNS", ""}
+    ]
+    if not relevant:
+        return False
+    for player in relevant:
+        round_value = (player.get("rounds") or {}).get(round_no)
+        holes_played = (player.get("roundHoles") or {}).get(round_no)
+        if round_value is None:
+            return False
+        if holes_played is not None and holes_played < 18:
+            return False
+    return True
 
 
 def determine_cut(

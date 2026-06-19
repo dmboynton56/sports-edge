@@ -86,10 +86,13 @@ type MidTournamentPred = {
   to_par_display: string;
   r1: number | null;
   r2: number | null;
+  r3?: number | null;
+  r4?: number | null;
   total_strokes: number;
   actual_sg_per_round: number;
   pre_sg_per_round: number;
   updated_sg_per_round: number;
+  sim_make_cut_pct?: number | null;
   sim_win_pct: number;
   sim_top5_pct: number;
   sim_top10_pct: number;
@@ -109,9 +112,12 @@ type MidTournamentData = {
     status: string;
     rounds_completed: number;
     remaining_rounds: number;
-    cut_line: string;
-    made_cut: number;
-    missed_cut: number;
+    cut_line?: string | null;
+    made_cut?: number | null;
+    missed_cut?: number | null;
+    active_players?: number | null;
+    cut_after_round?: number | null;
+    cut_applied?: boolean | null;
     n_sims: number;
     actual_weight: number;
     pretournament_weight: number;
@@ -149,20 +155,42 @@ type Dashboard = {
   midtournament?: MidTournamentData;
 };
 
-type Tab = 'leaderboard' | 'predictions' | 'schedule' | 'form' | 'odds';
+type Tab = 'predictions' | 'leaderboard' | 'schedule' | 'form' | 'odds';
 type PredictionSortKey =
-  | 'exp_sg_per_round'
-  | 'sim_win_pct'
-  | 'sim_top10_pct'
-  | 'sim_top20_pct'
-  | 'best_calibrated_target_made_cut_prob'
-  | 'best_calibrated_target_top10_prob'
-  | 'best_calibrated_target_top20_prob'
-  | 'best_calibrated_target_win_prob'
-  | 'projected_total_strokes'
-  | 'projected_score_to_par'
-  | 'edge_win'
-  | 'ev_win';
+  | 'win_pct'
+  | 'make_cut_pct'
+  | 'top5_pct'
+  | 'top10_pct'
+  | 'top20_pct'
+  | 'updated_sg'
+  | 'to_par'
+  | 'win_delta_pct'
+  | 'pre_win_pct';
+
+type OutlookRow = {
+  player: string;
+  pre?: PredRow;
+  mt?: MidTournamentPred;
+  rankLabel: string;
+  positionLabel?: string;
+  toParDisplay?: string;
+  toParValue?: number | null;
+  completedRounds: (number | null)[];
+  totalStrokes?: number | null;
+  updatedSg?: number | null;
+  preSg?: number | null;
+  winPct?: number | null;
+  makeCutPct?: number | null;
+  top5Pct?: number | null;
+  top10Pct?: number | null;
+  top20Pct?: number | null;
+  preWinPct?: number | null;
+  preMakeCutPct?: number | null;
+  preTop10Pct?: number | null;
+  preTop20Pct?: number | null;
+  winDeltaPct?: number | null;
+  rankChange?: number | null;
+};
 
 const DATA_URL = '/data/pga_tournaments/current.json';
 
@@ -176,6 +204,129 @@ function toParColor(tp: string) {
     return 'text-blue-400';
   }
   return 'text-muted-foreground';
+}
+
+function asPct(prob: number | null | undefined) {
+  if (prob == null || Number.isNaN(prob)) return null;
+  return prob * 100;
+}
+
+function pctDisplay(value: number | null | undefined) {
+  if (value == null || Number.isNaN(value)) return '—';
+  return `${value.toFixed(1)}%`;
+}
+
+function signedPctDisplay(value: number | null | undefined) {
+  if (value == null || Number.isNaN(value)) return '—';
+  return `${value > 0 ? '+' : ''}${value.toFixed(1)} pts`;
+}
+
+function strokesDisplay(value: number | null | undefined, digits = 2) {
+  if (value == null || Number.isNaN(value)) return '—';
+  return `${value >= 0 ? '+' : ''}${value.toFixed(digits)}`;
+}
+
+function preWinPct(row: PredRow | undefined) {
+  if (!row) return null;
+  return asPct(row.best_calibrated_target_win_prob ?? row.lr_target_win_prob) ?? row.sim_win_pct;
+}
+
+function preMakeCutPct(row: PredRow | undefined) {
+  if (!row) return null;
+  return asPct(row.best_calibrated_target_made_cut_prob ?? row.lr_target_made_cut_prob);
+}
+
+function preTop10Pct(row: PredRow | undefined) {
+  if (!row) return null;
+  return asPct(row.best_calibrated_target_top10_prob ?? row.lr_target_top10_prob) ?? row.sim_top10_pct;
+}
+
+function preTop20Pct(row: PredRow | undefined) {
+  if (!row) return null;
+  return asPct(row.best_calibrated_target_top20_prob ?? row.lr_target_top20_prob) ?? row.sim_top20_pct;
+}
+
+function buildOutlookRows(data: Dashboard): OutlookRow[] {
+  const preByPlayer = Object.fromEntries(data.predictions.map((row) => [row.player, row]));
+  const mtRows = data.midtournament?.predictions ?? [];
+  if (mtRows.length > 0) {
+    return mtRows.map((mt, index) => {
+      const pre = preByPlayer[mt.pred_name] ?? preByPlayer[mt.player];
+      const winPct = mt.sim_win_pct;
+      const preWin = preWinPct(pre);
+      return {
+        player: mt.pred_name || mt.player,
+        pre,
+        mt,
+        rankLabel: String(index + 1),
+        positionLabel: mt.current_pos_display,
+        toParDisplay: mt.to_par_display,
+        toParValue: mt.to_par,
+        completedRounds: [mt.r1, mt.r2, mt.r3 ?? null, mt.r4 ?? null],
+        totalStrokes: mt.total_strokes,
+        updatedSg: mt.updated_sg_per_round,
+        preSg: mt.pre_sg_per_round,
+        winPct,
+        makeCutPct: mt.sim_make_cut_pct ?? null,
+        top5Pct: mt.sim_top5_pct,
+        top10Pct: mt.sim_top10_pct,
+        top20Pct: mt.sim_top20_pct,
+        preWinPct: preWin,
+        preMakeCutPct: preMakeCutPct(pre),
+        preTop10Pct: preTop10Pct(pre),
+        preTop20Pct: preTop20Pct(pre),
+        winDeltaPct: preWin == null ? null : winPct - preWin,
+        rankChange: mt.rank_change,
+      };
+    });
+  }
+
+  return data.predictions.map((pre, index) => {
+    const winPct = preWinPct(pre);
+    return {
+      player: pre.player,
+      pre,
+      rankLabel: String(index + 1),
+      completedRounds: [],
+      updatedSg: pre.exp_sg_per_round,
+      preSg: pre.exp_sg_per_round,
+      winPct,
+      makeCutPct: preMakeCutPct(pre),
+      top5Pct: pre.sim_top5_pct,
+      top10Pct: preTop10Pct(pre),
+      top20Pct: preTop20Pct(pre),
+      preWinPct: winPct,
+      preMakeCutPct: preMakeCutPct(pre),
+      preTop10Pct: preTop10Pct(pre),
+      preTop20Pct: preTop20Pct(pre),
+      winDeltaPct: null,
+    };
+  });
+}
+
+function valueForSort(row: OutlookRow, key: PredictionSortKey) {
+  switch (key) {
+    case 'win_pct':
+      return row.winPct;
+    case 'make_cut_pct':
+      return row.makeCutPct;
+    case 'top5_pct':
+      return row.top5Pct;
+    case 'top10_pct':
+      return row.top10Pct;
+    case 'top20_pct':
+      return row.top20Pct;
+    case 'updated_sg':
+      return row.updatedSg;
+    case 'to_par':
+      return row.toParValue == null ? null : -row.toParValue;
+    case 'win_delta_pct':
+      return row.winDeltaPct;
+    case 'pre_win_pct':
+      return row.preWinPct;
+    default:
+      return null;
+  }
 }
 
 function LiveLeaderboardTab({
@@ -194,11 +345,11 @@ function LiveLeaderboardTab({
   if (!leaderboard || !leaderboard.players.length) {
     return (
       <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center text-muted-foreground text-sm">
-        <p className="font-medium mb-2">No live leaderboard available</p>
+        <p className="font-medium mb-2">No score context available</p>
         <p className="text-xs">
           Re-run{' '}
-          <code className="bg-secondary px-1 rounded">python scripts/export_pga_dashboard.py</code>{' '}
-          to fetch the current ESPN scoreboard.
+          <code className="bg-secondary px-1 rounded">python scripts/export_pga_tournament_dashboard.py</code>{' '}
+          to fetch the current ESPN score snapshot.
         </p>
       </div>
     );
@@ -211,6 +362,9 @@ function LiveLeaderboardTab({
   const mtMeta = midtournament?.meta;
   const hasMT = midtournament != null && midtournament.predictions.length > 0;
   const cutPlayerSet = hasMT ? new Set(midtournament.predictions.map((p) => p.player)) : null;
+  const cutContext = mtMeta?.cut_applied
+    ? `${mtMeta.made_cut ?? '—'} made cut · Cut line: ${mtMeta.cut_line ?? '—'}`
+    : `Cut after Round ${mtMeta?.cut_after_round ?? 2}`;
 
   const lb = leaderboard;
   const maxRound = lb.currentRound;
@@ -231,9 +385,9 @@ function LiveLeaderboardTab({
       {hasMT && mtMeta && (
         <div className="flex flex-wrap gap-3">
           <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-xs">
-            <span className="text-emerald-400 font-bold">Mid-tournament update</span>
+            <span className="text-emerald-400 font-bold">Round outlook update</span>
             <span className="text-muted-foreground ml-2">
-              {mtMeta.made_cut} made cut · Cut line: {mtMeta.cut_line} · {mtMeta.remaining_rounds} rounds remaining ·{' '}
+              {cutContext} · {mtMeta.remaining_rounds} rounds remaining ·{' '}
               {mtMeta.n_sims.toLocaleString()} sims · {(mtMeta.actual_weight * 100).toFixed(0)}% actual / {(mtMeta.pretournament_weight * 100).toFixed(0)}% model blend
             </span>
           </div>
@@ -358,7 +512,7 @@ function LiveLeaderboardTab({
                             <div className="space-y-4">
                               <div>
                                 <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                                  Mid-tournament predictions (after R{mtMeta?.rounds_completed})
+                                  Round outlook (after R{mtMeta?.rounds_completed})
                                 </div>
                                 <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                                   {([
@@ -509,16 +663,11 @@ function LiveLeaderboardTab({
   );
 }
 
-function pctProb(x: number | undefined) {
-  if (x === undefined || Number.isNaN(x)) return '—';
-  return `${(x * 100).toFixed(1)}%`;
-}
-
 export default function PGAPage() {
   const [data, setData] = useState<Dashboard | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  const [tab, setTab] = useState<Tab>('leaderboard');
-  const [sortKey, setSortKey] = useState<PredictionSortKey>('best_calibrated_target_win_prob');
+  const [tab, setTab] = useState<Tab>('predictions');
+  const [sortKey, setSortKey] = useState<PredictionSortKey>('win_pct');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [playerPick, setPlayerPick] = useState<string>('');
   const [expandedPredPlayer, setExpandedPredPlayer] = useState<string | null>(null);
@@ -536,13 +685,13 @@ export default function PGAPage() {
       .catch(() => setErr(`Missing ${DATA_URL}. Run: cd data-core && python scripts/export_pga_tournament_dashboard.py`));
   }, []);
 
-  const sortedPreds = useMemo(() => {
-    if (!data?.predictions) return [];
-    const rows = [...data.predictions];
+  const sortedOutlookRows = useMemo(() => {
+    if (!data) return [];
+    const rows = buildOutlookRows(data);
     rows.sort((a, b) => {
-      const av = a[sortKey] as number;
-      const bv = b[sortKey] as number;
-      const cmp = (av ?? 0) - (bv ?? 0);
+      const av = valueForSort(a, sortKey);
+      const bv = valueForSort(b, sortKey);
+      const cmp = (av ?? -9999) - (bv ?? -9999);
       return sortDir === 'desc' ? -cmp : cmp;
     });
     return rows;
@@ -559,42 +708,67 @@ export default function PGAPage() {
     [sortKey]
   );
 
-  const hasOdds = data?.edges != null && data.edges.length > 0;
   const eventName = data?.event?.name ?? 'PGA Tournament';
   const eventCourse = data?.event?.course ?? 'Tournament course';
   const eventPar = data?.event?.par;
+  const roundMeta = data?.midtournament?.meta;
+  const hasRoundUpdate = data?.midtournament != null && data.midtournament.predictions.length > 0;
+  const completedRoundLabel = roundMeta ? `After Round ${roundMeta.rounds_completed}` : 'Pre-tournament';
+  const liveRoundLabel = data?.liveLeaderboard
+    ? `Round ${data.liveLeaderboard.currentRound} ${data.liveLeaderboard.status.toLowerCase()}`
+    : data?.event?.status?.replace(/_/g, ' ');
 
   const formRows = data?.recentByPlayer[playerPick] ?? [];
   const marketSortButtons: { key: PredictionSortKey; label: string }[] = [
-    { key: 'best_calibrated_target_win_prob', label: 'Win%' },
-    { key: 'best_calibrated_target_top10_prob', label: 'Top 10%' },
-    { key: 'best_calibrated_target_top20_prob', label: 'Top 20%' },
-    { key: 'best_calibrated_target_made_cut_prob', label: 'Make Cut%' },
-    { key: 'exp_sg_per_round', label: 'Exp SG/R' },
-    { key: 'sim_win_pct', label: 'MC Win%' },
-    { key: 'sim_top10_pct', label: 'MC Top10%' },
-    { key: 'sim_top20_pct', label: 'MC Top20%' },
+    { key: 'win_pct', label: 'Win%' },
+    { key: 'make_cut_pct', label: 'Make Cut%' },
+    { key: 'top5_pct', label: 'Top 5%' },
+    { key: 'top10_pct', label: 'Top 10%' },
+    { key: 'top20_pct', label: 'Top 20%' },
+    { key: 'updated_sg', label: 'Upd SG/R' },
+    { key: 'to_par', label: 'Score' },
+    { key: 'win_delta_pct', label: 'Win Δ' },
   ];
-  const calibOrLR = (row: PredRow, bestKey: keyof PredRow, lrKey: keyof PredRow) => {
-    const v = row[bestKey] as number | undefined;
-    if (typeof v === 'number') return v;
-    return row[lrKey] as number | undefined;
-  };
-  const modelLabel = (row: PredRow, bestModelKey: keyof PredRow, fallback: string) => {
-    const v = row[bestModelKey] as string | undefined;
-    return v || fallback;
-  };
-
   return (
     <div className="container mx-auto px-4 py-8 max-w-[1400px]">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">PGA — {eventName}</h1>
-        <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
-          Tournament probabilities for {eventCourse}
-          {eventPar ? `, par ${eventPar}` : ''}. The U.S. Open fast path uses a source-backed field,
-          recent form, projected SG per round, Monte Carlo placement probabilities, and explicit data
-          quality flags while the full PGA model artifacts are promoted.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">PGA Round Outlook</h1>
+            <p className="text-muted-foreground max-w-3xl text-sm leading-relaxed">
+              {eventName} probabilities for {eventCourse}
+              {eventPar ? `, par ${eventPar}` : ''}.
+            </p>
+          </div>
+          <div className="text-right">
+            <div className="text-sm font-semibold">{completedRoundLabel}</div>
+            {liveRoundLabel && <div className="text-xs text-muted-foreground">{liveRoundLabel}</div>}
+          </div>
+        </div>
+        {hasRoundUpdate && roundMeta && (
+          <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-lg border border-border bg-card px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Simulation</div>
+              <div className="text-sm font-semibold">{roundMeta.n_sims.toLocaleString()} runs</div>
+            </div>
+            <div className="rounded-lg border border-border bg-card px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Model Blend</div>
+              <div className="text-sm font-semibold">
+                {(roundMeta.actual_weight * 100).toFixed(0)}% round data / {(roundMeta.pretournament_weight * 100).toFixed(0)}% pre
+              </div>
+            </div>
+            <div className="rounded-lg border border-border bg-card px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Players Simulated</div>
+              <div className="text-sm font-semibold">{String(roundMeta.active_players ?? data?.midtournament?.predictions.length ?? '—')}</div>
+            </div>
+            <div className="rounded-lg border border-border bg-card px-3 py-2">
+              <div className="text-[10px] uppercase tracking-wider text-muted-foreground">Cut State</div>
+              <div className="text-sm font-semibold">
+                {roundMeta.cut_applied ? `Cut line ${String(roundMeta.cut_line ?? '—')}` : `Cut after Round ${String(roundMeta.cut_after_round ?? 2)}`}
+              </div>
+            </div>
+          </div>
+        )}
         {data && (
           <p className="text-xs text-muted-foreground mt-3">
             JSON generated {new Date(data.generatedAt).toLocaleString()} · ESPN supplement rows:{' '}
@@ -621,8 +795,8 @@ export default function PGAPage() {
       <div className="flex gap-2 mb-6 border-b border-border pb-2">
         {(
           [
-            ['leaderboard', 'Live Leaderboard'],
-            ['predictions', 'Predictions'],
+            ['predictions', 'Round Outlook'],
+            ['leaderboard', 'Score Context'],
             ['odds', 'Odds & Edges'],
             ['schedule', '2026 events'],
             ['form', 'Recent form'],
@@ -653,7 +827,7 @@ export default function PGAPage() {
       {tab === 'predictions' && data && (
         <div className="rounded-xl border border-border bg-card overflow-hidden">
           <div className="px-3 py-2 border-b border-border bg-secondary/20 flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground mr-1">Sort market:</span>
+            <span className="text-xs text-muted-foreground mr-1">Sort:</span>
             {marketSortButtons.map((b) => (
               <button
                 key={b.key}
@@ -678,25 +852,29 @@ export default function PGAPage() {
                 <tr className="border-b border-border bg-secondary/30">
                   <th className="text-left px-3 py-2 font-medium text-muted-foreground">#</th>
                   <th className="text-left px-3 py-2 font-medium text-muted-foreground">Player</th>
+                  {hasRoundUpdate && <th className="text-right px-3 py-2 font-medium text-muted-foreground">Pos</th>}
+                  {hasRoundUpdate && <th className="text-right px-3 py-2 font-medium text-muted-foreground">Score</th>}
+                  {hasRoundUpdate && Array.from({ length: roundMeta?.rounds_completed ?? 0 }, (_, i) => (
+                    <th key={`r${i + 1}`} className="text-right px-3 py-2 font-medium text-muted-foreground">
+                      R{i + 1}
+                    </th>
+                  ))}
                   {(
                     [
-                      ['exp_sg_per_round', 'Exp SG/R'],
-                      ['best_calibrated_target_win_prob', 'Win%'],
-                      ...(hasOdds ? [['edge_win' as const, 'Edge'], ['ev_win' as const, 'E[V]']] : []),
-                      ['best_calibrated_target_top10_prob', 'Top 10%'],
-                      ['best_calibrated_target_top20_prob', 'Top 20%'],
-                      ['best_calibrated_target_made_cut_prob', 'Cut%'],
-                      ['projected_total_strokes', 'Proj Tot'],
-                      ['projected_score_to_par', 'Proj Par'],
-                      ['sim_win_pct', 'MC Win%'],
-                      ['sim_top10_pct', 'MC T10%'],
-                      ['sim_top20_pct', 'MC T20%'],
-                    ] as [string, string][]
+                      ['updated_sg', hasRoundUpdate ? 'Upd SG/R' : 'Exp SG/R'],
+                      ['win_pct', 'Win%'],
+                      ['make_cut_pct', 'Cut%'],
+                      ['top5_pct', 'Top 5%'],
+                      ['top10_pct', 'Top 10%'],
+                      ['top20_pct', 'Top 20%'],
+                      ['win_delta_pct', 'Win Δ'],
+                      ['pre_win_pct', 'Pre Win%'],
+                    ] as [PredictionSortKey, string][]
                   ).map(([k, lab]) => (
                     <th
                       key={k}
                       className="text-right px-3 py-2 font-medium text-muted-foreground cursor-pointer hover:text-foreground whitespace-nowrap"
-                      onClick={() => toggleSort(k as PredictionSortKey)}
+                      onClick={() => toggleSort(k)}
                     >
                       {lab}
                       {sortKey === k ? (sortDir === 'desc' ? ' ▼' : ' ▲') : ''}
@@ -705,7 +883,7 @@ export default function PGAPage() {
                 </tr>
               </thead>
               <tbody>
-                {sortedPreds.map((r, i) => {
+                {sortedOutlookRows.map((r, i) => {
                   const open = expandedPredPlayer === r.player;
                   const hist = data.recentByPlayer[r.player] ?? [];
                   return (
@@ -716,93 +894,71 @@ export default function PGAPage() {
                       >
                         <td className="px-3 py-2 text-muted-foreground">{i + 1}</td>
                         <td className="px-3 py-2 font-medium">
-                          {r.player}
-                          <span className="ml-2 text-[10px] text-muted-foreground">
-                            {open ? '▼' : '▶'} history
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span>{r.player}</span>
+                            {r.rankChange != null && Math.abs(r.rankChange) >= 10 && (
+                              <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                                r.rankChange > 0
+                                  ? 'bg-emerald-500/20 text-emerald-400'
+                                  : 'bg-red-500/20 text-red-400'
+                              }`}>
+                                {r.rankChange > 0 ? '+' : ''}{r.rankChange}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-muted-foreground">{open ? 'Hide' : 'Details'}</span>
+                          </div>
                         </td>
-                        <td className="px-3 py-2 text-right font-mono text-emerald-400/90">
-                          {r.exp_sg_per_round >= 0 ? '+' : ''}
-                          {r.exp_sg_per_round.toFixed(3)}
-                        </td>
-                        <td className="px-3 py-2 text-right font-semibold">
-                          {pctProb(calibOrLR(r, 'best_calibrated_target_win_prob', 'lr_target_win_prob'))}
-                        </td>
-                        {hasOdds && (
-                          <>
-                            <td className="px-3 py-2 text-right font-mono">
-                              {r.edge_win != null ? (
-                                <span className={r.edge_win > 0.02 ? 'text-emerald-400 font-bold' : r.edge_win < -0.02 ? 'text-red-400' : 'text-muted-foreground'}>
-                                  {r.edge_win > 0 ? '+' : ''}{(r.edge_win * 100).toFixed(1)}%
-                                </span>
-                              ) : '—'}
-                            </td>
-                            <td className="px-3 py-2 text-right font-mono">
-                              {r.ev_win != null ? (
-                                <span className={r.ev_win > 0 ? 'text-emerald-400 font-semibold' : 'text-muted-foreground'}>
-                                  {r.ev_win > 0 ? '+' : ''}{r.ev_win.toFixed(2)}
-                                </span>
-                              ) : '—'}
-                            </td>
-                          </>
+                        {hasRoundUpdate && (
+                          <td className="px-3 py-2 text-right font-mono text-muted-foreground">{r.positionLabel ?? '—'}</td>
                         )}
-                        <td className="px-3 py-2 text-right">
-                          {pctProb(calibOrLR(r, 'best_calibrated_target_top10_prob', 'lr_target_top10_prob'))}
+                        {hasRoundUpdate && (
+                          <td className={`px-3 py-2 text-right font-mono font-semibold ${toParColor(r.toParDisplay ?? '')}`}>
+                            {r.toParDisplay ?? '—'}
+                          </td>
+                        )}
+                        {hasRoundUpdate && Array.from({ length: roundMeta?.rounds_completed ?? 0 }, (_, ri) => (
+                          <td key={ri} className="px-3 py-2 text-right font-mono text-muted-foreground">
+                            {r.completedRounds[ri] ?? '—'}
+                          </td>
+                        ))}
+                        <td className="px-3 py-2 text-right font-mono text-emerald-400/90">
+                          {strokesDisplay(r.updatedSg, hasRoundUpdate ? 2 : 3)}
                         </td>
-                        <td className="px-3 py-2 text-right">
-                          {pctProb(calibOrLR(r, 'best_calibrated_target_top20_prob', 'lr_target_top20_prob'))}
+                        <td className="px-3 py-2 text-right font-semibold">{pctDisplay(r.winPct)}</td>
+                        <td className="px-3 py-2 text-right">{pctDisplay(r.makeCutPct)}</td>
+                        <td className="px-3 py-2 text-right text-muted-foreground">{pctDisplay(r.top5Pct)}</td>
+                        <td className="px-3 py-2 text-right text-muted-foreground">{pctDisplay(r.top10Pct)}</td>
+                        <td className="px-3 py-2 text-right text-muted-foreground">{pctDisplay(r.top20Pct)}</td>
+                        <td className={`px-3 py-2 text-right font-mono ${
+                          (r.winDeltaPct ?? 0) > 0
+                            ? 'text-emerald-400'
+                            : (r.winDeltaPct ?? 0) < 0
+                              ? 'text-red-400'
+                              : 'text-muted-foreground'
+                        }`}>
+                          {signedPctDisplay(r.winDeltaPct)}
                         </td>
-                        <td className="px-3 py-2 text-right">
-                          {pctProb(calibOrLR(r, 'best_calibrated_target_made_cut_prob', 'lr_target_made_cut_prob'))}
-                        </td>
-                        <td className="px-3 py-2 text-right font-mono text-muted-foreground">
-                          {r.projected_total_strokes != null ? r.projected_total_strokes.toFixed(1) : '—'}
-                        </td>
-                        <td className="px-3 py-2 text-right font-mono text-muted-foreground">
-                          {r.projected_score_to_par != null
-                            ? `${r.projected_score_to_par > 0 ? '+' : ''}${r.projected_score_to_par.toFixed(1)}`
-                            : '—'}
-                        </td>
-                        <td className="px-3 py-2 text-right text-muted-foreground">{r.sim_win_pct.toFixed(1)}%</td>
-                        <td className="px-3 py-2 text-right text-muted-foreground">{r.sim_top10_pct.toFixed(1)}%</td>
-                        <td className="px-3 py-2 text-right text-muted-foreground">{r.sim_top20_pct.toFixed(1)}%</td>
+                        <td className="px-3 py-2 text-right text-muted-foreground">{pctDisplay(r.preWinPct)}</td>
                       </tr>
                       {open && (
                         <tr className="bg-secondary/20 border-b border-border/50">
-                          <td colSpan={hasOdds ? 14 : 12} className="px-4 py-3">
-                            <div className="mb-3">
+                          <td colSpan={hasRoundUpdate ? 12 + (roundMeta?.rounds_completed ?? 0) : 10} className="px-4 py-3">
+                            <div className="mb-4">
                               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                                Best calibrated probabilities by market
+                                Current vs pre-tournament
                               </div>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {(
-                                  [
-                                    [
-                                      'Make Cut',
-                                      calibOrLR(r, 'best_calibrated_target_made_cut_prob', 'lr_target_made_cut_prob'),
-                                      modelLabel(r, 'best_calibrated_target_made_cut_model', 'lr'),
-                                    ],
-                                    [
-                                      'Top 10',
-                                      calibOrLR(r, 'best_calibrated_target_top10_prob', 'lr_target_top10_prob'),
-                                      modelLabel(r, 'best_calibrated_target_top10_model', 'lr'),
-                                    ],
-                                    [
-                                      'Top 20',
-                                      calibOrLR(r, 'best_calibrated_target_top20_prob', 'lr_target_top20_prob'),
-                                      modelLabel(r, 'best_calibrated_target_top20_model', 'lr'),
-                                    ],
-                                    [
-                                      'Win',
-                                      calibOrLR(r, 'best_calibrated_target_win_prob', 'lr_target_win_prob'),
-                                      modelLabel(r, 'best_calibrated_target_win_model', 'lr'),
-                                    ],
-                                  ] as [string, number | undefined, string][]
-                                ).map(([label, prob, model]) => (
+                              <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+                                {[
+                                  ['Win', pctDisplay(r.winPct), pctDisplay(r.preWinPct)],
+                                  ['Make Cut', pctDisplay(r.makeCutPct), pctDisplay(r.preMakeCutPct)],
+                                  ['Top 10', pctDisplay(r.top10Pct), pctDisplay(r.preTop10Pct)],
+                                  ['Top 20', pctDisplay(r.top20Pct), pctDisplay(r.preTop20Pct)],
+                                  ['SG/R', strokesDisplay(r.updatedSg), strokesDisplay(r.preSg)],
+                                ].map(([label, current, pre]) => (
                                   <div key={label} className="rounded-md border border-border/50 bg-card/60 px-3 py-2">
                                     <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
-                                    <div className="text-sm font-mono font-semibold">{pctProb(prob)}</div>
-                                    <div className="text-[10px] text-muted-foreground mt-0.5">model: {model}</div>
+                                    <div className="text-sm font-mono font-semibold">{current}</div>
+                                    <div className="text-[10px] text-muted-foreground mt-0.5">pre: {pre}</div>
                                   </div>
                                 ))}
                               </div>
@@ -867,7 +1023,7 @@ export default function PGAPage() {
                 Run{' '}
                 <code className="bg-secondary px-1 rounded">python scripts/fetch_pga_odds.py</code>{' '}
                 then{' '}
-                <code className="bg-secondary px-1 rounded">python scripts/export_pga_dashboard.py</code>{' '}
+                <code className="bg-secondary px-1 rounded">python scripts/export_pga_tournament_dashboard.py</code>{' '}
                 to populate odds from The Odds API.
               </p>
             </div>
