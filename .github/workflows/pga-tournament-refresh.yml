@@ -139,6 +139,7 @@ jobs:
         if: ${{ env.DRY_RUN != 'true' }}
         shell: bash
         run: |
+          cd "$GITHUB_WORKSPACE"
           git -C "$GITHUB_WORKSPACE" config user.name "github-actions[bot]"
           git -C "$GITHUB_WORKSPACE" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           shopt -s nullglob
