@@ -35,11 +35,23 @@ WORKFLOWS: dict[str, dict[str, Any]] = {
         "workflow": "player-markets-refresh.yml",
         "inputs": {
             "date": "",
-            "run_pga": "true",
+            "run_pga": "false",
             "run_mlb_hr": "true",
             "train_mlb_hr": "false",
             "sync_supabase": "true",
             "sync_bigquery": "true",
+        },
+    },
+    "pga-tournament-refresh": {
+        "workflow": "pga-tournament-refresh.yml",
+        "inputs": {
+            "tournament_key": "",
+            "force_phase": "",
+            "n_sims": "50000",
+            "live_odds": "false",
+            "sync_supabase": "true",
+            "sync_bigquery": "true",
+            "dry_run": "false",
         },
     },
 }

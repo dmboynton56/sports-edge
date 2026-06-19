@@ -1,0 +1,133 @@
+name: PGA Tournament Refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      tournament_key:
+        description: "Registry tournament key. Empty = auto-detect active window"
+        required: false
+        default: ""
+      force_phase:
+        description: "Override phase: pre, live, or post"
+        required: false
+        default: ""
+      n_sims:
+        description: "Monte Carlo simulations for between-round updates"
+        required: false
+        default: "50000"
+      live_odds:
+        description: "Fetch live odds where available"
+        required: false
+        default: "false"
+      sync_supabase:
+        description: "Sync PGA tournament output to Supabase"
+        required: false
+        default: "true"
+      sync_bigquery:
+        description: "Sync PGA tournament output to BigQuery"
+        required: false
+        default: "true"
+      dry_run:
+        description: "Build outputs but skip warehouse/API writes"
+        required: false
+        default: "false"
+  schedule:
+    - cron: "0 3,13,17,21 * * *"
+
+concurrency:
+  group: sports-edge-pga-tournament-refresh
+  cancel-in-progress: false
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PYTHONPATH: ${{ github.workspace }}/data-core
+  TOURNAMENT_KEY: ${{ github.event.inputs.tournament_key || '' }}
+  FORCE_PHASE: ${{ github.event.inputs.force_phase || '' }}
+  N_SIMS: ${{ github.event.inputs.n_sims || '50000' }}
+  LIVE_ODDS: ${{ github.event.inputs.live_odds || 'false' }}
+  SYNC_SUPABASE: ${{ github.event.inputs.sync_supabase || 'true' }}
+  SYNC_BIGQUERY: ${{ github.event.inputs.sync_bigquery || 'true' }}
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+jobs:
+  refresh-pga:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: data-core
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-key.json
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: data-core/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt google-cloud-bigquery supabase
+
+      - name: Configure GCP credentials
+        if: ${{ env.SYNC_BIGQUERY == 'true' && env.DRY_RUN != 'true' }}
+        shell: bash
+        run: echo "$GCP_SERVICE_ACCOUNT_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
+        env:
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Prepare Supabase schema
+        if: ${{ env.SYNC_SUPABASE == 'true' && env.DRY_RUN != 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql
+
+      - name: Refresh PGA tournament
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          PGA_ARGS=(--n-sims "$N_SIMS" --baseline-only)
+          if [ -n "$TOURNAMENT_KEY" ]; then
+            PGA_ARGS+=(--tournament-key "$TOURNAMENT_KEY")
+          fi
+          if [ -n "$FORCE_PHASE" ]; then
+            PGA_ARGS+=(--force-phase "$FORCE_PHASE")
+          fi
+          if [ "$LIVE_ODDS" = "true" ]; then
+            PGA_ARGS+=(--live-odds)
+          else
+            PGA_ARGS+=(--skip-odds)
+          fi
+          if [ "$SYNC_SUPABASE" = "true" ] && [ "$DRY_RUN" != "true" ]; then
+            PGA_ARGS+=(--sync-supabase)
+          fi
+          if [ "$SYNC_BIGQUERY" = "true" ] && [ "$DRY_RUN" != "true" ]; then
+            PGA_ARGS+=(--sync-bigquery --project "$PROJECT_ID")
+          fi
+          if [ "$DRY_RUN" = "true" ]; then
+            PGA_ARGS+=(--dry-run)
+          fi
+          python scripts/refresh_pga_tournament.py "${PGA_ARGS[@]}"
+
+      - name: Export combined prediction feed
+        run: python scripts/export_prediction_feed.py
+
+      - name: Validate public JSON
+        run: python scripts/validate_public_json.py

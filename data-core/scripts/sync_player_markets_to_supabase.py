@@ -21,7 +21,7 @@ if str(ROOT) not in sys.path:
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
 
-DEFAULT_PGA_JSON = ROOT.parent / "web" / "public" / "data" / "pga_tournaments" / "us_open_2026.json"
+DEFAULT_PGA_JSON = ROOT.parent / "web" / "public" / "data" / "pga_tournaments" / "current.json"
 DEFAULT_MLB_JSON = ROOT.parent / "web" / "public" / "data" / "mlb_home_runs.json"
 
 

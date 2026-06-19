@@ -164,7 +164,7 @@ type PredictionSortKey =
   | 'edge_win'
   | 'ev_win';
 
-const DATA_URL = '/data/pga_tournaments/us_open_2026.json';
+const DATA_URL = '/data/pga_tournaments/current.json';
 
 function toParColor(tp: string) {
   const s = tp.trim().toUpperCase();

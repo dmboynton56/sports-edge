@@ -16,7 +16,7 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 from json_utils import dumps_strict  # noqa: E402
-DEFAULT_PGA_JSON = ROOT / "web" / "public" / "data" / "pga_tournaments" / "us_open_2026.json"
+DEFAULT_PGA_JSON = ROOT / "web" / "public" / "data" / "pga_tournaments" / "current.json"
 DEFAULT_MLB_JSON = ROOT / "web" / "public" / "data" / "mlb_home_runs.json"
 DEFAULT_OUT = ROOT / "web" / "public" / "data" / "predictions.json"
 
@@ -32,13 +32,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pga-json", type=Path, default=DEFAULT_PGA_JSON)
     parser.add_argument("--mlb-json", type=Path, default=DEFAULT_MLB_JSON)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    parser.add_argument("--skip-pga", action="store_true")
+    parser.add_argument("--skip-mlb", action="store_true")
     return parser.parse_args()
 
 
 def main() -> None:
     args = parse_args()
-    pga = _load_json(args.pga_json)
-    mlb = _load_json(args.mlb_json)
+    pga = {} if args.skip_pga else _load_json(args.pga_json)
+    mlb = {} if args.skip_mlb else _load_json(args.mlb_json)
     predictions = []
     predictions.extend(mlb.get("predictions") or [])
     predictions.extend(pga.get("normalizedMarkets") or [])

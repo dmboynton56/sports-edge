@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-import requests
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = ROOT.parent
@@ -22,6 +21,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.data.pga_odds_fetcher import fetch_and_summarize  # noqa: E402
+from src.pga.live_leaderboard import fetch_live_leaderboard  # noqa: E402
 
 
 ARCHIVE = ROOT / "src" / "data" / "archive"
@@ -29,8 +29,7 @@ MAIN_TSV = ARCHIVE / "pga_results_2001-2025.tsv"
 SUPP = ARCHIVE / "pga_results_espn_supplement.tsv"
 DEFAULT_PRED = ROOT / "notebooks" / "cache" / "us_open_2026_predictions.csv"
 DEFAULT_OUT = REPO_ROOT / "web" / "public" / "data" / "pga_tournaments" / "us_open_2026.json"
-ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard"
-ESPN_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; SportsEdge/1.0)"}
+DEFAULT_CURRENT_OUT = REPO_ROOT / "web" / "public" / "data" / "pga_tournaments" / "current.json"
 
 
 def _rel_to_repo(path: Path) -> str:
@@ -70,6 +69,15 @@ def _load_predictions(path: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]
         return [], meta
     df = pd.read_csv(path)
     return df.to_dict(orient="records"), meta
+
+
+def _load_midtournament(path: Path | None) -> dict[str, Any] | None:
+    if not path or not path.exists():
+        return None
+    df = pd.read_csv(path)
+    meta_path = path.with_suffix(".meta.json")
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    return {"meta": meta, "predictions": df.to_dict(orient="records")}
 
 
 def _load_merged_results(main_path: Path, supp_path: Path) -> pd.DataFrame:
@@ -132,75 +140,6 @@ def _form_summaries(df: pd.DataFrame, year: int, max_recent_per_player: int) -> 
     return events, {name: rows[:max_recent_per_player] for name, rows in by_player.items()}
 
 
-def _score_to_par_str(raw: Any) -> str:
-    text = str(raw or "").strip()
-    if text.upper() in {"E", "0"}:
-        return "E"
-    return text
-
-
-def _sort_key_to_par(to_par: str) -> float:
-    text = to_par.strip().upper()
-    if text == "E":
-        return 0.0
-    if text in {"WD", "DQ", "MDF", "DNS", "CUT", ""}:
-        return 999.0
-    try:
-        return float(text.replace("+", ""))
-    except ValueError:
-        return 999.0
-
-
-def _fetch_live_leaderboard() -> dict[str, Any] | None:
-    try:
-        response = requests.get(ESPN_SCOREBOARD, headers=ESPN_HEADERS, timeout=30)
-        response.raise_for_status()
-        data = response.json()
-    except Exception:
-        return None
-    events = data.get("events") or []
-    if not events:
-        return None
-    event = events[0]
-    comp = (event.get("competitions") or [{}])[0]
-    competitors = comp.get("competitors") or []
-    if not competitors:
-        return None
-    status_type = (comp.get("status") or {}).get("type", {})
-    rows = []
-    for competitor in competitors:
-        athlete = competitor.get("athlete") or {}
-        rounds: dict[int, int] = {}
-        for line in competitor.get("linescores") or []:
-            period = line.get("period")
-            value = line.get("value")
-            if period and value is not None:
-                rounds[int(period)] = int(value)
-        rows.append(
-            {
-                "player": athlete.get("displayName") or athlete.get("fullName") or "?",
-                "toPar": _score_to_par_str(competitor.get("score")),
-                "thru": str((competitor.get("status") or {}).get("displayThru") or ""),
-                "totalStrokes": sum(rounds.values()) if rounds else None,
-                "rounds": rounds,
-                "status": ((competitor.get("status") or {}).get("type") or {}).get("description", ""),
-            }
-        )
-    rows.sort(key=lambda row: (_sort_key_to_par(row["toPar"]), row["totalStrokes"] or 999, row["player"]))
-    for index, row in enumerate(rows, start=1):
-        row["position"] = index
-        row["positionDisplay"] = str(index)
-    return {
-        "event": event.get("name", ""),
-        "eventDate": event.get("date", ""),
-        "currentRound": (comp.get("status") or {}).get("period", 1),
-        "status": status_type.get("description", ""),
-        "isCompleted": bool(status_type.get("completed")),
-        "fetchedAt": datetime.now(timezone.utc).isoformat(),
-        "players": rows,
-    }
-
-
 def _prob_from_prediction(row: dict[str, Any], key: str) -> float | None:
     value = row.get(key)
     if isinstance(value, (int, float)) and math.isfinite(float(value)):
@@ -208,7 +147,13 @@ def _prob_from_prediction(row: dict[str, Any], key: str) -> float | None:
     return None
 
 
-def _build_normalized_markets(predictions: list[dict[str, Any]], event_time: str | None, model_version: str) -> list[dict[str, Any]]:
+def _build_normalized_markets(
+    predictions: list[dict[str, Any]],
+    event_time: str | None,
+    model_version: str,
+    *,
+    tournament_key: str,
+) -> list[dict[str, Any]]:
     rows = []
     market_keys = [
         ("win", "best_calibrated_target_win_prob"),
@@ -226,7 +171,7 @@ def _build_normalized_markets(predictions: list[dict[str, Any]], event_time: str
                     "id": f"PGA-{pred.get('player')}-{market}",
                     "sport": "PGA",
                     "league": "PGA",
-                    "gameId": "us_open_2026",
+                    "gameId": tournament_key,
                     "eventTime": event_time,
                     "subject": pred.get("player"),
                     "player": pred.get("player"),
@@ -260,6 +205,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--course-yardage", type=int, default=7440)
     parser.add_argument("--start-date", default="2026-06-18")
     parser.add_argument("--end-date", default="2026-06-21")
+    parser.add_argument("--status", choices=["pre_tournament", "in_progress", "completed"], default="pre_tournament")
+    parser.add_argument("--midtournament-csv", type=Path)
+    parser.add_argument("--current-out", type=Path, default=DEFAULT_CURRENT_OUT)
+    parser.add_argument("--odds-key")
+    parser.add_argument("--espn-match", action="append", default=[])
     parser.add_argument("--skip-odds", action="store_true")
     parser.add_argument("--live-odds", action="store_true")
     parser.add_argument("--skip-leaderboard", action="store_true")
@@ -276,14 +226,20 @@ def main() -> None:
     market_odds = None
     if args.live_odds and not args.skip_odds:
         names = [str(row.get("player")) for row in predictions if row.get("player")]
-        odds_key = "us_open" if args.tournament_key.startswith("us_open") else args.tournament_key
+        odds_key = args.odds_key or ("us_open" if args.tournament_key.startswith("us_open") else args.tournament_key)
         try:
             market_odds = fetch_and_summarize(odds_key, prediction_names=names)
         except Exception as exc:
             market_odds = {"error": str(exc), "playerOdds": [], "books": []}
 
-    live_leaderboard = None if args.skip_leaderboard else _fetch_live_leaderboard()
-    normalized_markets = _build_normalized_markets(predictions, args.start_date, model_version)
+    live_leaderboard = None if args.skip_leaderboard else fetch_live_leaderboard(espn_match=args.espn_match)
+    midtournament = _load_midtournament(args.midtournament_csv)
+    normalized_markets = _build_normalized_markets(
+        predictions,
+        args.start_date,
+        model_version,
+        tournament_key=args.tournament_key,
+    )
     payload: dict[str, Any] = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "event": {
@@ -295,7 +251,7 @@ def main() -> None:
             "yardage": args.course_yardage,
             "startDate": args.start_date,
             "endDate": args.end_date,
-            "status": "pre_tournament",
+            "status": args.status,
         },
         "predictions": predictions,
         "normalizedMarkets": normalized_markets,
@@ -310,11 +266,24 @@ def main() -> None:
         payload["marketOdds"] = market_odds
     if live_leaderboard:
         payload["liveLeaderboard"] = live_leaderboard
+    if midtournament:
+        payload["midtournament"] = midtournament
 
     args.out.parent.mkdir(parents=True, exist_ok=True)
     cleaned = _json_clean(payload)
-    args.out.write_text(json.dumps(cleaned, indent=2, sort_keys=True, allow_nan=False), encoding="utf-8")
-    print(f"Wrote {args.out} ({len(predictions)} predictions, {len(normalized_markets)} market rows)")
+    text = json.dumps(cleaned, indent=2, sort_keys=True, allow_nan=False)
+    args.out.write_text(text, encoding="utf-8")
+    if args.current_out:
+        args.current_out.parent.mkdir(parents=True, exist_ok=True)
+        args.current_out.write_text(text, encoding="utf-8")
+    parts = [f"{len(predictions)} predictions", f"{len(normalized_markets)} market rows"]
+    if live_leaderboard:
+        parts.append(f"leaderboard {len(live_leaderboard['players'])} players")
+    if midtournament:
+        parts.append(f"midtournament {len(midtournament['predictions'])} players")
+    print(f"Wrote {args.out} ({', '.join(parts)})")
+    if args.current_out:
+        print(f"Wrote {args.current_out}")
 
 
 if __name__ == "__main__":

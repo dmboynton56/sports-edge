@@ -41,7 +41,7 @@ const PGA_TOURNAMENT_PATH = path.join(
   "public",
   "data",
   "pga_tournaments",
-  "us_open_2026.json",
+  "current.json",
 );
 
 async function supabaseRest<T>(resource: string): Promise<T[] | null> {

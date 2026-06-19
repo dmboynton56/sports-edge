@@ -1,0 +1,22 @@
+season: 2026
+tournaments:
+  - key: us_open_2026
+    odds_key: us_open
+    espn_match:
+      - "U.S. Open"
+      - "US Open"
+      - "U.S. Open Championship"
+    name: "U.S. Open Championship"
+    course: "Shinnecock Hills Golf Club"
+    par: 70
+    yardage: 7440
+    start_date: "2026-06-18"
+    end_date: "2026-06-21"
+    total_rounds: 4
+    cut_after_round: 2
+    cut_size: 60
+    cut_rule: "top_n_and_ties"
+    field_fetcher: "fetch_usopen_field"
+    prediction_window_days: 4
+    post_window_days: 2
+    priority: 100

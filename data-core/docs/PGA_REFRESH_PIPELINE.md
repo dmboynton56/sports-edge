@@ -1,4 +1,37 @@
-# PGA Masters / feature pipeline — refresh & recent changes
+# PGA tournament pipeline — refresh & recent changes
+
+## Registry-driven tournament automation
+
+Current tournament automation is driven by `config/pga_tournaments.yaml` and the
+single entry point `scripts/refresh_pga_tournament.py`.
+
+```bash
+cd data-core
+
+# Auto-detect the active registry window and refresh the right phase.
+python scripts/refresh_pga_tournament.py --baseline-only --skip-odds
+
+# Force a specific event or phase when backfilling/testing.
+python scripts/refresh_pga_tournament.py \
+  --tournament-key us_open_2026 \
+  --force-phase live \
+  --baseline-only \
+  --skip-odds
+```
+
+The orchestrator:
+
+- fetches the configured field if the field file is missing,
+- runs pre-tournament predictions once unless `--force-pre` is supplied,
+- refreshes ESPN leaderboard data during tournament windows,
+- runs `scripts/update_pga_midtournament.py` only for new completed-round states,
+- applies the cut only after the configured `cut_after_round`,
+- exports both `web/public/data/pga_tournaments/{key}.json` and
+  `web/public/data/pga_tournaments/current.json`.
+
+GitHub Actions uses `.github/workflows/pga-tournament-refresh.yml`; the legacy
+`player-markets-refresh` workflow defaults PGA off so MLB player-market jobs do
+not regenerate a tournament baseline.
 
 ## Refresh pipeline (after new tour weeks or model tweaks)
 

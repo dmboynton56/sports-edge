@@ -14,7 +14,7 @@ import pandas as pd
 from google.cloud import bigquery
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_PGA_JSON = ROOT.parent / "web" / "public" / "data" / "pga_tournaments" / "us_open_2026.json"
+DEFAULT_PGA_JSON = ROOT.parent / "web" / "public" / "data" / "pga_tournaments" / "current.json"
 DEFAULT_MLB_JSON = ROOT.parent / "web" / "public" / "data" / "mlb_home_runs.json"
 
 

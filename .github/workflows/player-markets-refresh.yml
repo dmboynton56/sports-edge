@@ -8,9 +8,9 @@ on:
         required: false
         default: ""
       run_pga:
-        description: "Run PGA U.S. Open refresh"
+        description: "Run PGA tournament refresh through the registry orchestrator"
         required: false
-        default: "true"
+        default: "false"
       run_mlb_hr:
         description: "Run MLB home run refresh"
         required: false
@@ -84,22 +84,11 @@ jobs:
           fi
           echo "date=$DATE_VALUE" >> "$GITHUB_OUTPUT"
 
-      - name: Generate PGA U.S. Open dashboard
+      - name: Generate PGA tournament dashboard
         if: ${{ env.RUN_PGA == 'true' }}
         shell: bash
         run: |
-          python scripts/fetch_usopen_field.py
-          python scripts/predict_pga_tournament.py \
-            --tournament-key us_open_2026 \
-            --event-name "U.S. Open Championship" \
-            --course-name "Shinnecock Hills Golf Club" \
-            --course-par 70 \
-            --course-yardage 7440 \
-            --start-date 2026-06-18 \
-            --end-date 2026-06-21 \
-            --as-of 2026-06-18 \
-            --baseline-only
-          python scripts/export_pga_tournament_dashboard.py --skip-odds --skip-leaderboard
+          python scripts/refresh_pga_tournament.py --baseline-only --skip-odds --skip-results-fetch
 
       - name: Retrain MLB home run model
         if: ${{ env.RUN_MLB_HR == 'true' && env.TRAIN_MLB_HR == 'true' }}
@@ -154,7 +143,15 @@ jobs:
 
       - name: Export combined prediction feed
         shell: bash
-        run: python scripts/export_prediction_feed.py
+        run: |
+          FEED_ARGS=()
+          if [ "$RUN_PGA" != "true" ]; then
+            FEED_ARGS+=(--skip-pga)
+          fi
+          if [ "$RUN_MLB_HR" != "true" ]; then
+            FEED_ARGS+=(--skip-mlb)
+          fi
+          python scripts/export_prediction_feed.py "${FEED_ARGS[@]}"
 
       - name: Validate public JSON
         shell: bash
@@ -168,7 +165,12 @@ jobs:
       - name: Sync player markets to BigQuery
         if: ${{ env.SYNC_BIGQUERY == 'true' }}
         shell: bash
-        run: python scripts/sync_player_markets_to_bigquery.py --project "$PROJECT_ID"
+        run: |
+          SYNC_ARGS=(--project "$PROJECT_ID")
+          if [ "$RUN_PGA" != "true" ]; then
+            SYNC_ARGS+=(--skip-pga)
+          fi
+          python scripts/sync_player_markets_to_bigquery.py "${SYNC_ARGS[@]}"
 
       - name: Sync player markets to Supabase
         if: ${{ env.SYNC_SUPABASE == 'true' }}
@@ -183,4 +185,8 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
           python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql
-          python scripts/sync_player_markets_to_supabase.py
+          SYNC_ARGS=()
+          if [ "$RUN_PGA" != "true" ]; then
+            SYNC_ARGS+=(--skip-pga)
+          fi
+          python scripts/sync_player_markets_to_supabase.py "${SYNC_ARGS[@]}"
