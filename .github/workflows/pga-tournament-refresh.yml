@@ -34,6 +34,9 @@ on:
   schedule:
     - cron: "0 3,13,17,21 * * *"
 
+permissions:
+  contents: write
+
 concurrency:
   group: sports-edge-pga-tournament-refresh
   cancel-in-progress: false
@@ -131,3 +134,31 @@ jobs:
 
       - name: Validate public JSON
         run: python scripts/validate_public_json.py
+
+      - name: Publish refreshed PGA data
+        if: ${{ env.DRY_RUN != 'true' }}
+        shell: bash
+        run: |
+          git -C "$GITHUB_WORKSPACE" config user.name "github-actions[bot]"
+          git -C "$GITHUB_WORKSPACE" config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          shopt -s nullglob
+          paths=(
+            web/public/data/pga_tournaments/*.json
+            web/public/data/predictions.json
+            data-core/src/data/archive/pga_results_espn_supplement.tsv
+            data-core/src/data/fields/*_field.json
+            data-core/src/data/fields/*_field.txt
+            data-core/notebooks/cache/*_predictions.csv
+            data-core/notebooks/cache/*_predictions.meta.json
+            data-core/notebooks/cache/*_midtournament.csv
+            data-core/notebooks/cache/*_midtournament.meta.json
+            data-core/notebooks/cache/pga_refresh_state*.json
+          )
+          git -C "$GITHUB_WORKSPACE" add "${paths[@]}"
+          if git -C "$GITHUB_WORKSPACE" diff --cached --quiet; then
+            echo "No refreshed PGA data changes to publish."
+            exit 0
+          fi
+          git -C "$GITHUB_WORKSPACE" commit -m "Refresh PGA tournament data"
+          git -C "$GITHUB_WORKSPACE" pull --rebase origin "$GITHUB_REF_NAME"
+          git -C "$GITHUB_WORKSPACE" push origin "HEAD:$GITHUB_REF_NAME"
