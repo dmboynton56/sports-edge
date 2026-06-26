@@ -46,27 +46,36 @@ def validate_payload(path: Path, payload: Any, *, mlb_hr_date: str | None = None
         if not (payload.get("generatedAt") or payload.get("generated_at")):
             failures.append(f"{path}: missing generatedAt/generated_at")
     if mlb_hr_date and path.name == "mlb_home_runs.json" and isinstance(payload, dict):
-        predictions = payload.get("predictions") or []
-        stale_dates = sorted(
-            {
-                game_date
-                for prediction in predictions
-                if isinstance(prediction, dict)
-                for game_date in [_prediction_game_date(prediction)]
-                if game_date and game_date != mlb_hr_date
-            }
-        )
-        missing_dates = sum(
-            1
-            for prediction in predictions
-            if isinstance(prediction, dict) and not prediction.get("gameDate")
-        )
-        if stale_dates:
-            failures.append(
-                f"{path}: MLB HR predictions include dates {stale_dates}; expected only {mlb_hr_date}"
+        prediction_groups: list[list[dict[str, Any]]] = []
+        models = payload.get("models")
+        if isinstance(models, dict) and models:
+            for model_payload in models.values():
+                if isinstance(model_payload, dict):
+                    prediction_groups.append(model_payload.get("predictions") or [])
+        else:
+            prediction_groups.append(payload.get("predictions") or [])
+
+        for predictions in prediction_groups:
+            stale_dates = sorted(
+                {
+                    game_date
+                    for prediction in predictions
+                    if isinstance(prediction, dict)
+                    for game_date in [_prediction_game_date(prediction)]
+                    if game_date and game_date != mlb_hr_date
+                }
             )
-        if missing_dates:
-            failures.append(f"{path}: {missing_dates} MLB HR predictions are missing gameDate")
+            missing_dates = sum(
+                1
+                for prediction in predictions
+                if isinstance(prediction, dict) and not prediction.get("gameDate")
+            )
+            if stale_dates:
+                failures.append(
+                    f"{path}: MLB HR predictions include dates {stale_dates}; expected only {mlb_hr_date}"
+                )
+            if missing_dates:
+                failures.append(f"{path}: {missing_dates} MLB HR predictions are missing gameDate")
     return failures
 
 

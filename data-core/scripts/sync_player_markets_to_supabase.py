@@ -127,57 +127,86 @@ def sync_pga(conn, path: Path) -> tuple[int, int]:
     return 1, len(rows)
 
 
+def _iter_mlb_prediction_payloads(payload: dict[str, Any]) -> list[tuple[str, list[dict[str, Any]], str | None]]:
+    models = payload.get("models")
+    if isinstance(models, dict) and models:
+        out: list[tuple[str, list[dict[str, Any]], str | None]] = []
+        for model_key, model_payload in models.items():
+            if not isinstance(model_payload, dict):
+                continue
+            out.append(
+                (
+                    str(model_payload.get("modelVersion") or model_key),
+                    model_payload.get("predictions") or [],
+                    model_payload.get("modelVersion") or model_key,
+                )
+            )
+        return out
+    return [
+        (
+            str(payload.get("modelVersion") or "mlb-hr-v1-heuristic"),
+            payload.get("predictions") or [],
+            payload.get("modelVersion"),
+        )
+    ]
+
+
 def sync_mlb(conn, path: Path) -> int:
     payload = json.loads(path.read_text(encoding="utf-8"))
-    rows = []
-    for pred in payload.get("predictions", []):
-        rows.append(
-            (
-                pred.get("gameId"),
-                pred.get("gameDate") or pred.get("eventTime", "")[:10],
-                pred.get("eventTime"),
-                str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id")),
-                pred.get("player"),
-                pred.get("team"),
-                pred.get("opponent"),
-                pred.get("venue"),
-                pred.get("lineupSlot"),
-                pred.get("lineupStatus") or "projected",
-                pred.get("opposingProbablePitcher"),
-                pred.get("modelProbability"),
-                pred.get("baselineProbability"),
-                pred.get("rank"),
-                pred.get("confidence"),
-                pred.get("modelVersion") or payload.get("modelVersion"),
-                pred.get("updatedAt") or payload.get("generatedAt"),
-                json.dumps(pred.get("qualityFlags") or []),
-                json.dumps(pred.get("topFeatures") or []),
+    total = 0
+    for model_version, predictions, _ in _iter_mlb_prediction_payloads(payload):
+        rows = []
+        for pred in predictions:
+            rows.append(
+                (
+                    pred.get("gameId"),
+                    pred.get("gameDate") or pred.get("eventTime", "")[:10],
+                    pred.get("eventTime"),
+                    str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id")),
+                    pred.get("player"),
+                    pred.get("team"),
+                    pred.get("opponent"),
+                    pred.get("venue"),
+                    pred.get("lineupSlot"),
+                    pred.get("lineupStatus") or "projected",
+                    pred.get("opposingProbablePitcher"),
+                    pred.get("modelProbability"),
+                    pred.get("baselineProbability"),
+                    pred.get("rank"),
+                    pred.get("gamesSinceLastHr"),
+                    pred.get("lastHrDate"),
+                    pred.get("confidence"),
+                    pred.get("modelVersion") or model_version,
+                    pred.get("updatedAt") or payload.get("generatedAt"),
+                    json.dumps(pred.get("qualityFlags") or []),
+                    json.dumps(pred.get("topFeatures") or []),
+                )
             )
-        )
-    if not rows:
-        return 0
-    model_version = rows[0][15]
-    game_date = rows[0][1]
-    with conn.cursor() as cur:
-        cur.execute(
-            "delete from mlb_home_run_predictions where game_date = %s and model_version = %s",
-            (game_date, model_version),
-            prepare=False,
-        )
-        cur.executemany(
-            """
-            insert into mlb_home_run_predictions (
-              game_id, game_date, event_time, player_id, player_name, team, opponent, venue,
-              lineup_slot, lineup_status, opposing_probable_pitcher, hr_probability,
-              baseline_probability, rank, confidence, model_version, prediction_ts,
-              quality_flags, top_features
+        if not rows:
+            continue
+        sync_model_version = rows[0][17]
+        game_date = rows[0][1]
+        with conn.cursor() as cur:
+            cur.execute(
+                "delete from mlb_home_run_predictions where game_date = %s and model_version = %s",
+                (game_date, sync_model_version),
+                prepare=False,
             )
-            values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb)
-            """,
-            rows,
-        )
-    conn.commit()
-    return len(rows)
+            cur.executemany(
+                """
+                insert into mlb_home_run_predictions (
+                  game_id, game_date, event_time, player_id, player_name, team, opponent, venue,
+                  lineup_slot, lineup_status, opposing_probable_pitcher, hr_probability,
+                  baseline_probability, rank, games_since_last_hr, last_hr_date, confidence,
+                  model_version, prediction_ts, quality_flags, top_features
+                )
+                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb)
+                """,
+                rows,
+            )
+        conn.commit()
+        total += len(rows)
+    return total
 
 
 def parse_args() -> argparse.Namespace:

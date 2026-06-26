@@ -99,6 +99,23 @@ jobs:
             --end-date "${{ steps.dates.outputs.date }}" \
             --test-start-date 2026-03-01
 
+      - name: Refresh Statcast cache for MLB HR blend
+        if: ${{ env.RUN_MLB_HR == 'true' }}
+        shell: bash
+        run: |
+          python - <<'PY'
+          from datetime import date, timedelta
+          from pathlib import Path
+          import pandas as pd
+          from src.models.mlb_hr_statcast_features import DEFAULT_STATCAST_CACHE, fetch_statcast
+
+          anchor = date.fromisoformat("${{ steps.dates.outputs.date }}")
+          start = pd.Timestamp(anchor - timedelta(days=120))
+          end = pd.Timestamp(anchor - timedelta(days=1))
+          fetch_statcast(start, end, cache=Path(DEFAULT_STATCAST_CACHE), refresh=False)
+          print(f"Statcast cache ready at {DEFAULT_STATCAST_CACHE}")
+          PY
+
       - name: Generate MLB home run probabilities
         if: ${{ env.RUN_MLB_HR == 'true' }}
         shell: bash
@@ -118,7 +135,7 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql
+        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql
 
       - name: Fetch MLB home run odds
         if: ${{ env.RUN_MLB_HR == 'true' }}
@@ -184,7 +201,7 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql
+          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql
           SYNC_ARGS=()
           if [ "$RUN_PGA" != "true" ]; then
             SYNC_ARGS+=(--skip-pga)

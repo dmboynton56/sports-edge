@@ -32,3 +32,16 @@ export function formatDateTime(value: string | null | undefined) {
     minute: "2-digit",
   }).format(date);
 }
+
+export function formatGamesSinceLastHr(
+  value: number | null | undefined,
+  qualityFlags?: string[] | null,
+) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `${Math.round(value)}g`;
+  }
+  if (qualityFlags?.includes("no_hr_in_history_window")) {
+    return "No HR";
+  }
+  return "—";
+}

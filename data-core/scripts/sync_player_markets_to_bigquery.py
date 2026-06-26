@@ -85,6 +85,8 @@ TABLES = {
                 ("hr_probability", "FLOAT64", "REQUIRED"),
                 ("baseline_probability", "FLOAT64", "NULLABLE"),
                 ("rank", "INT64", "NULLABLE"),
+                ("games_since_last_hr", "INT64", "NULLABLE"),
+                ("last_hr_date", "DATE", "NULLABLE"),
                 ("confidence", "FLOAT64", "NULLABLE"),
                 ("model_version", "STRING", "REQUIRED"),
                 ("prediction_ts", "TIMESTAMP", "REQUIRED"),
@@ -187,8 +189,45 @@ def build_pga_rows(path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any
     return tournament_rows, prediction_rows, event["eventKey"], model_version
 
 
-def build_mlb_rows(path: Path) -> tuple[list[dict[str, Any]], str | None, str | None]:
+def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
+    batches: list[tuple[list[dict[str, Any]], str, str]] = []
+    models = payload.get("models")
+    if isinstance(models, dict) and models:
+        for model_key, model_payload in models.items():
+            if not isinstance(model_payload, dict):
+                continue
+            rows = []
+            for pred in model_payload.get("predictions", []):
+                rows.append(
+                    {
+                        "game_id": pred.get("gameId"),
+                        "game_date": pred.get("gameDate") or pred.get("eventTime", "")[:10],
+                        "event_time": pred.get("eventTime"),
+                        "player_id": str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id")),
+                        "player_name": pred.get("player"),
+                        "team": pred.get("team"),
+                        "opponent": pred.get("opponent"),
+                        "venue": pred.get("venue"),
+                        "lineup_slot": pred.get("lineupSlot"),
+                        "lineup_status": pred.get("lineupStatus") or "projected",
+                        "opposing_probable_pitcher": pred.get("opposingProbablePitcher"),
+                        "hr_probability": pred.get("modelProbability"),
+                        "baseline_probability": pred.get("baselineProbability"),
+                        "rank": pred.get("rank"),
+                        "games_since_last_hr": pred.get("gamesSinceLastHr"),
+                        "last_hr_date": pred.get("lastHrDate"),
+                        "confidence": pred.get("confidence"),
+                        "model_version": pred.get("modelVersion") or model_payload.get("modelVersion") or model_key,
+                        "prediction_ts": pred.get("updatedAt") or payload.get("generatedAt"),
+                        "quality_flags": json.dumps(pred.get("qualityFlags") or []),
+                        "top_features": json.dumps(pred.get("topFeatures") or []),
+                    }
+                )
+            if rows:
+                batches.append((rows, rows[0]["game_date"], rows[0]["model_version"]))
+        return batches
+
     rows = []
     for pred in payload.get("predictions", []):
         rows.append(
@@ -207,6 +246,8 @@ def build_mlb_rows(path: Path) -> tuple[list[dict[str, Any]], str | None, str | 
                 "hr_probability": pred.get("modelProbability"),
                 "baseline_probability": pred.get("baselineProbability"),
                 "rank": pred.get("rank"),
+                "games_since_last_hr": pred.get("gamesSinceLastHr"),
+                "last_hr_date": pred.get("lastHrDate"),
                 "confidence": pred.get("confidence"),
                 "model_version": pred.get("modelVersion") or payload.get("modelVersion"),
                 "prediction_ts": pred.get("updatedAt") or payload.get("generatedAt"),
@@ -215,8 +256,8 @@ def build_mlb_rows(path: Path) -> tuple[list[dict[str, Any]], str | None, str | 
             }
         )
     if not rows:
-        return rows, None, None
-    return rows, rows[0]["game_date"], rows[0]["model_version"]
+        return []
+    return [(rows, rows[0]["game_date"], rows[0]["model_version"])]
 
 
 def parse_args() -> argparse.Namespace:
@@ -264,8 +305,9 @@ def main() -> None:
         print(f"Synced {tournaments} PGA tournaments and {predictions} PGA predictions to BigQuery")
 
     if not args.skip_mlb and args.mlb_json.exists():
-        rows, game_date, model_version = build_mlb_rows(args.mlb_json)
-        if rows and game_date and model_version:
+        batches = build_mlb_rows(args.mlb_json)
+        loaded_total = 0
+        for rows, game_date, model_version in batches:
             _delete(
                 client,
                 table_ids["mlb_home_run_predictions"],
@@ -275,8 +317,14 @@ def main() -> None:
                     bigquery.ScalarQueryParameter("model_version", "STRING", model_version),
                 ],
             )
-            loaded = _load(client, table_ids["mlb_home_run_predictions"], rows, TABLES["mlb_home_run_predictions"]["schema"])
-            print(f"Synced {loaded} MLB home run predictions to BigQuery")
+            loaded_total += _load(
+                client,
+                table_ids["mlb_home_run_predictions"],
+                rows,
+                TABLES["mlb_home_run_predictions"]["schema"],
+            )
+        if loaded_total:
+            print(f"Synced {loaded_total} MLB home run predictions to BigQuery")
 
 
 if __name__ == "__main__":

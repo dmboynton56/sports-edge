@@ -36,6 +36,7 @@ if str(SCRIPTS) not in sys.path:
 from src.data.mlb_fetcher import fetch_mlb_schedule  # noqa: E402
 from json_utils import dumps_strict  # noqa: E402
 from src.models.mlb_home_run_model import (  # noqa: E402
+    FEATURE_COLUMNS,
     MODEL_VERSION as TRAINED_MODEL_VERSION,
     build_hr_feature_values,
     heuristic_hr_probability,
@@ -44,13 +45,28 @@ from src.models.mlb_home_run_model import (  # noqa: E402
     quality_flags_for_features,
     top_feature_payload,
 )
+from src.models.mlb_hr_recency import games_since_last_hr, recency_quality_flags  # noqa: E402
+from src.models.mlb_hr_statcast_features import (  # noqa: E402
+    DEFAULT_STATCAST_CACHE,
+    build_torch_candidate_features,
+)
+from src.models.mlb_hr_torch_inference import (  # noqa: E402
+    STATCAST_BLEND_MODEL_VERSION,
+    apply_heuristic_blend,
+    load_torch_hr_artifact,
+    predict_torch_probs,
+)
 
 
 MLB_BOXSCORE_URL = "https://statsapi.mlb.com/api/v1/game/{game_pk}/boxscore"
 DEFAULT_CACHE = ROOT / "notebooks" / "cache" / "mlb_home_run_boxscores_2026.jsonl"
 DEFAULT_MODEL_ARTIFACT = ROOT / "models" / "mlb_hr_model_v1.joblib"
+DEFAULT_TORCH_ARTIFACT = ROOT / "models" / "mlb_hr_torch_statcast_model_v1.pt"
 DEFAULT_CSV_OUT = ROOT / "notebooks" / "cache" / "mlb_home_run_predictions.csv"
+DEFAULT_STATCAST_CSV_OUT = ROOT / "notebooks" / "cache" / "mlb_home_run_predictions_statcast_blend.csv"
 DEFAULT_WEB_OUT = REPO_ROOT / "web" / "public" / "data" / "mlb_home_runs.json"
+V1_MODEL_KEY = "mlb-hr-v1"
+STATCAST_BLEND_KEY = STATCAST_BLEND_MODEL_VERSION
 
 
 def _safe_int(value: Any, default: int = 0) -> int:
@@ -292,17 +308,15 @@ def _venue_factors(history: pd.DataFrame, schedule: pd.DataFrame, as_of: date) -
     return factors
 
 
-def _score_probability(
+def _candidate_features(
     *,
     batter: pd.Series,
     player_rate: dict[str, Any] | None,
     pitcher_rate: dict[str, Any] | None,
     venue_factor: float,
     league_hr_pa: float,
-    probable_pitcher_known: bool,
     is_home: bool,
-    model_artifact: dict[str, Any] | None,
-) -> tuple[float, float, list[str], list[dict[str, Any]], str]:
+) -> dict[str, float]:
     pa = _safe_float((player_rate or {}).get("pa"), 0.0) or 0.0
     hr = _safe_float((player_rate or {}).get("hr"), 0.0) or 0.0
     recent_pa = _safe_float((player_rate or {}).get("recent_pa"), 0.0) or 0.0
@@ -326,6 +340,30 @@ def _score_probability(
     heuristic_probability, baseline = heuristic_hr_probability(features)
     features["baseline_probability"] = baseline
     features["heuristic_probability"] = heuristic_probability
+    return features
+
+
+def _score_probability(
+    *,
+    batter: pd.Series,
+    player_rate: dict[str, Any] | None,
+    pitcher_rate: dict[str, Any] | None,
+    venue_factor: float,
+    league_hr_pa: float,
+    probable_pitcher_known: bool,
+    is_home: bool,
+    model_artifact: dict[str, Any] | None,
+) -> tuple[float, float, list[str], list[dict[str, Any]], str]:
+    features = _candidate_features(
+        batter=batter,
+        player_rate=player_rate,
+        pitcher_rate=pitcher_rate,
+        venue_factor=venue_factor,
+        league_hr_pa=league_hr_pa,
+        is_home=is_home,
+    )
+    heuristic_probability = features["heuristic_probability"]
+    baseline = features["baseline_probability"]
     model_probability = predict_hr_probability(model_artifact, features)
     if model_probability is None:
         probability = heuristic_probability + _hash_jitter(batter.get("player_id"), batter.get("player_name"))
@@ -339,13 +377,11 @@ def _score_probability(
     return probability, baseline, flags, top_feature_payload(features), model_version
 
 
-def _build_predictions(
+def _build_candidates(
     schedule: pd.DataFrame,
     batting: pd.DataFrame,
     pitching: pd.DataFrame,
     as_of: date,
-    *,
-    model_artifact: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     games = schedule[schedule["game_date"].dt.date == as_of].copy()
     if games.empty:
@@ -356,6 +392,11 @@ def _build_predictions(
     pitcher_rate_by_id = {int(row["player_id"]): row.to_dict() for _, row in pitcher_rates.iterrows()}
     league_hr_pa = max(batting["home_runs"].sum() / max(batting["plate_appearances"].sum(), 1), 0.001)
     venue_factor_by_id = _venue_factors(batting, schedule, as_of)
+    recency_by_player = games_since_last_hr(batting, as_of)
+    recency_map = {
+        int(row["player_id"]): row.to_dict()
+        for _, row in recency_by_player.iterrows()
+    } if not recency_by_player.empty else {}
     rows: list[dict[str, Any]] = []
 
     for _, game in games.iterrows():
@@ -363,6 +404,7 @@ def _build_predictions(
         for side in ("home", "away"):
             team_id = int(game[f"{side}_team_id"])
             opponent_side = "away" if side == "home" else "home"
+            opponent_team_id = int(game[f"{opponent_side}_team_id"])
             opponent_pitcher_id = game.get(f"{opponent_side}_probable_pitcher_id")
             opponent_pitcher_name = game.get(f"{opponent_side}_probable_pitcher")
             opponent_pitcher_known = pd.notna(opponent_pitcher_id)
@@ -372,48 +414,201 @@ def _build_predictions(
                 continue
             for _, batter in lineup.iterrows():
                 player_rate = player_rate_by_id.get(int(batter["player_id"]))
-                probability, baseline, flags, top_features, model_version = _score_probability(
+                recency = recency_map.get(int(batter["player_id"]), {})
+                features = _candidate_features(
                     batter=batter,
                     player_rate=player_rate,
                     pitcher_rate=pitcher_rate,
                     venue_factor=venue_factor_by_id.get(int(game.get("venue_id") or 0), 1.0),
                     league_hr_pa=league_hr_pa,
-                    probable_pitcher_known=opponent_pitcher_known,
                     is_home=side == "home",
-                    model_artifact=model_artifact,
                 )
-                rows.append(
-                    {
-                        "game_id": game_id,
-                        "game_pk": int(game["game_pk"]),
-                        "game_date": as_of.isoformat(),
-                        "event_time": pd.to_datetime(game.get("game_datetime"), utc=True).isoformat(),
-                        "player_id": int(batter["player_id"]),
-                        "player_name": batter["player_name"],
-                        "team": game[f"{side}_team_abbr"] or game[f"{side}_team"],
-                        "opponent": game[f"{opponent_side}_team_abbr"] or game[f"{opponent_side}_team"],
-                        "venue": game.get("venue_name"),
-                        "lineup_slot": int(batter["lineup_slot"]),
-                        "lineup_status": "projected",
-                        "opposing_probable_pitcher": opponent_pitcher_name if pd.notna(opponent_pitcher_name) else None,
-                        "hr_probability": probability,
-                        "baseline_probability": baseline,
-                        "confidence": float(np.clip(0.72 - 0.08 * len(flags), 0.35, 0.78)),
-                        "model_version": model_version,
-                        "prediction_ts": datetime.now(timezone.utc).isoformat(),
-                        "quality_flags": json.dumps(flags),
-                        "top_features": json.dumps(top_features),
-                    }
-                )
-    out = pd.DataFrame(rows)
-    if out.empty:
-        return out
+                row = {
+                    "game_id": game_id,
+                    "game_pk": int(game["game_pk"]),
+                    "game_date": as_of.isoformat(),
+                    "event_time": pd.to_datetime(game.get("game_datetime"), utc=True).isoformat(),
+                    "player_id": int(batter["player_id"]),
+                    "player_name": batter["player_name"],
+                    "team": game[f"{side}_team_abbr"] or game[f"{side}_team"],
+                    "opponent": game[f"{opponent_side}_team_abbr"] or game[f"{opponent_side}_team"],
+                    "team_id": team_id,
+                    "opponent_id": opponent_team_id,
+                    "opposing_starter_id": int(opponent_pitcher_id) if opponent_pitcher_known else np.nan,
+                    "venue": game.get("venue_name"),
+                    "lineup_slot": int(batter["lineup_slot"]),
+                    "lineup_status": "projected",
+                    "opposing_probable_pitcher": opponent_pitcher_name if pd.notna(opponent_pitcher_name) else None,
+                    "probable_pitcher_known": opponent_pitcher_known,
+                    "baseline_probability": features["baseline_probability"],
+                    "heuristic_probability": features["heuristic_probability"],
+                    "games_since_last_hr": recency.get("games_since_last_hr"),
+                    "last_hr_date": recency.get("last_hr_date"),
+                }
+                row.update(features)
+                rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def _finalize_predictions(
+    candidates: pd.DataFrame,
+    *,
+    hr_probability: pd.Series,
+    model_version: str,
+    quality_flags: list[list[str]] | None = None,
+) -> pd.DataFrame:
+    if candidates.empty:
+        return candidates.copy()
+    out = candidates.copy()
+    out["hr_probability"] = hr_probability.to_numpy()
+    out["model_version"] = model_version
+    out["prediction_ts"] = datetime.now(timezone.utc).isoformat()
+    if quality_flags is None:
+        out["quality_flags"] = [
+            json.dumps(
+                [
+                    *quality_flags_for_features(
+                        {col: row[col] for col in FEATURE_COLUMNS},
+                        probable_pitcher_known=bool(row["probable_pitcher_known"]),
+                    ),
+                    *recency_quality_flags(row.get("games_since_last_hr")),
+                ]
+            )
+            for _, row in out.iterrows()
+        ]
+    else:
+        out["quality_flags"] = [
+            json.dumps([*flags, *recency_quality_flags(row.get("games_since_last_hr"))])
+            for flags, (_, row) in zip(quality_flags, out.iterrows(), strict=False)
+        ]
+    out["top_features"] = [
+        json.dumps(
+            top_feature_payload({col: row[col] for col in FEATURE_COLUMNS}),
+        )
+        for _, row in out.iterrows()
+    ]
+    out["confidence"] = out["quality_flags"].map(
+        lambda value: float(np.clip(0.72 - 0.08 * len(json.loads(value)), 0.35, 0.78))
+    )
     out = out.sort_values("hr_probability", ascending=False).reset_index(drop=True)
     out["rank"] = np.arange(1, len(out) + 1)
     return out
 
 
-def _to_web_payload(predictions: pd.DataFrame, gaps: list[str]) -> dict[str, Any]:
+def _build_predictions(
+    schedule: pd.DataFrame,
+    batting: pd.DataFrame,
+    pitching: pd.DataFrame,
+    as_of: date,
+    *,
+    model_artifact: dict[str, Any] | None = None,
+) -> pd.DataFrame:
+    candidates = _build_candidates(schedule, batting, pitching, as_of)
+    if candidates.empty:
+        return candidates
+    probabilities: list[float] = []
+    flags_list: list[list[str]] = []
+    model_versions: list[str] = []
+    for _, row in candidates.iterrows():
+        features = {col: row[col] for col in FEATURE_COLUMNS}
+        features["baseline_probability"] = row["baseline_probability"]
+        features["heuristic_probability"] = row["heuristic_probability"]
+        model_probability = predict_hr_probability(model_artifact, features)
+        if model_probability is None:
+            probability = row["heuristic_probability"] + _hash_jitter(row["player_id"], row["player_name"])
+            probability = float(np.clip(probability, 0.002, 0.38))
+            model_version = "mlb-hr-v1-heuristic"
+        else:
+            probability = model_probability + _hash_jitter(row["player_id"], row["player_name"], scale=0.0003)
+            probability = float(np.clip(probability, 0.001, 0.45))
+            model_version = str((model_artifact or {}).get("model_version") or TRAINED_MODEL_VERSION)
+        probabilities.append(probability)
+        flags_list.append(
+            quality_flags_for_features(features, probable_pitcher_known=bool(row["probable_pitcher_known"]))
+        )
+        model_versions.append(model_version)
+    model_version = model_versions[0] if model_versions else TRAINED_MODEL_VERSION
+    if len(set(model_versions)) > 1:
+        model_version = TRAINED_MODEL_VERSION
+    return _finalize_predictions(
+        candidates,
+        hr_probability=pd.Series(probabilities),
+        model_version=model_version,
+        quality_flags=flags_list,
+    )
+
+
+def _build_statcast_blend_predictions(
+    candidates: pd.DataFrame,
+    v1_predictions: pd.DataFrame,
+    as_of: date,
+    *,
+    torch_artifact: dict[str, Any],
+    statcast_cache: Path,
+    refresh_statcast: bool = False,
+) -> tuple[pd.DataFrame, list[str]]:
+    gaps: list[str] = []
+    if candidates.empty:
+        return candidates, gaps
+
+    fallback_probs = v1_predictions.set_index(["game_id", "player_id"])["hr_probability"]
+    probabilities: list[float] = []
+    flags_list: list[list[str]] = []
+
+    try:
+        enriched = build_torch_candidate_features(
+            candidates,
+            as_of,
+            statcast_cache=statcast_cache,
+            refresh_statcast=refresh_statcast,
+        ).reset_index(drop=True)
+    except Exception as exc:  # noqa: BLE001
+        gaps.append(f"Statcast feature build failed; using v1 probabilities for blend board: {exc}")
+        return v1_predictions.assign(model_version=STATCAST_BLEND_KEY), gaps
+
+    ready_mask = enriched["statcast_feature_ready"].fillna(0) >= 1.0
+    ready_count = int(ready_mask.sum())
+    if ready_count == 0:
+        gaps.append("No MLB HR candidates had Statcast-ready features; blend board mirrors v1 probabilities.")
+    elif ready_count < len(enriched):
+        gaps.append(
+            f"Statcast features unavailable for {len(enriched) - ready_count} MLB HR candidates; those rows use v1 probabilities."
+        )
+
+    blend_probs = np.zeros(len(enriched), dtype=float)
+    if ready_count:
+        ready = enriched.loc[ready_mask].copy()
+        torch_probs = predict_torch_probs(torch_artifact, ready)
+        heuristic_probs = ready["heuristic_probability"].to_numpy(dtype=float)
+        blended = apply_heuristic_blend(torch_artifact, torch_probs, heuristic_probs)
+        blend_probs[ready_mask.to_numpy()] = blended
+
+    for pos, row in enriched.iterrows():
+        key = (row["game_id"], int(row["player_id"]))
+        fallback = float(fallback_probs.get(key, row["heuristic_probability"]))
+        if ready_mask.loc[pos]:
+            probability = float(blend_probs[pos]) + _hash_jitter(row["player_id"], row["player_name"], scale=0.0003)
+            probability = float(np.clip(probability, 0.001, 0.45))
+        else:
+            probability = fallback
+        probabilities.append(probability)
+        flags = quality_flags_for_features(
+            {col: row[col] for col in FEATURE_COLUMNS},
+            probable_pitcher_known=bool(row["probable_pitcher_known"]),
+        )
+        if not ready_mask.loc[pos]:
+            flags.append("statcast_features_unavailable")
+        flags_list.append(flags)
+
+    return _finalize_predictions(
+        candidates,
+        hr_probability=pd.Series(probabilities),
+        model_version=STATCAST_BLEND_KEY,
+        quality_flags=flags_list,
+    ), gaps
+
+
+def _predictions_to_rows(predictions: pd.DataFrame) -> list[dict[str, Any]]:
     rows = []
     for _, row in predictions.iterrows():
         rows.append(
@@ -448,23 +643,61 @@ def _to_web_payload(predictions: pd.DataFrame, gaps: list[str]) -> dict[str, Any
                 "opposingProbablePitcher": row["opposing_probable_pitcher"],
                 "baselineProbability": row["baseline_probability"],
                 "rank": int(row["rank"]),
+                "gamesSinceLastHr": None
+                if row.get("games_since_last_hr") is None or (isinstance(row.get("games_since_last_hr"), float) and pd.isna(row.get("games_since_last_hr")))
+                else int(row["games_since_last_hr"]),
+                "lastHrDate": row.get("last_hr_date"),
                 "qualityFlags": json.loads(row["quality_flags"]),
                 "topFeatures": json.loads(row["top_features"]),
             }
         )
-    model_version = (
-        str(predictions["model_version"].dropna().iloc[0])
-        if not predictions.empty and "model_version" in predictions.columns and not predictions["model_version"].dropna().empty
-        else "mlb-hr-v1-heuristic"
-    )
+    return rows
+
+
+def _model_payload(predictions: pd.DataFrame, gaps: list[str], model_version: str) -> dict[str, Any]:
     return {
-        "generatedAt": datetime.now(timezone.utc).isoformat(),
-        "market": "MLB batter home runs",
         "modelVersion": model_version,
-        "productionStatus": "candidate",
-        "predictions": rows,
+        "predictions": _predictions_to_rows(predictions),
         "gaps": gaps,
     }
+
+
+def _to_web_payload(
+    v1_predictions: pd.DataFrame,
+    gaps: list[str],
+    *,
+    statcast_predictions: pd.DataFrame | None = None,
+    statcast_gaps: list[str] | None = None,
+) -> dict[str, Any]:
+    model_version = (
+        str(v1_predictions["model_version"].dropna().iloc[0])
+        if not v1_predictions.empty
+        and "model_version" in v1_predictions.columns
+        and not v1_predictions["model_version"].dropna().empty
+        else "mlb-hr-v1-heuristic"
+    )
+    v1_payload = _model_payload(v1_predictions, gaps, model_version)
+    payload: dict[str, Any] = {
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "market": "MLB batter home runs",
+        "defaultModel": V1_MODEL_KEY,
+        "modelVersion": model_version,
+        "productionStatus": "candidate",
+        "predictions": v1_payload["predictions"],
+        "gaps": gaps,
+    }
+    if statcast_predictions is not None:
+        statcast_payload = _model_payload(
+            statcast_predictions,
+            statcast_gaps or [],
+            STATCAST_BLEND_KEY,
+        )
+        payload["models"] = {
+            V1_MODEL_KEY: v1_payload,
+            STATCAST_BLEND_KEY: statcast_payload,
+        }
+        payload["gaps"] = gaps + (statcast_gaps or [])
+    return payload
 
 
 def parse_args() -> argparse.Namespace:
@@ -474,8 +707,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--history-days", type=int, default=45)
     parser.add_argument("--cache", type=Path, default=DEFAULT_CACHE)
     parser.add_argument("--model-artifact", type=Path, default=DEFAULT_MODEL_ARTIFACT)
+    parser.add_argument("--torch-artifact", type=Path, default=DEFAULT_TORCH_ARTIFACT)
+    parser.add_argument("--statcast-cache", type=Path, default=DEFAULT_STATCAST_CACHE)
+    parser.add_argument("--refresh-statcast-cache", action="store_true")
+    parser.add_argument("--skip-statcast-blend", action="store_true")
     parser.add_argument("--force-heuristic", action="store_true")
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_CSV_OUT)
+    parser.add_argument("--statcast-out-csv", type=Path, default=DEFAULT_STATCAST_CSV_OUT)
     parser.add_argument("--web-out", type=Path, default=DEFAULT_WEB_OUT)
     parser.add_argument("--top-n", type=int, default=120)
     return parser.parse_args()
@@ -512,14 +750,49 @@ def main() -> None:
     else:
         predictions = predictions.head(args.top_n).copy()
 
+    statcast_predictions = pd.DataFrame()
+    statcast_gaps: list[str] = []
+    if not args.skip_statcast_blend and not predictions.empty:
+        torch_artifact = None
+        try:
+            torch_artifact = load_torch_hr_artifact(args.torch_artifact)
+            print(f"Loaded Statcast blend torch artifact: {args.torch_artifact}")
+        except Exception as exc:  # noqa: BLE001
+            statcast_gaps.append(f"Statcast blend torch artifact load failed: {exc}")
+        if torch_artifact:
+            candidates = _build_candidates(schedule, batting, pitching, args.date).head(args.top_n).copy()
+            statcast_predictions, statcast_gaps = _build_statcast_blend_predictions(
+                candidates,
+                predictions,
+                args.date,
+                torch_artifact=torch_artifact,
+                statcast_cache=args.statcast_cache,
+                refresh_statcast=args.refresh_statcast_cache,
+            )
+            statcast_predictions = statcast_predictions.head(args.top_n).copy()
+
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(args.out_csv, index=False)
+    if not statcast_predictions.empty:
+        statcast_predictions.to_csv(args.statcast_out_csv, index=False)
     args.web_out.parent.mkdir(parents=True, exist_ok=True)
     args.web_out.write_text(
-        dumps_strict(_to_web_payload(predictions, gaps), indent=2, sort_keys=True),
+        dumps_strict(
+            _to_web_payload(
+                predictions,
+                gaps,
+                statcast_predictions=statcast_predictions if not statcast_predictions.empty else None,
+                statcast_gaps=statcast_gaps,
+            ),
+            indent=2,
+            sort_keys=True,
+        ),
         encoding="utf-8",
     )
-    print(f"Wrote {len(predictions)} MLB HR predictions to {args.out_csv} and {args.web_out}")
+    wrote = f"{len(predictions)} v1 predictions to {args.out_csv}"
+    if not statcast_predictions.empty:
+        wrote += f" and {len(statcast_predictions)} statcast blend predictions to {args.statcast_out_csv}"
+    print(f"Wrote {wrote} and {args.web_out}")
 
 
 if __name__ == "__main__":
