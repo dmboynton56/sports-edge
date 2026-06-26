@@ -384,3 +384,18 @@ jobs:
               -d "{\"content\": \"**Sports-Edge Refresh failed**\\nRun: $RUN_URL\"}" \
               "$DISCORD_WEBHOOK_URL"
           fi
+
+      - name: Notify portfolio doc sync
+        if: success()
+        env:
+          PORTFOLIO_DISPATCH_TOKEN: ${{ secrets.PORTFOLIO_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$PORTFOLIO_DISPATCH_TOKEN" ]; then
+            echo "PORTFOLIO_DISPATCH_TOKEN is not configured; skipping portfolio doc sync dispatch."
+            exit 0
+          fi
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${PORTFOLIO_DISPATCH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/dmboynton56/personal-portfolio/dispatches \
+            -d "{\"event_type\":\"sports-edge-refresh\",\"client_payload\":{\"source\":\"daily-refresh\",\"run_id\":\"${{ github.run_id }}\"}}"

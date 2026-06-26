@@ -67,6 +67,12 @@ DEFAULT_STATCAST_CSV_OUT = ROOT / "notebooks" / "cache" / "mlb_home_run_predicti
 DEFAULT_WEB_OUT = REPO_ROOT / "web" / "public" / "data" / "mlb_home_runs.json"
 V1_MODEL_KEY = "mlb-hr-v1"
 STATCAST_BLEND_KEY = STATCAST_BLEND_MODEL_VERSION
+MODEL_AGREEMENT_CONSENSUS = "Consensus"
+MODEL_AGREEMENT_V1_ONLY = "V1 only"
+MODEL_AGREEMENT_STATCAST_BOOST = "Statcast boost"
+MODEL_AGREEMENT_STATCAST_FADE = "Statcast fade"
+MODEL_AGREEMENT_MISSING_STATCAST = "Missing Statcast"
+MODEL_AGREEMENT_RANK_THRESHOLD = 5
 
 
 def _safe_int(value: Any, default: int = 0) -> int:
@@ -538,6 +544,16 @@ def _build_predictions(
     )
 
 
+def _append_quality_flag(value: Any, flag: str) -> str:
+    try:
+        flags = json.loads(value) if isinstance(value, str) else list(value or [])
+    except (TypeError, json.JSONDecodeError):
+        flags = []
+    if flag not in flags:
+        flags.append(flag)
+    return json.dumps(flags)
+
+
 def _build_statcast_blend_predictions(
     candidates: pd.DataFrame,
     v1_predictions: pd.DataFrame,
@@ -564,7 +580,13 @@ def _build_statcast_blend_predictions(
         ).reset_index(drop=True)
     except Exception as exc:  # noqa: BLE001
         gaps.append(f"Statcast feature build failed; using v1 probabilities for blend board: {exc}")
-        return v1_predictions.assign(model_version=STATCAST_BLEND_KEY), gaps
+        fallback = v1_predictions.copy()
+        fallback["model_version"] = STATCAST_BLEND_KEY
+        if "quality_flags" in fallback.columns:
+            fallback["quality_flags"] = fallback["quality_flags"].map(
+                lambda value: _append_quality_flag(value, "statcast_features_unavailable")
+            )
+        return fallback, gaps
 
     ready_mask = enriched["statcast_feature_ready"].fillna(0) >= 1.0
     ready_count = int(ready_mask.sum())
@@ -608,11 +630,128 @@ def _build_statcast_blend_predictions(
     ), gaps
 
 
+def _rank_or_penalty(value: Any, penalty: int) -> int:
+    if value is None:
+        return penalty
+    try:
+        if pd.isna(value):
+            return penalty
+        return int(value)
+    except (TypeError, ValueError):
+        return penalty
+
+
+def _model_agreement_label(
+    *,
+    v1_rank: int,
+    statcast_rank: int | None,
+    statcast_available: bool,
+    statcast_present: bool,
+) -> str:
+    if not statcast_present:
+        return MODEL_AGREEMENT_V1_ONLY
+    if not statcast_available:
+        return MODEL_AGREEMENT_MISSING_STATCAST
+    rank_delta = int(statcast_rank or v1_rank) - int(v1_rank)
+    if rank_delta <= -MODEL_AGREEMENT_RANK_THRESHOLD:
+        return MODEL_AGREEMENT_STATCAST_BOOST
+    if rank_delta >= MODEL_AGREEMENT_RANK_THRESHOLD:
+        return MODEL_AGREEMENT_STATCAST_FADE
+    return MODEL_AGREEMENT_CONSENSUS
+
+
+def _build_probability_board(
+    v1_predictions: pd.DataFrame,
+    *,
+    statcast_predictions: pd.DataFrame | None = None,
+    top_n: int | None = None,
+) -> pd.DataFrame:
+    if v1_predictions.empty:
+        return v1_predictions.copy()
+
+    out = v1_predictions.copy()
+    out["v1_probability"] = out["hr_probability"]
+    out["v1_rank"] = out["rank"].astype(int)
+
+    statcast_present = statcast_predictions is not None and not statcast_predictions.empty
+    statcast_by_candidate = (
+        statcast_predictions.set_index(["game_id", "player_id"])
+        if statcast_present
+        else pd.DataFrame()
+    )
+    rank_penalty = len(out) + 25
+    neutral_market_rank = len(out) + 1
+
+    statcast_probabilities: list[float | None] = []
+    statcast_ranks: list[int | None] = []
+    statcast_available_values: list[bool] = []
+    agreement_labels: list[str] = []
+    consensus_scores: list[float] = []
+
+    for _, row in out.iterrows():
+        key = (row["game_id"], int(row["player_id"]))
+        statcast_row = statcast_by_candidate.loc[key] if statcast_present and key in statcast_by_candidate.index else None
+        if isinstance(statcast_row, pd.DataFrame):
+            statcast_row = statcast_row.iloc[0]
+
+        statcast_available = False
+        statcast_probability: float | None = None
+        statcast_rank: int | None = None
+        if statcast_row is not None:
+            statcast_flags = json.loads(statcast_row.get("quality_flags") or "[]")
+            statcast_available = "statcast_features_unavailable" not in statcast_flags
+            statcast_probability = float(statcast_row.get("hr_probability"))
+            statcast_rank = int(statcast_row.get("rank"))
+
+        v1_rank = int(row["rank"])
+        v1_flags = json.loads(row.get("quality_flags") or "[]")
+        statcast_component = _rank_or_penalty(statcast_rank, rank_penalty)
+        flags_penalty = len(v1_flags) * 3
+        if statcast_present and not statcast_available:
+            flags_penalty += 6
+        consensus_score = float(v1_rank + statcast_component + neutral_market_rank + flags_penalty)
+
+        statcast_probabilities.append(statcast_probability)
+        statcast_ranks.append(statcast_rank)
+        statcast_available_values.append(statcast_available)
+        agreement_labels.append(
+            _model_agreement_label(
+                v1_rank=v1_rank,
+                statcast_rank=statcast_rank,
+                statcast_available=statcast_available,
+                statcast_present=statcast_row is not None,
+            )
+        )
+        consensus_scores.append(consensus_score)
+
+    out["statcast_probability"] = statcast_probabilities
+    out["statcast_rank"] = statcast_ranks
+    out["statcast_available"] = statcast_available_values
+    out["model_agreement"] = agreement_labels
+    out["consensus_score"] = consensus_scores
+    out["market_signal_rank"] = neutral_market_rank
+    out = out.sort_values(["consensus_score", "v1_rank"], ascending=[True, True]).reset_index(drop=True)
+    out["rank"] = np.arange(1, len(out) + 1)
+    if top_n is not None:
+        out = out.head(top_n).copy()
+    return out
+
+
+def _filter_to_candidate_set(predictions: pd.DataFrame, candidate_set: pd.DataFrame) -> pd.DataFrame:
+    if predictions.empty or candidate_set.empty:
+        return predictions.head(0).copy()
+    keys = set(zip(candidate_set["game_id"], candidate_set["player_id"].astype(int), strict=False))
+    mask = [
+        (row["game_id"], int(row["player_id"])) in keys
+        for _, row in predictions.iterrows()
+    ]
+    return predictions.loc[mask].copy()
+
+
 def _predictions_to_rows(predictions: pd.DataFrame) -> list[dict[str, Any]]:
     rows = []
     for _, row in predictions.iterrows():
-        rows.append(
-            {
+        payload = {
                 "id": f"{row['game_id']}-{row['player_id']}-hr",
                 "sport": "MLB",
                 "league": "MLB",
@@ -650,7 +789,20 @@ def _predictions_to_rows(predictions: pd.DataFrame) -> list[dict[str, Any]]:
                 "qualityFlags": json.loads(row["quality_flags"]),
                 "topFeatures": json.loads(row["top_features"]),
             }
-        )
+        if "v1_probability" in row:
+            payload["v1Probability"] = row.get("v1_probability")
+            payload["v1Rank"] = None if pd.isna(row.get("v1_rank")) else int(row.get("v1_rank"))
+        if "statcast_probability" in row:
+            payload["statcastProbability"] = None if pd.isna(row.get("statcast_probability")) else row.get("statcast_probability")
+            payload["statcastRank"] = None if pd.isna(row.get("statcast_rank")) else int(row.get("statcast_rank"))
+            payload["statcastAvailable"] = bool(row.get("statcast_available"))
+        if "model_agreement" in row:
+            payload["modelAgreement"] = row.get("model_agreement")
+        if "consensus_score" in row:
+            payload["consensusScore"] = row.get("consensus_score")
+        if "market_signal_rank" in row:
+            payload["marketSignalRank"] = None if pd.isna(row.get("market_signal_rank")) else int(row.get("market_signal_rank"))
+        rows.append(payload)
     return rows
 
 
@@ -666,6 +818,7 @@ def _to_web_payload(
     v1_predictions: pd.DataFrame,
     gaps: list[str],
     *,
+    board_predictions: pd.DataFrame | None = None,
     statcast_predictions: pd.DataFrame | None = None,
     statcast_gaps: list[str] | None = None,
 ) -> dict[str, Any]:
@@ -677,13 +830,14 @@ def _to_web_payload(
         else "mlb-hr-v1-heuristic"
     )
     v1_payload = _model_payload(v1_predictions, gaps, model_version)
+    default_predictions = board_predictions if board_predictions is not None else v1_predictions
     payload: dict[str, Any] = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
         "market": "MLB batter home runs",
         "defaultModel": V1_MODEL_KEY,
         "modelVersion": model_version,
         "productionStatus": "candidate",
-        "predictions": v1_payload["predictions"],
+        "predictions": _predictions_to_rows(default_predictions),
         "gaps": gaps,
     }
     if statcast_predictions is not None:
@@ -744,15 +898,13 @@ def main() -> None:
             gaps.append(f"MLB HR model artifact load failed; using heuristic fallback: {exc}")
     if model_artifact:
         print(f"Loaded MLB HR model artifact: {args.model_artifact}")
-    predictions = _build_predictions(schedule, batting, pitching, args.date, model_artifact=model_artifact) if not batting.empty else pd.DataFrame()
-    if predictions.empty:
+    predictions_full = _build_predictions(schedule, batting, pitching, args.date, model_artifact=model_artifact) if not batting.empty else pd.DataFrame()
+    if predictions_full.empty:
         gaps.append(f"No MLB HR candidate rows generated for {args.date}.")
-    else:
-        predictions = predictions.head(args.top_n).copy()
 
     statcast_predictions = pd.DataFrame()
     statcast_gaps: list[str] = []
-    if not args.skip_statcast_blend and not predictions.empty:
+    if not args.skip_statcast_blend and not predictions_full.empty:
         torch_artifact = None
         try:
             torch_artifact = load_torch_hr_artifact(args.torch_artifact)
@@ -760,16 +912,27 @@ def main() -> None:
         except Exception as exc:  # noqa: BLE001
             statcast_gaps.append(f"Statcast blend torch artifact load failed: {exc}")
         if torch_artifact:
-            candidates = _build_candidates(schedule, batting, pitching, args.date).head(args.top_n).copy()
+            candidates = predictions_full.drop(
+                columns=["hr_probability", "model_version", "prediction_ts", "quality_flags", "top_features", "confidence", "rank"],
+                errors="ignore",
+            ).copy()
             statcast_predictions, statcast_gaps = _build_statcast_blend_predictions(
                 candidates,
-                predictions,
+                predictions_full,
                 args.date,
                 torch_artifact=torch_artifact,
                 statcast_cache=args.statcast_cache,
                 refresh_statcast=args.refresh_statcast_cache,
             )
-            statcast_predictions = statcast_predictions.head(args.top_n).copy()
+
+    board_predictions = _build_probability_board(
+        predictions_full,
+        statcast_predictions=statcast_predictions if not statcast_predictions.empty else None,
+        top_n=args.top_n,
+    )
+    predictions = _filter_to_candidate_set(predictions_full, board_predictions)
+    if not statcast_predictions.empty:
+        statcast_predictions = _filter_to_candidate_set(statcast_predictions, board_predictions)
 
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(args.out_csv, index=False)
@@ -781,6 +944,7 @@ def main() -> None:
             _to_web_payload(
                 predictions,
                 gaps,
+                board_predictions=board_predictions,
                 statcast_predictions=statcast_predictions if not statcast_predictions.empty else None,
                 statcast_gaps=statcast_gaps,
             ),

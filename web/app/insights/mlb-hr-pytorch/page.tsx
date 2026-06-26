@@ -121,7 +121,7 @@ export default async function MlbHrPytorchInsightPage() {
     <div>
       <PageHeader
         title="MLB HR PyTorch Experiment"
-        description="A live notebook-style post tracking whether a GPU-trained wide/deep model can beat the current random-forest home-run probabilities."
+        description="A live notebook-style post separating calibrated HR probability from ranking signals for shortlist discovery."
         meta={summary.generatedAt}
       />
 
@@ -169,12 +169,17 @@ export default async function MlbHrPytorchInsightPage() {
               ranking in different parts of the board, so the next production decision should keep
               probability quality and candidate ranking separate.
             </p>
+            <p className="text-foreground">
+              Statcast currently improves broad ranking, handedness improves top-10, v1 remains the
+              calibrated production baseline.
+            </p>
             <div className="flex flex-wrap gap-2">
               <Badge variant={summary.experimentStatus === "pytorch_evaluated" ? "accent" : "missing"}>
                 {summary.experimentStatus}
               </Badge>
               <Badge variant="outline">candidate market</Badge>
               <Badge variant="outline">same split comparison</Badge>
+              <Badge variant="outline">ranking experiment</Badge>
               {handedBlend ? <Badge variant="outline">handedness enriched</Badge> : null}
             </div>
           </CardContent>

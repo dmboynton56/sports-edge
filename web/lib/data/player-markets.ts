@@ -138,6 +138,13 @@ function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
     rank: row.rank,
     qualityFlags: row.quality_flags ?? [],
     topFeatures: row.top_features ?? [],
+    v1Probability: row.hr_probability,
+    v1Rank: row.rank,
+    statcastProbability: null,
+    statcastRank: null,
+    statcastAvailable: null,
+    modelAgreement: "V1 only",
+    consensusScore: row.rank,
   };
 }
 
@@ -205,6 +212,25 @@ function buildBoardFromPayload(payload: MlbHomeRunFeed, slateDate: string): MlbH
   const defaultModel = payload.defaultModel ?? MLB_HR_V1_MODEL;
   const models: Record<string, MlbHomeRunModelFeed> = {};
 
+  const defaultPredictions = (payload.predictions ?? []).filter(
+    (row) => predictionGameDate(row) === slateDate,
+  );
+  if (defaultPredictions.length) {
+    return {
+      generatedAt: payload.generatedAt,
+      productionStatus: payload.productionStatus ?? "candidate",
+      defaultModel,
+      availableModels: [defaultModel],
+      models: {
+        [defaultModel]: {
+          modelVersion: payload.modelVersion ?? defaultModel,
+          predictions: defaultPredictions,
+          gaps: payload.gaps ?? [],
+        },
+      },
+    };
+  }
+
   if (payload.models && Object.keys(payload.models).length) {
     for (const [modelKey, modelPayload] of Object.entries(payload.models)) {
       const predictions = (modelPayload.predictions ?? []).filter(
@@ -220,16 +246,13 @@ function buildBoardFromPayload(payload: MlbHomeRunFeed, slateDate: string): MlbH
   }
 
   if (!Object.keys(models).length) {
-    const predictions = (payload.predictions ?? []).filter(
-      (row) => predictionGameDate(row) === slateDate,
-    );
-    if (predictions.length) {
-      models[defaultModel] = {
-        modelVersion: payload.modelVersion ?? defaultModel,
-        predictions,
-        gaps: payload.gaps ?? [],
-      };
-    }
+    return {
+      generatedAt: payload.generatedAt,
+      productionStatus: payload.productionStatus ?? "candidate",
+      defaultModel,
+      availableModels: [],
+      models: {},
+    };
   }
 
   const availableModels = Object.keys(models);

@@ -22,6 +22,14 @@ export type MlbHomeRunPrediction = Prediction & {
   oddsBooksCount?: number | null;
   oddsSnapshotTs?: string | null;
   oddsStatus?: string | null;
+  v1Probability?: number | null;
+  v1Rank?: number | null;
+  statcastProbability?: number | null;
+  statcastRank?: number | null;
+  statcastAvailable?: boolean | null;
+  modelAgreement?: "Consensus" | "V1 only" | "Statcast boost" | "Statcast fade" | "Missing Statcast" | string | null;
+  consensusScore?: number | null;
+  marketSignalRank?: number | null;
 };
 
 export type MlbHomeRunModelFeed = {

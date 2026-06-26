@@ -48,9 +48,11 @@ writes the portfolio-facing `world_cup_*` serving tables.
 
 The personal portfolio exposes this project via scoped chat (`scope=sports-edge`)
 on `/projects/sports-edge`. Answers use BigQuery warehouse SQL, canned metrics,
-and RAG over `personal-portfolio/docs/project-knowledge/sports-edge/`. After
-changing methodology or metrics docs, rebuild portfolio `rag_embeddings.json`
-(see `plans/04-rag-knowledge-strategy.md`).
+and RAG over `personal-portfolio/docs/project-knowledge/sports-edge/`. Doc freshness
+for metrics and KPI fallback is auto-synced via `repository_dispatch` to the
+portfolio repo after successful daily/PGA/World Cup refreshes (requires
+`PORTFOLIO_DISPATCH_TOKEN` secret in this repo — fine-grained PAT on
+`personal-portfolio` with **Contents: Read and write**; Actions alone is not enough).
 
 Current scheduled model versions:
 

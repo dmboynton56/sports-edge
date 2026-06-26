@@ -99,3 +99,18 @@ jobs:
             WORLD_CUP_ARGS+=(--sync-supabase)
           fi
           python scripts/refresh_world_cup.py "${WORLD_CUP_ARGS[@]}"
+
+      - name: Notify portfolio doc sync
+        if: success() && steps.plan.outputs.run_world_cup == 'true'
+        env:
+          PORTFOLIO_DISPATCH_TOKEN: ${{ secrets.PORTFOLIO_DISPATCH_TOKEN }}
+        run: |
+          if [ -z "$PORTFOLIO_DISPATCH_TOKEN" ]; then
+            echo "PORTFOLIO_DISPATCH_TOKEN is not configured; skipping portfolio doc sync dispatch."
+            exit 0
+          fi
+          curl -sf -X POST \
+            -H "Authorization: Bearer ${PORTFOLIO_DISPATCH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/dmboynton56/personal-portfolio/dispatches \
+            -d "{\"event_type\":\"sports-edge-refresh\",\"client_payload\":{\"source\":\"world-cup-refresh\",\"run_id\":\"${{ github.run_id }}\"}}"
