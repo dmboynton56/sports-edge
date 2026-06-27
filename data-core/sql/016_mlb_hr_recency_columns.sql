@@ -1,5 +1,8 @@
 -- Add batter HR recency context to MLB home run prediction serving rows.
 
+drop view if exists mlb_home_run_edges_latest;
+drop view if exists mlb_home_run_predictions_latest;
+
 alter table mlb_home_run_predictions
   add column if not exists games_since_last_hr int,
   add column if not exists last_hr_date date;
@@ -124,3 +127,6 @@ select
     else 'ok'
   end as odds_status
 from priced;
+
+grant select on mlb_home_run_predictions_latest to anon, authenticated;
+grant select on mlb_home_run_edges_latest to anon, authenticated;
