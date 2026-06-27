@@ -71,6 +71,29 @@ def test_ensure_table_rejects_missing_required_fields() -> None:
         _ensure_table(client, "project.dataset.mlb_home_run_predictions", TABLES["mlb_home_run_predictions"])
 
 
+def test_ensure_table_accepts_bigquery_type_aliases() -> None:
+    spec = {
+        "schema": [
+            bigquery.SchemaField("season", "INT64", mode="NULLABLE"),
+            bigquery.SchemaField("win_prob", "FLOAT64", mode="NULLABLE"),
+            bigquery.SchemaField("is_active", "BOOLEAN", mode="NULLABLE"),
+        ]
+    }
+    table = bigquery.Table(
+        "project.dataset.alias_table",
+        schema=[
+            bigquery.SchemaField("season", "INTEGER", mode="NULLABLE"),
+            bigquery.SchemaField("win_prob", "FLOAT", mode="NULLABLE"),
+            bigquery.SchemaField("is_active", "BOOL", mode="NULLABLE"),
+        ],
+    )
+    client = FakeTableClient(table)
+
+    _ensure_table(client, "project.dataset.alias_table", spec)
+
+    assert client.updated_fields is None
+
+
 def test_load_allows_nullable_field_addition() -> None:
     client = FakeLoadClient()
 

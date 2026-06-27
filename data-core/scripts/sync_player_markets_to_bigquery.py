@@ -23,6 +23,16 @@ def _schema(fields: list[tuple[str, str, str]]) -> list[bigquery.SchemaField]:
     return [bigquery.SchemaField(name, field_type, mode=mode) for name, field_type, mode in fields]
 
 
+def _normalized_field_type(field_type: str) -> str:
+    aliases = {
+        "BOOL": "BOOLEAN",
+        "FLOAT": "FLOAT64",
+        "INTEGER": "INT64",
+    }
+    normalized = field_type.upper()
+    return aliases.get(normalized, normalized)
+
+
 TABLES = {
     "pga_tournaments": {
         "schema": _schema(
@@ -130,7 +140,7 @@ def _ensure_table(client: bigquery.Client, table_id: str, spec: dict[str, Any]) 
                 else:
                     fields_to_add.append(field)
                 continue
-            if existing.field_type.upper() != field.field_type.upper():
+            if _normalized_field_type(existing.field_type) != _normalized_field_type(field.field_type):
                 mismatches.append(
                     f"{field.name}: existing {existing.field_type} != expected {field.field_type}"
                 )
