@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 import json
+from datetime import date
+from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
+import scripts.predict_mlb_home_runs as hr_predictions
 from scripts.predict_mlb_home_runs import (
     _build_probability_board,
+    _build_statcast_blend_predictions,
+    _candidate_key_set,
     _filter_to_candidate_set,
     _predictions_to_rows,
 )
+from src.models.mlb_home_run_model import FEATURE_COLUMNS
 
 
 def _prediction_frame(rows: list[dict]) -> pd.DataFrame:
@@ -32,6 +39,32 @@ def _prediction_frame(rows: list[dict]) -> pd.DataFrame:
         "quality_flags": "[]",
         "top_features": "[]",
     }
+    return pd.DataFrame([{**defaults, **row} for row in rows])
+
+
+def _candidate_frame(rows: list[dict]) -> pd.DataFrame:
+    defaults = {
+        "game_id": "MLB_1",
+        "game_pk": 1,
+        "game_date": "2026-06-26",
+        "event_time": "2026-06-26T23:00:00+00:00",
+        "player_name": "Test Player",
+        "team": "AAA",
+        "opponent": "BBB",
+        "team_id": 1,
+        "opponent_id": 2,
+        "opposing_starter_id": 99,
+        "venue": "Test Park",
+        "lineup_slot": 1,
+        "lineup_status": "projected",
+        "opposing_probable_pitcher": "Pitcher",
+        "probable_pitcher_known": True,
+        "baseline_probability": 0.04,
+        "heuristic_probability": 0.05,
+        "games_since_last_hr": None,
+        "last_hr_date": None,
+    }
+    defaults.update({col: 1.0 for col in FEATURE_COLUMNS})
     return pd.DataFrame([{**defaults, **row} for row in rows])
 
 
@@ -123,3 +156,43 @@ def test_prediction_rows_include_probability_board_fields() -> None:
     assert row["statcastAvailable"] is True
     assert row["modelAgreement"] == "Consensus"
     assert "consensusScore" in row
+
+
+def test_statcast_blend_fills_missing_enriched_candidates(monkeypatch) -> None:
+    candidates = _candidate_frame(
+        [
+            {"player_id": 1, "player_name": "Ready Bat", "heuristic_probability": 0.06},
+            {"player_id": 2, "player_name": "Not Ready Bat", "heuristic_probability": 0.05},
+            {"player_id": 3, "player_name": "Missing Bat", "heuristic_probability": 0.04},
+        ]
+    )
+    v1 = _prediction_frame(
+        [
+            {"player_id": 1, "player_name": "Ready Bat", "hr_probability": 0.11, "rank": 1},
+            {"player_id": 2, "player_name": "Not Ready Bat", "hr_probability": 0.09, "rank": 2},
+            {"player_id": 3, "player_name": "Missing Bat", "hr_probability": 0.07, "rank": 3},
+        ]
+    )
+
+    def fake_build_torch_candidate_features(frame, as_of, *, statcast_cache, refresh_statcast):
+        enriched = frame.iloc[:2].copy()
+        enriched["statcast_feature_ready"] = [1.0, 0.0]
+        return enriched
+
+    monkeypatch.setattr(hr_predictions, "build_torch_candidate_features", fake_build_torch_candidate_features)
+    monkeypatch.setattr(hr_predictions, "predict_torch_probs", lambda artifact, frame: np.array([0.22]))
+    monkeypatch.setattr(hr_predictions, "apply_heuristic_blend", lambda artifact, torch_probs, heuristic_probs: torch_probs)
+
+    statcast, gaps = _build_statcast_blend_predictions(
+        candidates,
+        v1,
+        date(2026, 6, 26),
+        torch_artifact={},
+        statcast_cache=Path("/tmp/unused-statcast-cache.csv"),
+    )
+
+    assert _candidate_key_set(statcast) == _candidate_key_set(v1)
+    by_player = statcast.set_index("player_id")
+    assert by_player.loc[3, "hr_probability"] == 0.07
+    assert "statcast_features_unavailable" in json.loads(by_player.loc[3, "quality_flags"])
+    assert any("returned no row for 1 candidates" in gap for gap in gaps)

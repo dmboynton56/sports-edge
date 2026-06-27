@@ -554,6 +554,95 @@ def _append_quality_flag(value: Any, flag: str) -> str:
     return json.dumps(flags)
 
 
+def _candidate_key(row: pd.Series | dict[str, Any]) -> tuple[str, int]:
+    return (str(row["game_id"]), int(row["player_id"]))
+
+
+def _candidate_key_set(frame: pd.DataFrame) -> set[tuple[str, int]]:
+    if frame.empty:
+        return set()
+    return {
+        (str(game_id), int(player_id))
+        for game_id, player_id in zip(frame["game_id"], frame["player_id"], strict=False)
+    }
+
+
+def _sort_and_rank_predictions(predictions: pd.DataFrame) -> pd.DataFrame:
+    if predictions.empty:
+        return predictions.copy()
+    out = predictions.sort_values("hr_probability", ascending=False).reset_index(drop=True)
+    out["rank"] = np.arange(1, len(out) + 1)
+    return out
+
+
+def _fallback_model_predictions(
+    v1_predictions: pd.DataFrame,
+    *,
+    model_version: str,
+    fallback_flag: str = "statcast_features_unavailable",
+) -> pd.DataFrame:
+    fallback = v1_predictions.copy()
+    if fallback.empty:
+        return fallback
+    fallback["model_version"] = model_version
+    if "quality_flags" not in fallback.columns:
+        fallback["quality_flags"] = "[]"
+    fallback["quality_flags"] = fallback["quality_flags"].map(
+        lambda value: _append_quality_flag(value, fallback_flag)
+    )
+    return _sort_and_rank_predictions(fallback)
+
+
+def _ensure_model_candidate_coverage(
+    reference_predictions: pd.DataFrame,
+    model_predictions: pd.DataFrame,
+    *,
+    model_version: str,
+    fallback_flag: str = "statcast_features_unavailable",
+) -> tuple[pd.DataFrame, list[str]]:
+    gaps: list[str] = []
+    if reference_predictions.empty:
+        return model_predictions.copy(), gaps
+    if model_predictions.empty:
+        gaps.append(f"{model_version} had no rows; filled all candidates with v1 probabilities.")
+        return (
+            _fallback_model_predictions(
+                reference_predictions,
+                model_version=model_version,
+                fallback_flag=fallback_flag,
+            ),
+            gaps,
+        )
+
+    model = model_predictions.copy()
+    model["_candidate_key"] = [_candidate_key(row) for _, row in model.iterrows()]
+    deduped = model.drop_duplicates("_candidate_key", keep="first")
+    duplicate_count = len(model) - len(deduped)
+    if duplicate_count:
+        gaps.append(f"{model_version} had {duplicate_count} duplicate candidate rows; kept the first row per player.")
+    model = deduped
+
+    reference_keys = _candidate_key_set(reference_predictions)
+    model_keys = set(model["_candidate_key"])
+    missing_keys = reference_keys - model_keys
+    if missing_keys:
+        missing = reference_predictions[
+            [_candidate_key(row) in missing_keys for _, row in reference_predictions.iterrows()]
+        ].copy()
+        fallback = _fallback_model_predictions(
+            missing,
+            model_version=model_version,
+            fallback_flag=fallback_flag,
+        )
+        model = pd.concat([model.drop(columns=["_candidate_key"]), fallback], ignore_index=True)
+        gaps.append(
+            f"{model_version} was missing {len(missing_keys)} candidate rows; filled them with v1 probabilities."
+        )
+    else:
+        model = model.drop(columns=["_candidate_key"])
+    return _sort_and_rank_predictions(model), gaps
+
+
 def _build_statcast_blend_predictions(
     candidates: pd.DataFrame,
     v1_predictions: pd.DataFrame,
@@ -567,7 +656,9 @@ def _build_statcast_blend_predictions(
     if candidates.empty:
         return candidates, gaps
 
-    fallback_probs = v1_predictions.set_index(["game_id", "player_id"])["hr_probability"]
+    fallback_lookup = v1_predictions.copy()
+    fallback_lookup["player_id"] = fallback_lookup["player_id"].astype(int)
+    fallback_probs = fallback_lookup.set_index(["game_id", "player_id"])["hr_probability"]
     probabilities: list[float] = []
     flags_list: list[list[str]] = []
 
@@ -580,35 +671,68 @@ def _build_statcast_blend_predictions(
         ).reset_index(drop=True)
     except Exception as exc:  # noqa: BLE001
         gaps.append(f"Statcast feature build failed; using v1 probabilities for blend board: {exc}")
-        fallback = v1_predictions.copy()
-        fallback["model_version"] = STATCAST_BLEND_KEY
-        if "quality_flags" in fallback.columns:
-            fallback["quality_flags"] = fallback["quality_flags"].map(
-                lambda value: _append_quality_flag(value, "statcast_features_unavailable")
-            )
-        return fallback, gaps
+        return (
+            _fallback_model_predictions(
+                v1_predictions,
+                model_version=STATCAST_BLEND_KEY,
+                fallback_flag="statcast_features_unavailable",
+            ),
+            gaps,
+        )
 
-    ready_mask = enriched["statcast_feature_ready"].fillna(0) >= 1.0
+    enriched_by_key: dict[tuple[str, int], pd.Series] = {}
+    for _, row in enriched.iterrows():
+        enriched_by_key.setdefault(_candidate_key(row), row)
+
+    aligned_rows = []
+    missing_enriched = 0
+    for _, candidate in candidates.iterrows():
+        enriched_row = enriched_by_key.get(_candidate_key(candidate))
+        if enriched_row is None:
+            row = candidate.copy()
+            row["_statcast_enrichment_present"] = False
+            missing_enriched += 1
+        else:
+            row = enriched_row.copy()
+            row["_statcast_enrichment_present"] = True
+        aligned_rows.append(row)
+
+    aligned = pd.DataFrame(aligned_rows).reset_index(drop=True)
+    if missing_enriched:
+        gaps.append(
+            f"Statcast enrichment returned no row for {missing_enriched} candidates; those rows use v1 probabilities."
+        )
+
+    enrichment_present = aligned.pop("_statcast_enrichment_present").fillna(False).astype(bool)
+    ready_values = pd.to_numeric(
+        aligned.get("statcast_feature_ready", pd.Series(0.0, index=aligned.index)),
+        errors="coerce",
+    ).fillna(0.0)
+    ready_mask = enrichment_present & (ready_values >= 1.0)
     ready_count = int(ready_mask.sum())
     if ready_count == 0:
         gaps.append("No MLB HR candidates had Statcast-ready features; blend board mirrors v1 probabilities.")
-    elif ready_count < len(enriched):
+    elif ready_count < len(aligned):
         gaps.append(
-            f"Statcast features unavailable for {len(enriched) - ready_count} MLB HR candidates; those rows use v1 probabilities."
+            f"Statcast features unavailable for {len(aligned) - ready_count} MLB HR candidates; those rows use v1 probabilities."
         )
 
-    blend_probs = np.zeros(len(enriched), dtype=float)
+    blend_probs = np.full(len(aligned), np.nan, dtype=float)
     if ready_count:
-        ready = enriched.loc[ready_mask].copy()
-        torch_probs = predict_torch_probs(torch_artifact, ready)
-        heuristic_probs = ready["heuristic_probability"].to_numpy(dtype=float)
-        blended = apply_heuristic_blend(torch_artifact, torch_probs, heuristic_probs)
-        blend_probs[ready_mask.to_numpy()] = blended
+        try:
+            ready = aligned.loc[ready_mask].copy()
+            torch_probs = predict_torch_probs(torch_artifact, ready)
+            heuristic_probs = ready["heuristic_probability"].to_numpy(dtype=float)
+            blended = apply_heuristic_blend(torch_artifact, torch_probs, heuristic_probs)
+            blend_probs[ready_mask.to_numpy()] = blended
+        except Exception as exc:  # noqa: BLE001
+            gaps.append(f"Statcast model scoring failed; using v1 probabilities for blend board: {exc}")
+            ready_mask = pd.Series(False, index=aligned.index)
 
-    for pos, row in enriched.iterrows():
+    for pos, row in aligned.iterrows():
         key = (row["game_id"], int(row["player_id"]))
         fallback = float(fallback_probs.get(key, row["heuristic_probability"]))
-        if ready_mask.loc[pos]:
+        if bool(ready_mask.iloc[pos]) and math.isfinite(float(blend_probs[pos])):
             probability = float(blend_probs[pos]) + _hash_jitter(row["player_id"], row["player_name"], scale=0.0003)
             probability = float(np.clip(probability, 0.001, 0.45))
         else:
@@ -618,12 +742,12 @@ def _build_statcast_blend_predictions(
             {col: row[col] for col in FEATURE_COLUMNS},
             probable_pitcher_known=bool(row["probable_pitcher_known"]),
         )
-        if not ready_mask.loc[pos]:
+        if not bool(ready_mask.iloc[pos]):
             flags.append("statcast_features_unavailable")
         flags_list.append(flags)
 
     return _finalize_predictions(
-        candidates,
+        candidates.reset_index(drop=True),
         hr_probability=pd.Series(probabilities),
         model_version=STATCAST_BLEND_KEY,
         quality_flags=flags_list,
@@ -924,6 +1048,22 @@ def main() -> None:
                 statcast_cache=args.statcast_cache,
                 refresh_statcast=args.refresh_statcast_cache,
             )
+        else:
+            statcast_gaps.append("Statcast blend model unavailable; statcast feed mirrors v1 probabilities.")
+            statcast_predictions = _fallback_model_predictions(
+                predictions_full,
+                model_version=STATCAST_BLEND_KEY,
+                fallback_flag="statcast_features_unavailable",
+            )
+
+    if not args.skip_statcast_blend and not predictions_full.empty:
+        statcast_predictions, coverage_gaps = _ensure_model_candidate_coverage(
+            predictions_full,
+            statcast_predictions,
+            model_version=STATCAST_BLEND_KEY,
+            fallback_flag="statcast_features_unavailable",
+        )
+        statcast_gaps.extend(coverage_gaps)
 
     board_predictions = _build_probability_board(
         predictions_full,
@@ -933,6 +1073,14 @@ def main() -> None:
     predictions = _filter_to_candidate_set(predictions_full, board_predictions)
     if not statcast_predictions.empty:
         statcast_predictions = _filter_to_candidate_set(statcast_predictions, board_predictions)
+    if not args.skip_statcast_blend and not predictions.empty:
+        statcast_predictions, coverage_gaps = _ensure_model_candidate_coverage(
+            predictions,
+            statcast_predictions,
+            model_version=STATCAST_BLEND_KEY,
+            fallback_flag="statcast_features_unavailable",
+        )
+        statcast_gaps.extend(coverage_gaps)
 
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(args.out_csv, index=False)

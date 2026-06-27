@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from google.api_core import exceptions as google_exceptions
 from google.cloud import bigquery
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -113,10 +114,38 @@ def _clean(value: Any) -> Any:
 
 def _ensure_table(client: bigquery.Client, table_id: str, spec: dict[str, Any]) -> None:
     try:
-        client.get_table(table_id)
+        table = client.get_table(table_id)
+    except google_exceptions.NotFound:
+        table = None
+    if table is not None:
+        existing_by_name = {field.name: field for field in table.schema}
+        fields_to_add: list[bigquery.SchemaField] = []
+        mismatches: list[str] = []
+        required_missing: list[str] = []
+        for field in spec["schema"]:
+            existing = existing_by_name.get(field.name)
+            if existing is None:
+                if field.mode == "REQUIRED":
+                    required_missing.append(field.name)
+                else:
+                    fields_to_add.append(field)
+                continue
+            if existing.field_type.upper() != field.field_type.upper():
+                mismatches.append(
+                    f"{field.name}: existing {existing.field_type} != expected {field.field_type}"
+                )
+        if required_missing:
+            raise ValueError(
+                f"BigQuery table {table_id} is missing required fields that cannot be auto-added: "
+                f"{', '.join(required_missing)}"
+            )
+        if mismatches:
+            raise ValueError(f"BigQuery table {table_id} schema mismatch: {'; '.join(mismatches)}")
+        if fields_to_add:
+            table.schema = [*table.schema, *fields_to_add]
+            client.update_table(table, ["schema"])
+            print(f"Added BigQuery columns to {table_id}: {', '.join(field.name for field in fields_to_add)}")
         return
-    except Exception:  # noqa: BLE001
-        pass
     table = bigquery.Table(table_id, schema=spec["schema"])
     partition_field = spec.get("partition_field")
     if partition_field:
@@ -135,7 +164,11 @@ def _load(client: bigquery.Client, table_id: str, rows: list[dict[str, Any]], sc
     if not rows:
         return 0
     frame = pd.DataFrame(rows)
-    job_config = bigquery.LoadJobConfig(schema=schema, write_disposition="WRITE_APPEND")
+    job_config = bigquery.LoadJobConfig(
+        schema=schema,
+        schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
+        write_disposition="WRITE_APPEND",
+    )
     client.load_table_from_dataframe(frame, table_id, job_config=job_config).result()
     return len(frame)
 

@@ -58,6 +58,8 @@ create table if not exists `PROJECT_ID.sports_edge_curated.mlb_home_run_predicti
   hr_probability float64 not null,
   baseline_probability float64,
   rank int64,
+  games_since_last_hr int64,
+  last_hr_date date,
   confidence float64,
   model_version string not null,
   prediction_ts timestamp not null,
