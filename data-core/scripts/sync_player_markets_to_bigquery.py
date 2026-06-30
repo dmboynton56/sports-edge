@@ -264,6 +264,14 @@ def _load(client: bigquery.Client, table_id: str, rows: list[dict[str, Any]], sc
     if not rows:
         return 0
     frame = pd.DataFrame(rows)
+    for field in schema:
+        if field.name not in frame.columns:
+            continue
+        if field.field_type == "DATE":
+            values = pd.to_datetime(frame[field.name], errors="coerce")
+            frame[field.name] = values.map(lambda value: value.date() if pd.notna(value) else None)
+        elif field.field_type in {"TIMESTAMP", "DATETIME"}:
+            frame[field.name] = pd.to_datetime(frame[field.name], errors="coerce", utc=True)
     job_config = bigquery.LoadJobConfig(
         schema=schema,
         schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
