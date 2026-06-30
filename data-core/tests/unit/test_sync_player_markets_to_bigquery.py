@@ -3,7 +3,9 @@ from __future__ import annotations
 import pytest
 from google.cloud import bigquery
 
-from scripts.sync_player_markets_to_bigquery import TABLES, _ensure_table, _load
+import json
+
+from scripts.sync_player_markets_to_bigquery import TABLES, _ensure_table, _load, build_mlb_rows
 
 
 class FakeTableClient:
@@ -46,7 +48,19 @@ def test_ensure_table_adds_missing_nullable_fields() -> None:
     schema = [
         field
         for field in TABLES["mlb_home_run_predictions"]["schema"]
-        if field.name not in {"games_since_last_hr", "last_hr_date"}
+        if field.name
+        not in {
+            "games_since_last_hr",
+            "last_hr_date",
+            "v1_probability",
+            "v1_rank",
+            "statcast_probability",
+            "statcast_rank",
+            "statcast_available",
+            "model_agreement",
+            "consensus_score",
+            "market_signal_rank",
+        }
     ]
     table = bigquery.Table("project.dataset.mlb_home_run_predictions", schema=schema)
     client = FakeTableClient(table)
@@ -54,7 +68,18 @@ def test_ensure_table_adds_missing_nullable_fields() -> None:
     _ensure_table(client, "project.dataset.mlb_home_run_predictions", TABLES["mlb_home_run_predictions"])
 
     names = {field.name for field in client.table.schema}
-    assert {"games_since_last_hr", "last_hr_date"} <= names
+    assert {
+        "games_since_last_hr",
+        "last_hr_date",
+        "v1_probability",
+        "v1_rank",
+        "statcast_probability",
+        "statcast_rank",
+        "statcast_available",
+        "model_agreement",
+        "consensus_score",
+        "market_signal_rank",
+    } <= names
     assert client.updated_fields == ["schema"]
 
 
@@ -106,3 +131,78 @@ def test_load_allows_nullable_field_addition() -> None:
 
     assert client.job_config is not None
     assert bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION in client.job_config.schema_update_options
+
+
+def test_build_mlb_rows_preserves_probability_board_comparison_fields(tmp_path) -> None:
+    payload = {
+        "generatedAt": "2026-06-30T13:00:00+00:00",
+        "predictions": [
+            {
+                "gameId": "MLB_1",
+                "gameDate": "2026-06-30",
+                "eventTime": "2026-06-30T23:00:00+00:00",
+                "playerId": "123",
+                "player": "Test Bat",
+                "modelProbability": 0.21,
+                "modelVersion": "mlb-hr-v1",
+                "v1Probability": 0.21,
+                "v1Rank": 2,
+                "statcastProbability": 0.25,
+                "statcastRank": 1,
+                "statcastAvailable": True,
+                "modelAgreement": "Statcast boost",
+                "consensusScore": 124,
+                "marketSignalRank": 121,
+            }
+        ],
+        "models": {
+            "mlb-hr-v1": {
+                "modelVersion": "mlb-hr-v1",
+                "predictions": [
+                    {
+                        "gameId": "MLB_1",
+                        "gameDate": "2026-06-30",
+                        "eventTime": "2026-06-30T23:00:00+00:00",
+                        "playerId": "123",
+                        "player": "Test Bat",
+                        "modelProbability": 0.21,
+                        "modelVersion": "mlb-hr-v1",
+                        "rank": 2,
+                        "qualityFlags": [],
+                    }
+                ],
+            },
+            "mlb-hr-torch-statcast-v1-blend": {
+                "modelVersion": "mlb-hr-torch-statcast-v1-blend",
+                "predictions": [
+                    {
+                        "gameId": "MLB_1",
+                        "gameDate": "2026-06-30",
+                        "eventTime": "2026-06-30T23:00:00+00:00",
+                        "playerId": "123",
+                        "player": "Test Bat",
+                        "modelProbability": 0.25,
+                        "modelVersion": "mlb-hr-torch-statcast-v1-blend",
+                        "rank": 1,
+                        "qualityFlags": [],
+                    }
+                ],
+            },
+        },
+    }
+    path = tmp_path / "mlb_home_runs.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    batches = build_mlb_rows(path)
+    rows = [row for batch, _, _ in batches for row in batch]
+
+    assert len(rows) == 2
+    assert {row["model_version"] for row in rows} == {
+        "mlb-hr-v1",
+        "mlb-hr-torch-statcast-v1-blend",
+    }
+    assert all(row["v1_probability"] == 0.21 for row in rows)
+    assert all(row["statcast_probability"] == 0.25 for row in rows)
+    assert all(row["statcast_available"] is True for row in rows)
+    assert all(row["model_agreement"] == "Statcast boost" for row in rows)
+    assert all(row["consensus_score"] == 124 for row in rows)

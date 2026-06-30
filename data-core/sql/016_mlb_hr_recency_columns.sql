@@ -5,7 +5,85 @@ drop view if exists mlb_home_run_predictions_latest;
 
 alter table mlb_home_run_predictions
   add column if not exists games_since_last_hr int,
-  add column if not exists last_hr_date date;
+  add column if not exists last_hr_date date,
+  add column if not exists v1_probability numeric check (v1_probability is null or (v1_probability >= 0 and v1_probability <= 1)),
+  add column if not exists v1_rank int,
+  add column if not exists statcast_probability numeric check (statcast_probability is null or (statcast_probability >= 0 and statcast_probability <= 1)),
+  add column if not exists statcast_rank int,
+  add column if not exists statcast_available boolean,
+  add column if not exists model_agreement text,
+  add column if not exists consensus_score numeric,
+  add column if not exists market_signal_rank int;
+
+with latest_v1 as (
+  select distinct on (game_date, game_id, player_id)
+    *
+  from mlb_home_run_predictions
+  where model_version like 'mlb-hr-v1%'
+  order by game_date, game_id, player_id, prediction_ts desc
+),
+latest_statcast as (
+  select distinct on (game_date, game_id, player_id)
+    *
+  from mlb_home_run_predictions
+  where model_version = 'mlb-hr-torch-statcast-v1-blend'
+  order by game_date, game_id, player_id, prediction_ts desc
+),
+slate_counts as (
+  select game_date, count(*)::int as candidate_count
+  from latest_v1
+  group by game_date
+),
+comparison as (
+  select
+    v.game_date,
+    v.game_id,
+    v.player_id,
+    v.hr_probability as v1_probability,
+    v.rank as v1_rank,
+    s.hr_probability as statcast_probability,
+    s.rank as statcast_rank,
+    case
+      when s.id is null then null
+      else not (s.quality_flags ? 'statcast_features_unavailable')
+    end as statcast_available,
+    case
+      when s.id is null then 'V1 only'
+      when s.quality_flags ? 'statcast_features_unavailable' then 'Missing Statcast'
+      when s.rank - v.rank <= -5 then 'Statcast boost'
+      when s.rank - v.rank >= 5 then 'Statcast fade'
+      else 'Consensus'
+    end as model_agreement,
+    (
+      v.rank
+      + coalesce(s.rank, c.candidate_count + 25)
+      + c.candidate_count + 1
+      + jsonb_array_length(v.quality_flags) * 3
+      + case when s.id is not null and s.quality_flags ? 'statcast_features_unavailable' then 6 else 0 end
+    )::numeric as consensus_score,
+    c.candidate_count + 1 as market_signal_rank
+  from latest_v1 v
+  join slate_counts c on c.game_date = v.game_date
+  left join latest_statcast s
+    on s.game_date = v.game_date
+   and s.game_id = v.game_id
+   and s.player_id = v.player_id
+)
+update mlb_home_run_predictions p
+set
+  v1_probability = c.v1_probability,
+  v1_rank = c.v1_rank,
+  statcast_probability = c.statcast_probability,
+  statcast_rank = c.statcast_rank,
+  statcast_available = c.statcast_available,
+  model_agreement = c.model_agreement,
+  consensus_score = c.consensus_score,
+  market_signal_rank = c.market_signal_rank
+from comparison c
+where p.game_date = c.game_date
+  and p.game_id = c.game_id
+  and p.player_id = c.player_id
+  and p.model_version in ('mlb-hr-v1', 'mlb-hr-torch-statcast-v1-blend');
 
 create or replace view mlb_home_run_predictions_latest
 with (security_invoker = true) as

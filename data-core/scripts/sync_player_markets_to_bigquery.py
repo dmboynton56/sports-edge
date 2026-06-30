@@ -96,6 +96,14 @@ TABLES = {
                 ("hr_probability", "FLOAT64", "REQUIRED"),
                 ("baseline_probability", "FLOAT64", "NULLABLE"),
                 ("rank", "INT64", "NULLABLE"),
+                ("v1_probability", "FLOAT64", "NULLABLE"),
+                ("v1_rank", "INT64", "NULLABLE"),
+                ("statcast_probability", "FLOAT64", "NULLABLE"),
+                ("statcast_rank", "INT64", "NULLABLE"),
+                ("statcast_available", "BOOL", "NULLABLE"),
+                ("model_agreement", "STRING", "NULLABLE"),
+                ("consensus_score", "FLOAT64", "NULLABLE"),
+                ("market_signal_rank", "INT64", "NULLABLE"),
                 ("games_since_last_hr", "INT64", "NULLABLE"),
                 ("last_hr_date", "DATE", "NULLABLE"),
                 ("confidence", "FLOAT64", "NULLABLE"),
@@ -120,6 +128,88 @@ def _clean(value: Any) -> Any:
     except (TypeError, ValueError):
         pass
     return value
+
+
+def _player_id(pred: dict[str, Any]) -> str:
+    return str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id"))
+
+
+def _prediction_key(pred: dict[str, Any]) -> tuple[str, str]:
+    return (str(pred.get("gameId")), _player_id(pred))
+
+
+def _comparison_lookup(payload: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
+    return {
+        _prediction_key(pred): pred
+        for pred in payload.get("predictions", [])
+        if pred.get("gameId") is not None
+    }
+
+
+def _quality_flags(pred: dict[str, Any]) -> list[str]:
+    value = pred.get("qualityFlags") or []
+    if isinstance(value, str):
+        try:
+            loaded = json.loads(value)
+            return loaded if isinstance(loaded, list) else []
+        except json.JSONDecodeError:
+            return [value]
+    return list(value)
+
+
+def _model_is_v1(model_version: str | None) -> bool:
+    return (model_version or "").startswith("mlb-hr-v1")
+
+
+def _model_is_statcast(model_version: str | None) -> bool:
+    return "statcast" in (model_version or "")
+
+
+def _comparison_value(pred: dict[str, Any], comparison: dict[str, Any] | None, key: str) -> Any:
+    if comparison and key in comparison:
+        return comparison.get(key)
+    return pred.get(key)
+
+
+def _comparison_fields(
+    pred: dict[str, Any],
+    comparison: dict[str, Any] | None,
+    model_version: str,
+) -> dict[str, Any]:
+    v1_probability = _comparison_value(pred, comparison, "v1Probability")
+    if v1_probability is None and _model_is_v1(model_version):
+        v1_probability = pred.get("modelProbability")
+    v1_rank = _comparison_value(pred, comparison, "v1Rank")
+    if v1_rank is None and _model_is_v1(model_version):
+        v1_rank = pred.get("rank")
+
+    statcast_probability = _comparison_value(pred, comparison, "statcastProbability")
+    if statcast_probability is None and _model_is_statcast(model_version):
+        statcast_probability = pred.get("modelProbability")
+    statcast_rank = _comparison_value(pred, comparison, "statcastRank")
+    if statcast_rank is None and _model_is_statcast(model_version):
+        statcast_rank = pred.get("rank")
+
+    statcast_available = _comparison_value(pred, comparison, "statcastAvailable")
+    if statcast_available is None and _model_is_statcast(model_version):
+        statcast_available = "statcast_features_unavailable" not in _quality_flags(pred)
+
+    model_agreement = _comparison_value(pred, comparison, "modelAgreement")
+    if model_agreement is None and _model_is_v1(model_version):
+        model_agreement = "V1 only"
+    elif model_agreement is None and statcast_available is False:
+        model_agreement = "Missing Statcast"
+
+    return {
+        "v1_probability": _clean(v1_probability),
+        "v1_rank": _clean(v1_rank),
+        "statcast_probability": _clean(statcast_probability),
+        "statcast_rank": _clean(statcast_rank),
+        "statcast_available": _clean(statcast_available),
+        "model_agreement": _clean(model_agreement),
+        "consensus_score": _clean(_comparison_value(pred, comparison, "consensusScore")),
+        "market_signal_rank": _clean(_comparison_value(pred, comparison, "marketSignalRank")),
+    }
 
 
 def _ensure_table(client: bigquery.Client, table_id: str, spec: dict[str, Any]) -> None:
@@ -235,6 +325,7 @@ def build_pga_rows(path: Path) -> tuple[list[dict[str, Any]], list[dict[str, Any
 def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     batches: list[tuple[list[dict[str, Any]], str, str]] = []
+    comparisons = _comparison_lookup(payload)
     models = payload.get("models")
     if isinstance(models, dict) and models:
         for model_key, model_payload in models.items():
@@ -242,12 +333,14 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
                 continue
             rows = []
             for pred in model_payload.get("predictions", []):
+                model_version = pred.get("modelVersion") or model_payload.get("modelVersion") or model_key
+                comparison = comparisons.get(_prediction_key(pred))
                 rows.append(
                     {
                         "game_id": pred.get("gameId"),
                         "game_date": pred.get("gameDate") or pred.get("eventTime", "")[:10],
                         "event_time": pred.get("eventTime"),
-                        "player_id": str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id")),
+                        "player_id": _player_id(pred),
                         "player_name": pred.get("player"),
                         "team": pred.get("team"),
                         "opponent": pred.get("opponent"),
@@ -258,10 +351,11 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
                         "hr_probability": pred.get("modelProbability"),
                         "baseline_probability": pred.get("baselineProbability"),
                         "rank": pred.get("rank"),
+                        **_comparison_fields(pred, comparison, model_version),
                         "games_since_last_hr": pred.get("gamesSinceLastHr"),
                         "last_hr_date": pred.get("lastHrDate"),
                         "confidence": pred.get("confidence"),
-                        "model_version": pred.get("modelVersion") or model_payload.get("modelVersion") or model_key,
+                        "model_version": model_version,
                         "prediction_ts": pred.get("updatedAt") or payload.get("generatedAt"),
                         "quality_flags": json.dumps(pred.get("qualityFlags") or []),
                         "top_features": json.dumps(pred.get("topFeatures") or []),
@@ -273,12 +367,13 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
 
     rows = []
     for pred in payload.get("predictions", []):
+        model_version = pred.get("modelVersion") or payload.get("modelVersion")
         rows.append(
             {
                 "game_id": pred.get("gameId"),
                 "game_date": pred.get("gameDate") or pred.get("eventTime", "")[:10],
                 "event_time": pred.get("eventTime"),
-                "player_id": str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id")),
+                "player_id": _player_id(pred),
                 "player_name": pred.get("player"),
                 "team": pred.get("team"),
                 "opponent": pred.get("opponent"),
@@ -289,10 +384,11 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
                 "hr_probability": pred.get("modelProbability"),
                 "baseline_probability": pred.get("baselineProbability"),
                 "rank": pred.get("rank"),
+                **_comparison_fields(pred, pred, model_version or ""),
                 "games_since_last_hr": pred.get("gamesSinceLastHr"),
                 "last_hr_date": pred.get("lastHrDate"),
                 "confidence": pred.get("confidence"),
-                "model_version": pred.get("modelVersion") or payload.get("modelVersion"),
+                "model_version": model_version,
                 "prediction_ts": pred.get("updatedAt") or payload.get("generatedAt"),
                 "quality_flags": json.dumps(pred.get("qualityFlags") or []),
                 "top_features": json.dumps(pred.get("topFeatures") or []),

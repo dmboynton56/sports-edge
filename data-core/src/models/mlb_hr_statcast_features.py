@@ -155,6 +155,24 @@ def _fetch_statcast_chunk(start: pd.Timestamp, end: pd.Timestamp, *, timeout: in
     return pd.read_csv(StringIO(response.text))
 
 
+def _statcast_cache_covers_window(
+    frame: pd.DataFrame,
+    start: pd.Timestamp,
+    end: pd.Timestamp,
+    *,
+    preseason_grace_days: int = 35,
+) -> bool:
+    if frame.empty or "game_date" not in frame.columns:
+        return False
+    dates = pd.to_datetime(frame["game_date"], errors="coerce").dropna()
+    if dates.empty:
+        return False
+    latest_ok = dates.max().normalize() >= end.normalize()
+    earliest_allowed = start.normalize() + pd.Timedelta(days=preseason_grace_days)
+    earliest_ok = dates.min().normalize() <= earliest_allowed
+    return bool(latest_ok and earliest_ok)
+
+
 def fetch_statcast(
     start: pd.Timestamp,
     end: pd.Timestamp,
@@ -167,7 +185,7 @@ def fetch_statcast(
 ) -> pd.DataFrame:
     if cache.exists() and not refresh:
         cached = pd.read_csv(cache)
-        if not cached.empty:
+        if _statcast_cache_covers_window(cached, start, end):
             return cached
 
     frames = []

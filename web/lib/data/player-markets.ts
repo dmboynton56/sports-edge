@@ -81,6 +81,14 @@ type SupabaseMlbHrRow = {
   games_since_last_hr: number | null;
   last_hr_date: string | null;
   rank: number | null;
+  v1_probability: number | null;
+  v1_rank: number | null;
+  statcast_probability: number | null;
+  statcast_rank: number | null;
+  statcast_available: boolean | null;
+  model_agreement: string | null;
+  consensus_score: number | null;
+  market_signal_rank: number | null;
   confidence: number | null;
   model_version: string;
   prediction_ts: string | null;
@@ -104,6 +112,8 @@ type SupabaseMlbHrEdgeRow = SupabaseMlbHrRow & {
 };
 
 function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
+  const isV1 = row.model_version.startsWith(MLB_HR_V1_MODEL);
+  const isStatcast = row.model_version === MLB_HR_STATCAST_BLEND_MODEL;
   return {
     id: `${row.game_id}-${row.player_id}-hr`,
     sport: "MLB",
@@ -138,13 +148,14 @@ function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
     rank: row.rank,
     qualityFlags: row.quality_flags ?? [],
     topFeatures: row.top_features ?? [],
-    v1Probability: row.hr_probability,
-    v1Rank: row.rank,
-    statcastProbability: null,
-    statcastRank: null,
-    statcastAvailable: null,
-    modelAgreement: "V1 only",
-    consensusScore: row.rank,
+    v1Probability: row.v1_probability ?? (isV1 ? row.hr_probability : null),
+    v1Rank: row.v1_rank ?? (isV1 ? row.rank : null),
+    statcastProbability: row.statcast_probability ?? (isStatcast ? row.hr_probability : null),
+    statcastRank: row.statcast_rank ?? (isStatcast ? row.rank : null),
+    statcastAvailable: row.statcast_available,
+    modelAgreement: row.model_agreement ?? (isV1 ? "V1 only" : null),
+    consensusScore: row.consensus_score ?? row.rank,
+    marketSignalRank: row.market_signal_rank,
   };
 }
 
@@ -286,9 +297,17 @@ function buildBoardFromSupabaseRows(
     const missingOdds = model.predictions.filter(
       (row) => row.oddsStatus === "missing_odds",
     ).length;
-    model.gaps = missingOdds
-      ? [`Missing sportsbook odds for ${missingOdds} MLB home run candidates.`]
-      : [];
+    const missingStatcast = model.predictions.filter(
+      (row) => row.modelAgreement === "Missing Statcast" || row.statcastAvailable === false,
+    ).length;
+    model.gaps = [
+      missingOdds
+        ? `Missing sportsbook odds for ${missingOdds} MLB home run candidates.`
+        : null,
+      missingStatcast
+        ? `Statcast features unavailable for ${missingStatcast} candidates; those rows use the V1 fallback.`
+        : null,
+    ].filter(Boolean) as string[];
   }
 
   const availableModels = Object.keys(models);

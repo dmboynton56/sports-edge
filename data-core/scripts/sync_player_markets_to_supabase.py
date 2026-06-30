@@ -48,6 +48,88 @@ def _clean(value: Any) -> Any:
     return value
 
 
+def _player_id(pred: dict[str, Any]) -> str:
+    return str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id"))
+
+
+def _prediction_key(pred: dict[str, Any]) -> tuple[str, str]:
+    return (str(pred.get("gameId")), _player_id(pred))
+
+
+def _comparison_lookup(payload: dict[str, Any]) -> dict[tuple[str, str], dict[str, Any]]:
+    return {
+        _prediction_key(pred): pred
+        for pred in payload.get("predictions", [])
+        if pred.get("gameId") is not None
+    }
+
+
+def _quality_flags(pred: dict[str, Any]) -> list[str]:
+    value = pred.get("qualityFlags") or []
+    if isinstance(value, str):
+        try:
+            loaded = json.loads(value)
+            return loaded if isinstance(loaded, list) else []
+        except json.JSONDecodeError:
+            return [value]
+    return list(value)
+
+
+def _model_is_v1(model_version: str | None) -> bool:
+    return (model_version or "").startswith("mlb-hr-v1")
+
+
+def _model_is_statcast(model_version: str | None) -> bool:
+    return "statcast" in (model_version or "")
+
+
+def _comparison_value(pred: dict[str, Any], comparison: dict[str, Any] | None, key: str) -> Any:
+    if comparison and key in comparison:
+        return comparison.get(key)
+    return pred.get(key)
+
+
+def _comparison_fields(
+    pred: dict[str, Any],
+    comparison: dict[str, Any] | None,
+    model_version: str,
+) -> tuple[Any, Any, Any, Any, Any, Any, Any, Any]:
+    v1_probability = _comparison_value(pred, comparison, "v1Probability")
+    if v1_probability is None and _model_is_v1(model_version):
+        v1_probability = pred.get("modelProbability")
+    v1_rank = _comparison_value(pred, comparison, "v1Rank")
+    if v1_rank is None and _model_is_v1(model_version):
+        v1_rank = pred.get("rank")
+
+    statcast_probability = _comparison_value(pred, comparison, "statcastProbability")
+    if statcast_probability is None and _model_is_statcast(model_version):
+        statcast_probability = pred.get("modelProbability")
+    statcast_rank = _comparison_value(pred, comparison, "statcastRank")
+    if statcast_rank is None and _model_is_statcast(model_version):
+        statcast_rank = pred.get("rank")
+
+    statcast_available = _comparison_value(pred, comparison, "statcastAvailable")
+    if statcast_available is None and _model_is_statcast(model_version):
+        statcast_available = "statcast_features_unavailable" not in _quality_flags(pred)
+
+    model_agreement = _comparison_value(pred, comparison, "modelAgreement")
+    if model_agreement is None and _model_is_v1(model_version):
+        model_agreement = "V1 only"
+    elif model_agreement is None and statcast_available is False:
+        model_agreement = "Missing Statcast"
+
+    return (
+        _clean(v1_probability),
+        _clean(v1_rank),
+        _clean(statcast_probability),
+        _clean(statcast_rank),
+        _clean(statcast_available),
+        _clean(model_agreement),
+        _clean(_comparison_value(pred, comparison, "consensusScore")),
+        _clean(_comparison_value(pred, comparison, "marketSignalRank")),
+    )
+
+
 def sync_pga(conn, path: Path) -> tuple[int, int]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     event = payload["event"]
@@ -153,16 +235,19 @@ def _iter_mlb_prediction_payloads(payload: dict[str, Any]) -> list[tuple[str, li
 
 def sync_mlb(conn, path: Path) -> int:
     payload = json.loads(path.read_text(encoding="utf-8"))
+    comparisons = _comparison_lookup(payload)
     total = 0
     for model_version, predictions, _ in _iter_mlb_prediction_payloads(payload):
         rows = []
         for pred in predictions:
+            sync_model_version = pred.get("modelVersion") or model_version
+            comparison = comparisons.get(_prediction_key(pred))
             rows.append(
                 (
                     pred.get("gameId"),
                     pred.get("gameDate") or pred.get("eventTime", "")[:10],
                     pred.get("eventTime"),
-                    str(pred.get("playerId") or pred.get("player_id") or pred.get("player") or pred.get("id")),
+                    _player_id(pred),
                     pred.get("player"),
                     pred.get("team"),
                     pred.get("opponent"),
@@ -173,10 +258,11 @@ def sync_mlb(conn, path: Path) -> int:
                     pred.get("modelProbability"),
                     pred.get("baselineProbability"),
                     pred.get("rank"),
+                    *_comparison_fields(pred, comparison, sync_model_version),
                     pred.get("gamesSinceLastHr"),
                     pred.get("lastHrDate"),
                     pred.get("confidence"),
-                    pred.get("modelVersion") or model_version,
+                    sync_model_version,
                     pred.get("updatedAt") or payload.get("generatedAt"),
                     json.dumps(pred.get("qualityFlags") or []),
                     json.dumps(pred.get("topFeatures") or []),
@@ -184,7 +270,7 @@ def sync_mlb(conn, path: Path) -> int:
             )
         if not rows:
             continue
-        sync_model_version = rows[0][17]
+        sync_model_version = rows[0][25]
         game_date = rows[0][1]
         with conn.cursor() as cur:
             cur.execute(
@@ -197,10 +283,17 @@ def sync_mlb(conn, path: Path) -> int:
                 insert into mlb_home_run_predictions (
                   game_id, game_date, event_time, player_id, player_name, team, opponent, venue,
                   lineup_slot, lineup_status, opposing_probable_pitcher, hr_probability,
-                  baseline_probability, rank, games_since_last_hr, last_hr_date, confidence,
+                  baseline_probability, rank, v1_probability, v1_rank, statcast_probability,
+                  statcast_rank, statcast_available, model_agreement, consensus_score,
+                  market_signal_rank, games_since_last_hr, last_hr_date, confidence,
                   model_version, prediction_ts, quality_flags, top_features
                 )
-                values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb)
+                values (
+                  %s, %s, %s, %s, %s, %s, %s, %s,
+                  %s, %s, %s, %s, %s, %s, %s, %s,
+                  %s, %s, %s, %s, %s, %s, %s, %s,
+                  %s, %s, %s, %s::jsonb, %s::jsonb
+                )
                 """,
                 rows,
             )

@@ -112,8 +112,10 @@ jobs:
           anchor = date.fromisoformat("${{ steps.dates.outputs.date }}")
           start = pd.Timestamp(anchor - timedelta(days=120))
           end = pd.Timestamp(anchor - timedelta(days=1))
-          fetch_statcast(start, end, cache=Path(DEFAULT_STATCAST_CACHE), refresh=False)
-          print(f"Statcast cache ready at {DEFAULT_STATCAST_CACHE}")
+          frame = fetch_statcast(start, end, cache=Path(DEFAULT_STATCAST_CACHE), refresh=False)
+          latest = pd.to_datetime(frame["game_date"], errors="coerce").max()
+          latest_text = latest.date() if pd.notna(latest) else "n/a"
+          print(f"Statcast cache ready at {DEFAULT_STATCAST_CACHE}; rows={len(frame)} latest={latest_text}")
           PY
 
       - name: Generate MLB home run probabilities
