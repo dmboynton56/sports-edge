@@ -265,6 +265,46 @@ function buildBoardFromPayload(payload: MlbHomeRunFeed, slateDate: string): MlbH
   };
 }
 
+function buildBoardFromSupabaseRows(
+  rows: MlbHomeRunPrediction[],
+  generatedAt: string | null,
+): MlbHomeRunBoardData {
+  const models: Record<string, MlbHomeRunModelFeed> = {};
+
+  for (const row of rows) {
+    const modelKey = row.modelVersion ?? MLB_HR_V1_MODEL;
+    const model = models[modelKey] ?? {
+      modelVersion: modelKey,
+      predictions: [],
+      gaps: [],
+    };
+    model.predictions.push(row);
+    models[modelKey] = model;
+  }
+
+  for (const model of Object.values(models)) {
+    const missingOdds = model.predictions.filter(
+      (row) => row.oddsStatus === "missing_odds",
+    ).length;
+    model.gaps = missingOdds
+      ? [`Missing sportsbook odds for ${missingOdds} MLB home run candidates.`]
+      : [];
+  }
+
+  const availableModels = Object.keys(models);
+  const defaultModel = availableModels.includes(MLB_HR_V1_MODEL)
+    ? MLB_HR_V1_MODEL
+    : availableModels[0] ?? MLB_HR_V1_MODEL;
+
+  return {
+    generatedAt,
+    productionStatus: "candidate",
+    defaultModel,
+    availableModels,
+    models,
+  };
+}
+
 function modelVersionFilter(modelVersion?: string): string {
   return modelVersion ? `&model_version=eq.${encodeURIComponent(modelVersion)}` : "";
 }
@@ -320,6 +360,26 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
 
 export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
   const slateDate = todayInTimeZone(MLB_SLATE_TIME_ZONE);
+  const edgeRows = await supabaseRest<SupabaseMlbHrEdgeRow>(
+    `mlb_home_run_edges_latest?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
+  );
+  if (edgeRows && edgeRows.length) {
+    return buildBoardFromSupabaseRows(
+      edgeRows.map(mapSupabaseMlbEdge),
+      edgeRows[0]?.prediction_ts ?? null,
+    );
+  }
+
+  const rows = await supabaseRest<SupabaseMlbHrRow>(
+    `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
+  );
+  if (rows && rows.length) {
+    return buildBoardFromSupabaseRows(
+      rows.map(mapSupabaseMlb),
+      rows[0]?.prediction_ts ?? null,
+    );
+  }
+
   try {
     const payload = JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
     return buildBoardFromPayload(payload, slateDate);
