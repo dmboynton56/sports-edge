@@ -99,7 +99,17 @@ def _load_world_elo(args: argparse.Namespace) -> Optional[pd.DataFrame]:
         return pd.read_csv(args.world_elo_csv)
     if args.skip_world_elo:
         return None
-    return fetch_world_football_elo(timeout=args.timeout)
+    cache = args.world_elo_cache or (args.output_dir / "world_football_elo.csv")
+    try:
+        return fetch_world_football_elo(timeout=args.timeout, cache=cache)
+    except Exception as exc:  # noqa: BLE001
+        if args.strict_world_elo:
+            raise
+        print(
+            f"WARNING: World Football Elo unavailable; continuing without Elo ratings: {exc}",
+            file=sys.stderr,
+        )
+        return None
 
 
 def _now_utc() -> datetime:
@@ -437,7 +447,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--espn-scoreboard-json", type=Path)
     parser.add_argument("--fifa-rankings-csv", type=Path)
     parser.add_argument("--world-elo-csv", type=Path)
+    parser.add_argument("--world-elo-cache", type=Path)
     parser.add_argument("--skip-world-elo", action="store_true")
+    parser.add_argument("--strict-world-elo", action="store_true")
     parser.add_argument("--recent-results-csv", type=Path)
     parser.add_argument("--world-cup-history-csv", type=Path)
     parser.add_argument("--player-form-csv", type=Path)

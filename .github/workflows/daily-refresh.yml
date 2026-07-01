@@ -165,10 +165,14 @@ jobs:
           anchor = date.fromisoformat("${{ steps.plan.outputs.anchor_date }}")
           start = pd.Timestamp(anchor - timedelta(days=120))
           end = pd.Timestamp(anchor - timedelta(days=1))
-          frame = fetch_statcast(start, end, cache=Path(DEFAULT_STATCAST_CACHE), refresh=False)
-          latest = pd.to_datetime(frame["game_date"], errors="coerce").max()
-          latest_text = latest.date() if pd.notna(latest) else "n/a"
-          print(f"Statcast cache ready at {DEFAULT_STATCAST_CACHE}; rows={len(frame)} latest={latest_text}")
+          try:
+              frame = fetch_statcast(start, end, cache=Path(DEFAULT_STATCAST_CACHE), refresh=False)
+          except Exception as exc:  # noqa: BLE001
+              print(f"WARNING: Statcast preload failed; MLB HR generation will continue with fallback scoring if needed: {exc}")
+          else:
+              latest = pd.to_datetime(frame.get("game_date", pd.Series(dtype=object)), errors="coerce").max()
+              latest_text = latest.date() if pd.notna(latest) else "n/a"
+              print(f"Statcast cache ready at {DEFAULT_STATCAST_CACHE}; rows={len(frame)} latest={latest_text}")
           PY
 
       - name: Generate MLB HR Markets

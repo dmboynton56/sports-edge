@@ -1,17 +1,31 @@
 import json
 
 import pandas as pd
+import pytest
+import requests
 
 from src.data.world_cup_sources import (
     build_team_rating_inputs,
     derive_round_of_32_slots,
     extract_espn_team_form,
+    fetch_world_football_elo,
     normalize_fixtures_for_model,
     parse_world_football_elo_tsv,
     parse_espn_world_cup_scoreboard,
 )
 from src.models.world_cup import Fixture, TeamRating, WorldCupRatingModel, WorldCupTournamentSimulator
 from scripts.predict_world_cup import build_payload
+
+
+class _Response:
+    def __init__(self, status_code: int, text: str = "") -> None:
+        self.status_code = status_code
+        self.text = text
+        self.headers: dict[str, str] = {}
+
+    def raise_for_status(self) -> None:
+        if self.status_code >= 400:
+            raise requests.HTTPError(f"{self.status_code} error")
 
 
 def test_parse_espn_scoreboard_payload_extracts_completed_fixture():
@@ -125,6 +139,63 @@ def test_parse_world_football_elo_current_tsv_maps_country_codes():
     rows = ratings.set_index("team")
     assert rows.loc["Spain", "elo"] == 2157
     assert rows.loc["United States", "elo_rank"] == 2
+
+
+def test_fetch_world_football_elo_retries_transient_415(monkeypatch):
+    ratings_tsv = "1\t1\tES\t2157\t1\n2\t2\tUS\t1811\t1\n"
+    teams_tsv = "ES\tSpain\nUS\tUnited States\n"
+    responses = [_Response(415), _Response(200, ratings_tsv), _Response(200, teams_tsv)]
+    calls = []
+
+    def get(url, *, timeout, headers):
+        calls.append((url, timeout, headers))
+        return responses.pop(0)
+
+    monkeypatch.setattr("src.data.world_cup_sources.requests.get", get)
+    monkeypatch.setattr("src.data.world_cup_sources.time.sleep", lambda *_args, **_kwargs: None)
+
+    ratings = fetch_world_football_elo(timeout=1, max_attempts=2, retry_sleep=0)
+
+    assert len(calls) == 3
+    assert calls[0][2]["Accept"].startswith("text/tab-separated-values")
+    assert ratings.set_index("team").loc["Spain", "elo"] == 2157
+
+
+def test_fetch_world_football_elo_retries_timeout(monkeypatch):
+    ratings_tsv = "1\t1\tES\t2157\t1\n"
+    teams_tsv = "ES\tSpain\n"
+    responses = [requests.Timeout("temporary timeout"), _Response(200, ratings_tsv), _Response(200, teams_tsv)]
+    calls = []
+
+    def get(url, *, timeout, headers):
+        calls.append((url, timeout, headers))
+        response = responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        return response
+
+    monkeypatch.setattr("src.data.world_cup_sources.requests.get", get)
+    monkeypatch.setattr("src.data.world_cup_sources.time.sleep", lambda *_args, **_kwargs: None)
+
+    ratings = fetch_world_football_elo(timeout=1, max_attempts=2, retry_sleep=0)
+
+    assert len(calls) == 3
+    assert ratings.set_index("team").loc["Spain", "elo"] == 2157
+
+
+def test_fetch_world_football_elo_uses_cache_after_fetch_failure(tmp_path, monkeypatch):
+    cache = tmp_path / "world_football_elo.csv"
+    pd.DataFrame({"team": ["United States"], "elo": [1811], "elo_rank": [2]}).to_csv(cache, index=False)
+
+    def get(url, *, timeout, headers):
+        return _Response(415)
+
+    monkeypatch.setattr("src.data.world_cup_sources.requests.get", get)
+
+    with pytest.warns(RuntimeWarning, match="using cached ratings"):
+        ratings = fetch_world_football_elo(timeout=1, cache=cache, max_attempts=1)
+
+    assert ratings.set_index("team").loc["United States", "elo"] == 1811
 
 
 def test_build_team_rating_inputs_blends_strength_form_history_and_players():

@@ -12,8 +12,10 @@ from io import StringIO
 import json
 from pathlib import Path
 import re
+import time
 from typing import Iterable, Optional, Sequence
 import unicodedata
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -23,6 +25,11 @@ import requests
 ESPN_WORLD_CUP_SCOREBOARD_URL = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard"
 WORLD_FOOTBALL_ELO_TSV_URL = "https://www.eloratings.net/World.tsv"
 WORLD_FOOTBALL_ELO_TEAMS_URL = "https://www.eloratings.net/en.teams.tsv"
+WORLD_FOOTBALL_ELO_HEADERS = {
+    "User-Agent": "SportsEdge/1.0",
+    "Accept": "text/tab-separated-values,text/plain;q=0.9,*/*;q=0.8",
+}
+RETRYABLE_WORLD_ELO_STATUSES = {408, 415, 425, 429, 500, 502, 503, 504}
 HOST_TEAMS_2026 = ("Canada", "Mexico", "United States")
 PLACEHOLDER_TEAMS = {"", "TBD", "To Be Determined", "Winner Match", "Runner-up"}
 CANONICAL_TEAM_ALIASES = {
@@ -342,23 +349,83 @@ def parse_world_football_elo_tsv(ratings_tsv: str, teams_tsv: Optional[str] = No
     return out[["team", "elo", "elo_rank"]].dropna(subset=["team", "elo"]).drop_duplicates(subset=["team"])
 
 
+def _fetch_world_elo_text(
+    url: str,
+    *,
+    timeout: int,
+    max_attempts: int,
+    retry_sleep: float,
+) -> str:
+    attempts = max(int(max_attempts), 1)
+    last_error: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        response: requests.Response | None = None
+        try:
+            response = requests.get(url, timeout=timeout, headers=WORLD_FOOTBALL_ELO_HEADERS)
+            if response.status_code in RETRYABLE_WORLD_ELO_STATUSES:
+                response.raise_for_status()
+            response.raise_for_status()
+            return response.text
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as exc:
+            last_error = exc
+            status_code = response.status_code if response is not None else None
+            retryable = status_code in RETRYABLE_WORLD_ELO_STATUSES or status_code is None
+            if not retryable or attempt == attempts:
+                raise
+            retry_after = response.headers.get("Retry-After") if response is not None else None
+            try:
+                delay = float(retry_after) if retry_after else retry_sleep * (2 ** (attempt - 1))
+            except ValueError:
+                delay = retry_sleep * (2 ** (attempt - 1))
+            time.sleep(max(delay, 0.0))
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError(f"Unable to fetch World Football Elo text from {url}")
+
+
 def fetch_world_football_elo(
     url: str = WORLD_FOOTBALL_ELO_TSV_URL,
     *,
     teams_url: str = WORLD_FOOTBALL_ELO_TEAMS_URL,
     timeout: int = 30,
+    cache: Optional[Path] = None,
+    max_attempts: int = 3,
+    retry_sleep: float = 2.0,
 ) -> pd.DataFrame:
     """Fetch current World Football Elo ratings from the public TSV files."""
 
-    response = requests.get(url, timeout=timeout, headers={"User-Agent": "SportsEdge/1.0"})
-    response.raise_for_status()
-    if url.endswith("World.tsv") or not response.text.lower().startswith(("team", "country", "rank")):
-        teams_response = requests.get(teams_url, timeout=timeout, headers={"User-Agent": "SportsEdge/1.0"})
-        teams_response.raise_for_status()
-        return parse_world_football_elo_tsv(response.text, teams_response.text)
+    try:
+        ratings_text = _fetch_world_elo_text(
+            url,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            retry_sleep=retry_sleep,
+        )
+        if url.endswith("World.tsv") or not ratings_text.lower().startswith(("team", "country", "rank")):
+            teams_text = _fetch_world_elo_text(
+                teams_url,
+                timeout=timeout,
+                max_attempts=max_attempts,
+                retry_sleep=retry_sleep,
+            )
+            ratings = parse_world_football_elo_tsv(ratings_text, teams_text)
+        else:
+            raw = pd.read_csv(StringIO(ratings_text), sep="\t")
+            ratings = normalize_world_football_elo(raw)
+    except (requests.RequestException, ValueError, pd.errors.ParserError) as exc:
+        if cache and cache.exists():
+            warnings.warn(
+                f"World Football Elo fetch failed; using cached ratings at {cache}: {exc}",
+                RuntimeWarning,
+            )
+            return pd.read_csv(cache)
+        raise
 
-    raw = pd.read_csv(StringIO(response.text), sep="\t")
-    return normalize_world_football_elo(raw)
+    if cache:
+        cache.parent.mkdir(parents=True, exist_ok=True)
+        ratings.to_csv(cache, index=False)
+    return ratings
+
 
 
 def extract_espn_team_form(fixtures: pd.DataFrame) -> pd.DataFrame:

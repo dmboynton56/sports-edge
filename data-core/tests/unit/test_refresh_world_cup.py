@@ -1,10 +1,13 @@
 from datetime import date, datetime, timezone
+import argparse
 import json
 
 import pandas as pd
+import pytest
 
 from scripts.refresh_world_cup import (
     DEFAULT_MODEL_VERSION,
+    _load_world_elo,
     build_bigquery_frames,
     build_output_paths,
     tournament_window_for_season,
@@ -140,3 +143,41 @@ def test_build_bigquery_frames_maps_payload_to_warehouse_tables():
     assert len(frames[("sports_edge_raw", "raw_world_elo")]) == 1
     assert len(frames[("sports_edge_raw", "raw_fifa_rankings")]) == 1
     assert len(frames[("sports_edge_curated", "wc_simulation_runs")]) == 1
+
+
+def test_load_world_elo_continues_without_optional_live_source(tmp_path, monkeypatch, capsys):
+    args = argparse.Namespace(
+        world_elo_csv=None,
+        skip_world_elo=False,
+        world_elo_cache=None,
+        output_dir=tmp_path,
+        timeout=1,
+        strict_world_elo=False,
+    )
+
+    def fail_fetch(*args, **kwargs):
+        raise RuntimeError("Elo service unavailable")
+
+    monkeypatch.setattr("scripts.refresh_world_cup.fetch_world_football_elo", fail_fetch)
+
+    assert _load_world_elo(args) is None
+    assert "continuing without Elo ratings" in capsys.readouterr().err
+
+
+def test_load_world_elo_strict_mode_reraises_source_failure(tmp_path, monkeypatch):
+    args = argparse.Namespace(
+        world_elo_csv=None,
+        skip_world_elo=False,
+        world_elo_cache=None,
+        output_dir=tmp_path,
+        timeout=1,
+        strict_world_elo=True,
+    )
+
+    def fail_fetch(*args, **kwargs):
+        raise RuntimeError("Elo service unavailable")
+
+    monkeypatch.setattr("scripts.refresh_world_cup.fetch_world_football_elo", fail_fetch)
+
+    with pytest.raises(RuntimeError, match="Elo service unavailable"):
+        _load_world_elo(args)

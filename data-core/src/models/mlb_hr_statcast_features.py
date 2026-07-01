@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import time
+import warnings
 from datetime import date, datetime, timezone
 from io import StringIO
 from pathlib import Path
@@ -22,6 +23,7 @@ OFFSPEED_TYPES = {"CH", "FS", "FO", "SC", "KN", "EP"}
 
 DEFAULT_STATCAST_CACHE = Path(__file__).resolve().parents[2] / "notebooks" / "cache" / "mlb_statcast_2026.csv"
 DEFAULT_HANDEDNESS_CACHE = Path(__file__).resolve().parents[2] / "notebooks" / "cache" / "mlb_player_handedness_cache.json"
+RETRYABLE_STATCAST_STATUSES = {408, 425, 429, 500, 502, 503, 504}
 
 
 def _normalize_hand(value: Any) -> str:
@@ -137,22 +139,62 @@ def _date_chunks(start: pd.Timestamp, end: pd.Timestamp, days: int) -> list[tupl
     return chunks
 
 
-def _fetch_statcast_chunk(start: pd.Timestamp, end: pd.Timestamp, *, timeout: int) -> pd.DataFrame:
-    response = requests.get(
-        SAVANT_CSV_URL,
-        params={
-            "all": "true",
-            "type": "details",
-            "player_type": "batter",
-            "game_date_gt": start.strftime("%Y-%m-%d"),
-            "game_date_lt": end.strftime("%Y-%m-%d"),
-        },
-        timeout=timeout,
-    )
-    response.raise_for_status()
-    if not response.text.strip():
+def _retry_delay_seconds(response: requests.Response | None, *, attempt: int, retry_sleep: float) -> float:
+    if response is not None:
+        retry_after = response.headers.get("Retry-After")
+        if retry_after:
+            try:
+                return max(float(retry_after), 0.0)
+            except ValueError:
+                pass
+    return max(retry_sleep * (2 ** (attempt - 1)), 0.0)
+
+
+def _read_csv_cache(path: Path) -> pd.DataFrame:
+    try:
+        return pd.read_csv(path)
+    except pd.errors.EmptyDataError:
         return pd.DataFrame()
-    return pd.read_csv(StringIO(response.text))
+
+
+def _fetch_statcast_chunk(
+    start: pd.Timestamp,
+    end: pd.Timestamp,
+    *,
+    timeout: int,
+    max_attempts: int = 3,
+    retry_sleep: float = 2.0,
+) -> pd.DataFrame:
+    params = {
+        "all": "true",
+        "type": "details",
+        "player_type": "batter",
+        "game_date_gt": start.strftime("%Y-%m-%d"),
+        "game_date_lt": end.strftime("%Y-%m-%d"),
+    }
+    attempts = max(int(max_attempts), 1)
+    last_error: Exception | None = None
+    for attempt in range(1, attempts + 1):
+        response: requests.Response | None = None
+        try:
+            response = requests.get(SAVANT_CSV_URL, params=params, timeout=timeout)
+            if response.status_code in RETRYABLE_STATCAST_STATUSES:
+                response.raise_for_status()
+            response.raise_for_status()
+            if not response.text.strip():
+                return pd.DataFrame()
+            return pd.read_csv(StringIO(response.text))
+        except (requests.ConnectionError, requests.Timeout, requests.HTTPError) as exc:
+            last_error = exc
+            status_code = response.status_code if response is not None else None
+            retryable = status_code in RETRYABLE_STATCAST_STATUSES or status_code is None
+            if not retryable or attempt == attempts:
+                raise
+            time.sleep(_retry_delay_seconds(response, attempt=attempt, retry_sleep=retry_sleep))
+
+    if last_error is not None:
+        raise last_error
+    return pd.DataFrame()
 
 
 def _statcast_cache_covers_window(
@@ -183,29 +225,51 @@ def fetch_statcast(
     timeout: int = 60,
     sleep: float = 0.25,
 ) -> pd.DataFrame:
+    cached = pd.DataFrame()
     if cache.exists() and not refresh:
-        cached = pd.read_csv(cache)
+        cached = _read_csv_cache(cache)
         if _statcast_cache_covers_window(cached, start, end):
             return cached
 
     frames = []
+    fetch_errors: list[str] = []
     chunk_dir = cache.with_suffix("")
     chunk_dir.mkdir(parents=True, exist_ok=True)
     for chunk_start, chunk_end in _date_chunks(start, end, chunk_days):
         chunk_path = chunk_dir / f"statcast_{chunk_start:%Y%m%d}_{chunk_end:%Y%m%d}.csv"
         if chunk_path.exists() and not refresh:
-            frame = pd.read_csv(chunk_path)
+            frame = _read_csv_cache(chunk_path)
         else:
-            frame = _fetch_statcast_chunk(chunk_start, chunk_end, timeout=timeout)
-            frame.to_csv(chunk_path, index=False)
+            try:
+                frame = _fetch_statcast_chunk(chunk_start, chunk_end, timeout=timeout)
+            except (requests.RequestException, pd.errors.ParserError) as exc:
+                fetch_errors.append(f"{chunk_start.date()} through {chunk_end.date()}: {exc}")
+                frame = _read_csv_cache(chunk_path) if chunk_path.exists() else pd.DataFrame()
+            else:
+                if not frame.empty:
+                    frame.to_csv(chunk_path, index=False)
         if not frame.empty:
             frames.append(frame)
         time.sleep(sleep)
 
+    if fetch_errors and not cached.empty:
+        frames.append(cached)
+
     if not frames:
-        if cache.exists():
-            return pd.read_csv(cache)
+        if not cached.empty:
+            warnings.warn(
+                "Statcast refresh failed for every requested chunk; using stale Statcast cache.",
+                RuntimeWarning,
+            )
+            return cached
         raise ValueError("No Statcast rows returned for requested date range.")
+
+    if fetch_errors:
+        warnings.warn(
+            "Statcast refresh used partial/stale cache after fetch errors: " + "; ".join(fetch_errors),
+            RuntimeWarning,
+        )
+
     out = pd.concat(frames, ignore_index=True).drop_duplicates()
     cache.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(cache, index=False)
