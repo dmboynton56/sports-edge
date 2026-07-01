@@ -11,7 +11,7 @@ import {
   type MlbHomeRunModelFeed,
   type MlbHomeRunPrediction,
 } from "@/lib/data/mlb-hr-board";
-import { getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
 
 export {
   getMlbHomeRunModelLabel,
@@ -46,6 +46,17 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   });
   if (!response.ok) return null;
   return (await response.json()) as T[];
+}
+
+function uniqueGaps(gaps: (string | null | undefined)[]): string[] {
+  return Array.from(new Set(gaps.filter(Boolean) as string[]));
+}
+
+function supabaseConfigGaps(): string[] {
+  const missingEnv = getSupabaseMissingEnv();
+  return missingEnv.length
+    ? [`Supabase live feed unavailable: missing ${missingEnv.join(", ")}.`]
+    : [];
 }
 
 function todayInTimeZone(timeZone: string): string {
@@ -185,6 +196,7 @@ function buildFeedFromPayload(
   payload: MlbHomeRunFeed,
   slateDate: string,
   modelVersion?: string,
+  fallbackGaps: string[] = [],
 ): MlbHomeRunFeed {
   const defaultModel = payload.defaultModel ?? MLB_HR_V1_MODEL;
   const targetModel = modelVersion ?? defaultModel;
@@ -200,7 +212,8 @@ function buildFeedFromPayload(
       modelVersion: modelPayload.modelVersion ?? targetModel,
       productionStatus: payload.productionStatus ?? "candidate",
       predictions,
-      gaps: modelPayload.gaps ?? [],
+      gaps: uniqueGaps([...fallbackGaps, ...(modelPayload.gaps ?? [])]),
+      dataSource: "static_json",
       models: payload.models,
     };
   }
@@ -213,13 +226,20 @@ function buildFeedFromPayload(
     ...payload,
     defaultModel,
     predictions,
-    gaps: predictions.length
-      ? existingGaps
-      : [...existingGaps, `No MLB home run predictions available for ${slateDate}.`],
+    gaps: uniqueGaps([
+      ...fallbackGaps,
+      ...existingGaps,
+      predictions.length ? null : `No MLB home run predictions available for ${slateDate}.`,
+    ]),
+    dataSource: "static_json",
   };
 }
 
-function buildBoardFromPayload(payload: MlbHomeRunFeed, slateDate: string): MlbHomeRunBoardData {
+function buildBoardFromPayload(
+  payload: MlbHomeRunFeed,
+  slateDate: string,
+  fallbackGaps: string[] = [],
+): MlbHomeRunBoardData {
   const defaultModel = payload.defaultModel ?? MLB_HR_V1_MODEL;
   const models: Record<string, MlbHomeRunModelFeed> = {};
 
@@ -239,6 +259,8 @@ function buildBoardFromPayload(payload: MlbHomeRunFeed, slateDate: string): MlbH
           gaps: payload.gaps ?? [],
         },
       },
+      gaps: fallbackGaps,
+      dataSource: "static_json",
     };
   }
 
@@ -263,6 +285,11 @@ function buildBoardFromPayload(payload: MlbHomeRunFeed, slateDate: string): MlbH
       defaultModel,
       availableModels: [],
       models: {},
+      gaps: uniqueGaps([
+        ...fallbackGaps,
+        `No MLB home run predictions available for ${slateDate}.`,
+      ]),
+      dataSource: "static_json",
     };
   }
 
@@ -273,12 +300,15 @@ function buildBoardFromPayload(payload: MlbHomeRunFeed, slateDate: string): MlbH
     defaultModel: availableModels.includes(defaultModel) ? defaultModel : availableModels[0] ?? defaultModel,
     availableModels,
     models,
+    gaps: fallbackGaps,
+    dataSource: "static_json",
   };
 }
 
 function buildBoardFromSupabaseRows(
   rows: MlbHomeRunPrediction[],
   generatedAt: string | null,
+  dataSource: MlbHomeRunBoardData["dataSource"],
 ): MlbHomeRunBoardData {
   const models: Record<string, MlbHomeRunModelFeed> = {};
 
@@ -321,6 +351,8 @@ function buildBoardFromSupabaseRows(
     defaultModel,
     availableModels,
     models,
+    gaps: [],
+    dataSource,
   };
 }
 
@@ -345,6 +377,7 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
       gaps: missingOdds
         ? [`Missing sportsbook odds for ${missingOdds} MLB home run candidates.`]
         : [],
+      dataSource: "supabase_edges",
     };
   }
 
@@ -359,12 +392,13 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
       productionStatus: "candidate",
       predictions: rows.map(mapSupabaseMlb),
       gaps: [],
+      dataSource: "supabase_predictions",
     };
   }
 
   try {
     const payload = JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
-    return buildFeedFromPayload(payload, slateDate, modelVersion);
+    return buildFeedFromPayload(payload, slateDate, modelVersion, supabaseConfigGaps());
   } catch {
     return {
       generatedAt: null,
@@ -372,7 +406,11 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
       modelVersion: "mlb-hr-v1-heuristic",
       productionStatus: "candidate",
       predictions: [],
-      gaps: ["No MLB home run artifact found at web/public/data/mlb_home_runs.json."],
+      gaps: uniqueGaps([
+        ...supabaseConfigGaps(),
+        "No MLB home run artifact found at web/public/data/mlb_home_runs.json.",
+      ]),
+      dataSource: "unavailable",
     };
   }
 }
@@ -386,6 +424,7 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
     return buildBoardFromSupabaseRows(
       edgeRows.map(mapSupabaseMlbEdge),
       edgeRows[0]?.prediction_ts ?? null,
+      "supabase_edges",
     );
   }
 
@@ -396,12 +435,13 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
     return buildBoardFromSupabaseRows(
       rows.map(mapSupabaseMlb),
       rows[0]?.prediction_ts ?? null,
+      "supabase_predictions",
     );
   }
 
   try {
     const payload = JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
-    return buildBoardFromPayload(payload, slateDate);
+    return buildBoardFromPayload(payload, slateDate, supabaseConfigGaps());
   } catch {
     const fallback = await getMlbHomeRunFeed();
     return {
@@ -418,6 +458,8 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
             },
           }
         : {},
+      gaps: fallback.gaps,
+      dataSource: fallback.dataSource ?? "unavailable",
     };
   }
 }

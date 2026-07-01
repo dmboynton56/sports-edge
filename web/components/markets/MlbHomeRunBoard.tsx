@@ -249,6 +249,7 @@ export function MlbHomeRunBoard({ board }: MlbHomeRunBoardProps) {
     ? board.defaultModel
     : board.availableModels[0] ?? board.defaultModel;
   const activeFeed = board.models[activeModel];
+  const gaps = Array.from(new Set([...(board.gaps ?? []), ...(activeFeed?.gaps ?? [])]));
   const rows = useMemo(
     () => sortRows(activeFeed?.predictions ?? []),
     [activeFeed?.predictions],
@@ -257,7 +258,7 @@ export function MlbHomeRunBoard({ board }: MlbHomeRunBoardProps) {
   if (!board.availableModels.length) {
     return (
       <div className="mt-4 flex flex-wrap gap-2">
-        {(board.models[board.defaultModel]?.gaps ?? ["No MLB home run predictions available."]).map((gap) => (
+        {(gaps.length ? gaps : ["No MLB home run predictions available."]).map((gap) => (
           <Badge key={gap} variant="missing">
             {gap}
           </Badge>
@@ -268,9 +269,9 @@ export function MlbHomeRunBoard({ board }: MlbHomeRunBoardProps) {
 
   return (
     <div className="mt-4 space-y-4">
-      {activeFeed?.gaps.length ? (
+      {gaps.length ? (
         <div className="flex flex-wrap gap-2">
-          {activeFeed.gaps.map((gap) => (
+          {gaps.map((gap) => (
             <Badge key={gap} variant="missing">
               {gap}
             </Badge>

@@ -45,6 +45,7 @@ export type MlbHomeRunFeed = {
   productionStatus: "candidate" | "approved" | "blocked";
   predictions: MlbHomeRunPrediction[];
   gaps: string[];
+  dataSource?: "supabase_edges" | "supabase_predictions" | "static_json" | "unavailable";
   models?: Record<string, MlbHomeRunModelFeed>;
 };
 
@@ -54,6 +55,8 @@ export type MlbHomeRunBoardData = {
   defaultModel: string;
   availableModels: string[];
   models: Record<string, MlbHomeRunModelFeed>;
+  gaps: string[];
+  dataSource: NonNullable<MlbHomeRunFeed["dataSource"]>;
 };
 
 export const MLB_HR_V1_MODEL = "mlb-hr-v1";
