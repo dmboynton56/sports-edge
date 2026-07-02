@@ -64,6 +64,11 @@ data-core/models/*_nfl_v2.pkl
 data-core/models/mlb_winner_model_v[12]*
 data-core/models/td_scorer_model_nfl_*.pkl
 
+# Node / Next.js
+node_modules/
+.next/
+*.tsbuildinfo
+
 # IDE
 .vscode/
 .idea/

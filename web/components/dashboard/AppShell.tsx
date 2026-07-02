@@ -83,15 +83,21 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function ThemeToggle() {
-  const [dark, setDark] = useState(() => {
-    if (typeof window === "undefined") return true;
-    const stored = window.localStorage.getItem("sports-edge-theme");
-    return stored ? stored === "dark" : true;
-  });
+  const [dark, setDark] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    const stored = window.localStorage.getItem("sports-edge-theme");
+    const prefersDark = stored ? stored === "dark" : true;
+    setDark(prefersDark);
+    document.documentElement.classList.toggle("dark", prefersDark);
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
+  }, [dark, mounted]);
 
   function toggle() {
     const next = !dark;
@@ -104,7 +110,7 @@ function ThemeToggle() {
     <Tooltip>
       <TooltipTrigger asChild>
         <Button variant="outline" size="icon" onClick={toggle} aria-label="Toggle theme">
-          {dark ? <Moon /> : <Sun />}
+          {mounted && !dark ? <Sun /> : <Moon />}
         </Button>
       </TooltipTrigger>
       <TooltipContent>Switch black/white mode</TooltipContent>
