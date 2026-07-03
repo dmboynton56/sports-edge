@@ -35,12 +35,15 @@ concurrency:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   PYTHONPATH: ${{ github.workspace }}/data-core
-  RUN_PGA: ${{ github.event.inputs.run_pga || 'true' }}
+  RUN_PGA: ${{ github.event.inputs.run_pga || 'false' }}
   RUN_MLB_HR: ${{ github.event.inputs.run_mlb_hr || 'true' }}
   TRAIN_MLB_HR: ${{ github.event.inputs.train_mlb_hr || 'false' }}
   SYNC_SUPABASE: ${{ github.event.inputs.sync_supabase || 'true' }}
   SYNC_BIGQUERY: ${{ github.event.inputs.sync_bigquery || 'true' }}
   ANCHOR_DATE: ${{ github.event.inputs.date || '' }}
+  MLB_HR_STATCAST_MIN_COVERAGE: ${{ vars.MLB_HR_STATCAST_MIN_COVERAGE || '0.50' }}
+  MLB_HR_STATCAST_MIN_BATTER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_BATTER_BBE || '5' }}
+  MLB_HR_STATCAST_MIN_PITCHER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_PITCHER_BBE || '5' }}
 
 jobs:
   refresh:
@@ -88,7 +91,7 @@ jobs:
         if: ${{ env.RUN_PGA == 'true' }}
         shell: bash
         run: |
-          python scripts/refresh_pga_tournament.py --baseline-only --skip-odds --skip-results-fetch
+          python scripts/refresh_pga_tournament.py --skip-results-fetch --live-odds
 
       - name: Retrain MLB home run model
         if: ${{ env.RUN_MLB_HR == 'true' && env.TRAIN_MLB_HR == 'true' }}
@@ -110,10 +113,17 @@ jobs:
           from src.models.mlb_hr_statcast_features import DEFAULT_STATCAST_CACHE, fetch_statcast
 
           anchor = date.fromisoformat("${{ steps.dates.outputs.date }}")
-          start = pd.Timestamp(anchor - timedelta(days=120))
+          start = pd.Timestamp(anchor - timedelta(days=10))
           end = pd.Timestamp(anchor - timedelta(days=1))
           try:
-              frame = fetch_statcast(start, end, cache=Path(DEFAULT_STATCAST_CACHE), refresh=False)
+              frame = fetch_statcast(
+                  start,
+                  end,
+                  cache=Path(DEFAULT_STATCAST_CACHE),
+                  refresh=True,
+                  timeout=30,
+                  deadline_seconds=360,
+              )
           except Exception as exc:  # noqa: BLE001
               print(f"WARNING: Statcast preload failed; MLB HR generation will continue with fallback scoring if needed: {exc}")
           else:
@@ -129,7 +139,12 @@ jobs:
           python scripts/predict_mlb_home_runs.py \
             --date "${{ steps.dates.outputs.date }}" \
             --history-days 45 \
+            --statcast-min-batter-bbe "$MLB_HR_STATCAST_MIN_BATTER_BBE" \
+            --statcast-min-pitcher-bbe "$MLB_HR_STATCAST_MIN_PITCHER_BBE" \
             --top-n 120
+          python scripts/validate_mlb_hr_statcast_health.py \
+            --min-coverage "$MLB_HR_STATCAST_MIN_COVERAGE" \
+            ../web/public/data/mlb_home_runs.json
 
       - name: Apply player market serving schema
         if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' }}
@@ -141,7 +156,7 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql
+        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
 
       - name: Fetch MLB home run odds
         if: ${{ env.RUN_MLB_HR == 'true' }}
@@ -207,7 +222,7 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql
+          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
           SYNC_ARGS=()
           if [ "$RUN_PGA" != "true" ]; then
             SYNC_ARGS+=(--skip-pga)

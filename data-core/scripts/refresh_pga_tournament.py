@@ -7,7 +7,7 @@ import argparse
 import json
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -17,7 +17,7 @@ REPO_ROOT = ROOT.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.pga.live_leaderboard import fetch_live_leaderboard, fetch_scoreboard, rounds_completed_from_leaderboard  # noqa: E402
+from src.pga.live_leaderboard import EspnScoreboardError, event_matches, fetch_live_leaderboard, fetch_scoreboard, rounds_completed_from_leaderboard  # noqa: E402
 from src.pga.tournament_registry import (  # noqa: E402
     DEFAULT_REGISTRY_PATH,
     PgaTournament,
@@ -70,6 +70,36 @@ def _existing_midtournament_state(tournament: PgaTournament) -> str | None:
 
 
 def _field_fetch_command(tournament: PgaTournament) -> list[str] | None:
+    if tournament.field_source == "espn":
+        if not tournament.espn_event_id:
+            raise SystemExit(f"{tournament.key} uses field_source=espn but has no espn_event_id.")
+        cmd = [
+            sys.executable,
+            "scripts/fetch_pga_field.py",
+            "--event-id",
+            tournament.espn_event_id,
+            "--event-key",
+            tournament.key,
+            "--event-name",
+            tournament.name,
+            "--season",
+            str(tournament.season),
+            "--course",
+            tournament.course,
+            "--par",
+            str(tournament.par),
+            "--start-date",
+            tournament.start_date.isoformat(),
+            "--end-date",
+            tournament.end_date.isoformat(),
+            "--json-out",
+            str(tournament.field_json),
+            "--text-out",
+            str(tournament.field_text),
+        ]
+        if tournament.yardage is not None:
+            cmd.extend(["--yardage", str(tournament.yardage)])
+        return cmd
     if tournament.field_fetcher == "fetch_usopen_field":
         return [
             sys.executable,
@@ -79,6 +109,31 @@ def _field_fetch_command(tournament: PgaTournament) -> list[str] | None:
             "--text-out",
             str(tournament.field_text),
         ]
+    return None
+
+
+def _live_event_unmatched(registry, scoreboard: dict[str, Any] | None, *, as_of: date | None = None) -> str | None:
+    today = as_of or _now_utc().date()
+    for event in (scoreboard or {}).get("events") or []:
+        comp = (event.get("competitions") or [{}])[0]
+        status_type = (comp.get("status") or {}).get("type") or (event.get("status") or {}).get("type") or {}
+        state = str(status_type.get("state") or "").lower()
+        completed = bool(status_type.get("completed"))
+        starts = str(event.get("date") or "")[:10]
+        ends = str(event.get("endDate") or event.get("date") or "")[:10]
+        in_event_window = False
+        try:
+            in_event_window = starts <= today.isoformat() <= ends
+        except TypeError:
+            in_event_window = False
+        if state not in {"in", "pre"} and completed and not in_event_window:
+            continue
+        best_match = max(
+            (event_matches(event, tournament.espn_match) for tournament in registry.tournaments),
+            default=0,
+        )
+        if best_match <= 0:
+            return str(event.get("name") or event.get("shortName") or event.get("id"))
     return None
 
 
@@ -317,7 +372,13 @@ def main() -> None:
     args = parse_args()
     registry = load_registry(args.registry)
     anchor = args.as_of or _now_utc().date().isoformat()
-    scoreboard = None if args.skip_leaderboard else fetch_scoreboard()
+    try:
+        scoreboard = None if args.skip_leaderboard else fetch_scoreboard()
+    except EspnScoreboardError as exc:
+        if args.force_phase == "live":
+            raise SystemExit(str(exc)) from exc
+        print(f"WARNING: {exc}")
+        scoreboard = None
     tournament = resolve_active_tournament(
         registry,
         tournament_key=args.tournament_key or None,
@@ -325,11 +386,14 @@ def main() -> None:
         scoreboard=scoreboard,
     )
     if not tournament:
+        unmatched = _live_event_unmatched(registry, scoreboard, as_of=date.fromisoformat(anchor))
+        if unmatched:
+            raise SystemExit(f"ESPN has an active PGA event with no registry match: {unmatched}")
         print(f"No PGA tournament is active for automation window at {anchor}; no-op.")
         return
 
     leaderboard = None
-    if not args.skip_leaderboard:
+    if not args.skip_leaderboard and scoreboard is not None:
         leaderboard = fetch_live_leaderboard(espn_match=tournament.espn_match, scoreboard=scoreboard)
 
     phase = infer_phase(
@@ -349,7 +413,7 @@ def main() -> None:
         if leaderboard:
             run_midtournament_update(tournament, leaderboard=leaderboard, args=args, dry_run=args.dry_run)
         else:
-            print("No matched ESPN leaderboard available; skipping mid-tournament update.")
+            raise SystemExit("No matched ESPN leaderboard available during live phase.")
     elif phase == "post":
         if not tournament.predictions_csv.exists():
             run_pretournament_predictions(tournament, args, dry_run=args.dry_run)

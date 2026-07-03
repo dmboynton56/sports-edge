@@ -19,6 +19,7 @@ from src.pga.tournament_registry import (
     infer_phase,
     resolve_active_tournament,
 )
+from scripts.refresh_pga_tournament import _field_fetch_command, _live_event_unmatched
 
 
 def _tournament(key: str, priority: int = 0) -> PgaTournament:
@@ -35,6 +36,43 @@ def _tournament(key: str, priority: int = 0) -> PgaTournament:
         cut_after_round=2,
         priority=priority,
     )
+
+
+def test_field_fetch_command_dispatches_espn_source():
+    tournament = PgaTournament(
+        key="john_deere_classic_2026",
+        name="John Deere Classic",
+        season=2026,
+        course="TPC Deere Run",
+        par=71,
+        start_date=date(2026, 7, 2),
+        end_date=date(2026, 7, 5),
+        espn_event_id="401811954",
+        field_source="espn",
+    )
+
+    cmd = _field_fetch_command(tournament)
+
+    assert cmd is not None
+    assert "scripts/fetch_pga_field.py" in cmd
+    assert "--event-id" in cmd
+    assert "401811954" in cmd
+
+
+def test_live_event_unmatched_detects_registry_drift():
+    registry = PgaRegistry(season=2026, tournaments=(_tournament("us_open_2026"),))
+    scoreboard = {
+        "events": [
+            {
+                "name": "John Deere Classic",
+                "competitions": [
+                    {"status": {"type": {"state": "in", "completed": False}}, "competitors": []}
+                ],
+            }
+        ]
+    }
+
+    assert _live_event_unmatched(registry, scoreboard) == "John Deere Classic"
 
 
 def test_resolve_active_tournament_uses_pre_window_and_priority():

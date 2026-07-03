@@ -16,6 +16,7 @@ import os
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
+from zoneinfo import ZoneInfo
 
 try:
     from google.cloud import bigquery
@@ -24,6 +25,7 @@ except ImportError:  # pragma: no cover - local unit tests do not need BigQuery
 
 
 LEAGUES = ("MLB", "NBA", "NFL", "WORLD_CUP")
+SLATE_TIME_ZONE = "America/Denver"
 
 
 @dataclass(frozen=True)
@@ -48,6 +50,14 @@ SEASON_WINDOWS = {
 WORLD_CUP_TOURNAMENT_WINDOWS = {
     2026: (date(2026, 6, 11), date(2026, 7, 19)),
 }
+
+
+def default_anchor_date(now: datetime | None = None) -> date:
+    if now is None:
+        now = datetime.now(tz=ZoneInfo(SLATE_TIME_ZONE))
+    elif now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
+    return now.astimezone(ZoneInfo(SLATE_TIME_ZONE)).date()
 
 
 def parse_bool(value: object) -> bool:
@@ -206,8 +216,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--date",
         type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
-        default=datetime.now(tz=timezone.utc).date(),
-        help="Anchor date in YYYY-MM-DD. Default: today UTC.",
+        default=default_anchor_date(),
+        help=f"Anchor date in YYYY-MM-DD. Default: today in {SLATE_TIME_ZONE}.",
     )
     parser.add_argument("--lookback-days", type=int, default=1)
     parser.add_argument("--lookahead-days", type=int, default=10)

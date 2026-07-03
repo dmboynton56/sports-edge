@@ -16,6 +16,10 @@ ESPN_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; SportsEdge/1.0)"}
 INACTIVE_TO_PAR = {"WD", "DQ", "DNS", "CUT", "MDF", ""}
 
 
+class EspnScoreboardError(RuntimeError):
+    """Raised when the ESPN PGA scoreboard cannot be fetched after retries."""
+
+
 def normalize_name(name: str) -> str:
     text = unicodedata.normalize("NFKD", str(name))
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
@@ -174,13 +178,21 @@ def fetch_live_leaderboard(
     return parse_leaderboard_event(event)
 
 
-def fetch_scoreboard(*, timeout: int = 30) -> dict[str, Any] | None:
-    try:
-        response = requests.get(ESPN_SCOREBOARD, headers=ESPN_HEADERS, timeout=timeout)
-        response.raise_for_status()
-        return response.json()
-    except Exception:
-        return None
+def fetch_scoreboard(*, timeout: int = 30, max_attempts: int = 3, backoff_seconds: float = 2.0) -> dict[str, Any]:
+    last_error: Exception | None = None
+    for attempt in range(1, max(int(max_attempts), 1) + 1):
+        try:
+            response = requests.get(ESPN_SCOREBOARD, headers=ESPN_HEADERS, timeout=timeout)
+            response.raise_for_status()
+            return response.json()
+        except requests.RequestException as exc:
+            last_error = exc
+            if attempt >= max_attempts:
+                break
+            import time
+
+            time.sleep(backoff_seconds * (2 ** (attempt - 1)))
+    raise EspnScoreboardError(f"Failed to fetch ESPN PGA scoreboard after {max_attempts} attempts: {last_error}")
 
 
 def rounds_completed_from_leaderboard(leaderboard: dict[str, Any], *, total_rounds: int = 4) -> int:

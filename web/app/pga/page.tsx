@@ -192,7 +192,7 @@ type OutlookRow = {
   rankChange?: number | null;
 };
 
-const DATA_URL = '/data/pga_tournaments/current.json';
+const DATA_URL = '/api/pga-board';
 
 function toParColor(tp: string) {
   const s = tp.trim().toUpperCase();
@@ -682,7 +682,7 @@ export default function PGAPage() {
         setData(j);
         setPlayerPick((prev) => prev || j.predictions?.[0]?.player || '');
       })
-      .catch(() => setErr(`Missing ${DATA_URL}. Run: cd data-core && python scripts/export_pga_tournament_dashboard.py`));
+      .catch(() => setErr('PGA board data is unavailable from Supabase and static JSON fallback.'));
   }, []);
 
   const sortedOutlookRows = useMemo(() => {

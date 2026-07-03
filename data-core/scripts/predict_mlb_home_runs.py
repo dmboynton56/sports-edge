@@ -47,6 +47,7 @@ from src.models.mlb_home_run_model import (  # noqa: E402
 )
 from src.models.mlb_hr_recency import games_since_last_hr, recency_quality_flags  # noqa: E402
 from src.models.mlb_hr_statcast_features import (  # noqa: E402
+    DEFAULT_STATCAST_MIN_BBE,
     DEFAULT_STATCAST_CACHE,
     build_torch_candidate_features,
 )
@@ -73,6 +74,12 @@ MODEL_AGREEMENT_STATCAST_BOOST = "Statcast boost"
 MODEL_AGREEMENT_STATCAST_FADE = "Statcast fade"
 MODEL_AGREEMENT_MISSING_STATCAST = "Missing Statcast"
 MODEL_AGREEMENT_RANK_THRESHOLD = 5
+STATCAST_HEALTH_COLUMNS = [
+    "statcast_coverage",
+    "statcast_ready_rows",
+    "statcast_total_rows",
+    "statcast_artifact_loaded",
+]
 
 
 def _safe_int(value: Any, default: int = 0) -> int:
@@ -651,6 +658,9 @@ def _build_statcast_blend_predictions(
     torch_artifact: dict[str, Any],
     statcast_cache: Path,
     refresh_statcast: bool = False,
+    statcast_min_batter_bbe: int = DEFAULT_STATCAST_MIN_BBE,
+    statcast_min_pitcher_bbe: int = DEFAULT_STATCAST_MIN_BBE,
+    allow_partial_statcast: bool = False,
 ) -> tuple[pd.DataFrame, list[str]]:
     gaps: list[str] = []
     if candidates.empty:
@@ -668,6 +678,9 @@ def _build_statcast_blend_predictions(
             as_of,
             statcast_cache=statcast_cache,
             refresh_statcast=refresh_statcast,
+            statcast_min_batter_bbe=statcast_min_batter_bbe,
+            statcast_min_pitcher_bbe=statcast_min_pitcher_bbe,
+            allow_partial_statcast=allow_partial_statcast,
         ).reset_index(drop=True)
     except Exception as exc:  # noqa: BLE001
         gaps.append(f"Statcast feature build failed; using v1 probabilities for blend board: {exc}")
@@ -744,10 +757,12 @@ def _build_statcast_blend_predictions(
         )
         if not bool(ready_mask.iloc[pos]):
             flags.append("statcast_features_unavailable")
+        elif row.get("statcast_feature_quality") not in (None, "full"):
+            flags.append(f"statcast_{row.get('statcast_feature_quality')}_features")
         flags_list.append(flags)
 
     return _finalize_predictions(
-        candidates.reset_index(drop=True),
+        aligned.reset_index(drop=True),
         hr_probability=pd.Series(probabilities),
         model_version=STATCAST_BLEND_KEY,
         quality_flags=flags_list,
@@ -926,6 +941,20 @@ def _predictions_to_rows(predictions: pd.DataFrame) -> list[dict[str, Any]]:
             payload["consensusScore"] = row.get("consensus_score")
         if "market_signal_rank" in row:
             payload["marketSignalRank"] = None if pd.isna(row.get("market_signal_rank")) else int(row.get("market_signal_rank"))
+        if "statcast_feature_ready" in row:
+            payload["statcastFeatureReady"] = None if pd.isna(row.get("statcast_feature_ready")) else bool(row.get("statcast_feature_ready"))
+        if "statcast_feature_quality" in row:
+            payload["statcastFeatureQuality"] = row.get("statcast_feature_quality")
+        for col in STATCAST_HEALTH_COLUMNS:
+            if col in row:
+                camel = {
+                    "statcast_coverage": "statcastCoverage",
+                    "statcast_ready_rows": "statcastReadyRows",
+                    "statcast_total_rows": "statcastTotalRows",
+                    "statcast_artifact_loaded": "statcastArtifactLoaded",
+                }[col]
+                value = row.get(col)
+                payload[camel] = None if pd.isna(value) else value
         rows.append(payload)
     return rows
 
@@ -938,6 +967,81 @@ def _model_payload(predictions: pd.DataFrame, gaps: list[str], model_version: st
     }
 
 
+def _has_quality_flag(value: Any, flag: str) -> bool:
+    try:
+        flags = json.loads(value) if isinstance(value, str) else list(value or [])
+    except (TypeError, json.JSONDecodeError):
+        flags = []
+    return flag in flags
+
+
+def _statcast_health_payload(
+    statcast_predictions: pd.DataFrame,
+    board_predictions: pd.DataFrame,
+    *,
+    enabled: bool,
+    artifact_loaded: bool,
+    artifact_path: Path,
+    artifact_error: str | None,
+    gaps: list[str],
+    min_batter_bbe: int,
+    min_pitcher_bbe: int,
+    allow_partial: bool,
+) -> dict[str, Any]:
+    total_rows = int(len(statcast_predictions)) if enabled else 0
+    if not enabled:
+        ready_rows = 0
+    elif "statcast_feature_ready" in statcast_predictions.columns:
+        ready_rows = int(
+            pd.to_numeric(statcast_predictions["statcast_feature_ready"], errors="coerce")
+            .fillna(0)
+            .ge(1.0)
+            .sum()
+        )
+    else:
+        ready_rows = int(
+            sum(
+                not _has_quality_flag(value, "statcast_features_unavailable")
+                for value in statcast_predictions.get("quality_flags", pd.Series(dtype=object))
+            )
+        )
+    coverage = (ready_rows / total_rows) if total_rows else 0.0
+    agreement_distribution = (
+        board_predictions.get("model_agreement", pd.Series(dtype=object))
+        .fillna("unknown")
+        .astype(str)
+        .value_counts()
+        .sort_index()
+        .to_dict()
+    )
+    return {
+        "enabled": enabled,
+        "artifactLoaded": bool(artifact_loaded),
+        "artifactPath": str(artifact_path),
+        "artifactError": artifact_error,
+        "coverage": float(coverage),
+        "readyRows": ready_rows,
+        "totalRows": total_rows,
+        "unavailableRows": max(total_rows - ready_rows, 0),
+        "minBatterBbe": int(min_batter_bbe),
+        "minPitcherBbe": int(min_pitcher_bbe),
+        "allowPartial": bool(allow_partial),
+        "gaps": gaps,
+        "modelAgreement": agreement_distribution,
+    }
+
+
+def _attach_statcast_health_columns(frame: pd.DataFrame, health: dict[str, Any]) -> pd.DataFrame:
+    if frame.empty:
+        return frame
+    out = frame.copy()
+    out["statcast_coverage"] = health.get("coverage")
+    out["statcast_ready_rows"] = health.get("readyRows")
+    out["statcast_total_rows"] = health.get("totalRows")
+    out["statcast_artifact_loaded"] = health.get("artifactLoaded")
+    return out
+
+
 def _to_web_payload(
     v1_predictions: pd.DataFrame,
     gaps: list[str],
@@ -945,6 +1049,7 @@ def _to_web_payload(
     board_predictions: pd.DataFrame | None = None,
     statcast_predictions: pd.DataFrame | None = None,
     statcast_gaps: list[str] | None = None,
+    statcast_health: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     model_version = (
         str(v1_predictions["model_version"].dropna().iloc[0])
@@ -975,6 +1080,8 @@ def _to_web_payload(
             STATCAST_BLEND_KEY: statcast_payload,
         }
         payload["gaps"] = gaps + (statcast_gaps or [])
+    if statcast_health is not None:
+        payload["statcastHealth"] = statcast_health
     return payload
 
 
@@ -989,6 +1096,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--statcast-cache", type=Path, default=DEFAULT_STATCAST_CACHE)
     parser.add_argument("--refresh-statcast-cache", action="store_true")
     parser.add_argument("--skip-statcast-blend", action="store_true")
+    parser.add_argument("--statcast-min-batter-bbe", type=int, default=int(os.getenv("MLB_HR_STATCAST_MIN_BATTER_BBE", str(DEFAULT_STATCAST_MIN_BBE))))
+    parser.add_argument("--statcast-min-pitcher-bbe", type=int, default=int(os.getenv("MLB_HR_STATCAST_MIN_PITCHER_BBE", str(DEFAULT_STATCAST_MIN_BBE))))
+    parser.add_argument("--allow-partial-statcast-features", action="store_true", default=os.getenv("MLB_HR_ALLOW_PARTIAL_STATCAST", "false").lower() in {"1", "true", "yes", "on"})
     parser.add_argument("--force-heuristic", action="store_true")
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_CSV_OUT)
     parser.add_argument("--statcast-out-csv", type=Path, default=DEFAULT_STATCAST_CSV_OUT)
@@ -1028,12 +1138,16 @@ def main() -> None:
 
     statcast_predictions = pd.DataFrame()
     statcast_gaps: list[str] = []
+    torch_artifact_loaded = False
+    torch_artifact_error: str | None = None
     if not args.skip_statcast_blend and not predictions_full.empty:
         torch_artifact = None
         try:
             torch_artifact = load_torch_hr_artifact(args.torch_artifact)
+            torch_artifact_loaded = True
             print(f"Loaded Statcast blend torch artifact: {args.torch_artifact}")
         except Exception as exc:  # noqa: BLE001
+            torch_artifact_error = str(exc)
             statcast_gaps.append(f"Statcast blend torch artifact load failed: {exc}")
         if torch_artifact:
             candidates = predictions_full.drop(
@@ -1047,6 +1161,9 @@ def main() -> None:
                 torch_artifact=torch_artifact,
                 statcast_cache=args.statcast_cache,
                 refresh_statcast=args.refresh_statcast_cache,
+                statcast_min_batter_bbe=args.statcast_min_batter_bbe,
+                statcast_min_pitcher_bbe=args.statcast_min_pitcher_bbe,
+                allow_partial_statcast=args.allow_partial_statcast_features,
             )
         else:
             statcast_gaps.append("Statcast blend model unavailable; statcast feed mirrors v1 probabilities.")
@@ -1082,6 +1199,23 @@ def main() -> None:
         )
         statcast_gaps.extend(coverage_gaps)
 
+    statcast_health = _statcast_health_payload(
+        statcast_predictions,
+        board_predictions,
+        enabled=not args.skip_statcast_blend and not predictions_full.empty,
+        artifact_loaded=torch_artifact_loaded,
+        artifact_path=args.torch_artifact,
+        artifact_error=torch_artifact_error,
+        gaps=statcast_gaps,
+        min_batter_bbe=args.statcast_min_batter_bbe,
+        min_pitcher_bbe=args.statcast_min_pitcher_bbe,
+        allow_partial=args.allow_partial_statcast_features,
+    )
+    predictions = _attach_statcast_health_columns(predictions, statcast_health)
+    if not statcast_predictions.empty:
+        statcast_predictions = _attach_statcast_health_columns(statcast_predictions, statcast_health)
+    board_predictions = _attach_statcast_health_columns(board_predictions, statcast_health)
+
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     predictions.to_csv(args.out_csv, index=False)
     if not statcast_predictions.empty:
@@ -1095,6 +1229,7 @@ def main() -> None:
                 board_predictions=board_predictions,
                 statcast_predictions=statcast_predictions if not statcast_predictions.empty else None,
                 statcast_gaps=statcast_gaps,
+                statcast_health=statcast_health,
             ),
             indent=2,
             sort_keys=True,

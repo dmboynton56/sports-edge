@@ -33,6 +33,16 @@ export function formatDateTime(value: string | null | undefined) {
   }).format(date);
 }
 
+export function formatDate(value: string | null | undefined) {
+  if (!value) return "n/a";
+  const date = new Date(`${value.slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return "n/a";
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+  }).format(date);
+}
+
 export function formatGamesSinceLastHr(
   value: number | null | undefined,
   qualityFlags?: string[] | null,

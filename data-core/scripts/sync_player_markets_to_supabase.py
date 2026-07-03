@@ -89,6 +89,13 @@ def _comparison_value(pred: dict[str, Any], comparison: dict[str, Any] | None, k
     return pred.get(key)
 
 
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if value is not None:
+            return value
+    return None
+
+
 def _comparison_fields(
     pred: dict[str, Any],
     comparison: dict[str, Any] | None,
@@ -236,6 +243,7 @@ def _iter_mlb_prediction_payloads(payload: dict[str, Any]) -> list[tuple[str, li
 def sync_mlb(conn, path: Path) -> int:
     payload = json.loads(path.read_text(encoding="utf-8"))
     comparisons = _comparison_lookup(payload)
+    statcast_health = payload.get("statcastHealth") or {}
     total = 0
     for model_version, predictions, _ in _iter_mlb_prediction_payloads(payload):
         rows = []
@@ -266,6 +274,14 @@ def sync_mlb(conn, path: Path) -> int:
                     pred.get("updatedAt") or payload.get("generatedAt"),
                     json.dumps(pred.get("qualityFlags") or []),
                     json.dumps(pred.get("topFeatures") or []),
+                    _clean(_first_present(pred.get("statcastCoverage"), statcast_health.get("coverage"))),
+                    _clean(_first_present(pred.get("statcastReadyRows"), statcast_health.get("readyRows"))),
+                    _clean(_first_present(pred.get("statcastTotalRows"), statcast_health.get("totalRows"))),
+                    _clean(
+                        pred.get("statcastArtifactLoaded")
+                        if pred.get("statcastArtifactLoaded") is not None
+                        else statcast_health.get("artifactLoaded")
+                    ),
                 )
             )
         if not rows:
@@ -286,13 +302,16 @@ def sync_mlb(conn, path: Path) -> int:
                   baseline_probability, rank, v1_probability, v1_rank, statcast_probability,
                   statcast_rank, statcast_available, model_agreement, consensus_score,
                   market_signal_rank, games_since_last_hr, last_hr_date, confidence,
-                  model_version, prediction_ts, quality_flags, top_features
+                  model_version, prediction_ts, quality_flags, top_features,
+                  statcast_coverage, statcast_ready_rows, statcast_total_rows,
+                  statcast_artifact_loaded
                 )
                 values (
                   %s, %s, %s, %s, %s, %s, %s, %s,
                   %s, %s, %s, %s, %s, %s, %s, %s,
                   %s, %s, %s, %s, %s, %s, %s, %s,
-                  %s, %s, %s, %s::jsonb, %s::jsonb
+                  %s, %s, %s, %s::jsonb, %s::jsonb,
+                  %s, %s, %s, %s
                 )
                 """,
                 rows,

@@ -8,20 +8,37 @@ import json
 import time
 from datetime import datetime, timezone
 from pathlib import Path
+import sys
 from typing import Any
 
 import numpy as np
 import pandas as pd
 import requests
+from dotenv import load_dotenv
 from sklearn.metrics import brier_score_loss, log_loss, roc_auc_score
 
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
+
 DEFAULT_PREDICTIONS = ROOT / "notebooks" / "cache" / "mlb_home_run_predictions.csv"
 DEFAULT_CACHE = ROOT / "notebooks" / "cache" / "mlb_home_run_outcome_boxscores.jsonl"
 DEFAULT_OUT_CSV = ROOT / "notebooks" / "cache" / "mlb_home_run_predictions_evaluated.csv"
 DEFAULT_METRICS = ROOT / "notebooks" / "cache" / "mlb_home_run_prediction_outcome_metrics.json"
 MLB_BOXSCORE_URL = "https://statsapi.mlb.com/api/v1/game/{game_pk}/boxscore"
+
+
+def _game_pk_from_id(value: Any) -> int | None:
+    text = str(value or "")
+    if text.startswith("MLB_"):
+        text = text.split("MLB_", 1)[1]
+    try:
+        return int(text)
+    except ValueError:
+        return None
 
 
 def _read_cached_boxscores(path: Path) -> dict[int, dict[str, Any]]:
@@ -110,6 +127,9 @@ def _score(frame: pd.DataFrame, prob_col: str) -> dict[str, Any]:
 
 
 def evaluate_predictions(predictions: pd.DataFrame, cache_path: Path, *, timeout: int, sleep: float) -> tuple[pd.DataFrame, dict[str, Any]]:
+    predictions = predictions.copy()
+    if "game_pk" not in predictions.columns:
+        predictions["game_pk"] = predictions["game_id"].map(_game_pk_from_id)
     cached = _read_cached_boxscores(cache_path)
     changed = False
     for game_pk in sorted(pd.to_numeric(predictions["game_pk"], errors="coerce").dropna().astype(int).unique()):
@@ -154,9 +174,57 @@ def evaluate_predictions(predictions: pd.DataFrame, cache_path: Path, *, timeout
     return evaluated, metrics
 
 
+def load_predictions_from_supabase(game_date: str) -> pd.DataFrame:
+    creds = load_supabase_credentials()
+    conn = create_pg_connection(
+        supabase_url=creds["url"],
+        password=creds["db_password"],
+        host_override=creds.get("db_host"),
+        port=creds["db_port"],
+        database=creds["db_name"],
+        user=creds["db_user"],
+    )
+    try:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                select
+                  game_id,
+                  game_date,
+                  event_time,
+                  player_id,
+                  player_name,
+                  team,
+                  opponent,
+                  venue,
+                  lineup_slot,
+                  hr_probability,
+                  baseline_probability,
+                  rank,
+                  confidence,
+                  model_version,
+                  prediction_ts,
+                  quality_flags,
+                  top_features
+                from mlb_home_run_predictions
+                where game_date = %s
+                order by model_version, rank nulls last, player_name
+                """,
+                (game_date,),
+                prepare=False,
+            )
+            rows = cur.fetchall()
+            columns = [desc[0] for desc in cur.description]
+    finally:
+        conn.close()
+    return pd.DataFrame(rows, columns=columns)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate MLB HR prediction rows against completed boxscores.")
     parser.add_argument("--predictions", type=Path, default=DEFAULT_PREDICTIONS)
+    parser.add_argument("--from-supabase", action="store_true", help="Load predictions for --date from Supabase.")
+    parser.add_argument("--date", help="Prediction game_date to evaluate, YYYY-MM-DD.")
     parser.add_argument("--cache", type=Path, default=DEFAULT_CACHE)
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_OUT_CSV)
     parser.add_argument("--metrics-out", type=Path, default=DEFAULT_METRICS)
@@ -166,8 +234,20 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
+    load_dotenv()
     args = parse_args()
-    predictions = pd.read_csv(args.predictions)
+    if args.from_supabase:
+        if not args.date:
+            raise SystemExit("--date is required with --from-supabase")
+        predictions = load_predictions_from_supabase(args.date)
+        if predictions.empty:
+            raise SystemExit(f"No MLB HR predictions found in Supabase for {args.date}")
+    else:
+        predictions = pd.read_csv(args.predictions)
+        if args.date and "game_date" in predictions.columns:
+            predictions = predictions[predictions["game_date"].astype(str).str.slice(0, 10) == args.date].copy()
+        if predictions.empty:
+            raise SystemExit("No MLB HR prediction rows to evaluate.")
     evaluated, metrics = evaluate_predictions(predictions, args.cache, timeout=args.timeout, sleep=args.sleep)
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)
     evaluated.to_csv(args.out_csv, index=False)

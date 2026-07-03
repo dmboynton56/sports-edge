@@ -22,6 +22,9 @@ env:
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
   DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
   FORCE_FULL_REBUILD: ${{ github.event.inputs.force_full_rebuild || 'false' }}
+  MLB_HR_STATCAST_MIN_COVERAGE: ${{ vars.MLB_HR_STATCAST_MIN_COVERAGE || '0.50' }}
+  MLB_HR_STATCAST_MIN_BATTER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_BATTER_BBE || '5' }}
+  MLB_HR_STATCAST_MIN_PITCHER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_PITCHER_BBE || '5' }}
 
 jobs:
   refresh:
@@ -163,10 +166,17 @@ jobs:
           from src.models.mlb_hr_statcast_features import DEFAULT_STATCAST_CACHE, fetch_statcast
 
           anchor = date.fromisoformat("${{ steps.plan.outputs.anchor_date }}")
-          start = pd.Timestamp(anchor - timedelta(days=120))
+          start = pd.Timestamp(anchor - timedelta(days=10))
           end = pd.Timestamp(anchor - timedelta(days=1))
           try:
-              frame = fetch_statcast(start, end, cache=Path(DEFAULT_STATCAST_CACHE), refresh=False)
+              frame = fetch_statcast(
+                  start,
+                  end,
+                  cache=Path(DEFAULT_STATCAST_CACHE),
+                  refresh=True,
+                  timeout=30,
+                  deadline_seconds=360,
+              )
           except Exception as exc:  # noqa: BLE001
               print(f"WARNING: Statcast preload failed; MLB HR generation will continue with fallback scoring if needed: {exc}")
           else:
@@ -182,7 +192,12 @@ jobs:
           python scripts/predict_mlb_home_runs.py \
             --date "${{ steps.plan.outputs.anchor_date }}" \
             --history-days 45 \
+            --statcast-min-batter-bbe "$MLB_HR_STATCAST_MIN_BATTER_BBE" \
+            --statcast-min-pitcher-bbe "$MLB_HR_STATCAST_MIN_PITCHER_BBE" \
             --top-n 120
+          python scripts/validate_mlb_hr_statcast_health.py \
+            --min-coverage "$MLB_HR_STATCAST_MIN_COVERAGE" \
+            ../web/public/data/mlb_home_runs.json
           python scripts/export_prediction_feed.py
           python scripts/validate_public_json.py \
             --mlb-hr-date "${{ steps.plan.outputs.anchor_date }}" \
@@ -193,6 +208,24 @@ jobs:
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         run: python scripts/sync_player_markets_to_bigquery.py --project "$PROJECT_ID" --skip-pga
+
+      - name: Fetch MLB HR Odds
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
+        shell: bash
+        env:
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
+          python scripts/fetch_mlb_home_run_odds.py \
+            --date "${{ steps.plan.outputs.anchor_date }}" \
+            --sync-supabase
 
       - name: Sync MLB HR Markets to Supabase
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
@@ -206,7 +239,7 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql
+          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
           python scripts/sync_player_markets_to_supabase.py --skip-pga
 
       - name: Sync Predictions to Supabase
@@ -317,6 +350,28 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
           python scripts/sync_final_scores.py --project "$PROJECT_ID" --lookback-days 10 --lookahead-days 1
+
+      - name: Grade MLB HR Outcomes
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          EVAL_DATE=$(date -d "${{ steps.plan.outputs.anchor_date }} -1 day" +%Y-%m-%d)
+          python scripts/apply_supabase_sql_files.py sql/017_player_market_health_results.sql
+          python scripts/evaluate_mlb_home_run_predictions.py \
+            --from-supabase \
+            --date "$EVAL_DATE" \
+            --out-csv notebooks/cache/mlb_home_run_predictions_evaluated.csv \
+            --metrics-out notebooks/cache/mlb_home_run_prediction_outcome_metrics.json
+          python scripts/sync_mlb_home_run_results_to_supabase.py \
+            --evaluated-csv notebooks/cache/mlb_home_run_predictions_evaluated.csv
 
       - name: Post-sync validation
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}

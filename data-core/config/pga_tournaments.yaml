@@ -1,22 +1,961 @@
 season: 2026
 tournaments:
-  - key: us_open_2026
-    odds_key: us_open
-    espn_match:
-      - "U.S. Open"
-      - "US Open"
-      - "U.S. Open Championship"
-    name: "U.S. Open Championship"
-    course: "Shinnecock Hills Golf Club"
-    par: 70
-    yardage: 7440
-    start_date: "2026-06-18"
-    end_date: "2026-06-21"
-    total_rounds: 4
-    cut_after_round: 2
-    cut_size: 60
-    cut_rule: "top_n_and_ties"
-    field_fetcher: "fetch_usopen_field"
-    prediction_window_days: 4
-    post_window_days: 2
-    priority: 100
+- key: the_sentry_2026
+  espn_event_id: '401811927'
+  odds_key: the_sentry
+  espn_match:
+  - The Sentry
+  - The Sentry
+  name: The Sentry
+  course: ''
+  par: 72
+  start_date: '2026-01-08'
+  end_date: '2026-01-11'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+- key: sony_open_in_hawaii_2026
+  espn_event_id: '401811928'
+  odds_key: sony_open_in_hawaii
+  espn_match:
+  - Sony Open in Hawaii
+  - Sony Open in Hawaii
+  name: Sony Open in Hawaii
+  course: Waialae Country Club
+  par: 70
+  start_date: '2026-01-15'
+  end_date: '2026-01-18'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7044
+- key: the_american_express_2026
+  espn_event_id: '401811929'
+  odds_key: the_american_express
+  espn_match:
+  - The American Express
+  - The American Express
+  name: The American Express
+  course: Pete Dye Stadium Course
+  par: 72
+  start_date: '2026-01-22'
+  end_date: '2026-01-25'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7210
+- key: farmers_insurance_open_2026
+  espn_event_id: '401811930'
+  odds_key: farmers_insurance_open
+  espn_match:
+  - Farmers Insurance Open
+  - Farmers Insurance Open
+  name: Farmers Insurance Open
+  course: Torrey Pines (South Course)
+  par: 72
+  start_date: '2026-01-29'
+  end_date: '2026-02-01'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7765
+- key: wm_phoenix_open_2026
+  espn_event_id: '401811931'
+  odds_key: wm_phoenix_open
+  espn_match:
+  - WM Phoenix Open
+  - WM Phoenix Open
+  name: WM Phoenix Open
+  course: TPC Scottsdale (Stadium Course)
+  par: 71
+  start_date: '2026-02-05'
+  end_date: '2026-02-08'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7261
+- key: at_t_pebble_beach_pro_am_2026
+  espn_event_id: '401811932'
+  odds_key: at_t_pebble_beach_pro_am
+  espn_match:
+  - AT&T Pebble Beach Pro-Am
+  - AT&T Pebble Beach Pro-Am
+  name: AT&T Pebble Beach Pro-Am
+  course: Pebble Beach Golf Links
+  par: 72
+  start_date: '2026-02-12'
+  end_date: '2026-02-15'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 6989
+- key: the_genesis_invitational_2026
+  espn_event_id: '401811933'
+  odds_key: the_genesis_invitational
+  espn_match:
+  - The Genesis Invitational
+  - The Genesis Invitational
+  name: The Genesis Invitational
+  course: Riviera Country Club
+  par: 71
+  start_date: '2026-02-19'
+  end_date: '2026-02-22'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7383
+- key: cognizant_classic_in_the_palm_beaches_2026
+  espn_event_id: '401811934'
+  odds_key: cognizant_classic_in_the_palm_beaches
+  espn_match:
+  - Cognizant Classic in The Palm Beaches
+  - Cognizant Classic in The Palm Beaches
+  name: Cognizant Classic in The Palm Beaches
+  course: PGA National Resort (The Champion Course)
+  par: 71
+  start_date: '2026-02-26'
+  end_date: '2026-03-01'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7223
+- key: arnold_palmer_invitational_pres_by_mastercard_2026
+  espn_event_id: '401811935'
+  odds_key: arnold_palmer_invitational_pres_by_mastercard
+  espn_match:
+  - Arnold Palmer Invitational pres. by Mastercard
+  - Arnold Palmer Invitational pres. by Mastercard
+  name: Arnold Palmer Invitational pres. by Mastercard
+  course: Arnold Palmer's Bay Hill Club & Lodge
+  par: 72
+  start_date: '2026-03-05'
+  end_date: '2026-03-08'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7466
+- key: puerto_rico_open_2026
+  espn_event_id: '401811936'
+  odds_key: puerto_rico_open
+  espn_match:
+  - Puerto Rico Open
+  - Puerto Rico Open
+  name: Puerto Rico Open
+  course: Grand Reserve Golf Club
+  par: 72
+  start_date: '2026-03-05'
+  end_date: '2026-03-08'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7506
+- key: the_players_championship_2026
+  espn_event_id: '401811937'
+  odds_key: the_players_championship
+  espn_match:
+  - THE PLAYERS Championship
+  - THE PLAYERS Championship
+  name: THE PLAYERS Championship
+  course: TPC Sawgrass (THE PLAYERS Stadium Course)
+  par: 72
+  start_date: '2026-03-12'
+  end_date: '2026-03-15'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7352
+- key: valspar_championship_2026
+  espn_event_id: '401811938'
+  odds_key: valspar_championship
+  espn_match:
+  - Valspar Championship
+  - Valspar Championship
+  name: Valspar Championship
+  course: Innisbrook Resort and Golf Club (Copperhead Course)
+  par: 71
+  start_date: '2026-03-19'
+  end_date: '2026-03-22'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7352
+- key: texas_children_s_houston_open_2026
+  espn_event_id: '401811939'
+  odds_key: texas_children_s_houston_open
+  espn_match:
+  - Texas Children's Houston Open
+  - Texas Children's Houston Open
+  name: Texas Children's Houston Open
+  course: Memorial Park Golf Course
+  par: 70
+  start_date: '2026-03-26'
+  end_date: '2026-03-29'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7475
+- key: valero_texas_open_2026
+  espn_event_id: '401811940'
+  odds_key: valero_texas_open
+  espn_match:
+  - Valero Texas Open
+  - Valero Texas Open
+  name: Valero Texas Open
+  course: TPC San Antonio (Oaks Course)
+  par: 72
+  start_date: '2026-04-02'
+  end_date: '2026-04-05'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7438
+- key: masters_tournament_2026
+  espn_event_id: '401811941'
+  odds_key: masters_tournament
+  espn_match:
+  - Masters Tournament
+  - Masters Tournament
+  name: Masters Tournament
+  course: Augusta National Golf Club
+  par: 72
+  start_date: '2026-04-09'
+  end_date: '2026-04-12'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 100
+  yardage: 7565
+- key: rbc_heritage_2026
+  espn_event_id: '401811942'
+  odds_key: rbc_heritage
+  espn_match:
+  - RBC Heritage
+  - RBC Heritage
+  name: RBC Heritage
+  course: Harbour Town Golf Links
+  par: 71
+  start_date: '2026-04-16'
+  end_date: '2026-04-19'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7243
+- key: zurich_classic_of_new_orleans_2026
+  espn_event_id: '401811943'
+  odds_key: zurich_classic_of_new_orleans
+  espn_match:
+  - Zurich Classic of New Orleans
+  - Zurich Classic of New Orleans
+  name: Zurich Classic of New Orleans
+  course: TPC Louisiana
+  par: 72
+  start_date: '2026-04-23'
+  end_date: '2026-04-26'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7425
+- key: cadillac_championship_2026
+  espn_event_id: '401811944'
+  odds_key: cadillac_championship
+  espn_match:
+  - Cadillac Championship
+  - Cadillac Championship
+  name: Cadillac Championship
+  course: Trump National Doral (Blue Monster)
+  par: 72
+  start_date: '2026-04-30'
+  end_date: '2026-05-03'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7739
+- key: truist_championship_2026
+  espn_event_id: '401811945'
+  odds_key: truist_championship
+  espn_match:
+  - Truist Championship
+  - Truist Championship
+  name: Truist Championship
+  course: Quail Hollow Club
+  par: 71
+  start_date: '2026-05-07'
+  end_date: '2026-05-10'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7583
+- key: oneflight_myrtle_beach_classic_2026
+  espn_event_id: '401811946'
+  odds_key: oneflight_myrtle_beach_classic
+  espn_match:
+  - ONEflight Myrtle Beach Classic
+  - ONEflight Myrtle Beach Classic
+  name: ONEflight Myrtle Beach Classic
+  course: Dunes Golf & Beach Club
+  par: 71
+  start_date: '2026-05-07'
+  end_date: '2026-05-10'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7347
+- key: pga_championship_2026
+  espn_event_id: '401811947'
+  odds_key: pga_championship
+  espn_match:
+  - PGA Championship
+  - PGA Championship
+  name: PGA Championship
+  course: Aronimink Golf Club
+  par: 70
+  start_date: '2026-05-14'
+  end_date: '2026-05-17'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 100
+  yardage: 7394
+- key: the_cj_cup_byron_nelson_2026
+  espn_event_id: '401811948'
+  odds_key: the_cj_cup_byron_nelson
+  espn_match:
+  - THE CJ CUP Byron Nelson
+  - THE CJ CUP Byron Nelson
+  name: THE CJ CUP Byron Nelson
+  course: TPC Craig Ranch
+  par: 71
+  start_date: '2026-05-21'
+  end_date: '2026-05-24'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7385
+- key: charles_schwab_challenge_2026
+  espn_event_id: '401811949'
+  odds_key: charles_schwab_challenge
+  espn_match:
+  - Charles Schwab Challenge
+  - Charles Schwab Challenge
+  name: Charles Schwab Challenge
+  course: Colonial Country Club
+  par: 70
+  start_date: '2026-05-28'
+  end_date: '2026-05-31'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7289
+- key: the_memorial_tournament_pres_by_workday_2026
+  espn_event_id: '401811950'
+  odds_key: the_memorial_tournament_pres_by_workday
+  espn_match:
+  - the Memorial Tournament pres. by Workday
+  - the Memorial Tournament pres. by Workday
+  name: the Memorial Tournament pres. by Workday
+  course: Muirfield Village Golf Club
+  par: 72
+  start_date: '2026-06-04'
+  end_date: '2026-06-07'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7569
+- key: rbc_canadian_open_2026
+  espn_event_id: '401811951'
+  odds_key: rbc_canadian_open
+  espn_match:
+  - RBC Canadian Open
+  - RBC Canadian Open
+  name: RBC Canadian Open
+  course: TPC Toronto at Osprey Valley (North Course)
+  par: 70
+  start_date: '2026-06-11'
+  end_date: '2026-06-14'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7389
+- key: us_open_2026
+  espn_event_id: '401811952'
+  odds_key: us_open
+  espn_match:
+  - U.S. Open
+  - U.S. Open
+  name: U.S. Open
+  course: Shinnecock Hills Golf Club
+  par: 70
+  start_date: '2026-06-18'
+  end_date: '2026-06-21'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 60
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 100
+  yardage: 7440
+- key: travelers_championship_2026
+  espn_event_id: '401811953'
+  odds_key: travelers_championship
+  espn_match:
+  - Travelers Championship
+  - Travelers Championship
+  name: Travelers Championship
+  course: TPC River Highlands
+  par: 70
+  start_date: '2026-06-25'
+  end_date: '2026-06-29'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 6844
+- key: john_deere_classic_2026
+  espn_event_id: '401811954'
+  odds_key: john_deere_classic
+  espn_match:
+  - John Deere Classic
+  - John Deere Classic
+  name: John Deere Classic
+  course: TPC Deere Run
+  par: 71
+  start_date: '2026-07-02'
+  end_date: '2026-07-05'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7327
+- key: genesis_scottish_open_2026
+  espn_event_id: '401811955'
+  odds_key: genesis_scottish_open
+  espn_match:
+  - Genesis Scottish Open
+  - Genesis Scottish Open
+  name: Genesis Scottish Open
+  course: The Renaissance Club
+  par: 70
+  start_date: '2026-07-09'
+  end_date: '2026-07-12'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7282
+- key: isco_championship_2026
+  espn_event_id: '401811956'
+  odds_key: isco_championship
+  espn_match:
+  - ISCO Championship
+  - ISCO Championship
+  name: ISCO Championship
+  course: Hurstbourne Country Club
+  par: 70
+  start_date: '2026-07-09'
+  end_date: '2026-07-12'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7056
+- key: the_open_2026
+  espn_event_id: '401811957'
+  odds_key: the_open
+  espn_match:
+  - The Open
+  - The Open
+  name: The Open
+  course: Royal Birkdale GC
+  par: 70
+  start_date: '2026-07-16'
+  end_date: '2026-07-19'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 100
+  yardage: 7156
+- key: corales_puntacana_championship_2026
+  espn_event_id: '401811958'
+  odds_key: corales_puntacana_championship
+  espn_match:
+  - Corales Puntacana Championship
+  - Corales Puntacana Championship
+  name: Corales Puntacana Championship
+  course: Puntacana Resort & Club (Corales Golf Course)
+  par: 72
+  start_date: '2026-07-16'
+  end_date: '2026-07-19'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7670
+- key: 3m_open_2026
+  espn_event_id: '401811959'
+  odds_key: 3m_open
+  espn_match:
+  - 3M Open
+  - 3M Open
+  name: 3M Open
+  course: TPC Twin Cities
+  par: 71
+  start_date: '2026-07-23'
+  end_date: '2026-07-26'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7431
+- key: rocket_classic_2026
+  espn_event_id: '401811960'
+  odds_key: rocket_classic
+  espn_match:
+  - Rocket Classic
+  - Rocket Classic
+  name: Rocket Classic
+  course: Detroit Golf Club
+  par: 72
+  start_date: '2026-07-30'
+  end_date: '2026-08-02'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7370
+- key: wyndham_championship_2026
+  espn_event_id: '401811961'
+  odds_key: wyndham_championship
+  espn_match:
+  - Wyndham Championship
+  - Wyndham Championship
+  name: Wyndham Championship
+  course: Sedgefield Country Club
+  par: 70
+  start_date: '2026-08-06'
+  end_date: '2026-08-09'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7131
+- key: fedex_st_jude_championship_2026
+  espn_event_id: '401811962'
+  odds_key: fedex_st_jude_championship
+  espn_match:
+  - FedEx St. Jude Championship
+  - FedEx St. Jude Championship
+  name: FedEx St. Jude Championship
+  course: TPC Southwind
+  par: 70
+  start_date: '2026-08-13'
+  end_date: '2026-08-16'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7288
+- key: bmw_championship_2026
+  espn_event_id: '401811963'
+  odds_key: bmw_championship
+  espn_match:
+  - BMW Championship
+  - BMW Championship
+  name: BMW Championship
+  course: Bellerive Country Club
+  par: 70
+  start_date: '2026-08-20'
+  end_date: '2026-08-23'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7316
+- key: tour_championship_2026
+  espn_event_id: '401811964'
+  odds_key: tour_championship
+  espn_match:
+  - TOUR Championship
+  - TOUR Championship
+  name: TOUR Championship
+  course: East Lake Golf Club
+  par: 70
+  start_date: '2026-08-27'
+  end_date: '2026-08-30'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7440
+- key: biltmore_championship_asheville_2026
+  espn_event_id: '401850914'
+  odds_key: biltmore_championship_asheville
+  espn_match:
+  - Biltmore Championship Asheville
+  - Biltmore Championship Asheville
+  name: Biltmore Championship Asheville
+  course: The Cliffs at Walnut Cove
+  par: 72
+  start_date: '2026-09-17'
+  end_date: '2026-09-20'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 0
+- key: presidents_cup_2026
+  espn_event_id: '401824815'
+  odds_key: presidents_cup
+  espn_match:
+  - Presidents Cup
+  - Presidents Cup
+  name: Presidents Cup
+  course: Medinah CC (No. 3)
+  par: 72
+  start_date: '2026-09-24'
+  end_date: '2026-09-27'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 90
+  yardage: 7613
+- key: bank_of_utah_championship_2026
+  espn_event_id: '401850915'
+  odds_key: bank_of_utah_championship
+  espn_match:
+  - Bank of Utah Championship
+  - Bank of Utah Championship
+  name: Bank of Utah Championship
+  course: Black Desert Resort Golf Course
+  par: 71
+  start_date: '2026-10-01'
+  end_date: '2026-10-04'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7421
+- key: baycurrent_classic_2026
+  espn_event_id: '401850916'
+  odds_key: baycurrent_classic
+  espn_match:
+  - Baycurrent Classic
+  - Baycurrent Classic
+  name: Baycurrent Classic
+  course: Yokohama Country Club
+  par: 71
+  start_date: '2026-10-08'
+  end_date: '2026-10-11'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7315
+- key: butterfield_bermuda_championship_2026
+  espn_event_id: '401850917'
+  odds_key: butterfield_bermuda_championship
+  espn_match:
+  - Butterfield Bermuda Championship
+  - Butterfield Bermuda Championship
+  name: Butterfield Bermuda Championship
+  course: Port Royal Golf Course
+  par: 71
+  start_date: '2026-10-22'
+  end_date: '2026-10-25'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 6828
+- key: vidantaworld_mexico_open_2026
+  espn_event_id: '401850978'
+  odds_key: vidantaworld_mexico_open
+  espn_match:
+  - VidantaWorld Mexico Open
+  - VidantaWorld Mexico Open
+  name: VidantaWorld Mexico Open
+  course: Vidanta Vallarta
+  par: 71
+  start_date: '2026-10-29'
+  end_date: '2026-11-01'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7456
+- key: world_wide_technology_championship_2026
+  espn_event_id: '401850979'
+  odds_key: world_wide_technology_championship
+  espn_match:
+  - World Wide Technology Championship
+  - World Wide Technology Championship
+  name: World Wide Technology Championship
+  course: El Cardonal at Diamante
+  par: 72
+  start_date: '2026-11-05'
+  end_date: '2026-11-08'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7452
+- key: good_good_championship_2026
+  espn_event_id: '401850980'
+  odds_key: good_good_championship
+  espn_match:
+  - Good Good Championship
+  - Good Good Championship
+  name: Good Good Championship
+  course: Omni Barton Creek Resort & Spa (Fazio Canyons Course)
+  par: 72
+  start_date: '2026-11-12'
+  end_date: '2026-11-15'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 0
+- key: the_rsm_classic_2026
+  espn_event_id: '401850981'
+  odds_key: the_rsm_classic
+  espn_match:
+  - The RSM Classic
+  - The RSM Classic
+  name: The RSM Classic
+  course: Sea Island Golf Club (Seaside Course)
+  par: 70
+  start_date: '2026-11-19'
+  end_date: '2026-11-22'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7005
+- key: hero_world_challenge_2026
+  espn_event_id: '401850982'
+  odds_key: hero_world_challenge
+  espn_match:
+  - Hero World Challenge
+  - Hero World Challenge
+  name: Hero World Challenge
+  course: Albany GC
+  par: 72
+  start_date: '2026-12-03'
+  end_date: '2026-12-06'
+  total_rounds: 4
+  cut_after_round: 2
+  cut_size: 65
+  cut_rule: top_n_and_ties
+  field_source: espn
+  prediction_window_days: 4
+  post_window_days: 2
+  priority: 10
+  yardage: 7309

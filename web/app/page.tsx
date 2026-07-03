@@ -15,18 +15,22 @@ import {
 } from "@/components/ui/table";
 import { deriveDataQuality } from "@/lib/data/data-quality";
 import { getPerformanceHistory } from "@/lib/data/performance";
-import { getProductionPredictionFeed } from "@/lib/data/player-markets";
+import { getMlbHomeRunBoardData, getProductionPredictionFeed } from "@/lib/data/player-markets";
+import { getResultsData } from "@/lib/data/results";
 import { formatNumber, formatPct, formatPctFromWhole } from "@/lib/format";
 
 export default async function Home() {
-  const [history, predictionFeed] = await Promise.all([
+  const [history, predictionFeed, results, hrBoard] = await Promise.all([
     getPerformanceHistory(),
     getProductionPredictionFeed(),
+    getResultsData(),
+    getMlbHomeRunBoardData(),
   ]);
   const quality = deriveDataQuality(history);
-  const activeWarnings = quality.filter((row) => row.status !== "ok").length;
-  const roiRecords = history.records.filter((record) => typeof record.roi === "number");
-  const bestRoi = roiRecords.toSorted((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity))[0];
+  const gradedSample = results.summaries.reduce((sum, row) => sum + row.sample, 0);
+  const bestHitRate = results.summaries
+    .filter((row) => typeof row.hitRate === "number")
+    .toSorted((a, b) => (b.hitRate ?? -Infinity) - (a.hitRate ?? -Infinity))[0];
 
   return (
     <div>
@@ -38,31 +42,36 @@ export default async function Home() {
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard
-          title="Active Market Edges"
+          title="Today's Slate"
           value={formatNumber(predictionFeed.predictions.length)}
-          detail={predictionFeed.gaps[0] ?? "Loaded from local prediction artifact."}
+          detail={predictionFeed.gaps[0] ?? "Predictions loaded across live market surfaces."}
           icon={LineChart}
           tone={predictionFeed.predictions.length ? "accent" : "warning"}
         />
         <MetricCard
-          title="Tracked Models"
-          value={formatNumber(history.records.length)}
-          detail="Cross-sport performance records in the current artifact."
+          title="Graded Results"
+          value={formatNumber(gradedSample)}
+          detail="Rows across ATS, winner, HR, and PGA result tables."
           icon={Activity}
+          tone={gradedSample ? "accent" : "warning"}
         />
         <MetricCard
-          title="Best Available ROI"
-          value={bestRoi ? formatPct(bestRoi.roi) : "n/a"}
-          detail={bestRoi ? `${bestRoi.sport} ${bestRoi.market}` : "ROI is missing from all records."}
+          title="Best Hit Rate"
+          value={bestHitRate ? formatPct(bestHitRate.hitRate) : "n/a"}
+          detail={bestHitRate ? `${bestHitRate.league} ${bestHitRate.market}` : "No graded hit rates yet."}
           icon={LineChart}
-          tone={bestRoi?.roi && bestRoi.roi > 0 ? "accent" : "default"}
+          tone={bestHitRate ? "accent" : "default"}
         />
         <MetricCard
-          title="Data Warnings"
-          value={formatNumber(activeWarnings)}
-          detail="Warnings include partial odds coverage and missing source history."
+          title="Statcast Coverage"
+          value={formatPct(hrBoard.statcastHealth?.coverage ?? null)}
+          detail={
+            hrBoard.statcastHealth
+              ? `${formatNumber(hrBoard.statcastHealth.readyRows)} of ${formatNumber(hrBoard.statcastHealth.totalRows)} HR rows ready`
+              : "No HR health metadata available."
+          }
           icon={DatabaseZap}
-          tone={activeWarnings ? "warning" : "accent"}
+          tone={hrBoard.statcastHealth?.artifactLoaded === false ? "warning" : "accent"}
         />
       </div>
 
@@ -111,6 +120,36 @@ export default async function Home() {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Results Snapshot</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table className="table-fixed">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>League</TableHead>
+                  <TableHead>Market</TableHead>
+                  <TableHead>Sample</TableHead>
+                  <TableHead>Hit Rate</TableHead>
+                  <TableHead>ROI</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {results.summaries.slice(0, 8).map((row) => (
+                  <TableRow key={`${row.league}-${row.market}-${row.modelVersion}`}>
+                    <TableCell className="font-medium">{row.league}</TableCell>
+                    <TableCell>{row.market}</TableCell>
+                    <TableCell>{formatNumber(row.sample)}</TableCell>
+                    <TableCell>{formatPct(row.hitRate)}</TableCell>
+                    <TableCell>{formatPct(row.roi)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Model Performance</CardTitle>

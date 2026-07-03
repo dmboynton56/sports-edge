@@ -24,6 +24,7 @@ import {
   getMlbHomeRunModelLabel,
   type MlbHomeRunBoardData,
   type MlbHomeRunPrediction,
+  type MlbHomeRunStatcastHealth,
 } from "@/lib/data/mlb-hr-board";
 import { formatDateTime, formatGamesSinceLastHr, formatNumber, formatPct } from "@/lib/format";
 
@@ -52,7 +53,7 @@ function agreementVariant(agreement: string | null | undefined) {
   return "outline";
 }
 
-function BoardMetrics({ rows }: { rows: MlbHomeRunPrediction[] }) {
+function BoardMetrics({ rows, health }: { rows: MlbHomeRunPrediction[]; health?: MlbHomeRunStatcastHealth }) {
   const best = rows[0];
   const flagged = rows.filter((row) => (row.qualityFlags?.length ?? 0) > 0).length;
   const rowsWithOdds = rows.filter((row) => row.oddsStatus && row.oddsStatus !== "missing_odds");
@@ -61,8 +62,14 @@ function BoardMetrics({ rows }: { rows: MlbHomeRunPrediction[] }) {
     .filter((row) => typeof row.edge === "number")
     .toSorted((a, b) => (b.edge ?? -Infinity) - (a.edge ?? -Infinity))[0];
 
+  const statcastCoverage = health?.coverage ?? (
+    rows.length
+      ? rows.filter((row) => row.statcastAvailable !== false && row.statcastProbability != null).length / rows.length
+      : null
+  );
+
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
       <MetricCard
         title="Candidates"
         value={formatNumber(rows.length)}
@@ -89,6 +96,17 @@ function BoardMetrics({ rows }: { rows: MlbHomeRunPrediction[] }) {
         detail={`${formatNumber(rowsWithOdds.length)} candidates with sportsbook odds`}
         icon={Percent}
         tone={rowsWithOdds.length ? "accent" : "warning"}
+      />
+      <MetricCard
+        title="Statcast Coverage"
+        value={formatPct(statcastCoverage)}
+        detail={
+          health
+            ? `${formatNumber(health.readyRows)} of ${formatNumber(health.totalRows)} ready`
+            : "Derived from published board rows."
+        }
+        icon={Activity}
+        tone={health?.artifactLoaded === false || (statcastCoverage ?? 0) < 0.5 ? "warning" : "accent"}
       />
       <MetricCard
         title="Positive Edges"
@@ -279,7 +297,14 @@ export function MlbHomeRunBoard({ board }: MlbHomeRunBoardProps) {
         </div>
       ) : null}
 
-      <BoardMetrics rows={rows} />
+      {board.statcastHealth?.artifactLoaded === false ? (
+        <Badge variant="missing">
+          Statcast blend artifact failed to load
+          {board.statcastHealth.artifactError ? `: ${board.statcastHealth.artifactError}` : ""}
+        </Badge>
+      ) : null}
+
+      <BoardMetrics rows={rows} health={board.statcastHealth} />
 
       <Card>
         <CardHeader>

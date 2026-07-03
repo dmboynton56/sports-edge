@@ -30,6 +30,26 @@ export type MlbHomeRunPrediction = Prediction & {
   modelAgreement?: "Consensus" | "V1 only" | "Statcast boost" | "Statcast fade" | "Missing Statcast" | string | null;
   consensusScore?: number | null;
   marketSignalRank?: number | null;
+  statcastCoverage?: number | null;
+  statcastReadyRows?: number | null;
+  statcastTotalRows?: number | null;
+  statcastArtifactLoaded?: boolean | null;
+};
+
+export type MlbHomeRunStatcastHealth = {
+  enabled: boolean;
+  artifactLoaded: boolean;
+  artifactPath?: string | null;
+  artifactError?: string | null;
+  coverage: number | null;
+  readyRows: number;
+  totalRows: number;
+  unavailableRows?: number;
+  minBatterBbe?: number;
+  minPitcherBbe?: number;
+  allowPartial?: boolean;
+  gaps?: string[];
+  modelAgreement?: Record<string, number>;
 };
 
 export type MlbHomeRunModelFeed = {
@@ -46,6 +66,7 @@ export type MlbHomeRunFeed = {
   predictions: MlbHomeRunPrediction[];
   gaps: string[];
   dataSource?: "supabase_edges" | "supabase_predictions" | "static_json" | "unavailable";
+  statcastHealth?: MlbHomeRunStatcastHealth;
   models?: Record<string, MlbHomeRunModelFeed>;
 };
 
@@ -57,6 +78,7 @@ export type MlbHomeRunBoardData = {
   models: Record<string, MlbHomeRunModelFeed>;
   gaps: string[];
   dataSource: NonNullable<MlbHomeRunFeed["dataSource"]>;
+  statcastHealth?: MlbHomeRunStatcastHealth;
 };
 
 export const MLB_HR_V1_MODEL = "mlb-hr-v1";

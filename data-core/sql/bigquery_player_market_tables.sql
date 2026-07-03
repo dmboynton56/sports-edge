@@ -58,13 +58,25 @@ create table if not exists `PROJECT_ID.sports_edge_curated.mlb_home_run_predicti
   hr_probability float64 not null,
   baseline_probability float64,
   rank int64,
+  v1_probability float64,
+  v1_rank int64,
+  statcast_probability float64,
+  statcast_rank int64,
+  statcast_available bool,
+  model_agreement string,
+  consensus_score float64,
+  market_signal_rank int64,
   games_since_last_hr int64,
   last_hr_date date,
   confidence float64,
   model_version string not null,
   prediction_ts timestamp not null,
   quality_flags string,
-  top_features string
+  top_features string,
+  statcast_coverage float64,
+  statcast_ready_rows int64,
+  statcast_total_rows int64,
+  statcast_artifact_loaded bool
 )
 partition by game_date
 cluster by model_version, team;

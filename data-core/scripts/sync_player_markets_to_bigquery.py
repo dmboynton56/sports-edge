@@ -111,6 +111,10 @@ TABLES = {
                 ("prediction_ts", "TIMESTAMP", "REQUIRED"),
                 ("quality_flags", "STRING", "NULLABLE"),
                 ("top_features", "STRING", "NULLABLE"),
+                ("statcast_coverage", "FLOAT64", "NULLABLE"),
+                ("statcast_ready_rows", "INT64", "NULLABLE"),
+                ("statcast_total_rows", "INT64", "NULLABLE"),
+                ("statcast_artifact_loaded", "BOOL", "NULLABLE"),
             ]
         ),
         "partition_field": "game_date",
@@ -169,6 +173,13 @@ def _comparison_value(pred: dict[str, Any], comparison: dict[str, Any] | None, k
     if comparison and key in comparison:
         return comparison.get(key)
     return pred.get(key)
+
+
+def _first_present(*values: Any) -> Any:
+    for value in values:
+        if value is not None:
+            return value
+    return None
 
 
 def _comparison_fields(
@@ -334,6 +345,7 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
     payload = json.loads(path.read_text(encoding="utf-8"))
     batches: list[tuple[list[dict[str, Any]], str, str]] = []
     comparisons = _comparison_lookup(payload)
+    statcast_health = payload.get("statcastHealth") or {}
     models = payload.get("models")
     if isinstance(models, dict) and models:
         for model_key, model_payload in models.items():
@@ -367,6 +379,14 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
                         "prediction_ts": pred.get("updatedAt") or payload.get("generatedAt"),
                         "quality_flags": json.dumps(pred.get("qualityFlags") or []),
                         "top_features": json.dumps(pred.get("topFeatures") or []),
+                        "statcast_coverage": _clean(_first_present(pred.get("statcastCoverage"), statcast_health.get("coverage"))),
+                        "statcast_ready_rows": _clean(_first_present(pred.get("statcastReadyRows"), statcast_health.get("readyRows"))),
+                        "statcast_total_rows": _clean(_first_present(pred.get("statcastTotalRows"), statcast_health.get("totalRows"))),
+                        "statcast_artifact_loaded": _clean(
+                            pred.get("statcastArtifactLoaded")
+                            if pred.get("statcastArtifactLoaded") is not None
+                            else statcast_health.get("artifactLoaded")
+                        ),
                     }
                 )
             if rows:
@@ -400,6 +420,14 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
                 "prediction_ts": pred.get("updatedAt") or payload.get("generatedAt"),
                 "quality_flags": json.dumps(pred.get("qualityFlags") or []),
                 "top_features": json.dumps(pred.get("topFeatures") or []),
+                "statcast_coverage": _clean(_first_present(pred.get("statcastCoverage"), statcast_health.get("coverage"))),
+                "statcast_ready_rows": _clean(_first_present(pred.get("statcastReadyRows"), statcast_health.get("readyRows"))),
+                "statcast_total_rows": _clean(_first_present(pred.get("statcastTotalRows"), statcast_health.get("totalRows"))),
+                "statcast_artifact_loaded": _clean(
+                    pred.get("statcastArtifactLoaded")
+                    if pred.get("statcastArtifactLoaded") is not None
+                    else statcast_health.get("artifactLoaded")
+                ),
             }
         )
     if not rows:

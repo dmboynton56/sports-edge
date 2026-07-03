@@ -14,6 +14,7 @@ from scripts.predict_mlb_home_runs import (
     _candidate_key_set,
     _filter_to_candidate_set,
     _predictions_to_rows,
+    _statcast_health_payload,
 )
 from src.models.mlb_home_run_model import FEATURE_COLUMNS
 
@@ -174,9 +175,10 @@ def test_statcast_blend_fills_missing_enriched_candidates(monkeypatch) -> None:
         ]
     )
 
-    def fake_build_torch_candidate_features(frame, as_of, *, statcast_cache, refresh_statcast):
+    def fake_build_torch_candidate_features(frame, as_of, *, statcast_cache, refresh_statcast, **_kwargs):
         enriched = frame.iloc[:2].copy()
         enriched["statcast_feature_ready"] = [1.0, 0.0]
+        enriched["statcast_feature_quality"] = ["full", "missing"]
         return enriched
 
     monkeypatch.setattr(hr_predictions, "build_torch_candidate_features", fake_build_torch_candidate_features)
@@ -196,3 +198,38 @@ def test_statcast_blend_fills_missing_enriched_candidates(monkeypatch) -> None:
     assert by_player.loc[3, "hr_probability"] == 0.07
     assert "statcast_features_unavailable" in json.loads(by_player.loc[3, "quality_flags"])
     assert any("returned no row for 1 candidates" in gap for gap in gaps)
+
+
+def test_statcast_health_payload_reports_coverage_and_agreement_distribution() -> None:
+    statcast = _prediction_frame(
+        [
+            {"player_id": 1, "hr_probability": 0.25, "rank": 1, "statcast_feature_ready": 1.0},
+            {
+                "player_id": 2,
+                "hr_probability": 0.10,
+                "rank": 2,
+                "statcast_feature_ready": 0.0,
+                "quality_flags": json.dumps(["statcast_features_unavailable"]),
+            },
+        ]
+    )
+    board = statcast.copy()
+    board["model_agreement"] = ["Consensus", "Missing Statcast"]
+
+    health = _statcast_health_payload(
+        statcast,
+        board,
+        enabled=True,
+        artifact_loaded=True,
+        artifact_path=Path("/tmp/model.pt"),
+        artifact_error=None,
+        gaps=[],
+        min_batter_bbe=5,
+        min_pitcher_bbe=5,
+        allow_partial=False,
+    )
+
+    assert health["coverage"] == 0.5
+    assert health["readyRows"] == 1
+    assert health["totalRows"] == 2
+    assert health["modelAgreement"]["Consensus"] == 1

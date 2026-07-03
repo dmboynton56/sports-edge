@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, timezone
 
 from scripts import plan_daily_refresh
 
@@ -67,3 +67,10 @@ def test_build_plan_skips_world_cup_outside_tournament_window():
     assert plan["run_world_cup"] is False
     assert plan["world_cup_season"] == 2026
     assert "offseason" in plan["world_cup_reason"]
+
+
+def test_default_anchor_date_uses_denver_slate_boundary():
+    # 2026-07-03 05:30 UTC is still 2026-07-02 at 23:30 in America/Denver.
+    assert plan_daily_refresh.default_anchor_date(
+        datetime(2026, 7, 3, 5, 30, tzinfo=timezone.utc)
+    ) == date(2026, 7, 2)

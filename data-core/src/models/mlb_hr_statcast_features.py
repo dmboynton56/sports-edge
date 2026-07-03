@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 import warnings
 from datetime import date, datetime, timezone
@@ -24,6 +25,7 @@ OFFSPEED_TYPES = {"CH", "FS", "FO", "SC", "KN", "EP"}
 DEFAULT_STATCAST_CACHE = Path(__file__).resolve().parents[2] / "notebooks" / "cache" / "mlb_statcast_2026.csv"
 DEFAULT_HANDEDNESS_CACHE = Path(__file__).resolve().parents[2] / "notebooks" / "cache" / "mlb_player_handedness_cache.json"
 RETRYABLE_STATCAST_STATUSES = {408, 425, 429, 500, 502, 503, 504}
+DEFAULT_STATCAST_MIN_BBE = int(os.getenv("MLB_HR_STATCAST_MIN_BBE", "5"))
 
 
 def _normalize_hand(value: Any) -> str:
@@ -224,18 +226,25 @@ def fetch_statcast(
     chunk_days: int = 7,
     timeout: int = 60,
     sleep: float = 0.25,
+    deadline_seconds: float | None = None,
 ) -> pd.DataFrame:
     cached = pd.DataFrame()
-    if cache.exists() and not refresh:
+    if cache.exists():
         cached = _read_csv_cache(cache)
-        if _statcast_cache_covers_window(cached, start, end):
+        if not refresh and _statcast_cache_covers_window(cached, start, end):
             return cached
 
     frames = []
     fetch_errors: list[str] = []
     chunk_dir = cache.with_suffix("")
     chunk_dir.mkdir(parents=True, exist_ok=True)
+    deadline_at = time.monotonic() + deadline_seconds if deadline_seconds else None
     for chunk_start, chunk_end in _date_chunks(start, end, chunk_days):
+        if deadline_at is not None and time.monotonic() >= deadline_at:
+            fetch_errors.append(
+                f"deadline reached before fetching {chunk_start.date()} through {chunk_end.date()}"
+            )
+            break
         chunk_path = chunk_dir / f"statcast_{chunk_start:%Y%m%d}_{chunk_end:%Y%m%d}.csv"
         if chunk_path.exists() and not refresh:
             frame = _read_csv_cache(chunk_path)
@@ -252,7 +261,7 @@ def fetch_statcast(
             frames.append(frame)
         time.sleep(sleep)
 
-    if fetch_errors and not cached.empty:
+    if (refresh or fetch_errors) and not cached.empty:
         frames.append(cached)
 
     if not frames:
@@ -402,7 +411,14 @@ def _add_rate_features(rows: pd.DataFrame, prefix: str) -> pd.DataFrame:
     return out
 
 
-def enrich_statcast(rows: pd.DataFrame, statcast: pd.DataFrame) -> pd.DataFrame:
+def enrich_statcast(
+    rows: pd.DataFrame,
+    statcast: pd.DataFrame,
+    *,
+    min_batter_bbe: int = DEFAULT_STATCAST_MIN_BBE,
+    min_pitcher_bbe: int = DEFAULT_STATCAST_MIN_BBE,
+    allow_partial: bool = False,
+) -> pd.DataFrame:
     rows = rows.copy()
     rows["game_date"] = pd.to_datetime(rows["game_date"], errors="coerce")
     prepared = _prepare_statcast(statcast)
@@ -412,10 +428,21 @@ def enrich_statcast(rows: pd.DataFrame, statcast: pd.DataFrame) -> pd.DataFrame:
     out = _merge_prior(out, pitcher_prior, row_id_col="opposing_starter_id")
     out = _add_rate_features(out, "batter")
     out = _add_rate_features(out, "pitcher")
-    out["statcast_feature_ready"] = (
-        (out["batter_statcast_bbe_lag"].fillna(0) >= 10)
-        & (out["pitcher_statcast_bbe_lag"].fillna(0) >= 10)
-    ).astype(float)
+    batter_ready = out["batter_statcast_bbe_lag"].fillna(0) >= max(int(min_batter_bbe), 0)
+    pitcher_ready = out["pitcher_statcast_bbe_lag"].fillna(0) >= max(int(min_pitcher_bbe), 0)
+    full_ready = batter_ready & pitcher_ready
+    partial_ready = batter_ready | pitcher_ready
+    out["statcast_feature_quality"] = np.select(
+        [
+            full_ready,
+            batter_ready & ~pitcher_ready,
+            pitcher_ready & ~batter_ready,
+        ],
+        ["full", "batter_only", "pitcher_only"],
+        default="missing",
+    )
+    out["statcast_partial_feature_ready"] = (partial_ready & ~full_ready).astype(float)
+    out["statcast_feature_ready"] = (full_ready | (allow_partial & partial_ready)).astype(float)
     return out
 
 
@@ -426,6 +453,10 @@ def build_torch_candidate_features(
     statcast_cache: Path = DEFAULT_STATCAST_CACHE,
     handedness_cache: Path = DEFAULT_HANDEDNESS_CACHE,
     refresh_statcast: bool = False,
+    statcast_min_batter_bbe: int = DEFAULT_STATCAST_MIN_BBE,
+    statcast_min_pitcher_bbe: int = DEFAULT_STATCAST_MIN_BBE,
+    allow_partial_statcast: bool = False,
+    statcast_deadline_seconds: float | None = None,
 ) -> pd.DataFrame:
     if candidates.empty:
         return candidates.copy()
@@ -448,5 +479,12 @@ def build_torch_candidate_features(
         end,
         cache=statcast_cache,
         refresh=refresh_statcast,
+        deadline_seconds=statcast_deadline_seconds,
     )
-    return enrich_statcast(rows, statcast)
+    return enrich_statcast(
+        rows,
+        statcast,
+        min_batter_bbe=statcast_min_batter_bbe,
+        min_pitcher_bbe=statcast_min_pitcher_bbe,
+        allow_partial=allow_partial_statcast,
+    )

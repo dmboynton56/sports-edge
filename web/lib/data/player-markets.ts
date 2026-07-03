@@ -10,6 +10,7 @@ import {
   type MlbHomeRunFeed,
   type MlbHomeRunModelFeed,
   type MlbHomeRunPrediction,
+  type MlbHomeRunStatcastHealth,
 } from "@/lib/data/mlb-hr-board";
 import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
 
@@ -32,6 +33,7 @@ const PGA_TOURNAMENT_PATH = path.join(
   "pga_tournaments",
   "current.json",
 );
+const PGA_SLATE_TIME_ZONE = "America/Denver";
 
 async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
@@ -105,6 +107,10 @@ type SupabaseMlbHrRow = {
   prediction_ts: string | null;
   quality_flags: string[] | null;
   top_features: { feature: string; value: number }[] | null;
+  statcast_coverage: number | null;
+  statcast_ready_rows: number | null;
+  statcast_total_rows: number | null;
+  statcast_artifact_loaded: boolean | null;
 };
 
 type SupabaseMlbHrEdgeRow = SupabaseMlbHrRow & {
@@ -120,6 +126,55 @@ type SupabaseMlbHrEdgeRow = SupabaseMlbHrRow & {
   odds_books_count: number | null;
   odds_snapshot_ts: string | null;
   odds_status: string | null;
+};
+
+type SupabasePgaTournamentRow = {
+  event_key: string;
+  season: number;
+  name: string;
+  start_date: string;
+  end_date: string;
+  course: string | null;
+  par: number | null;
+  field_size: number | null;
+  status: string;
+  raw_record: Record<string, unknown> | null;
+  updated_at: string | null;
+};
+
+type SupabasePgaPredictionRow = {
+  event_key: string;
+  event_name: string;
+  season: number;
+  start_date: string;
+  end_date: string;
+  course: string | null;
+  par: number | null;
+  player_name: string;
+  player_id: string | null;
+  exp_sg_per_round: number | null;
+  make_cut_prob: number | null;
+  top5_prob: number | null;
+  top10_prob: number | null;
+  top20_prob: number | null;
+  win_prob: number | null;
+  projected_total_strokes: number | null;
+  projected_score_to_par: number | null;
+  model_version: string;
+  prediction_ts: string | null;
+  simulation_count: number | null;
+  confidence: number | null;
+  quality_flags: string[] | null;
+};
+
+export type PgaBoardData = Record<string, unknown> & {
+  generatedAt: string | null;
+  dataSource?: "supabase_predictions" | "static_json" | "unavailable";
+  gaps?: string[];
+  event?: Record<string, unknown>;
+  predictions?: Record<string, unknown>[];
+  predictionMeta?: Record<string, unknown>;
+  normalizedMarkets?: Prediction[];
 };
 
 function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
@@ -167,6 +222,10 @@ function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
     modelAgreement: row.model_agreement ?? (isV1 ? "V1 only" : null),
     consensusScore: row.consensus_score ?? row.rank,
     marketSignalRank: row.market_signal_rank,
+    statcastCoverage: row.statcast_coverage,
+    statcastReadyRows: row.statcast_ready_rows,
+    statcastTotalRows: row.statcast_total_rows,
+    statcastArtifactLoaded: row.statcast_artifact_loaded,
   };
 }
 
@@ -215,6 +274,7 @@ function buildFeedFromPayload(
       gaps: uniqueGaps([...fallbackGaps, ...(modelPayload.gaps ?? [])]),
       dataSource: "static_json",
       models: payload.models,
+      statcastHealth: payload.statcastHealth,
     };
   }
 
@@ -232,6 +292,7 @@ function buildFeedFromPayload(
       predictions.length ? null : `No MLB home run predictions available for ${slateDate}.`,
     ]),
     dataSource: "static_json",
+    statcastHealth: payload.statcastHealth,
   };
 }
 
@@ -261,6 +322,7 @@ function buildBoardFromPayload(
       },
       gaps: fallbackGaps,
       dataSource: "static_json",
+      statcastHealth: payload.statcastHealth,
     };
   }
 
@@ -290,6 +352,7 @@ function buildBoardFromPayload(
         `No MLB home run predictions available for ${slateDate}.`,
       ]),
       dataSource: "static_json",
+      statcastHealth: payload.statcastHealth,
     };
   }
 
@@ -302,6 +365,19 @@ function buildBoardFromPayload(
     models,
     gaps: fallbackGaps,
     dataSource: "static_json",
+    statcastHealth: payload.statcastHealth,
+  };
+}
+
+function healthFromRows(rows: MlbHomeRunPrediction[]): MlbHomeRunStatcastHealth | undefined {
+  const row = rows.find((candidate) => candidate.statcastTotalRows != null);
+  if (!row) return undefined;
+  return {
+    enabled: true,
+    artifactLoaded: Boolean(row.statcastArtifactLoaded),
+    coverage: row.statcastCoverage ?? null,
+    readyRows: row.statcastReadyRows ?? 0,
+    totalRows: row.statcastTotalRows ?? rows.length,
   };
 }
 
@@ -353,6 +429,7 @@ function buildBoardFromSupabaseRows(
     models,
     gaps: [],
     dataSource,
+    statcastHealth: healthFromRows(rows),
   };
 }
 
@@ -378,6 +455,7 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
         ? [`Missing sportsbook odds for ${missingOdds} MLB home run candidates.`]
         : [],
       dataSource: "supabase_edges",
+      statcastHealth: healthFromRows(edgeRows.map(mapSupabaseMlbEdge)),
     };
   }
 
@@ -393,6 +471,7 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
       predictions: rows.map(mapSupabaseMlb),
       gaps: [],
       dataSource: "supabase_predictions",
+      statcastHealth: healthFromRows(rows.map(mapSupabaseMlb)),
     };
   }
 
@@ -460,6 +539,7 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
         : {},
       gaps: fallback.gaps,
       dataSource: fallback.dataSource ?? "unavailable",
+      statcastHealth: fallback.statcastHealth,
     };
   }
 }
@@ -475,15 +555,147 @@ export async function getPgaNormalizedMarkets(): Promise<Prediction[]> {
   }
 }
 
+async function readPgaStaticPayload(fallbackGaps: string[] = []): Promise<PgaBoardData> {
+  try {
+    const payload = JSON.parse(await fs.readFile(PGA_TOURNAMENT_PATH, "utf8")) as PgaBoardData;
+    return {
+      ...payload,
+      dataSource: "static_json",
+      gaps: uniqueGaps([...(payload.gaps ?? []), ...fallbackGaps]),
+    };
+  } catch {
+    return {
+      generatedAt: null,
+      dataSource: "unavailable",
+      predictions: [],
+      normalizedMarkets: [],
+      gaps: uniqueGaps([
+        ...fallbackGaps,
+        "No PGA artifact found at web/public/data/pga_tournaments/current.json.",
+      ]),
+    };
+  }
+}
+
+function mapSupabasePgaPrediction(row: SupabasePgaPredictionRow): Record<string, unknown> {
+  return {
+    player: row.player_name,
+    player_id: row.player_id,
+    exp_sg_per_round: row.exp_sg_per_round,
+    sim_win_pct: (row.win_prob ?? 0) * 100,
+    sim_top5_pct: (row.top5_prob ?? 0) * 100,
+    sim_top10_pct: (row.top10_prob ?? 0) * 100,
+    sim_top20_pct: (row.top20_prob ?? 0) * 100,
+    projected_total_strokes: row.projected_total_strokes,
+    projected_score_to_par: row.projected_score_to_par,
+    confidence: row.confidence,
+    quality_flags: row.quality_flags ?? [],
+    source: "Supabase pga_player_predictions_latest",
+    best_calibrated_target_made_cut_prob: row.make_cut_prob,
+    best_calibrated_target_top10_prob: row.top10_prob,
+    best_calibrated_target_top20_prob: row.top20_prob,
+    best_calibrated_target_win_prob: row.win_prob,
+  };
+}
+
+function mapSupabasePgaMarket(row: SupabasePgaPredictionRow, market: string, probability: number | null): Prediction | null {
+  if (probability == null) return null;
+  return {
+    id: `PGA-${row.event_key}-${row.player_id ?? row.player_name}-${market}`,
+    sport: "PGA",
+    league: "PGA",
+    gameId: row.event_key,
+    eventTime: row.start_date,
+    subject: row.player_name,
+    player: row.player_name,
+    market,
+    book: "model",
+    line: null,
+    price: null,
+    modelProbability: probability,
+    impliedProbability: null,
+    edge: null,
+    ev: null,
+    kelly: null,
+    confidence: row.confidence,
+    modelVersion: row.model_version,
+    source: "Supabase pga_player_predictions_latest",
+    updatedAt: row.prediction_ts,
+  };
+}
+
+async function getCurrentPgaTournament(): Promise<SupabasePgaTournamentRow | null> {
+  const today = todayInTimeZone(PGA_SLATE_TIME_ZONE);
+  const activeRows = await supabaseRest<SupabasePgaTournamentRow>(
+    `pga_tournaments?select=*&start_date=lte.${today}&end_date=gte.${today}&order=updated_at.desc&limit=1`,
+  );
+  if (activeRows?.length) return activeRows[0];
+  const latestRows = await supabaseRest<SupabasePgaTournamentRow>(
+    "pga_tournaments?select=*&order=start_date.desc&limit=1",
+  );
+  return latestRows?.[0] ?? null;
+}
+
+export async function getPgaBoardData(): Promise<PgaBoardData> {
+  const staticPayload = await readPgaStaticPayload(supabaseConfigGaps());
+  const tournament = await getCurrentPgaTournament();
+  if (!tournament) {
+    return staticPayload;
+  }
+
+  const rows = await supabaseRest<SupabasePgaPredictionRow>(
+    `pga_player_predictions_latest?select=*&event_key=eq.${encodeURIComponent(tournament.event_key)}&order=win_prob.desc.nullslast&limit=250`,
+  );
+  if (!rows?.length) {
+    return staticPayload;
+  }
+
+  const generatedAt = rows[0]?.prediction_ts ?? tournament.updated_at ?? staticPayload.generatedAt;
+  const normalizedMarkets = rows.flatMap((row) => [
+    mapSupabasePgaMarket(row, "win", row.win_prob),
+    mapSupabasePgaMarket(row, "top10", row.top10_prob),
+    mapSupabasePgaMarket(row, "top20", row.top20_prob),
+    mapSupabasePgaMarket(row, "make_cut", row.make_cut_prob),
+  ]).filter(Boolean) as Prediction[];
+
+  return {
+    ...staticPayload,
+    generatedAt,
+    dataSource: "supabase_predictions",
+    event: {
+      ...(staticPayload.event ?? {}),
+      eventKey: tournament.event_key,
+      name: tournament.name,
+      season: tournament.season,
+      course: tournament.course ?? "",
+      par: tournament.par,
+      startDate: tournament.start_date,
+      endDate: tournament.end_date,
+      status: tournament.status,
+    },
+    predictions: rows.map(mapSupabasePgaPrediction),
+    normalizedMarkets,
+    predictionMeta: {
+      ...(staticPayload.predictionMeta ?? {}),
+      model_version: rows[0]?.model_version,
+      n_players: rows.length,
+      prediction_ts: generatedAt,
+      source: "supabase",
+    },
+    gaps: uniqueGaps([...(staticPayload.gaps ?? [])]),
+  };
+}
+
 export async function getProductionPredictionFeed(): Promise<{
   generatedAt: string | null;
   predictions: Prediction[];
   gaps: string[];
 }> {
-  const [mlb, pga] = await Promise.all([getMlbHomeRunFeed(), getPgaNormalizedMarkets()]);
+  const [mlb, pgaBoard] = await Promise.all([getMlbHomeRunFeed(), getPgaBoardData()]);
+  const pga = pgaBoard.normalizedMarkets ?? [];
   return {
     generatedAt: mlb.generatedAt,
     predictions: [...mlb.predictions, ...pga],
-    gaps: [...mlb.gaps],
+    gaps: [...mlb.gaps, ...(pgaBoard.gaps ?? [])],
   };
 }
