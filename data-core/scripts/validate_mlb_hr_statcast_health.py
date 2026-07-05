@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail fast when the MLB HR Statcast blend is not healthy enough to publish."""
+"""Validate MLB HR Statcast blend health metadata."""
 
 from __future__ import annotations
 
@@ -27,7 +27,20 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Warn instead of failing when the torch blend artifact failed to load.",
     )
+    parser.add_argument(
+        "--warn-only",
+        action="store_true",
+        default=os.getenv("MLB_HR_STATCAST_WARN_ONLY", "false").lower() in {"1", "true", "yes", "on"},
+        help="Report unhealthy Statcast coverage without failing the workflow.",
+    )
     return parser.parse_args()
+
+
+def _fail_or_warn(message: str, *, warn_only: bool) -> None:
+    if warn_only:
+        print(f"WARNING: {message}")
+        return
+    raise SystemExit(message)
 
 
 def main() -> None:
@@ -55,11 +68,16 @@ def main() -> None:
 
     if not artifact_loaded and not args.allow_missing_artifact:
         detail = health.get("artifactError") or "artifact load status was false"
-        raise SystemExit(f"Statcast blend artifact did not load: {detail}")
+        _fail_or_warn(
+            f"Statcast blend artifact did not load: {detail}",
+            warn_only=args.warn_only,
+        )
+        return
 
     if coverage_value < args.min_coverage:
-        raise SystemExit(
-            f"Statcast coverage {coverage_value:.3f} is below floor {args.min_coverage:.3f}."
+        _fail_or_warn(
+            f"Statcast coverage {coverage_value:.3f} is below floor {args.min_coverage:.3f}.",
+            warn_only=args.warn_only,
         )
 
 

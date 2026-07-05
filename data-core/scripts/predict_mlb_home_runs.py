@@ -661,6 +661,7 @@ def _build_statcast_blend_predictions(
     statcast_min_batter_bbe: int = DEFAULT_STATCAST_MIN_BBE,
     statcast_min_pitcher_bbe: int = DEFAULT_STATCAST_MIN_BBE,
     allow_partial_statcast: bool = False,
+    statcast_deadline_seconds: float | None = None,
 ) -> tuple[pd.DataFrame, list[str]]:
     gaps: list[str] = []
     if candidates.empty:
@@ -681,6 +682,7 @@ def _build_statcast_blend_predictions(
             statcast_min_batter_bbe=statcast_min_batter_bbe,
             statcast_min_pitcher_bbe=statcast_min_pitcher_bbe,
             allow_partial_statcast=allow_partial_statcast,
+            statcast_deadline_seconds=statcast_deadline_seconds,
         ).reset_index(drop=True)
     except Exception as exc:  # noqa: BLE001
         gaps.append(f"Statcast feature build failed; using v1 probabilities for blend board: {exc}")
@@ -1098,6 +1100,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip-statcast-blend", action="store_true")
     parser.add_argument("--statcast-min-batter-bbe", type=int, default=int(os.getenv("MLB_HR_STATCAST_MIN_BATTER_BBE", str(DEFAULT_STATCAST_MIN_BBE))))
     parser.add_argument("--statcast-min-pitcher-bbe", type=int, default=int(os.getenv("MLB_HR_STATCAST_MIN_PITCHER_BBE", str(DEFAULT_STATCAST_MIN_BBE))))
+    parser.add_argument("--statcast-deadline-seconds", type=float, default=float(os.getenv("MLB_HR_STATCAST_DEADLINE_SECONDS", "360")))
     parser.add_argument("--allow-partial-statcast-features", action="store_true", default=os.getenv("MLB_HR_ALLOW_PARTIAL_STATCAST", "false").lower() in {"1", "true", "yes", "on"})
     parser.add_argument("--force-heuristic", action="store_true")
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_CSV_OUT)
@@ -1164,6 +1167,7 @@ def main() -> None:
                 statcast_min_batter_bbe=args.statcast_min_batter_bbe,
                 statcast_min_pitcher_bbe=args.statcast_min_pitcher_bbe,
                 allow_partial_statcast=args.allow_partial_statcast_features,
+                statcast_deadline_seconds=args.statcast_deadline_seconds,
             )
         else:
             statcast_gaps.append("Statcast blend model unavailable; statcast feed mirrors v1 probabilities.")
