@@ -200,6 +200,42 @@ def test_statcast_blend_fills_missing_enriched_candidates(monkeypatch) -> None:
     assert any("returned no row for 1 candidates" in gap for gap in gaps)
 
 
+def test_statcast_blend_passes_deadline_to_feature_builder(monkeypatch) -> None:
+    candidates = _candidate_frame([{"player_id": 1, "player_name": "Deadline Bat"}])
+    v1 = _prediction_frame(
+        [{"player_id": 1, "player_name": "Deadline Bat", "hr_probability": 0.11, "rank": 1}]
+    )
+    captured: dict[str, float | None] = {}
+
+    def fake_build_torch_candidate_features(
+        frame,
+        as_of,
+        *,
+        statcast_cache,
+        refresh_statcast,
+        statcast_deadline_seconds,
+        **_kwargs,
+    ):
+        captured["deadline"] = statcast_deadline_seconds
+        enriched = frame.copy()
+        enriched["statcast_feature_ready"] = 0.0
+        enriched["statcast_feature_quality"] = "missing"
+        return enriched
+
+    monkeypatch.setattr(hr_predictions, "build_torch_candidate_features", fake_build_torch_candidate_features)
+
+    _build_statcast_blend_predictions(
+        candidates,
+        v1,
+        date(2026, 6, 26),
+        torch_artifact={},
+        statcast_cache=Path("/tmp/unused-statcast-cache.csv"),
+        statcast_deadline_seconds=42.0,
+    )
+
+    assert captured["deadline"] == 42.0
+
+
 def test_statcast_health_payload_reports_coverage_and_agreement_distribution() -> None:
     statcast = _prediction_frame(
         [

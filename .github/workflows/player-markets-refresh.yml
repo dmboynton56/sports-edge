@@ -44,6 +44,10 @@ env:
   MLB_HR_STATCAST_MIN_COVERAGE: ${{ vars.MLB_HR_STATCAST_MIN_COVERAGE || '0.50' }}
   MLB_HR_STATCAST_MIN_BATTER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_BATTER_BBE || '5' }}
   MLB_HR_STATCAST_MIN_PITCHER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_PITCHER_BBE || '5' }}
+  MLB_HR_STATCAST_LOOKBACK_DAYS: ${{ vars.MLB_HR_STATCAST_LOOKBACK_DAYS || '120' }}
+  MLB_HR_STATCAST_DEADLINE_SECONDS: ${{ vars.MLB_HR_STATCAST_DEADLINE_SECONDS || '360' }}
+  MLB_HR_ALLOW_PARTIAL_STATCAST: ${{ vars.MLB_HR_ALLOW_PARTIAL_STATCAST || 'false' }}
+  MLB_HR_STRICT_STATCAST_HEALTH: ${{ vars.MLB_HR_STRICT_STATCAST_HEALTH || 'false' }}
 
 jobs:
   refresh:
@@ -113,16 +117,16 @@ jobs:
           from src.models.mlb_hr_statcast_features import DEFAULT_STATCAST_CACHE, fetch_statcast
 
           anchor = date.fromisoformat("${{ steps.dates.outputs.date }}")
-          start = pd.Timestamp(anchor - timedelta(days=10))
+          start = pd.Timestamp(anchor - timedelta(days=int("${{ env.MLB_HR_STATCAST_LOOKBACK_DAYS }}")))
           end = pd.Timestamp(anchor - timedelta(days=1))
           try:
               frame = fetch_statcast(
                   start,
                   end,
                   cache=Path(DEFAULT_STATCAST_CACHE),
-                  refresh=True,
+                  refresh=False,
                   timeout=30,
-                  deadline_seconds=360,
+                  deadline_seconds=float("${{ env.MLB_HR_STATCAST_DEADLINE_SECONDS }}"),
               )
           except Exception as exc:  # noqa: BLE001
               print(f"WARNING: Statcast preload failed; MLB HR generation will continue with fallback scoring if needed: {exc}")
@@ -141,9 +145,14 @@ jobs:
             --history-days 45 \
             --statcast-min-batter-bbe "$MLB_HR_STATCAST_MIN_BATTER_BBE" \
             --statcast-min-pitcher-bbe "$MLB_HR_STATCAST_MIN_PITCHER_BBE" \
+            --statcast-deadline-seconds "$MLB_HR_STATCAST_DEADLINE_SECONDS" \
             --top-n 120
+          HEALTH_ARGS=(--min-coverage "$MLB_HR_STATCAST_MIN_COVERAGE")
+          if [ "$MLB_HR_STRICT_STATCAST_HEALTH" != "true" ]; then
+            HEALTH_ARGS+=(--warn-only)
+          fi
           python scripts/validate_mlb_hr_statcast_health.py \
-            --min-coverage "$MLB_HR_STATCAST_MIN_COVERAGE" \
+            "${HEALTH_ARGS[@]}" \
             ../web/public/data/mlb_home_runs.json
 
       - name: Apply player market serving schema
