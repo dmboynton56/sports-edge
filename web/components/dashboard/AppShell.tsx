@@ -14,7 +14,6 @@ import {
   MoreHorizontal,
   Newspaper,
   Sun,
-  Trophy,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -44,11 +43,9 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", label: "Overview", icon: Activity },
   { href: "/markets", label: "Markets", icon: LineChart },
-  { href: "/insights", label: "Insights", icon: Newspaper },
   { href: "/performance", label: "Performance", icon: BarChart3 },
+  { href: "/insights", label: "Insights", icon: Newspaper },
   { href: "/data-quality", label: "Data Quality", icon: DatabaseZap },
-  { href: "/pga", label: "PGA", icon: Trophy },
-  { href: "/cbb", label: "CBB", icon: Trophy },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -87,11 +84,14 @@ function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem("sports-edge-theme");
-    const prefersDark = stored ? stored === "dark" : true;
-    setDark(prefersDark);
-    document.documentElement.classList.toggle("dark", prefersDark);
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      const stored = window.localStorage.getItem("sports-edge-theme");
+      const prefersDark = stored ? stored === "dark" : true;
+      setDark(prefersDark);
+      document.documentElement.classList.toggle("dark", prefersDark);
+      setMounted(true);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   useEffect(() => {

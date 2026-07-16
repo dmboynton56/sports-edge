@@ -1,6 +1,6 @@
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 
-type GameResultRow = {
+export type GameResultRow = {
   league: string;
   season: number;
   week: number | null;
@@ -18,7 +18,7 @@ type GameResultRow = {
   flat_ats_units: number | null;
 };
 
-type MlbHrResultRow = {
+export type MlbHrResultRow = {
   game_date: string;
   player_name: string;
   team: string | null;
@@ -29,7 +29,7 @@ type MlbHrResultRow = {
   actual_home_run: boolean | null;
 };
 
-type PgaResultRow = {
+export type PgaResultRow = {
   event_key: string;
   season: number | null;
   player_name: string;
@@ -42,6 +42,23 @@ type PgaResultRow = {
   top10_hit: boolean | null;
   top20_hit: boolean | null;
   winner_hit: boolean | null;
+  evaluated_at: string;
+};
+
+export type ResultsWindow = "7d" | "30d" | "season" | "all";
+
+export type WeeklyResultsBucket = {
+  weekStart: string;
+  wins: number;
+  losses: number;
+  pushes: number;
+  hitRate: number | null;
+  units: number;
+};
+
+export type RawResults<T> = {
+  rows: T[];
+  gaps: string[];
 };
 
 export type ResultsSummary = {
@@ -65,27 +82,12 @@ export type ResultsData = {
   gaps: string[];
 };
 
-async function supabaseRest<T>(resource: string): Promise<T[] | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-  const base = config.url.replace(/\/$/, "");
-  const response = await fetch(`${base}/rest/v1/${resource}`, {
-    headers: {
-      apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-    },
-    next: { revalidate: 300 },
-  });
-  if (!response.ok) return null;
-  return (await response.json()) as T[];
-}
-
 function rate(wins: number, losses: number) {
   const risked = wins + losses;
   return risked ? wins / risked : null;
 }
 
-function summarizeGameResults(rows: GameResultRow[]): ResultsSummary[] {
+export function summarizeGameResults(rows: GameResultRow[]): ResultsSummary[] {
   const groups = new Map<string, GameResultRow[]>();
   for (const row of rows) {
     const key = `${row.league}|${row.model_version}`;
@@ -126,7 +128,7 @@ function summarizeGameResults(rows: GameResultRow[]): ResultsSummary[] {
   });
 }
 
-function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
+export function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
   const groups = new Map<string, MlbHrResultRow[]>();
   for (const row of rows) {
     const key = `${row.model_version}|${row.top_k_bucket ?? "field"}`;
@@ -150,7 +152,7 @@ function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
   });
 }
 
-function summarizePga(rows: PgaResultRow[]): ResultsSummary[] {
+export function summarizePga(rows: PgaResultRow[]): ResultsSummary[] {
   const groups = new Map<string, PgaResultRow[]>();
   for (const row of rows) {
     groups.set(row.model_version, [...(groups.get(row.model_version) ?? []), row]);
@@ -187,11 +189,106 @@ function summarizePga(rows: PgaResultRow[]): ResultsSummary[] {
   });
 }
 
+function resultGaps(source: string, rows: unknown[] | null) {
+  const missing = getSupabaseMissingEnv();
+  if (missing.length) {
+    return missing.map((name) => `Supabase ${source} unavailable: missing ${name}.`);
+  }
+  return rows == null ? [`Supabase ${source} unavailable.`] : [];
+}
+
+export function filterByWindow<T>(
+  rows: T[],
+  window: ResultsWindow,
+  dateField: keyof T,
+  now = new Date(),
+): T[] {
+  if (window === "all") return rows;
+
+  const cutoff = new Date(now);
+  if (window === "season") {
+    cutoff.setUTCMonth(0, 1);
+    cutoff.setUTCHours(0, 0, 0, 0);
+  } else {
+    cutoff.setUTCDate(cutoff.getUTCDate() - (window === "7d" ? 7 : 30));
+  }
+
+  return rows.filter((row) => {
+    const value = row[dateField];
+    if (typeof value !== "string") return false;
+    const date = new Date(value.length === 10 ? `${value}T00:00:00Z` : value);
+    return !Number.isNaN(date.getTime()) && date >= cutoff;
+  });
+}
+
+function mondayStart(value: string) {
+  const date = new Date(value.length === 10 ? `${value}T00:00:00Z` : value);
+  if (Number.isNaN(date.getTime())) return null;
+  date.setUTCHours(0, 0, 0, 0);
+  const day = date.getUTCDay();
+  date.setUTCDate(date.getUTCDate() - (day === 0 ? 6 : day - 1));
+  return date.toISOString().slice(0, 10);
+}
+
+export function bucketWeeklyResults(
+  rows: GameResultRow[],
+  resultField: "spread_result" | "winner_result" = "spread_result",
+): WeeklyResultsBucket[] {
+  const buckets = new Map<string, WeeklyResultsBucket>();
+  for (const row of rows) {
+    const weekStart = mondayStart(row.game_date);
+    const result = row[resultField];
+    if (!weekStart || !result) continue;
+    const bucket = buckets.get(weekStart) ?? {
+      weekStart,
+      wins: 0,
+      losses: 0,
+      pushes: 0,
+      hitRate: null,
+      units: 0,
+    };
+    if (result === "win") bucket.wins += 1;
+    if (result === "loss") bucket.losses += 1;
+    if (result === "push") bucket.pushes += 1;
+    if (resultField === "spread_result") bucket.units += row.flat_ats_units ?? 0;
+    buckets.set(weekStart, bucket);
+  }
+
+  return Array.from(buckets.values())
+    .map((bucket) => ({
+      ...bucket,
+      hitRate: rate(bucket.wins, bucket.losses),
+    }))
+    .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+}
+
+export async function getGameResultRows(league: string): Promise<RawResults<GameResultRow>> {
+  const normalizedLeague = league.toUpperCase();
+  const rows = await supabaseRest<GameResultRow>(
+    `game_prediction_results?select=*&league=eq.${encodeURIComponent(normalizedLeague)}&order=game_date.desc&limit=5000`,
+  );
+  return { rows: rows ?? [], gaps: resultGaps(`${normalizedLeague} game results`, rows) };
+}
+
+export async function getMlbHomeRunResultRows(): Promise<RawResults<MlbHrResultRow>> {
+  const rows = await supabaseRest<MlbHrResultRow>(
+    "mlb_home_run_results?select=*&order=game_date.desc,rank.asc&limit=5000",
+  );
+  return { rows: rows ?? [], gaps: resultGaps("MLB home run results", rows) };
+}
+
+export async function getPgaResultRows(): Promise<RawResults<PgaResultRow>> {
+  const rows = await supabaseRest<PgaResultRow>(
+    "pga_prediction_results?select=*&order=evaluated_at.desc&limit=5000",
+  );
+  return { rows: rows ?? [], gaps: resultGaps("PGA results", rows) };
+}
+
 export async function getResultsData(): Promise<ResultsData> {
   const [gameRows, mlbHrRows, pgaRows] = await Promise.all([
-    supabaseRest<GameResultRow>("game_prediction_results?select=*&order=game_date.desc&limit=1000"),
-    supabaseRest<MlbHrResultRow>("mlb_home_run_results?select=*&order=game_date.desc,rank.asc&limit=1000"),
-    supabaseRest<PgaResultRow>("pga_prediction_results?select=*&order=evaluated_at.desc&limit=1000"),
+    supabaseRest<GameResultRow>("game_prediction_results?select=*&order=game_date.desc&limit=5000"),
+    supabaseRest<MlbHrResultRow>("mlb_home_run_results?select=*&order=game_date.desc,rank.asc&limit=5000"),
+    supabaseRest<PgaResultRow>("pga_prediction_results?select=*&order=evaluated_at.desc&limit=5000"),
   ]);
 
   const gaps = getSupabaseMissingEnv().map((name) => `Supabase results unavailable: missing ${name}.`);

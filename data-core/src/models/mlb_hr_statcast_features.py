@@ -6,7 +6,7 @@ import json
 import os
 import time
 import warnings
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from io import StringIO
 from pathlib import Path
 from typing import Any
@@ -283,6 +283,54 @@ def fetch_statcast(
     cache.parent.mkdir(parents=True, exist_ok=True)
     out.to_csv(cache, index=False)
     return out
+
+
+def preload_statcast_cache(
+    anchor: date,
+    *,
+    lookback_days: int,
+    refresh_days: int = 10,
+    cache: Path = DEFAULT_STATCAST_CACHE,
+    timeout: int = 30,
+    deadline_seconds: float | None = None,
+) -> pd.DataFrame:
+    """Load the historical cache read-only, then refresh only the trailing window."""
+    if lookback_days < 1:
+        raise ValueError("lookback_days must be at least 1")
+    if refresh_days < 1:
+        raise ValueError("refresh_days must be at least 1")
+
+    start = pd.Timestamp(anchor - timedelta(days=lookback_days))
+    end = pd.Timestamp(anchor - timedelta(days=1))
+    trailing_start = max(start, pd.Timestamp(anchor - timedelta(days=refresh_days)))
+    deadline_at = time.monotonic() + deadline_seconds if deadline_seconds else None
+
+    def remaining_deadline() -> float | None:
+        if deadline_at is None:
+            return None
+        remaining = deadline_at - time.monotonic()
+        if remaining <= 0:
+            raise TimeoutError("Statcast preload deadline reached before trailing refresh")
+        return remaining
+
+    if start < trailing_start:
+        fetch_statcast(
+            start,
+            trailing_start - pd.Timedelta(days=1),
+            cache=cache,
+            refresh=False,
+            timeout=timeout,
+            deadline_seconds=remaining_deadline(),
+        )
+
+    return fetch_statcast(
+        trailing_start,
+        end,
+        cache=cache,
+        refresh=True,
+        timeout=timeout,
+        deadline_seconds=remaining_deadline(),
+    )
 
 
 def _pitch_category(pitch_type: Any) -> str:

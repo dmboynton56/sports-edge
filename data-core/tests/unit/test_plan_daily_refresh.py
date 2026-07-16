@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from scripts import plan_daily_refresh
+from scripts import plan_daily_refresh, predict_mlb_home_runs
 
 
 def test_build_plan_skips_nfl_during_june_without_scheduled_games():
@@ -70,7 +70,16 @@ def test_build_plan_skips_world_cup_outside_tournament_window():
 
 
 def test_default_anchor_date_uses_denver_slate_boundary():
-    # 2026-07-03 05:30 UTC is still 2026-07-02 at 23:30 in America/Denver.
-    assert plan_daily_refresh.default_anchor_date(
-        datetime(2026, 7, 3, 5, 30, tzinfo=timezone.utc)
-    ) == date(2026, 7, 2)
+    # 2026-07-16 05:30 UTC is still 2026-07-15 at 23:30 in America/Denver.
+    boundary = datetime(2026, 7, 16, 5, 30, tzinfo=timezone.utc)
+
+    assert plan_daily_refresh.default_anchor_date(boundary) == date(2026, 7, 15)
+    assert predict_mlb_home_runs.default_slate_date(boundary) == date(2026, 7, 15)
+
+
+def test_default_slate_date_after_denver_midnight():
+    # 2026-07-16 06:30 UTC is 2026-07-16 at 00:30 in America/Denver.
+    boundary = datetime(2026, 7, 16, 6, 30, tzinfo=timezone.utc)
+
+    assert plan_daily_refresh.default_anchor_date(boundary) == date(2026, 7, 16)
+    assert predict_mlb_home_runs.default_slate_date(boundary) == date(2026, 7, 16)

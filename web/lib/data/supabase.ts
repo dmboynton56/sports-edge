@@ -23,3 +23,23 @@ export function getSupabaseMissingEnv() {
     !config.anonKey ? "NEXT_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_ANON_KEY" : null,
   ].filter(Boolean) as string[];
 }
+
+export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
+  const config = getSupabaseRuntimeConfig();
+  if (!config.url || !config.anonKey) return null;
+
+  try {
+    const base = config.url.replace(/\/$/, "");
+    const response = await fetch(`${base}/rest/v1/${resource}`, {
+      headers: {
+        apikey: config.anonKey,
+        Authorization: `Bearer ${config.anonKey}`,
+      },
+      next: { revalidate: 300 },
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as T[];
+  } catch {
+    return null;
+  }
+}

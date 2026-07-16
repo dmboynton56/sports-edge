@@ -26,6 +26,7 @@ env:
   MLB_HR_STATCAST_MIN_BATTER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_BATTER_BBE || '5' }}
   MLB_HR_STATCAST_MIN_PITCHER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_PITCHER_BBE || '5' }}
   MLB_HR_STATCAST_LOOKBACK_DAYS: ${{ vars.MLB_HR_STATCAST_LOOKBACK_DAYS || '120' }}
+  MLB_HR_STATCAST_REFRESH_DAYS: ${{ vars.MLB_HR_STATCAST_REFRESH_DAYS || '10' }}
   MLB_HR_STATCAST_DEADLINE_SECONDS: ${{ vars.MLB_HR_STATCAST_DEADLINE_SECONDS || '360' }}
   MLB_HR_ALLOW_PARTIAL_STATCAST: ${{ vars.MLB_HR_ALLOW_PARTIAL_STATCAST || 'false' }}
   MLB_HR_STRICT_STATCAST_HEALTH: ${{ vars.MLB_HR_STRICT_STATCAST_HEALTH || 'false' }}
@@ -164,20 +165,18 @@ jobs:
         shell: bash
         run: |
           python - <<'PY'
-          from datetime import date, timedelta
+          from datetime import date
           from pathlib import Path
           import pandas as pd
-          from src.models.mlb_hr_statcast_features import DEFAULT_STATCAST_CACHE, fetch_statcast
+          from src.models.mlb_hr_statcast_features import DEFAULT_STATCAST_CACHE, preload_statcast_cache
 
           anchor = date.fromisoformat("${{ steps.plan.outputs.anchor_date }}")
-          start = pd.Timestamp(anchor - timedelta(days=int("${{ env.MLB_HR_STATCAST_LOOKBACK_DAYS }}")))
-          end = pd.Timestamp(anchor - timedelta(days=1))
           try:
-              frame = fetch_statcast(
-                  start,
-                  end,
+              frame = preload_statcast_cache(
+                  anchor,
+                  lookback_days=int("${{ env.MLB_HR_STATCAST_LOOKBACK_DAYS }}"),
+                  refresh_days=int("${{ env.MLB_HR_STATCAST_REFRESH_DAYS }}"),
                   cache=Path(DEFAULT_STATCAST_CACHE),
-                  refresh=False,
                   timeout=30,
                   deadline_seconds=float("${{ env.MLB_HR_STATCAST_DEADLINE_SECONDS }}"),
               )

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -15,12 +14,6 @@ import type { Performance } from "@/lib/data/types";
 import { formatPct } from "@/lib/format";
 
 export function RoiChartClient({ records }: { records: Performance[] }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const data = records
     .filter((record) => typeof record.roi === "number")
     .map((record) => ({
@@ -34,10 +27,6 @@ export function RoiChartClient({ records }: { records: Performance[] }) {
         ROI history missing from current local artifacts.
       </div>
     );
-  }
-
-  if (!mounted) {
-    return <div className="h-64 w-full min-w-0" aria-hidden />;
   }
 
   return (

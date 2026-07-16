@@ -35,6 +35,7 @@ if str(SCRIPTS) not in sys.path:
 
 from src.data.mlb_fetcher import fetch_mlb_schedule  # noqa: E402
 from json_utils import dumps_strict  # noqa: E402
+from plan_daily_refresh import default_anchor_date  # noqa: E402
 from src.models.mlb_home_run_model import (  # noqa: E402
     FEATURE_COLUMNS,
     MODEL_VERSION as TRAINED_MODEL_VERSION,
@@ -80,6 +81,10 @@ STATCAST_HEALTH_COLUMNS = [
     "statcast_total_rows",
     "statcast_artifact_loaded",
 ]
+
+
+def default_slate_date(now: datetime | None = None) -> date:
+    return default_anchor_date(now)
 
 
 def _safe_int(value: Any, default: int = 0) -> int:
@@ -1089,7 +1094,7 @@ def _to_web_payload(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Predict MLB home run probabilities for a date.")
-    parser.add_argument("--date", type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(), default=datetime.now(timezone.utc).date())
+    parser.add_argument("--date", type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(), default=default_slate_date())
     parser.add_argument("--season", type=int, default=None)
     parser.add_argument("--history-days", type=int, default=45)
     parser.add_argument("--cache", type=Path, default=DEFAULT_CACHE)

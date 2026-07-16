@@ -239,13 +239,18 @@ def _load_history(cache_dir: Path, history_json: Path | None) -> dict[str, Any]:
     return build_history(cache_dir)
 
 
-def sync_payloads(conn, evaluations: list[EvaluationPayload], strategies: list[StrategyPayload]) -> tuple[int, int]:
+def sync_payloads(
+    conn,
+    evaluations: list[EvaluationPayload],
+    strategies: list[StrategyPayload],
+) -> tuple[int, int, int]:
     strategies_by_eval = {}
     for strategy in strategies:
         key = (strategy.league, strategy.model_name, strategy.model_version)
         strategies_by_eval.setdefault(key, []).append(strategy)
 
     inserted_evaluations = 0
+    appended_history = 0
     inserted_strategies = 0
     generated_at = datetime.now(timezone.utc)
 
@@ -300,6 +305,39 @@ def sync_payloads(conn, evaluations: list[EvaluationPayload], strategies: list[S
             evaluation_id = cur.fetchone()[0]
             inserted_evaluations += 1
 
+            cur.execute(
+                """
+                INSERT INTO model_evaluation_history (
+                    league,
+                    model_name,
+                    model_version,
+                    evaluation_name,
+                    generated_at,
+                    metrics,
+                    calibration,
+                    artifact_refs,
+                    status,
+                    notes
+                )
+                VALUES (%s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s, 'candidate', %s)
+                ON CONFLICT (league, model_name, model_version, evaluation_name, generated_at)
+                DO NOTHING
+                """,
+                (
+                    evaluation.league,
+                    evaluation.model_name,
+                    evaluation.model_version,
+                    evaluation.evaluation_name,
+                    generated_at,
+                    json.dumps(evaluation.metrics, default=_json_safe),
+                    json.dumps(evaluation.calibration, default=_json_safe),
+                    evaluation.artifact_refs,
+                    evaluation.notes,
+                ),
+                prepare=False,
+            )
+            appended_history += cur.rowcount
+
             for strategy in strategies_by_eval.get(
                 (evaluation.league, evaluation.model_name, evaluation.model_version),
                 [],
@@ -351,7 +389,7 @@ def sync_payloads(conn, evaluations: list[EvaluationPayload], strategies: list[S
                 inserted_strategies += 1
 
     conn.commit()
-    return inserted_evaluations, inserted_strategies
+    return inserted_evaluations, appended_history, inserted_strategies
 
 
 def parse_args() -> argparse.Namespace:
@@ -391,7 +429,9 @@ def main() -> None:
         user=creds["db_user"],
     )
     try:
-        inserted_evaluations, inserted_strategies = sync_payloads(conn, evaluations, strategies)
+        inserted_evaluations, appended_history, inserted_strategies = sync_payloads(
+            conn, evaluations, strategies
+        )
     finally:
         conn.close()
 
@@ -399,6 +439,7 @@ def main() -> None:
         json.dumps(
             {
                 "inserted_evaluations": inserted_evaluations,
+                "appended_history": appended_history,
                 "inserted_strategies": inserted_strategies,
             },
             sort_keys=True,

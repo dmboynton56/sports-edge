@@ -70,7 +70,7 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
           cd data-core
-          python scripts/apply_supabase_sql_files.py sql/009_model_evaluation_tables.sql
+          python scripts/apply_supabase_sql_files.py sql/009_model_evaluation_tables.sql sql/018_model_evaluation_history.sql
           python scripts/sync_evaluation_history_to_supabase.py
 
       - name: Publish performance artifacts

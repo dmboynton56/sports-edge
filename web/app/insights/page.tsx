@@ -1,10 +1,17 @@
 import Link from "next/link";
-import { Brain, ChevronRight } from "lucide-react";
+import { BarChart3, Brain, ChevronRight } from "lucide-react";
 
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const posts = [
+  {
+    href: "/insights/grading-roundup-2026",
+    title: "2026 Grading & Backtest Roundup",
+    description:
+      "Live graded results, persisted backtest evidence, calibration coverage, and production readiness by sport.",
+    icon: BarChart3,
+  },
   {
     href: "/insights/mlb-hr-pytorch",
     title: "MLB HR PyTorch Experiment",

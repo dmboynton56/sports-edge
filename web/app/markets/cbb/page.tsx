@@ -485,6 +485,9 @@ export default function CBBPage() {
             </span>
           )}
         </p>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Seasonal, low-priority market surface; refreshed for tournament play.
+        </p>
       </div>
 
       {/* Tab navigation */}
