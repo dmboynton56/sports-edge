@@ -126,13 +126,21 @@ def _score(frame: pd.DataFrame, prob_col: str) -> dict[str, Any]:
     return out
 
 
+def _as_nullable_int(series: pd.Series) -> pd.Series:
+    """Normalize merge keys so Supabase/CSV strings and API ints join cleanly."""
+    return pd.to_numeric(series, errors="coerce").astype("Int64")
+
+
 def evaluate_predictions(predictions: pd.DataFrame, cache_path: Path, *, timeout: int, sleep: float) -> tuple[pd.DataFrame, dict[str, Any]]:
     predictions = predictions.copy()
     if "game_pk" not in predictions.columns:
         predictions["game_pk"] = predictions["game_id"].map(_game_pk_from_id)
+    predictions["game_pk"] = _as_nullable_int(predictions["game_pk"])
+    if "player_id" in predictions.columns:
+        predictions["player_id"] = _as_nullable_int(predictions["player_id"])
     cached = _read_cached_boxscores(cache_path)
     changed = False
-    for game_pk in sorted(pd.to_numeric(predictions["game_pk"], errors="coerce").dropna().astype(int).unique()):
+    for game_pk in sorted(predictions["game_pk"].dropna().astype(int).unique()):
         if game_pk not in cached:
             try:
                 cached[game_pk] = _fetch_boxscore(int(game_pk), timeout=timeout)
@@ -155,6 +163,8 @@ def evaluate_predictions(predictions: pd.DataFrame, cache_path: Path, *, timeout
         evaluated["actual_plate_appearances"] = np.nan
     else:
         outcome_frame = pd.concat(outcomes, ignore_index=True).drop_duplicates(["game_pk", "player_id"])
+        outcome_frame["game_pk"] = _as_nullable_int(outcome_frame["game_pk"])
+        outcome_frame["player_id"] = _as_nullable_int(outcome_frame["player_id"])
         evaluated = predictions.merge(outcome_frame, on=["game_pk", "player_id"], how="left")
 
     scored = evaluated[evaluated["actual_home_run"].notna()].copy()
