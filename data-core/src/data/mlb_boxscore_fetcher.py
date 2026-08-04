@@ -7,14 +7,74 @@ game with actual starting pitcher IDs/names plus coarse bullpen usage.
 
 from __future__ import annotations
 
-from typing import Iterable, Optional
+import re
 import time
+from typing import Iterable, Optional
 
 import pandas as pd
 import requests
 
 
 MLB_BOXSCORE_URL = "https://statsapi.mlb.com/api/v1/game/{game_pk}/boxscore"
+
+
+def _info_values(info: list) -> dict:
+    """Return boxscore info values keyed by normalized label."""
+    if not isinstance(info, list):
+        return {}
+    return {
+        str(item.get("label", "")).strip().lower(): item.get("value")
+        for item in info
+        if isinstance(item, dict) and item.get("label")
+    }
+
+
+def _parse_weather(info: list) -> dict:
+    """Parse weather and park-relative wind fields without raising."""
+    values = _info_values(info)
+    weather = values.get("weather")
+    wind = values.get("wind")
+    result = {
+        "temp_f": None,
+        "weather_condition": None,
+        "wind_mph": None,
+        "wind_dir": None,
+    }
+
+    if isinstance(weather, str):
+        match = re.fullmatch(r"\s*(-?\d+)\s+degrees\s*,\s*(.+?)\s*", weather)
+        if match:
+            result["temp_f"] = int(match.group(1))
+            result["weather_condition"] = match.group(2)
+
+    if isinstance(wind, str):
+        match = re.fullmatch(r"\s*(\d+)\s+mph\s*,\s*(.+?)\s*", wind)
+        if match:
+            result["wind_mph"] = int(match.group(1))
+            result["wind_dir"] = match.group(2).removesuffix(".")
+
+    return result
+
+
+def _parse_game_info(info: list) -> dict:
+    """Parse weather and general game metadata from a boxscore info list."""
+    values = _info_values(info)
+    result = _parse_weather(info)
+    result.update(
+        {
+            "first_pitch": values.get("first pitch"),
+            "attendance": None,
+            "game_duration": values.get("game duration", values.get("t")),
+        }
+    )
+
+    attendance = values.get("attendance", values.get("att"))
+    if attendance is not None:
+        try:
+            result["attendance"] = int(str(attendance).replace(",", "").strip().removesuffix("."))
+        except (TypeError, ValueError):
+            pass
+    return result
 
 
 def _pitching_stats(team_payload: dict, pitcher_id: int) -> dict:
@@ -50,7 +110,23 @@ def _int_stat(stats: dict, key: str) -> int:
     value = stats.get(key)
     if value in (None, "", ".---"):
         return 0
-    return int(float(value))
+    try:
+        return int(float(value))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _team_stats_summary(team_payload: dict, prefix: str) -> dict:
+    team_stats = team_payload.get("teamStats") or {}
+    batting = team_stats.get("batting") or {}
+    pitching = team_stats.get("pitching") or {}
+    return {
+        f"{prefix}_team_strikeouts": _int_stat(batting, "strikeOuts"),
+        f"{prefix}_team_walks": _int_stat(batting, "baseOnBalls"),
+        f"{prefix}_team_hits": _int_stat(batting, "hits"),
+        f"{prefix}_team_home_runs": _int_stat(batting, "homeRuns"),
+        f"{prefix}_team_pitching_strikeouts": _int_stat(pitching, "strikeOuts"),
+    }
 
 
 def _team_pitching_summary(team_payload: dict, prefix: str) -> dict:
@@ -94,6 +170,9 @@ def fetch_mlb_boxscore(game_pk: int, timeout: int = 30) -> dict:
     row = {"game_pk": int(game_pk)}
     row.update(_team_pitching_summary(teams.get("home", {}), "home"))
     row.update(_team_pitching_summary(teams.get("away", {}), "away"))
+    row.update(_team_stats_summary(teams.get("home", {}), "home"))
+    row.update(_team_stats_summary(teams.get("away", {}), "away"))
+    row.update(_parse_game_info(payload.get("info", [])))
     return row
 
 

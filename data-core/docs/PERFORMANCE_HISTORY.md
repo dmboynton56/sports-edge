@@ -9,6 +9,10 @@ Generated: 2026-08-03
 | MLB | v3 | 2026 YTD | moneyline | 673 test games; 673 odds rows | Brier 0.2478; log loss 0.6888; AUC 0.5431; ROI -3.1% | free_historical_moneylines |
 | PGA | v2 artifacts evaluated on refreshed store | test >= 2025 | outright/top placement | 15172 regression rows | SG Spearman 0.391; made-cut Brier 0.200; win AUC 0.756 | masters_2026_pre_event_odds_cache_only |
 | CBB | manual matchup artifacts | CV 2016-2025 | tournament winner probability | 9 folds; 2002 matchup rows | XGB mean log loss 0.5751; Brier 0.1979; AUC 0.7581 | no_sportsbook_odds |
+| MLB | v4 research | 2026 YTD | moneyline | 1428 test games; 673 free-line odds rows | Brier 0.2475; log loss 0.6880; AUC 0.5497; ROI -5.9% | free_historical_moneylines_partial_soft_lines |
+| MLB | totals v1 research | 2026 YTD | total runs / O-U | 1428 test games | MAE 3.5364; RMSE 4.4925; over-8.5 Brier 0.2469; AUC 0.5739 | no_totals_odds_source |
+| MLB | run line v1 research | 2026 YTD | home -1.5 | 1428 test games | Brier 0.2283; log loss 0.6489; AUC 0.5514; ECE 0.0241 | no_runline_odds_source |
+| MLB | starter Ks v1 research | 2026 YTD | starter strikeouts | 2793 clean test sides | MAE 1.7960; RMSE 2.2482; K>=6 Brier 0.2074 | no_strikeout_odds_source |
 
 ## Blocking Gaps
 

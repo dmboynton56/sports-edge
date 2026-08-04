@@ -1,0 +1,5 @@
+# Task 04 complete
+
+On the identical 1,428-game 2026 window, `full_v2` was an honest negative versus the reconstructed `v1_baseline`: Brier increased from 0.247423 to 0.247468 (Δ +0.000045; worse), AUC fell from 0.550626 to 0.549654 (Δ −0.000973), and flat ROI on the 673 games with free lines fell from −3.08% to −5.86% (Δ −2.78 percentage points). The starter-only arm drove the largest measured deterioration (ΔBrier +0.000147, ΔAUC −0.002759, ΔROI −4.04 points); weather alone was nearly neutral on Brier (+0.000014), improved AUC by 0.001220, but reduced ROI by 1.68 points. The specified arms do not isolate cross-season run environment by itself, so no standalone causal claim is made for that group. The v4 full-window probability p5/p95 was 0.4452/0.6331; on the same 673 rows as published v3 it was 0.4457/0.6356 versus v3's 0.4555/0.6311, a modestly wider, less-compressed distribution. Odds coverage was only 47.13% (673/1,428), so the ROI comparison applies only to that shared free-line subset.
+
+Canonical worker handoff: `CODEX_DONE-04.md`.

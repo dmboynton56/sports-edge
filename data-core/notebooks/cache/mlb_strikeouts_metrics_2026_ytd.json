@@ -1,0 +1,113 @@
+{
+  "all_seasons_probable_mismatch_discarded_fraction": 0.002162039144287665,
+  "coverage": {
+    "by_side": {
+      "away": {
+        "clean_coverage": 0.9754901960784313,
+        "clean_sides": 1393,
+        "total_sides": 1428
+      },
+      "home": {
+        "clean_coverage": 0.9803921568627451,
+        "clean_sides": 1400,
+        "total_sides": 1428
+      }
+    },
+    "clean_coverage": 0.9779411764705882,
+    "clean_sides": 2793,
+    "non_null_label_sides": 2856,
+    "probable_matches_actual_fraction": 0.9964985994397759,
+    "probable_matches_actual_sides": 2846,
+    "probable_mismatch_discarded_fraction": 0.0035014005602240898,
+    "season": 2026,
+    "starter_history_sides": 2801,
+    "total_sides": 2856
+  },
+  "feature_columns": [
+    "starter_k9_last5",
+    "starter_bb9_last5",
+    "starter_era_proxy_last5",
+    "starter_pitches_last3_avg",
+    "starter_outs_per_start_last5",
+    "starter_starts_last365",
+    "starter_days_since_last_start",
+    "starter_career_starts_prior",
+    "starter_throws_r",
+    "opponent_team_bat_k_pg_15",
+    "venue_total_runs_per_game",
+    "temp_f",
+    "wind_mph",
+    "wind_out",
+    "wind_in",
+    "wind_cross",
+    "is_dome_or_closed",
+    "is_day_game",
+    "elevation",
+    "is_home"
+  ],
+  "loss": "poisson",
+  "model": "HistGradientBoostingRegressor",
+  "reason": "no strikeout odds source",
+  "roi": null,
+  "selected_candidate": "poisson_conservative",
+  "split": {
+    "refit_rows": 22802,
+    "refit_seasons": "2021-2025",
+    "test_rows": 2793,
+    "test_season": 2026,
+    "train_rows": 18203,
+    "train_seasons": "2021-2024",
+    "validation_rows": 4599,
+    "validation_season": 2025
+  },
+  "test": {
+    "k9_expected_outs_baseline": {
+      "mae": 1.8673469387755102,
+      "rmse": 2.363977433606301
+    },
+    "model": {
+      "mae": 1.7959630826777324,
+      "rmse": 2.248194845028689
+    },
+    "model_minus_baseline": {
+      "mae": -0.07138385609777775,
+      "rmse": -0.11578258857761181
+    },
+    "threshold_calibration": {
+      "over_5_5": {
+        "base_rate_brier": 0.2319116148055068,
+        "brier": 0.20738953881040442,
+        "empirical_hit_rate": 0.3651987110633727,
+        "mean_predicted_probability": 0.3818360814266103,
+        "reference_base_rate": 0.3743092711165687,
+        "threshold": 5.5
+      },
+      "over_6_5": {
+        "base_rate_brier": 0.18107431241509855,
+        "brier": 0.1637798223070049,
+        "empirical_hit_rate": 0.23737916219119226,
+        "mean_predicted_probability": 0.2476154832222803,
+        "reference_base_rate": 0.24401368301026224,
+        "threshold": 6.5
+      }
+    }
+  },
+  "validation": {
+    "k9_expected_outs_baseline": {
+      "mae": 1.9275596144089298,
+      "rmse": 2.4221719943883757
+    },
+    "poisson_conservative": {
+      "mae": 1.8134543418043003,
+      "rmse": 2.270798925025521
+    },
+    "poisson_medium": {
+      "mae": 1.8271051367758095,
+      "rmse": 2.2881703376299645
+    },
+    "poisson_shallow": {
+      "mae": 1.823385773793835,
+      "rmse": 2.284535208544065
+    }
+  }
+}

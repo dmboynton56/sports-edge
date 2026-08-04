@@ -39,6 +39,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--refresh-games", action="store_true")
     parser.add_argument("--fetch-boxscores", action="store_true")
     parser.add_argument("--limit-boxscores", type=int, help="Limit new boxscores fetched; omit for full backfill.")
+    parser.add_argument("--sleep-seconds", type=float, default=0.05, help="Delay between boxscore requests.")
     return parser.parse_args()
 
 
@@ -62,7 +63,7 @@ def main() -> None:
             pending = pending[: args.limit_boxscores]
         print(f"Fetching {len(pending)} new MLB boxscores ({len(seen)} already cached)...")
         if pending:
-            fetched = fetch_mlb_boxscores(pending)
+            fetched = fetch_mlb_boxscores(pending, sleep_seconds=args.sleep_seconds)
             combined = pd.concat([existing, fetched], ignore_index=True) if not existing.empty else fetched
             combined = combined.drop_duplicates(subset=["game_pk"], keep="last")
             _save(combined, args.boxscores_cache)

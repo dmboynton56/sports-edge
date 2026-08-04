@@ -11,9 +11,11 @@ from src.models.mlb_winner_model import (
     build_mlb_winner_features,
     default_feature_columns,
 )
+from src.features.mlb_market_features import build_mlb_market_features
 
 __all__ = [
     "build_mlb_prediction_features",
     "build_mlb_winner_features",
+    "build_mlb_market_features",
     "default_feature_columns",
 ]

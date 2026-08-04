@@ -1,0 +1,145 @@
+{
+  "baseline": {
+    "probability": 0.5324995746128978,
+    "test": {
+      "accuracy": 0.5203081232492998,
+      "actual_home_win_rate": 0.5203081232492998,
+      "avg_pred_home_win": 0.5324995746128977,
+      "brier": 0.24973621161644227,
+      "ece_10": 0.012191451363597894,
+      "log_loss": 0.692620351438077,
+      "roc_auc": 0.5
+    }
+  },
+  "candidate_metrics": {
+    "hist_gradient_boosting": {
+      "test": {
+        "accuracy": 0.530812324929972,
+        "actual_home_win_rate": 0.5203081232492998,
+        "avg_pred_home_win": 0.5265020023755183,
+        "brier": 0.25014548232538386,
+        "ece_10": 0.04756423117444663,
+        "log_loss": 0.6936629685673605,
+        "roc_auc": 0.5487007692232122
+      },
+      "validation": {
+        "accuracy": 0.5272340425531915,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.5220059726096081,
+        "brier": 0.25312758791354767,
+        "ece_10": 0.05940274162564847,
+        "log_loss": 0.7000379226773012,
+        "roc_auc": 0.5336161480029404
+      }
+    },
+    "logistic": {
+      "test": {
+        "accuracy": 0.5364145658263305,
+        "actual_home_win_rate": 0.5203081232492998,
+        "avg_pred_home_win": 0.5255192308752392,
+        "brier": 0.24998811775513316,
+        "ece_10": 0.0357560071436146,
+        "log_loss": 0.6971549987870537,
+        "roc_auc": 0.5557210362409251
+      },
+      "validation": {
+        "accuracy": 0.5378723404255319,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.5199753432248567,
+        "brier": 0.24752272332952477,
+        "ece_10": 0.03546805705383305,
+        "log_loss": 0.6920954310573278,
+        "roc_auc": 0.5586282540460439
+      }
+    },
+    "random_forest": {
+      "test": {
+        "accuracy": 0.5406162464985994,
+        "actual_home_win_rate": 0.5203081232492998,
+        "avg_pred_home_win": 0.526644473055445,
+        "brier": 0.24723298930455462,
+        "ece_10": 0.013428312966601337,
+        "log_loss": 0.6875275998031539,
+        "roc_auc": 0.5538583961253942
+      },
+      "validation": {
+        "accuracy": 0.5434042553191489,
+        "actual_home_win_rate": 0.5412765957446809,
+        "avg_pred_home_win": 0.526474212276404,
+        "brier": 0.2452548669411179,
+        "ece_10": 0.021381606460760497,
+        "log_loss": 0.6834624880326411,
+        "roc_auc": 0.5616518477030606
+      }
+    }
+  },
+  "data_summary": {
+    "home_win_rate": 0.5311788802913063,
+    "max_game_date": "2026-07-20",
+    "min_game_date": "2021-04-06",
+    "rows": 13182,
+    "seasons": [
+      2021,
+      2022,
+      2023,
+      2024,
+      2025,
+      2026
+    ]
+  },
+  "odds_summary": {
+    "edge_buckets": [
+      {
+        "edge_bucket": "0-2%",
+        "games": 178,
+        "roi": -0.02733023279920827,
+        "units": -4.8647814382590715
+      },
+      {
+        "edge_bucket": "2-4%",
+        "games": 165,
+        "roi": -0.12950017997085933,
+        "units": -21.367529695191788
+      },
+      {
+        "edge_bucket": "4-6%",
+        "games": 113,
+        "roi": 0.0008894240333094604,
+        "units": 0.10050491576396903
+      },
+      {
+        "edge_bucket": "6%+",
+        "games": 217,
+        "roi": -0.06140727564359568,
+        "units": -13.325378814660263
+      }
+    ],
+    "flat_roi": -0.05862880391136278,
+    "flat_units": -39.45718503234715,
+    "odds_rows": 673
+  },
+  "selected_model_name": "random_forest",
+  "selected_refit_test": {
+    "accuracy": 0.5427170868347339,
+    "actual_home_win_rate": 0.5203081232492998,
+    "avg_pred_home_win": 0.5318667620363168,
+    "brier": 0.24746838489157474,
+    "ece_10": 0.012745927360878147,
+    "log_loss": 0.6879776415083434,
+    "roc_auc": 0.5496537021937107
+  },
+  "splits": {
+    "final_train_rows": 11754,
+    "test_rows": 1428,
+    "test_season": 2026,
+    "train_rows": 9404,
+    "train_seasons": [
+      2021,
+      2022,
+      2023,
+      2024
+    ],
+    "validation_rows": 2350,
+    "validation_season": 2025
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "run_id": "2026-07-21-mlb-market-expansion-analytics",
+  "phase": "done",
+  "next_actor": "none",
+  "active_tasks": [],
+  "completed_tasks": ["02-diagnosis-v3", "01-data-backfill-weather", "03-feature-store-v2", "07-strikeouts-model", "04-moneyline-v4", "05-totals-model", "06-runline-model", "08-synthesis-doc"],
+  "goal_done": true,
+  "tasks": {
+    "01-data-backfill-weather": {"status": "done", "depends_on": [], "parallel_group": "wave0"},
+    "02-diagnosis-v3": {"status": "done", "depends_on": [], "parallel_group": "wave0"},
+    "03-feature-store-v2": {"status": "done", "depends_on": ["01-data-backfill-weather"], "parallel_group": "gate"},
+    "04-moneyline-v4": {"status": "done", "depends_on": ["03-feature-store-v2"], "parallel_group": "wave1"},
+    "05-totals-model": {"status": "done", "depends_on": ["03-feature-store-v2"], "parallel_group": "wave1"},
+    "06-runline-model": {"status": "done", "depends_on": ["03-feature-store-v2"], "parallel_group": "wave1"},
+    "07-strikeouts-model": {"status": "done", "depends_on": ["03-feature-store-v2"], "parallel_group": "wave1", "optional": true},
+    "08-synthesis-doc": {"status": "done", "depends_on": ["02-diagnosis-v3", "04-moneyline-v4", "05-totals-model", "06-runline-model"], "parallel_group": "wave2"}
+  },
+  "notes": "Fable review 2026-07-21: all six hard gates verified independently (tests re-run 55 passed; parquet/JSON artifacts reopened; every doc number reconciled to artifacts). Moneyline v4 is a clean negative result with ablation attribution; totals and run line beat naive baselines; strikeouts stretch shipped. See artifacts/FINAL_REVIEW.md. Run complete; no commit/push performed."
+}

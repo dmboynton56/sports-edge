@@ -54,6 +54,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--validation-season", type=int)
     parser.add_argument("--test-season", type=int)
     parser.add_argument("--cache-path", default="data-core/notebooks/cache/mlb_games.parquet")
+    parser.add_argument(
+        "--features-path",
+        help="Prebuilt feature store (.parquet or .csv); skips game fetching and feature building.",
+    )
     parser.add_argument("--refresh-cache", action="store_true", help="Refetch MLB data even if cache exists.")
     parser.add_argument("--min-prior-games", type=int, default=5)
     parser.add_argument("--model-version", default="v1")
@@ -68,18 +72,23 @@ def main() -> None:
     if args.start_season > args.end_season:
         raise ValueError("--start-season must be <= --end-season")
 
-    seasons = list(range(args.start_season, args.end_season + 1))
-    if os.path.exists(args.cache_path) and not args.refresh_cache:
-        print(f"Loading MLB games from cache: {args.cache_path}")
-        games = _load_cache(args.cache_path)
+    if args.features_path:
+        print(f"Loading MLB features from: {args.features_path}")
+        features = _load_cache(args.features_path)
+        print(f"Loaded {len(features)} prebuilt feature rows")
     else:
-        games = fetch_mlb_games_for_seasons(seasons)
-        _save_cache(games, args.cache_path)
-        print(f"Saved MLB game cache to {args.cache_path}")
+        seasons = list(range(args.start_season, args.end_season + 1))
+        if os.path.exists(args.cache_path) and not args.refresh_cache:
+            print(f"Loading MLB games from cache: {args.cache_path}")
+            games = _load_cache(args.cache_path)
+        else:
+            games = fetch_mlb_games_for_seasons(seasons)
+            _save_cache(games, args.cache_path)
+            print(f"Saved MLB game cache to {args.cache_path}")
 
-    print(f"Building MLB features from {len(games)} games...")
-    features = build_mlb_winner_features(games, min_prior_games=args.min_prior_games)
-    print(f"Built {len(features)} feature rows after min_prior_games={args.min_prior_games}")
+        print(f"Building MLB features from {len(games)} games...")
+        features = build_mlb_winner_features(games, min_prior_games=args.min_prior_games)
+        print(f"Built {len(features)} feature rows after min_prior_games={args.min_prior_games}")
 
     result = train_and_evaluate_mlb_winner(
         features,

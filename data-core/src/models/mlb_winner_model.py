@@ -416,6 +416,27 @@ def default_feature_columns(features: pd.DataFrame) -> list[str]:
         "away_score",
         "home_win",
         "run_diff",
+        "total_runs",
+        "home_cover_15",
+        "home_starter_ks_label",
+        "away_starter_ks_label",
+        "home_probable_matches_actual",
+        "away_probable_matches_actual",
+        "attendance",
+        "game_duration",
+        "first_pitch",
+        "weather_condition",
+        "wind_dir",
+        "home_team_strikeouts",
+        "home_team_walks",
+        "home_team_hits",
+        "home_team_home_runs",
+        "home_team_pitching_strikeouts",
+        "away_team_strikeouts",
+        "away_team_walks",
+        "away_team_hits",
+        "away_team_home_runs",
+        "away_team_pitching_strikeouts",
     }
     postgame_keywords = (
         "actual_starter",
@@ -425,12 +446,26 @@ def default_feature_columns(features: pd.DataFrame) -> list[str]:
         "starter_strikeouts",
         "starter_walks",
         "bullpen_",
+        "_team_strikeouts",
+        "_team_walks",
+        "_team_hits",
+        "_team_home_runs",
+        "_team_pitching_strikeouts",
+    )
+    pregame_rolling_suffixes = (
+        "starter_pitches_last3_avg",
+        "starter_outs_per_start_last5",
+        "starter_pitches_last3_avg_diff",
+        "starter_outs_per_start_last5_diff",
     )
     return [
         col
         for col in features.columns
         if col not in exclude and pd.api.types.is_numeric_dtype(features[col])
-        and not any(keyword in col for keyword in postgame_keywords)
+        and (
+            col.endswith(pregame_rolling_suffixes)
+            or not any(keyword in col for keyword in postgame_keywords)
+        )
     ]
 
 

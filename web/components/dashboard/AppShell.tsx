@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
@@ -49,6 +50,19 @@ const navItems = [
   { href: "/insights", label: "Insights", icon: Newspaper },
   { href: "/data-quality", label: "Data Quality", icon: DatabaseZap },
 ];
+
+function BrandMark() {
+  return (
+    <Image
+      src="/sports-edge-mark.png"
+      alt=""
+      width={64}
+      height={64}
+      sizes="28px"
+      className="size-7 rounded-md object-cover"
+    />
+  );
+}
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -136,7 +150,10 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetTrigger>
               <SheetContent side="left" className="w-80">
                 <SheetHeader>
-                  <SheetTitle>SPORTS EDGE</SheetTitle>
+                  <SheetTitle className="flex items-center gap-2">
+                    <BrandMark />
+                    <span>SPORTS EDGE</span>
+                  </SheetTitle>
                 </SheetHeader>
                 <div className="mt-6">
                   <NavLinks onNavigate={() => setOpen(false)} />
@@ -144,10 +161,12 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetContent>
             </Sheet>
 
-            <Link href="/" className="flex min-w-fit items-center gap-2 font-semibold">
-              <span className="grid size-7 place-items-center rounded-md border border-accent/50 bg-accent/10 text-xs text-accent">
-                SE
-              </span>
+            <Link
+              href="/"
+              aria-label="Sports Edge home"
+              className="flex min-w-fit items-center gap-2 font-semibold"
+            >
+              <BrandMark />
               <span className="hidden sm:inline">SPORTS EDGE</span>
             </Link>
 

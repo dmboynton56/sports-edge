@@ -1,0 +1,46 @@
+{
+  "boxscore_coverage_rate": 1.0,
+  "boxscore_error_rows": 0,
+  "boxscores_row_count": 13653,
+  "distinct_wind_dir": [
+    "Calm",
+    "In From CF",
+    "In From LF",
+    "In From RF",
+    "L To R",
+    "None",
+    "Out To CF",
+    "Out To LF",
+    "Out To RF",
+    "R To L",
+    "Varies"
+  ],
+  "games_row_count": 13653,
+  "null_rate_per_new_column": {
+    "attendance": 0.007177909616934007,
+    "away_team_hits": 0.0,
+    "away_team_home_runs": 0.0,
+    "away_team_pitching_strikeouts": 0.0,
+    "away_team_strikeouts": 0.0,
+    "away_team_walks": 0.0,
+    "first_pitch": 0.00014648795136600013,
+    "game_duration": 0.00014648795136600013,
+    "home_team_hits": 0.0,
+    "home_team_home_runs": 0.0,
+    "home_team_pitching_strikeouts": 0.0,
+    "home_team_strikeouts": 0.0,
+    "home_team_walks": 0.0,
+    "temp_f": 0.0,
+    "weather_condition": 0.0,
+    "wind_dir": 7.324397568300007e-05,
+    "wind_mph": 7.324397568300007e-05
+  },
+  "row_counts_per_season": {
+    "2021": 2429,
+    "2022": 2430,
+    "2023": 2430,
+    "2024": 2429,
+    "2025": 2430,
+    "2026": 1505
+  }
+}
