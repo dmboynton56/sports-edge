@@ -1,0 +1,86 @@
+name: Fantasy Projection Refresh
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Generate and validate without Supabase writes or a commit"
+        required: false
+        default: "false"
+      no_adp:
+        description: "Skip the FantasyPros market signal"
+        required: false
+        default: "false"
+  schedule:
+    - cron: "15 12 * * *"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sports-edge-fantasy-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: data-core
+    env:
+      FANTASYPROS_API_KEY: ${{ secrets.FANTASYPROS_API_KEY }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+      SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+      SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+      SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+      NO_ADP: ${{ github.event.inputs.no_adp || 'false' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: data-core/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt google-cloud-bigquery nflreadpy supabase
+
+      - name: Generate projections
+        shell: bash
+        run: |
+          args=(--season "$(date -u +%Y)" --history-start 2018)
+          if [ "$NO_ADP" = "true" ]; then args+=(--no-adp); fi
+          python scripts/generate_fantasy_projections.py "${args[@]}"
+
+      - name: Validate artifact
+        run: python scripts/validate_public_json.py ../web/public/data/fantasy_projections.json
+
+      - name: Apply fantasy serving schema and sync
+        if: ${{ env.DRY_RUN != 'true' }}
+        run: |
+          python scripts/apply_supabase_sql_files.py sql/020_fantasy_serving_tables.sql
+          python scripts/sync_fantasy_projections_to_supabase.py
+
+      - name: Publish artifact
+        if: ${{ env.DRY_RUN != 'true' }}
+        shell: bash
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/public/data/fantasy_projections.json data-core/models/fantasy_projection_metrics.json
+          if git diff --cached --quiet; then
+            echo "No fantasy artifact changes to publish."
+            exit 0
+          fi
+          git commit -m "Refresh fantasy projections"
+          git pull --rebase origin "$GITHUB_REF_NAME"
+          git push origin "HEAD:$GITHUB_REF_NAME"
