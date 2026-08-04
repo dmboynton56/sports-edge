@@ -102,7 +102,8 @@ function readPlannerState() {
   }
 }
 
-export function FantasyBoard({ feed }: { feed: FantasyFeed }) {
+export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
+  const [feed, setFeed] = useState<FantasyFeed>(initialFeed);
   const [view, setView] = useState<View>("rankings");
   const [week, setWeek] = useState(1);
   const [position, setPosition] = useState<"ALL" | FantasyPosition>("ALL");
@@ -115,6 +116,8 @@ export function FantasyBoard({ feed }: { feed: FantasyFeed }) {
   const [mine, setMine] = useState<Set<string>>(new Set());
   const [showSettings, setShowSettings] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [weeklyLoading, setWeeklyLoading] = useState(false);
+  const [weeklyError, setWeeklyError] = useState<string | null>(null);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -132,6 +135,38 @@ export function FantasyBoard({ feed }: { feed: FantasyFeed }) {
     if (!hydrated) return;
     window.localStorage.setItem("sports-edge-fantasy-planner-v1", JSON.stringify({ scoring, roster, drafted: [...drafted], mine: [...mine] }));
   }, [drafted, hydrated, mine, roster, scoring]);
+
+  useEffect(() => {
+    if (view !== "weekly" && view !== "lineup") return;
+    const weekKey = String(week);
+    if (feed.weekly[weekKey]?.length) return;
+    const controller = new AbortController();
+    const frame = window.requestAnimationFrame(() => {
+      setWeeklyLoading(true);
+      setWeeklyError(null);
+      fetch(`/api/fantasy/projections?scope=week&week=${week}`, { signal: controller.signal, cache: "no-store" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error(`Weekly feed returned ${response.status}.`);
+          return response.json() as Promise<{ projections?: FantasyProjection[]; gaps?: string[] }>;
+        })
+        .then((payload) => {
+          setFeed((current) => ({
+            ...current,
+            weekly: { ...current.weekly, [weekKey]: payload.projections ?? [] },
+            gaps: [...new Set([...current.gaps, ...(payload.gaps ?? [])])],
+          }));
+        })
+        .catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          setWeeklyError(error instanceof Error ? error.message : "Unable to load weekly projections.");
+        })
+        .finally(() => setWeeklyLoading(false));
+    });
+    return () => {
+      window.cancelAnimationFrame(frame);
+      controller.abort();
+    };
+  }, [feed.weekly, view, week]);
 
   const sourceRows = useMemo<FantasyProjection[]>(() => {
     if (view === "rankings" || view === "draft") return feed.projections;
@@ -256,6 +291,8 @@ export function FantasyBoard({ feed }: { feed: FantasyFeed }) {
       <Card>
         <CardHeader className="space-y-4"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><CardTitle>{view === "draft" ? "Available player board" : view === "lineup" ? "Roster player pool" : view === "weekly" ? `Week ${week} projections` : "Preseason player projections"}</CardTitle><p className="mt-1 text-sm text-muted-foreground">{filtered.length.toLocaleString()} players · median projection with a calibrated range · model {feed.modelVersion}</p></div><div className="flex flex-wrap gap-2"><input aria-label="Search players" placeholder="Search player" value={search} onChange={(event) => setSearch(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm" /><Button variant="outline" size="sm" onClick={() => { setSortKey(sortKey === "points" ? "ppg" : "points"); setAscending(false); }}><ArrowDownUp /> Sort</Button></div></div><div className="flex flex-wrap items-center gap-2">{POSITIONS.map((item) => <Button key={item} size="sm" variant={position === item ? "secondary" : "ghost"} onClick={() => setPosition(item)}>{item}</Button>)}{view === "weekly" || view === "lineup" ? <label className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">Week<select className="h-9 rounded-md border border-input bg-background px-2 text-foreground" value={week} onChange={(event) => setWeek(Number(event.target.value))}>{Array.from({ length: 18 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label> : null}</div></CardHeader>
         <CardContent>
+          {weeklyLoading ? <p className="mb-3 text-sm text-muted-foreground">Loading week {week} projections…</p> : null}
+          {weeklyError ? <p className="mb-3 text-sm text-destructive">{weeklyError}</p> : null}
           <Table className="min-w-[920px]"><TableHeader><TableRow><TableHead className="w-10">#</TableHead><TableHead>Player</TableHead><TableHead>Pos</TableHead><TableHead><button onClick={() => { setSortKey("points"); setAscending(!ascending); }}>Points {sortKey === "points" ? ascending ? <ChevronUp className="inline size-3" /> : <ChevronDown className="inline size-3" /> : null}</button></TableHead><TableHead>Range</TableHead><TableHead>PPG</TableHead><TableHead>Model rank</TableHead><TableHead>ADP</TableHead><TableHead>Action</TableHead></TableRow></TableHeader><TableBody>{filtered.slice(0, 250).map((row, index) => <TableRow key={row.player_id} className={cn(drafted.has(row.player_id) && "opacity-45")}><TableCell className="text-muted-foreground">{index + 1}</TableCell><TableCell><div className="font-medium">{row.player_name}</div><div className="text-xs text-muted-foreground">{row.team ?? "FA"} · {row.confidence} confidence</div></TableCell><TableCell><Badge variant="outline">{row.position}</Badge></TableCell><TableCell className="font-semibold text-accent">{row.displayPoints.toFixed(1)}</TableCell><TableCell className="text-xs text-muted-foreground">{row.displayFloor.toFixed(1)}–{row.displayCeiling.toFixed(1)}</TableCell><TableCell>{(row.displayPoints / Math.max(1, row.projected_games)).toFixed(1)}</TableCell><TableCell>{row.position_rank ? `${row.position}${row.position_rank}` : "—"}</TableCell><TableCell>{row.adp ? <span title="FantasyPros market ADP">{row.adp.toFixed(1)}</span> : <span className="text-muted-foreground">—</span>}</TableCell><TableCell>{view === "draft" ? <div className="flex gap-1"><Button size="sm" variant="outline" disabled={drafted.has(row.player_id)} onClick={() => toggleDraft(row, false)}>{drafted.has(row.player_id) ? "Drafted" : "Other"}</Button><Button size="sm" variant={mine.has(row.player_id) ? "secondary" : "default"} onClick={() => toggleDraft(row, true)}>{mine.has(row.player_id) ? "Mine" : "Draft me"}</Button></div> : view === "lineup" ? <Button size="sm" variant={mine.has(row.player_id) ? "secondary" : "outline"} onClick={() => toggleDraft(row, true)}>{mine.has(row.player_id) ? "Remove" : "Add to roster"}</Button> : <Button size="sm" variant="ghost" onClick={() => setView("lineup")}>Plan</Button>}</TableCell></TableRow>)}</TableBody></Table>
           {filtered.length > 250 ? <p className="mt-3 text-xs text-muted-foreground">Showing the first 250 matches. Narrow the position or search filters to inspect the full board.</p> : null}
         </CardContent>
