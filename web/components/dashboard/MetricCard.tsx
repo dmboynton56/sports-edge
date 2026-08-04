@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 export function MetricCard({
@@ -17,23 +17,30 @@ export function MetricCard({
   tone?: "default" | "accent" | "warning";
 }) {
   return (
-    <Card className="min-h-32">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-sm text-muted-foreground">{title}</CardTitle>
+    <Card className="flex min-h-32 flex-col p-5">
+      <div className="flex items-start justify-between gap-3">
+        <span className="text-[13px] font-semibold text-muted-foreground">{title}</span>
         {Icon ? (
           <Icon
             className={cn(
-              "size-4 text-muted-foreground",
+              "size-4 shrink-0 text-muted-foreground",
               tone === "accent" && "text-accent",
               tone === "warning" && "text-destructive",
             )}
           />
         ) : null}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-semibold tracking-normal">{value}</div>
-        {detail ? <p className="mt-2 text-xs text-muted-foreground">{detail}</p> : null}
-      </CardContent>
+      </div>
+      <div
+        className={cn(
+          "figure mt-2 text-[32px] leading-tight",
+          tone === "warning" && "text-destructive",
+        )}
+      >
+        {value}
+      </div>
+      {detail ? (
+        <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{detail}</p>
+      ) : null}
     </Card>
   );
 }

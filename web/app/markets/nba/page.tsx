@@ -1,6 +1,6 @@
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { MarketsTable } from "@/components/dashboard/MarketsTable";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { Card, CardContent } from "@/components/ui/card";
 import { getProductionPredictionFeed } from "@/lib/data/player-markets";
 
 export default async function NbaMarketsPage() {
@@ -19,11 +19,10 @@ export default async function NbaMarketsPage() {
       {predictions.length > 0 ? (
         <MarketsTable initialPredictions={predictions} initialGaps={feed.gaps} />
       ) : (
-        <Card className="border-dashed bg-muted/20">
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
-            No live NBA markets — models resume in season.
-          </CardContent>
-        </Card>
+        <EmptyState
+          title="No NBA board right now"
+          description="Spread and winner probabilities publish on game days during the season. The model's full record stays available in the meantime."
+        />
       )}
     </div>
   );

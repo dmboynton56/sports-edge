@@ -1,46 +1,47 @@
 import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 import { MarketsTable } from "@/components/dashboard/MarketsTable";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageHeader, SectionHeading } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { getProductionPredictionFeed } from "@/lib/data/player-markets";
 import { SPORTS, type SportEntry } from "@/lib/markets-registry";
-import { cn } from "@/lib/utils";
+import { sportColor } from "@/lib/sports";
 
-function SportCard({ sport, muted = false }: { sport: SportEntry; muted?: boolean }) {
+function SportCard({ sport }: { sport: SportEntry }) {
+  const live = sport.markets.filter((market) => market.status === "live").length;
+
   return (
-    <Card className={cn(muted && "bg-muted/20 text-muted-foreground")}>
-      <CardHeader className={cn(muted && "pb-2")}>
-        <div className="flex items-center justify-between gap-3">
-          <CardTitle className={cn(muted && "text-base")}>{sport.label}</CardTitle>
-          {sport.emphasis !== "primary" ? (
-            <Badge variant="outline" className="text-muted-foreground">
-              {sport.emphasis}
-            </Badge>
-          ) : null}
-        </div>
-        <p className="text-sm text-muted-foreground">{sport.description}</p>
-      </CardHeader>
-      <CardContent className="space-y-2">
+    <Card className="flex flex-col p-5">
+      <div className="flex items-center gap-3">
+        <span className={`h-6 w-[3px] rounded-full ${sportColor(sport.slug).fill}`} />
+        <h3 className="font-display text-xl font-bold tracking-tight">{sport.label}</h3>
+        <Badge variant={live ? "positive" : "outline"} className="ml-auto">
+          {live ? `${live} live` : "No board yet"}
+        </Badge>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">{sport.description}</p>
+
+      <div className="mt-4 flex flex-col gap-1.5">
         {sport.markets.map((market) => (
           <Link
             key={market.slug}
             href={market.href}
-            className="block rounded-lg border border-border bg-background/60 p-3 transition-colors hover:border-accent/50 hover:bg-accent/5"
+            className="group flex items-start gap-3 rounded-lg border border-border bg-background/60 px-3.5 py-3 transition-colors hover:border-accent/40 hover:bg-accent-soft"
           >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="text-sm font-medium text-foreground">{market.label}</span>
-              {market.status === "scaffold" ? (
-                <Badge variant="secondary" className="text-muted-foreground">
-                  scaffold
-                </Badge>
-              ) : null}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">{market.description}</p>
+            <span className="min-w-0 flex-1">
+              <span className="block text-sm font-semibold text-foreground">
+                {market.label}
+              </span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
+                {market.description}
+              </span>
+            </span>
+            <ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:text-accent" />
           </Link>
         ))}
-      </CardContent>
+      </div>
     </Card>
   );
 }
@@ -54,32 +55,29 @@ export default async function MarketsPage() {
     <div>
       <PageHeader
         title="Markets"
-        description="Choose a sport and market to inspect the numbers produced by each model."
+        description="Pick a league to see today's model numbers next to the book's."
         meta={feed.generatedAt}
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         {primarySports.map((sport) => (
           <SportCard key={sport.slug} sport={sport} />
         ))}
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
+      <SectionHeading title="Not running yet" note="Scaffolded, waiting on models or season" />
+      <div className="grid gap-3 md:grid-cols-3">
         {secondarySports.map((sport) => (
-          <SportCard key={sport.slug} sport={sport} muted />
+          <SportCard key={sport.slug} sport={sport} />
         ))}
       </div>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Pre-Live Model Board</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <MarketsTable
-            initialPredictions={feed.predictions}
-            initialGaps={feed.gaps}
-          />
-        </CardContent>
+      <SectionHeading
+        title="Pre-live model board"
+        note={`${feed.predictions.length} lines across every live market`}
+      />
+      <Card className="overflow-hidden p-5">
+        <MarketsTable initialPredictions={feed.predictions} initialGaps={feed.gaps} />
       </Card>
     </div>
   );

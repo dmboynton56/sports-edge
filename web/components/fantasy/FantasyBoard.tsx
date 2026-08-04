@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ArrowDownUp, Check, ChevronDown, ChevronUp, RotateCcw, Settings2, Sparkles, Users, X } from "lucide-react";
+import { ArrowDownUp, Check, ChevronDown, ChevronUp, type LucideIcon, RotateCcw, Settings2, Sparkles, Users, X } from "lucide-react";
 
 import {
   DEFAULT_FANTASY_ROSTER,
@@ -23,6 +23,13 @@ import { cn } from "@/lib/utils";
 
 type View = "rankings" | "weekly" | "draft" | "lineup";
 type SortKey = "points" | "ppg" | "floor" | "adp" | "position";
+
+const VIEWS: Array<{ key: View; label: string; icon: LucideIcon }> = [
+  { key: "rankings", label: "Rankings", icon: Sparkles },
+  { key: "weekly", label: "Weekly", icon: ArrowDownUp },
+  { key: "draft", label: "Draft room", icon: Users },
+  { key: "lineup", label: "Lineup", icon: Check },
+];
 
 const POSITIONS: Array<"ALL" | FantasyPosition> = ["ALL", "QB", "RB", "WR", "TE", "K", "DST"];
 const SCORING_FIELDS: Array<{ key: keyof FantasyScoring; label: string; step: string }> = [
@@ -250,11 +257,24 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
               <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Original component projections, transparent uncertainty, and a local draft board. Change scoring and the rankings recalculate immediately.</p>
               {validation?.total ? <p className="mt-2 text-xs text-muted-foreground">Validation: {validation.beats}/{validation.total} stat components beat the prior-season baseline on the {validation.holdout} out-of-time holdout.</p> : null}
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button variant={view === "rankings" ? "default" : "outline"} onClick={() => setView("rankings")}><Sparkles /> Rankings</Button>
-              <Button variant={view === "weekly" ? "default" : "outline"} onClick={() => setView("weekly")}><ArrowDownUp /> Weekly</Button>
-              <Button variant={view === "draft" ? "default" : "outline"} onClick={() => setView("draft")}><Users /> Draft room</Button>
-              <Button variant={view === "lineup" ? "default" : "outline"} onClick={() => setView("lineup")}><Check /> Lineup</Button>
+            <div className="flex shrink-0 items-center gap-2">
+              <div className="flex flex-wrap gap-0.5 rounded-xl bg-secondary p-1">
+                {VIEWS.map(({ key, label, icon: Icon }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setView(key)}
+                    aria-pressed={view === key}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground",
+                      view === key && "bg-card text-foreground shadow-soft",
+                    )}
+                  >
+                    <Icon className="size-4" />
+                    {label}
+                  </button>
+                ))}
+              </div>
               <Button variant="outline" size="icon" aria-label="Open scoring settings" onClick={() => setShowSettings((value) => !value)}><Settings2 /></Button>
             </div>
           </div>
@@ -266,8 +286,8 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
           <CardHeader className="flex flex-row items-center justify-between space-y-0"><CardTitle>Scoring and roster</CardTitle><Button variant="ghost" size="icon" onClick={() => setShowSettings(false)} aria-label="Close settings"><X /></Button></CardHeader>
           <CardContent className="space-y-4">
             <div className="flex flex-wrap gap-2"><Button size="sm" variant="outline" onClick={() => setPreset(STANDARD_SCORING)}>Standard</Button><Button size="sm" variant="outline" onClick={() => setPreset(HALF_PPR_SCORING)}>Half PPR</Button><Button size="sm" variant="outline" onClick={() => setPreset(DEFAULT_FANTASY_SCORING)}>Full PPR</Button><Button size="sm" variant="ghost" onClick={resetPlanner}><RotateCcw /> Reset local planner</Button></div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{SCORING_FIELDS.map((field) => <label key={field.key} className="space-y-1 text-xs text-muted-foreground">{field.label}<input className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground" type="number" step={field.step} value={Number(scoring[field.key] ?? 0)} onChange={(event) => setScoring((current) => ({ ...current, name: "Custom", [field.key]: Number(event.target.value) }))} /></label>)}</div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{(["teams", "quarterback", "running_back", "wide_receiver", "tight_end", "flex", "kicker", "defense", "bench"] as const).map((key) => <label key={key} className="space-y-1 text-xs capitalize text-muted-foreground">{key.replaceAll("_", " ")}<input className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground" type="number" min={0} max={20} value={roster[key]} onChange={(event) => setRoster((current) => ({ ...current, [key]: Math.max(0, Number(event.target.value)) }))} /></label>)}</div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">{SCORING_FIELDS.map((field) => <label key={field.key} className="space-y-1 text-xs text-muted-foreground">{field.label}<input className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground" type="number" step={field.step} value={Number(scoring[field.key] ?? 0)} onChange={(event) => setScoring((current) => ({ ...current, name: "Custom", [field.key]: Number(event.target.value) }))} /></label>)}</div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{(["teams", "quarterback", "running_back", "wide_receiver", "tight_end", "flex", "kicker", "defense", "bench"] as const).map((key) => <label key={key} className="space-y-1 text-xs capitalize text-muted-foreground">{key.replaceAll("_", " ")}<input className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground" type="number" min={0} max={20} value={roster[key]} onChange={(event) => setRoster((current) => ({ ...current, [key]: Math.max(0, Number(event.target.value)) }))} /></label>)}</div>
             <p className="text-xs text-muted-foreground">Common QB/RB/WR/TE/FLEX/K/DST redraft settings are supported. Custom settings are saved only in this browser.</p>
           </CardContent>
         </Card>
@@ -275,7 +295,7 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
 
       {view === "lineup" ? (
         <Card>
-          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><CardTitle>Weekly lineup planner</CardTitle><p className="mt-1 text-sm text-muted-foreground">Add players from the board, then let the optimizer fill eligible slots.</p></div><label className="flex items-center gap-2 text-sm">Week<select className="h-9 rounded-md border border-input bg-background px-2" value={week} onChange={(event) => setWeek(Number(event.target.value))}>{Array.from({ length: 18 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label></CardHeader>
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><CardTitle>Weekly lineup planner</CardTitle><p className="mt-1 text-sm text-muted-foreground">Add players from the board, then let the optimizer fill eligible slots.</p></div><label className="flex items-center gap-2 text-sm">Week<select className="h-9 rounded-lg border border-input bg-card px-2" value={week} onChange={(event) => setWeek(Number(event.target.value))}>{Array.from({ length: 18 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label></CardHeader>
           <CardContent className="space-y-4">
             <div className="grid gap-3 md:grid-cols-2"><div className="rounded-lg border border-accent/30 bg-accent/5 p-4"><p className="text-xs uppercase tracking-wide text-muted-foreground">Optimized starters</p><p className="mt-1 text-3xl font-semibold text-accent">{lineup.total.toFixed(1)}</p><p className="mt-1 text-xs text-muted-foreground">{lineup.lineup.length} of {roster.quarterback + roster.running_back + roster.wide_receiver + roster.tight_end + roster.flex + roster.kicker + roster.defense} slots filled</p></div><div className="rounded-lg border border-border p-4"><p className="text-xs uppercase tracking-wide text-muted-foreground">Roster pool</p><p className="mt-1 text-3xl font-semibold">{mine.size}</p><p className="mt-1 text-xs text-muted-foreground">Use “Add to roster” below to build a manual player pool.</p></div></div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{lineup.lineup.map((item) => <div key={`${item.slot}-${item.row.player_id}`} className="flex items-center justify-between rounded-md border border-border bg-background/60 p-3"><div><p className="text-xs text-muted-foreground">{item.slot}</p><p className="font-medium">{item.row.player_name}</p></div><span className="font-semibold text-accent">{item.row.displayPoints.toFixed(1)}</span></div>)}</div>
@@ -289,7 +309,7 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
       ) : null}
 
       <Card>
-        <CardHeader className="space-y-4"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><CardTitle>{view === "draft" ? "Available player board" : view === "lineup" ? "Roster player pool" : view === "weekly" ? `Week ${week} projections` : "Preseason player projections"}</CardTitle><p className="mt-1 text-sm text-muted-foreground">{filtered.length.toLocaleString()} players · median projection with a calibrated range · model {feed.modelVersion}</p></div><div className="flex flex-wrap gap-2"><input aria-label="Search players" placeholder="Search player" value={search} onChange={(event) => setSearch(event.target.value)} className="h-9 rounded-md border border-input bg-background px-3 text-sm" /><Button variant="outline" size="sm" onClick={() => { setSortKey(sortKey === "points" ? "ppg" : "points"); setAscending(false); }}><ArrowDownUp /> Sort</Button></div></div><div className="flex flex-wrap items-center gap-2">{POSITIONS.map((item) => <Button key={item} size="sm" variant={position === item ? "secondary" : "ghost"} onClick={() => setPosition(item)}>{item}</Button>)}{view === "weekly" || view === "lineup" ? <label className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">Week<select className="h-9 rounded-md border border-input bg-background px-2 text-foreground" value={week} onChange={(event) => setWeek(Number(event.target.value))}>{Array.from({ length: 18 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label> : null}</div></CardHeader>
+        <CardHeader className="space-y-4"><div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between"><div><CardTitle>{view === "draft" ? "Available player board" : view === "lineup" ? "Roster player pool" : view === "weekly" ? `Week ${week} projections` : "Preseason player projections"}</CardTitle><p className="mt-1 text-sm text-muted-foreground">{filtered.length.toLocaleString()} players · median projection with a calibrated range · model {feed.modelVersion}</p></div><div className="flex flex-wrap gap-2"><input aria-label="Search players" placeholder="Search player" value={search} onChange={(event) => setSearch(event.target.value)} className="h-9 rounded-lg border border-input bg-card px-3 text-sm" /><Button variant="outline" size="sm" onClick={() => { setSortKey(sortKey === "points" ? "ppg" : "points"); setAscending(false); }}><ArrowDownUp /> Sort</Button></div></div><div className="flex flex-wrap items-center gap-2">{POSITIONS.map((item) => <Button key={item} size="sm" variant={position === item ? "secondary" : "ghost"} onClick={() => setPosition(item)}>{item}</Button>)}{view === "weekly" || view === "lineup" ? <label className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">Week<select className="h-9 rounded-lg border border-input bg-card px-2 text-foreground" value={week} onChange={(event) => setWeek(Number(event.target.value))}>{Array.from({ length: 18 }, (_, index) => <option key={index + 1} value={index + 1}>{index + 1}</option>)}</select></label> : null}</div></CardHeader>
         <CardContent>
           {weeklyLoading ? <p className="mb-3 text-sm text-muted-foreground">Loading week {week} projections…</p> : null}
           {weeklyError ? <p className="mb-3 text-sm text-destructive">{weeklyError}</p> : null}

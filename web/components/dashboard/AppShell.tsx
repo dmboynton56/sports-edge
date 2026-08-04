@@ -4,29 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useState } from "react";
-import {
-  Activity,
-  BarChart3,
-  DatabaseZap,
-  Goal,
-  LineChart,
-  Menu,
-  Moon,
-  MoreHorizontal,
-  Newspaper,
-  Sun,
-} from "lucide-react";
+import { useState, useSyncExternalStore } from "react";
+import { Menu, Moon, Sun } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Sheet,
   SheetContent,
@@ -34,22 +15,23 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Overview", icon: Activity },
-  { href: "/markets", label: "Markets", icon: LineChart },
-  { href: "/fantasy", label: "Fantasy", icon: Goal },
-  { href: "/performance", label: "Performance", icon: BarChart3 },
-  { href: "/insights", label: "Insights", icon: Newspaper },
-  { href: "/data-quality", label: "Data Quality", icon: DatabaseZap },
+  { href: "/", label: "Overview" },
+  { href: "/markets", label: "Markets" },
+  { href: "/fantasy", label: "Fantasy" },
+  { href: "/performance", label: "Performance" },
+  { href: "/insights", label: "Insights" },
+  { href: "/data-quality", label: "Data quality" },
 ];
+
+function useActive() {
+  const pathname = usePathname();
+  return (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
+}
 
 function BrandMark() {
   return (
@@ -59,78 +41,92 @@ function BrandMark() {
       width={64}
       height={64}
       sizes="28px"
-      className="size-7 rounded-md object-cover"
+      className="size-7 rounded-lg object-cover"
     />
   );
 }
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
+/** Desktop nav: pills riding in a sunken track. */
+function NavTrack() {
+  const isActive = useActive();
 
   return (
-    <nav className="flex flex-col gap-1 lg:flex-row lg:items-center">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const active =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-        return (
-          <Button
-            asChild
-            key={item.href}
-            variant={active ? "secondary" : "ghost"}
-            size="sm"
-            className={cn(
-              "justify-start text-muted-foreground lg:justify-center",
-              active && "text-foreground",
-            )}
-          >
-            <Link href={item.href} onClick={onNavigate}>
-              <Icon className="size-4" />
-              {item.label}
-            </Link>
-          </Button>
-        );
-      })}
+    <nav className="ml-auto hidden rounded-xl bg-secondary p-1 lg:flex">
+      {navItems.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          aria-current={isActive(item.href) ? "page" : undefined}
+          className={cn(
+            "rounded-lg px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+            isActive(item.href) &&
+              "bg-card font-semibold text-foreground shadow-soft hover:text-foreground",
+          )}
+        >
+          {item.label}
+        </Link>
+      ))}
     </nav>
   );
 }
 
+function MobileNav({ onNavigate }: { onNavigate: () => void }) {
+  const isActive = useActive();
+
+  return (
+    <nav className="flex flex-col gap-1">
+      {navItems.map((item) => (
+        <Link
+          key={item.href}
+          href={item.href}
+          onClick={onNavigate}
+          aria-current={isActive(item.href) ? "page" : undefined}
+          className={cn(
+            "rounded-lg px-3 py-2.5 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
+            isActive(item.href) && "bg-secondary font-semibold text-foreground",
+          )}
+        >
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+// The theme lives on <html> (set by the pre-paint script in layout.tsx), so the
+// class list is the source of truth and React subscribes to it rather than
+// keeping a second copy.
+function subscribeToTheme(onChange: () => void) {
+  const observer = new MutationObserver(onChange);
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class"],
+  });
+  return () => observer.disconnect();
+}
+
 function ThemeToggle() {
-  const [dark, setDark] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      const stored = window.localStorage.getItem("sports-edge-theme");
-      const prefersDark = stored ? stored === "dark" : true;
-      setDark(prefersDark);
-      document.documentElement.classList.toggle("dark", prefersDark);
-      setMounted(true);
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, []);
-
-  useEffect(() => {
-    if (!mounted) return;
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark, mounted]);
+  const dark = useSyncExternalStore(
+    subscribeToTheme,
+    () => document.documentElement.classList.contains("dark"),
+    () => false,
+  );
 
   function toggle() {
     const next = !dark;
-    setDark(next);
-    window.localStorage.setItem("sports-edge-theme", next ? "dark" : "light");
     document.documentElement.classList.toggle("dark", next);
+    window.localStorage.setItem("sports-edge-theme", next ? "dark" : "light");
   }
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <Button variant="outline" size="icon" onClick={toggle} aria-label="Toggle theme">
-          {mounted && !dark ? <Sun /> : <Moon />}
-        </Button>
-      </TooltipTrigger>
-      <TooltipContent>Switch black/white mode</TooltipContent>
-    </Tooltip>
+    <Button
+      variant="outline"
+      size="icon"
+      onClick={toggle}
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+    >
+      {dark ? <Sun /> : <Moon />}
+    </Button>
   );
 }
 
@@ -140,71 +136,48 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-background text-foreground">
-        <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-          <div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-3 px-4 sm:px-6">
-            <Sheet open={open} onOpenChange={setOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon" className="lg:hidden" aria-label="Open navigation">
-                  <Menu />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-80">
-                <SheetHeader>
-                  <SheetTitle className="flex items-center gap-2">
-                    <BrandMark />
-                    <span>SPORTS EDGE</span>
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="mt-6">
-                  <NavLinks onNavigate={() => setOpen(false)} />
-                </div>
-              </SheetContent>
-            </Sheet>
-
+        <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
+          <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-3 px-4 sm:px-7">
             <Link
               href="/"
               aria-label="Sports Edge home"
-              className="flex min-w-fit items-center gap-2 font-semibold"
+              className="flex min-w-fit items-center gap-2.5 font-display text-lg font-extrabold tracking-tight"
             >
               <BrandMark />
-              <span className="hidden sm:inline">SPORTS EDGE</span>
+              <span>Sports Edge</span>
             </Link>
 
-            <div className="hidden flex-1 justify-center lg:flex">
-              <NavLinks />
-            </div>
+            <NavTrack />
 
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2 lg:ml-2">
               <ThemeToggle />
-              <DropdownMenu>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="icon" aria-label="Open dashboard menu">
-                        <MoreHorizontal />
-                      </Button>
-                    </DropdownMenuTrigger>
-                  </TooltipTrigger>
-                  <TooltipContent>Dashboard actions</TooltipContent>
-                </Tooltip>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Data Adapters</DropdownMenuLabel>
-                  <DropdownMenuItem asChild>
-                    <Link href="/data-quality">Review source coverage</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/performance">Inspect model history</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link href="/markets">Open market monitor</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="lg:hidden"
+                    aria-label="Open navigation"
+                  >
+                    <Menu />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-72">
+                  <SheetHeader>
+                    <SheetTitle className="flex items-center gap-2.5 font-display text-lg font-extrabold tracking-tight">
+                      <BrandMark />
+                      Sports Edge
+                    </SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-8">
+                    <MobileNav onNavigate={() => setOpen(false)} />
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-screen-2xl px-4 py-5 sm:px-6 lg:py-6">
+        <main className="mx-auto w-full max-w-[1200px] px-4 pb-20 pt-7 sm:px-7">
           {children}
         </main>
       </div>

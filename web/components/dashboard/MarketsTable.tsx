@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowUpDown, SlidersHorizontal } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { Notice } from "@/components/dashboard/Notice";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -31,6 +32,8 @@ import {
 } from "@/components/ui/table";
 import type { Prediction } from "@/lib/data/types";
 import { formatDateTime, formatMaybePctMetric, formatNumber, formatPct } from "@/lib/format";
+import { sportColor } from "@/lib/sports";
+import { cn } from "@/lib/utils";
 
 type SortKey =
   | "sport"
@@ -139,6 +142,9 @@ export function MarketsTable({
       .sort((a, b) => compare(a, b, sortKey, sortDir));
   }, [book, confidence, market, modelVersion, predictions, sortDir, sortKey, sport]);
 
+  // The feed repeats the same caveat once per contributing source; show it once.
+  const uniqueGaps = useMemo(() => Array.from(new Set(gaps)), [gaps]);
+
   function toggleSort(key: SortKey) {
     if (sortKey === key) {
       setSortDir((dir) => (dir === "asc" ? "desc" : "asc"));
@@ -163,9 +169,9 @@ export function MarketsTable({
 
   if (error) {
     return (
-      <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-5 text-sm">
-        <div className="font-medium text-destructive">Prediction feed error</div>
-        <p className="mt-2 text-muted-foreground">{error}</p>
+      <div className="rounded-xl border border-destructive/20 bg-destructive-soft p-5 text-sm">
+        <div className="font-bold text-destructive">The prediction feed didn&apos;t load</div>
+        <p className="mt-2 text-destructive/90">{error}</p>
       </div>
     );
   }
@@ -241,25 +247,20 @@ export function MarketsTable({
         </Dialog>
       </div>
 
-      {gaps.length > 0 ? (
-        <div className="flex flex-wrap gap-2">
-          {gaps.map((gap) => (
-            <Badge key={gap} variant="missing">{gap}</Badge>
-          ))}
-        </div>
-      ) : null}
+      <Notice
+        title={`${uniqueGaps.length} ${uniqueGaps.length === 1 ? "caveat" : "caveats"} on this board`}
+        items={uniqueGaps}
+      />
 
       {filtered.length === 0 ? (
-        <div className="grid min-h-80 place-items-center rounded-lg border border-dashed border-border px-6 text-center">
-          <div>
-            <div className="text-base font-medium">No active market edges</div>
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
-              The local prediction artifact is empty. Publish a normalized prediction
-              export to <span className="font-mono">web/public/data/predictions.json</span>
-              or connect the Supabase/BigQuery adapters.
-            </p>
-          </div>
-        </div>
+        <EmptyState
+          title={predictions.length ? "Nothing matches those filters" : "Nothing on the board"}
+          description={
+            predictions.length
+              ? "Widen a filter to bring rows back. Sport and market are the two that cut the most."
+              : "No predictions have been published for today's slate. Boards fill in once the models run against a posted schedule."
+          }
+        />
       ) : (
         <Table className="table-fixed">
           <TableHeader>
@@ -278,8 +279,18 @@ export function MarketsTable({
             {filtered.map((prediction) => (
               <TableRow key={prediction.id}>
                 <TableCell>
-                  <div className="font-medium">{prediction.sport}</div>
-                  <div className="truncate text-xs text-muted-foreground">{prediction.subject}</div>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "size-1.5 shrink-0 rounded-[2px]",
+                        sportColor(prediction.sport).fill,
+                      )}
+                    />
+                    <span className="font-semibold text-foreground">{prediction.sport}</span>
+                  </div>
+                  <div className="mt-0.5 truncate text-xs text-muted-foreground">
+                    {prediction.subject}
+                  </div>
                 </TableCell>
                 <TableCell>{formatDateTime(prediction.eventTime)}</TableCell>
                 <TableCell>{prediction.market}</TableCell>

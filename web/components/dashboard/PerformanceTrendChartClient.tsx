@@ -31,7 +31,7 @@ export function PerformanceTrendChartClient({
 }) {
   if (!data.length) {
     return (
-      <div className="grid h-64 place-items-center rounded-lg border border-dashed border-border text-sm text-muted-foreground">
+      <div className="grid h-64 place-items-center rounded-xl border border-dashed border-border text-sm text-muted-foreground">
         No chartable history is available.
       </div>
     );
@@ -69,7 +69,7 @@ export function PerformanceTrendChartClient({
             contentStyle={{
               background: "hsl(var(--popover))",
               border: "1px solid hsl(var(--border))",
-              borderRadius: 8,
+              borderRadius: 12,
               color: "hsl(var(--popover-foreground))",
             }}
             formatter={(value, name) => {
@@ -81,11 +81,11 @@ export function PerformanceTrendChartClient({
           />
           {mode === "weekly" ? (
             <>
-              <Bar yAxisId="units" dataKey="units" name="Units" fill="hsl(var(--secondary))" radius={[3, 3, 0, 0]} />
-              <Line yAxisId="rate" dataKey="hitRate" name="Hit rate" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} connectNulls />
+              <Bar yAxisId="units" dataKey="units" name="Units" fill="hsl(var(--secondary))" radius={[3, 3, 0, 0]} isAnimationActive={false} />
+              <Line yAxisId="rate" dataKey="hitRate" name="Hit rate" stroke="hsl(var(--accent))" strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
             </>
           ) : (
-            <Line yAxisId="rate" dataKey="metric" name={metricLabel} stroke="hsl(var(--accent))" strokeWidth={2} dot={{ r: 3 }} connectNulls />
+            <Line yAxisId="rate" dataKey="metric" name={metricLabel} stroke="hsl(var(--accent))" strokeWidth={2} dot={{ r: 3 }} connectNulls isAnimationActive={false} />
           )}
         </ComposedChart>
       </ResponsiveContainer>

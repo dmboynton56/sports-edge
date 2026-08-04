@@ -1,3 +1,5 @@
+import { EmptyState } from "@/components/dashboard/EmptyState";
+import { Notice } from "@/components/dashboard/Notice";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,21 +27,24 @@ export default async function ResultsPage() {
         meta={data.generatedAt}
       />
 
-      {data.gaps.length ? (
-        <div className="mb-4 flex flex-wrap gap-2">
-          {data.gaps.map((gap) => (
-            <Badge key={gap} variant="missing">
-              {gap}
-            </Badge>
-          ))}
-        </div>
-      ) : null}
+      <Notice
+        className="mb-4"
+        title={`${data.gaps.length} ${data.gaps.length === 1 ? "caveat" : "caveats"} on these results`}
+        items={Array.from(new Set(data.gaps))}
+      />
 
       <Card>
         <CardHeader>
-          <CardTitle>Graded Success Rates</CardTitle>
+          <CardTitle>Graded success rates</CardTitle>
         </CardHeader>
         <CardContent>
+          {data.summaries.length === 0 ? (
+            <EmptyState
+              className="min-h-40 border-0 bg-transparent py-6"
+              title="No graded results yet"
+              description="Grades land here once the live results feed is connected. Until then, backtested performance is on the performance page."
+            />
+          ) : (
           <Table className="table-fixed">
             <TableHeader>
               <TableRow>
@@ -68,15 +73,23 @@ export default async function ResultsPage() {
               ))}
             </TableBody>
           </Table>
+          )}
         </CardContent>
       </Card>
 
-      <div className="mt-4 grid gap-4 xl:grid-cols-2">
+      <div className="mt-3 grid gap-3 xl:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Recent Game Grades</CardTitle>
+            <CardTitle>Recent game grades</CardTitle>
           </CardHeader>
           <CardContent>
+            {data.gameRows.length === 0 ? (
+              <EmptyState
+                className="min-h-40 border-0 bg-transparent py-6"
+                title="No games graded yet"
+                description="Spread and winner outcomes appear here the morning after each slate."
+              />
+            ) : (
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
@@ -112,14 +125,22 @@ export default async function ResultsPage() {
                 ))}
               </TableBody>
             </Table>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Player-Market Grades</CardTitle>
+            <CardTitle>Recent player-market grades</CardTitle>
           </CardHeader>
           <CardContent>
+            {data.mlbHrRows.length === 0 && data.pgaRows.length === 0 ? (
+              <EmptyState
+                className="min-h-40 border-0 bg-transparent py-6"
+                title="No player markets graded yet"
+                description="Home-run and placement outcomes appear here once each event finishes."
+              />
+            ) : (
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow>
@@ -159,6 +180,7 @@ export default async function ResultsPage() {
                 ))}
               </TableBody>
             </Table>
+            )}
           </CardContent>
         </Card>
       </div>

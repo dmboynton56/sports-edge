@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { Notice } from "@/components/dashboard/Notice";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import {
   type PerformanceTrendPoint,
@@ -59,24 +60,27 @@ function MarketHeader({ market }: { market: MarketEntry }) {
 }
 
 function GapBadges({ gaps }: { gaps: string[] }) {
-  if (!gaps.length) return null;
+  const unique = [...new Set(gaps)];
   return (
-    <div className="mb-4 flex flex-wrap gap-2">
-      {[...new Set(gaps)].map((gap) => <Badge key={gap} variant="missing">{gap}</Badge>)}
-    </div>
+    <Notice
+      className="mb-4"
+      title={`${unique.length} ${unique.length === 1 ? "caveat" : "caveats"} on this view`}
+      items={unique}
+    />
   );
 }
 
-function EmptyState({ children }: { children: React.ReactNode }) {
+/** Inline placeholder for a single table that has no rows in the current window. */
+function NoRows({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
+    <div className="rounded-xl border border-dashed border-border bg-card/50 px-4 py-10 text-center text-sm text-muted-foreground">
       {children}
     </div>
   );
 }
 
 function ResultsSummaryTable({ rows }: { rows: ResultsSummary[] }) {
-  if (!rows.length) return <EmptyState>No graded results are available in this window.</EmptyState>;
+  if (!rows.length) return <NoRows>No graded results are available in this window.</NoRows>;
   return (
     <Table className="table-fixed">
       <TableHeader>
@@ -220,7 +224,7 @@ function PgaCard({ sport, rows }: { sport: SportEntry; rows: PgaResultRow[] }) {
               </TableRow>
             ))}</TableBody>
           </Table>
-        ) : <EmptyState>No graded PGA events are available in this window.</EmptyState>}
+        ) : <NoRows>No graded PGA events are available in this window.</NoRows>}
       </CardContent>
     </Card>
   );
@@ -232,7 +236,7 @@ function EmptySportCards({ sport }: { sport: SportEntry }) {
       {sport.markets.map((market) => (
         <Card key={market.slug} className="border-dashed bg-muted/20">
           <CardHeader><MarketHeader market={market} /></CardHeader>
-          <CardContent><EmptyState>No graded markets yet.</EmptyState></CardContent>
+          <CardContent><NoRows>No graded markets yet.</NoRows></CardContent>
         </Card>
       ))}
     </div>
@@ -288,7 +292,7 @@ function Backtests({ runs, history, gaps }: { runs: EvaluationRow[]; history: Ev
                 </TableRow>
               ))}</TableBody>
             </Table>
-          ) : <EmptyState>No persisted evaluation runs are available for this sport.</EmptyState>}
+          ) : <NoRows>No persisted evaluation runs are available for this sport.</NoRows>}
         </CardContent>
       </Card>
       {history.length ? (

@@ -1,6 +1,8 @@
 export type MarketEntry = {
   slug: string;
   label: string;
+  /** Two words at most — used in chips and dense lists. */
+  short: string;
   href: string;
   status: "live" | "scaffold";
   description: string;
@@ -24,6 +26,7 @@ export const SPORTS: SportEntry[] = [
       {
         slug: "spread-winner",
         label: "Spread & winner board",
+        short: "spread",
         href: "/markets/nba",
         status: "live",
         description: "Pre-live team model probabilities and market edges.",
@@ -39,6 +42,7 @@ export const SPORTS: SportEntry[] = [
       {
         slug: "home-runs",
         label: "Home runs",
+        short: "home runs",
         href: "/markets/mlb/home-runs",
         status: "live",
         description: "Daily batter home-run probabilities and market edges.",
@@ -46,6 +50,7 @@ export const SPORTS: SportEntry[] = [
       {
         slug: "winners",
         label: "Winners",
+        short: "winners",
         href: "/markets/mlb",
         status: "live",
         description: "Pre-live team winner probabilities.",
@@ -61,6 +66,7 @@ export const SPORTS: SportEntry[] = [
       {
         slug: "tournament-board",
         label: "Tournament board — win/top-10/top-20",
+        short: "placements",
         href: "/markets/pga",
         status: "live",
         description: "Tournament outlook, placement markets, and recent form.",
@@ -76,6 +82,7 @@ export const SPORTS: SportEntry[] = [
       {
         slug: "spread-winner",
         label: "Spread & winner board",
+        short: "spread",
         href: "/markets/nfl",
         status: "scaffold",
         description: "Models resume when the NFL season is active.",
@@ -91,6 +98,7 @@ export const SPORTS: SportEntry[] = [
       {
         slug: "models",
         label: "No models yet",
+        short: "not started",
         href: "/markets/nhl",
         status: "scaffold",
         description: "No NHL models are wired to the dashboard.",
@@ -106,6 +114,7 @@ export const SPORTS: SportEntry[] = [
       {
         slug: "tournament-bracket",
         label: "Tournament bracket sim",
+        short: "bracket",
         href: "/markets/cbb",
         status: "live",
         description: "Interactive bracket and Monte Carlo simulation.",

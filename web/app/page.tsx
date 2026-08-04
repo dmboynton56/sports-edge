@@ -1,10 +1,9 @@
-import { Activity, AlertTriangle, DatabaseZap, LineChart } from "lucide-react";
-
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import { PageHeader } from "@/components/dashboard/PageHeader";
-import { RoiChart } from "@/components/dashboard/RoiChart";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChannelCard, type ChannelChip } from "@/components/dashboard/ChannelCard";
+import { GapsBanner } from "@/components/dashboard/GapsBanner";
+import { SectionHeading } from "@/components/dashboard/PageHeader";
+import { SportSwatch } from "@/components/dashboard/SportChip";
+import { StatTile } from "@/components/dashboard/StatTile";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,191 +14,216 @@ import {
 } from "@/components/ui/table";
 import { deriveDataQuality } from "@/lib/data/data-quality";
 import { getPerformanceHistory } from "@/lib/data/performance";
-import { getMlbHomeRunBoardData, getProductionPredictionFeed } from "@/lib/data/player-markets";
-import { getResultsData } from "@/lib/data/results";
-import { formatNumber, formatPct, formatPctFromWhole } from "@/lib/format";
+import { getProductionPredictionFeed } from "@/lib/data/player-markets";
+import {
+  formatDateTime,
+  formatNumber,
+  formatPct,
+  formatPctFromWhole,
+} from "@/lib/format";
+import { SPORTS } from "@/lib/markets-registry";
+
+function listSentence(items: string[]) {
+  if (items.length <= 1) return items[0] ?? "";
+  return `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`;
+}
 
 export default async function Home() {
-  const [history, predictionFeed, results, hrBoard] = await Promise.all([
+  const [history, predictionFeed] = await Promise.all([
     getPerformanceHistory(),
     getProductionPredictionFeed(),
-    getResultsData(),
-    getMlbHomeRunBoardData(),
   ]);
   const quality = deriveDataQuality(history);
-  const gradedSample = results.summaries.reduce((sum, row) => sum + row.sample, 0);
-  const bestHitRate = results.summaries
-    .filter((row) => typeof row.hitRate === "number")
-    .toSorted((a, b) => (b.hitRate ?? -Infinity) - (a.hitRate ?? -Infinity))[0];
+
+  const linesToday = predictionFeed.predictions.length;
+  const liveSports = SPORTS.filter((sport) =>
+    sport.markets.some((market) => market.status === "live"),
+  );
+  const gradedTotal = history.records.reduce((sum, row) => sum + (row.sampleSize ?? 0), 0);
+
+  // Sample-weighted, so a 285-game NFL read can't outweigh 1,175 NBA games.
+  const scored = history.records.filter((row) => typeof row.roi === "number");
+  const scoredSample = scored.reduce((sum, row) => sum + (row.sampleSize ?? 0), 0);
+  const blendedRoi = scoredSample
+    ? scored.reduce((sum, row) => sum + (row.roi ?? 0) * (row.sampleSize ?? 0), 0) / scoredSample
+    : null;
+
+  const unhealthySources = quality.filter((row) => row.status !== "ok").length;
+
+  // Say what's blocking in plain language rather than dumping the raw gap strings.
+  const noRoi = history.records
+    .filter((row) => typeof row.roi !== "number")
+    .map((row) => row.sport);
+  const lowestCoverage = quality
+    .filter((row) => typeof row.coveragePct === "number")
+    .toSorted((a, b) => (a.coveragePct ?? 0) - (b.coveragePct ?? 0))[0];
+  const gapSummary = [
+    noRoi.length
+      ? `${listSentence(noRoi)} ${noRoi.length > 1 ? "have" : "has"} no sportsbook odds history, so ${noRoi.length > 1 ? "they" : "it"} can't report ROI yet.`
+      : null,
+    lowestCoverage
+      ? `Lowest coverage is ${lowestCoverage.sport ?? lowestCoverage.source} at ${formatPctFromWhole(lowestCoverage.coveragePct)}.`
+      : null,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const marketChips: ChannelChip[] = SPORTS.flatMap((sport) =>
+    sport.markets.map((market) => ({
+      sport: sport.slug,
+      label: `${sport.label} ${market.short}`,
+      muted: market.status !== "live",
+    })),
+  ).toSorted((a, b) => Number(a.muted ?? false) - Number(b.muted ?? false));
 
   return (
     <div>
-      <PageHeader
-        title="Operations Overview"
-        description="A dense control surface for pre-live markets, model performance, ROI history, and data source readiness."
-        meta={history.generatedAt}
+      <section className="grid items-end gap-10 pb-2 pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
+        <div>
+          <span className="inline-flex items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-[13px] font-semibold text-secondary-foreground shadow-soft">
+            <span className="anim-live-pulse size-[7px] rounded-full bg-positive" />
+            {formatNumber(linesToday)} lines priced · updated{" "}
+            {formatDateTime(predictionFeed.generatedAt)}
+          </span>
+
+          <h1 className="mt-6 font-display text-[clamp(2.4rem,5.5vw,3.9rem)] font-bold leading-[1.02] tracking-[-0.028em]">
+            Every pick,
+            <span className="block text-accent">graded in public.</span>
+          </h1>
+
+          <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-muted-foreground">
+            Models across six leagues, scored against what actually happened. Start
+            wherever you want — today&apos;s numbers, the track record, or the draft
+            board.
+          </p>
+        </div>
+
+        <dl className="grid grid-cols-2 gap-2.5 lg:w-[300px]">
+          <StatTile label="Lines today" value={formatNumber(linesToday)} />
+          <StatTile
+            label="Boards live"
+            value={String(liveSports.length)}
+            suffix={`/ ${SPORTS.length}`}
+          />
+          <StatTile label="Graded" value={formatNumber(gradedTotal)} />
+          <StatTile
+            label="Blended ROI"
+            value={formatPct(blendedRoi)}
+            tone={blendedRoi !== null && blendedRoi < 0 ? "down" : "up"}
+          />
+        </dl>
+      </section>
+
+      <SectionHeading title="Where to go" note="Five surfaces" />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+        <ChannelCard
+          className="lg:col-span-3"
+          href="/markets"
+          title="Markets"
+          description="Today's model number next to the book's number, for every league that has a live board."
+          chips={marketChips}
+          cta="Open the boards"
+        />
+        <ChannelCard
+          className="lg:col-span-3"
+          href="/performance"
+          title="Performance"
+          description="How each model version has actually done, by sport and market."
+          figures={[
+            {
+              value: formatPct(blendedRoi),
+              label: "Blended ROI",
+              tone: blendedRoi !== null && blendedRoi < 0 ? "down" : "up",
+            },
+            { value: String(history.records.length), label: "Models" },
+          ]}
+          cta="See the record"
+        />
+        <ChannelCard
+          className="lg:col-span-2"
+          href="/fantasy"
+          title="Fantasy"
+          description="NFL projections with scoring you can tune, a live draft board, and a weekly planner."
+          cta="Open the draft board"
+        />
+        <ChannelCard
+          className="lg:col-span-2"
+          href="/insights"
+          title="Insights"
+          description="Write-ups on what changed and what the models got wrong."
+          figures={[{ value: "2", label: "Posts" }]}
+          cta="Read the notes"
+        />
+        <ChannelCard
+          className="lg:col-span-2"
+          href="/data-quality"
+          title="Data quality"
+          description="Coverage and freshness for every source feeding the models."
+          figures={[
+            {
+              value: String(unhealthySources),
+              label: "Need work",
+              tone: unhealthySources ? "down" : "up",
+            },
+            { value: String(quality.length), label: "Sources" },
+          ]}
+          cta="Check the sources"
+        />
+      </div>
+
+      <SectionHeading
+        title="The record"
+        note="Season to date"
+        action={{ label: "All performance", href: "/performance" }}
       />
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard
-          title="Today's Slate"
-          value={formatNumber(predictionFeed.predictions.length)}
-          detail={predictionFeed.gaps[0] ?? "Predictions loaded across live market surfaces."}
-          icon={LineChart}
-          tone={predictionFeed.predictions.length ? "accent" : "warning"}
-        />
-        <MetricCard
-          title="Graded Results"
-          value={formatNumber(gradedSample)}
-          detail="Rows across ATS, winner, HR, and PGA result tables."
-          icon={Activity}
-          tone={gradedSample ? "accent" : "warning"}
-        />
-        <MetricCard
-          title="Best Hit Rate"
-          value={bestHitRate ? formatPct(bestHitRate.hitRate) : "n/a"}
-          detail={bestHitRate ? `${bestHitRate.league} ${bestHitRate.market}` : "No graded hit rates yet."}
-          icon={LineChart}
-          tone={bestHitRate ? "accent" : "default"}
-        />
-        <MetricCard
-          title="Statcast Coverage"
-          value={formatPct(hrBoard.statcastHealth?.coverage ?? null)}
-          detail={
-            hrBoard.statcastHealth
-              ? `${formatNumber(hrBoard.statcastHealth.readyRows)} of ${formatNumber(hrBoard.statcastHealth.totalRows)} HR rows ready`
-              : "No HR health metadata available."
-          }
-          icon={DatabaseZap}
-          tone={hrBoard.statcastHealth?.artifactLoaded === false ? "warning" : "accent"}
-        />
-      </div>
-
-      <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.8fr)]">
-        <Card>
-          <CardHeader>
-            <CardTitle>ROI Snapshot</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RoiChart records={history.records} />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Source Readiness</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table className="table-fixed">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Source</TableHead>
-                  <TableHead>Coverage</TableHead>
-                  <TableHead>Status</TableHead>
+      <Card className="overflow-hidden">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Sport</TableHead>
+              <TableHead className="hidden sm:table-cell">Model</TableHead>
+              <TableHead>Market</TableHead>
+              <TableHead className="text-right">Sample</TableHead>
+              <TableHead className="text-right">ROI</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {history.records.map((record) => {
+              const roi = record.roi;
+              return (
+                <TableRow key={`${record.sport}-${record.modelVersion}`}>
+                  <TableCell>
+                    <SportSwatch sport={record.sport} label={record.sport} />
+                  </TableCell>
+                  <TableCell className="hidden sm:table-cell">
+                    {record.modelVersion}
+                  </TableCell>
+                  <TableCell>{record.market}</TableCell>
+                  <TableCell className="text-right">
+                    {formatNumber(record.sampleSize)}
+                  </TableCell>
+                  <TableCell
+                    className={
+                      typeof roi === "number"
+                        ? `figure text-right text-[17px] ${roi < 0 ? "text-destructive" : "text-positive"}`
+                        : "text-right text-sm"
+                    }
+                  >
+                    {typeof roi === "number" ? formatPct(roi) : "No odds history"}
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {quality.slice(0, 6).map((row) => (
-                  <TableRow key={row.source}>
-                    <TableCell>
-                      <div className="truncate font-medium">{row.source}</div>
-                      <div className="truncate text-xs text-muted-foreground">{row.notes ?? "n/a"}</div>
-                    </TableCell>
-                    <TableCell>{formatPctFromWhole(row.coveragePct)}</TableCell>
-                    <TableCell>
-                      <Badge variant={row.status === "ok" ? "accent" : "missing"}>
-                        {row.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+              );
+            })}
+          </TableBody>
+        </Table>
+      </Card>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Results Snapshot</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table className="table-fixed">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>League</TableHead>
-                  <TableHead>Market</TableHead>
-                  <TableHead>Sample</TableHead>
-                  <TableHead>Hit Rate</TableHead>
-                  <TableHead>ROI</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {results.summaries.slice(0, 8).map((row) => (
-                  <TableRow key={`${row.league}-${row.market}-${row.modelVersion}`}>
-                    <TableCell className="font-medium">{row.league}</TableCell>
-                    <TableCell>{row.market}</TableCell>
-                    <TableCell>{formatNumber(row.sample)}</TableCell>
-                    <TableCell>{formatPct(row.hitRate)}</TableCell>
-                    <TableCell>{formatPct(row.roi)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Model Performance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table className="table-fixed">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Sport</TableHead>
-                  <TableHead>Model</TableHead>
-                  <TableHead>Market</TableHead>
-                  <TableHead>ROI</TableHead>
-                  <TableHead>Sample</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {history.records.map((record) => (
-                  <TableRow key={`${record.sport}-${record.modelVersion}`}>
-                    <TableCell className="font-medium">{record.sport}</TableCell>
-                    <TableCell>{record.modelVersion}</TableCell>
-                    <TableCell>{record.market}</TableCell>
-                    <TableCell>{formatPct(record.roi)}</TableCell>
-                    <TableCell>{formatNumber(record.sampleSize)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Blocking Gaps</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {history.gaps.length ? (
-                history.gaps.slice(0, 14).map((gap) => (
-                  <Badge key={gap} variant="missing" className="max-w-full">
-                    <AlertTriangle className="mr-1 size-3" />
-                    {gap}
-                  </Badge>
-                ))
-              ) : (
-                <Badge variant="accent">No blocking gaps recorded</Badge>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <GapsBanner
+        count={history.gaps.length}
+        summary={gapSummary || "All tracked sources are reporting."}
+      />
     </div>
   );
 }

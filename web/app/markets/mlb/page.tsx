@@ -1,9 +1,9 @@
-import Link from "next/link";
-
+import { ChannelCard } from "@/components/dashboard/ChannelCard";
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { MarketsTable } from "@/components/dashboard/MarketsTable";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageHeader, SectionHeading } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { getProductionPredictionFeed } from "@/lib/data/player-markets";
 import { getSport } from "@/lib/markets-registry";
 
@@ -26,39 +26,35 @@ export default async function MlbMarketsPage() {
         meta={feed.generatedAt}
       />
 
-      <div className="mb-6 grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-2">
         {mlb?.markets.map((market) => (
-          <Link key={market.slug} href={market.href}>
-            <Card className="h-full transition-colors hover:border-accent/50 hover:bg-accent/5">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-2">
-                  <CardTitle className="text-base">{market.label}</CardTitle>
-                  {market.status === "scaffold" ? (
-                    <Badge variant="secondary">scaffold</Badge>
-                  ) : null}
-                </div>
-              </CardHeader>
-              <CardContent className="text-sm text-muted-foreground">
-                {market.description}
-              </CardContent>
-            </Card>
-          </Link>
+          <ChannelCard
+            key={market.slug}
+            sport="mlb"
+            href={market.href}
+            title={market.label}
+            description={market.description}
+            cta={`Open ${market.short}`}
+            badge={
+              market.status === "scaffold" ? (
+                <Badge variant="outline">Scaffold</Badge>
+              ) : null
+            }
+          />
         ))}
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>MLB Winner Board</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {predictions.length > 0 ? (
-            <MarketsTable initialPredictions={predictions} initialGaps={feed.gaps} />
-          ) : (
-            <div className="rounded-lg border border-dashed border-border bg-muted/20 px-4 py-10 text-center text-sm text-muted-foreground">
-              No live MLB winner markets are available.
-            </div>
-          )}
-        </CardContent>
+      <SectionHeading title="Winner board" note="Pre-live team moneyline probabilities" />
+      <Card className="overflow-hidden p-5">
+        {predictions.length > 0 ? (
+          <MarketsTable initialPredictions={predictions} initialGaps={feed.gaps} />
+        ) : (
+          <EmptyState
+            className="border-0 bg-transparent"
+            title="No winner board today"
+            description="Team moneyline probabilities publish once the day's schedule and prices are in. The home-run board above runs on its own cadence."
+          />
+        )}
       </Card>
     </div>
   );

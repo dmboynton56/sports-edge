@@ -3,7 +3,9 @@
 import { useMemo } from "react";
 import { Activity, AlertTriangle, DollarSign, LineChart, Percent } from "lucide-react";
 
+import { EmptyState } from "@/components/dashboard/EmptyState";
 import { MetricCard } from "@/components/dashboard/MetricCard";
+import { Notice } from "@/components/dashboard/Notice";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -275,33 +277,29 @@ export function MlbHomeRunBoard({ board }: MlbHomeRunBoardProps) {
 
   if (!board.availableModels.length) {
     return (
-      <div className="mt-4 flex flex-wrap gap-2">
-        {(gaps.length ? gaps : ["No MLB home run predictions available."]).map((gap) => (
-          <Badge key={gap} variant="missing">
-            {gap}
-          </Badge>
-        ))}
-      </div>
+      <EmptyState
+        className="mt-4"
+        title="No home-run board today"
+        description="Batter probabilities publish once projected lineups and probable pitchers are posted for the slate. Check back closer to first pitch."
+        detail={<Notice title="Why it's empty" items={gaps} className="text-left" />}
+      />
     );
   }
 
   return (
     <div className="mt-4 space-y-4">
-      {gaps.length ? (
-        <div className="flex flex-wrap gap-2">
-          {gaps.map((gap) => (
-            <Badge key={gap} variant="missing">
-              {gap}
-            </Badge>
-          ))}
-        </div>
-      ) : null}
+      <Notice title={`${gaps.length} ${gaps.length === 1 ? "caveat" : "caveats"} on this board`} items={gaps} />
 
       {board.statcastHealth?.artifactLoaded === false ? (
-        <Badge variant="missing">
-          Statcast blend artifact failed to load
-          {board.statcastHealth.artifactError ? `: ${board.statcastHealth.artifactError}` : ""}
-        </Badge>
+        <Notice
+          tone="error"
+          title="Statcast blend unavailable"
+          items={[
+            board.statcastHealth.artifactError
+              ? `The blend artifact failed to load: ${board.statcastHealth.artifactError}`
+              : "The blend artifact failed to load, so rows fall back to v1 probabilities.",
+          ]}
+        />
       ) : null}
 
       <BoardMetrics rows={rows} health={board.statcastHealth} />
