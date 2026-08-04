@@ -6,8 +6,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Sports Edge | Operations Dashboard",
-  description: "Sports betting model performance, market edge, and data quality dashboard.",
+  title: "Sports Edge | Sports Analytics & Fantasy Football",
+  description: "Sports betting model performance, NFL fantasy projections, and configurable lineup planning.",
 };
 
 export default function RootLayout({
