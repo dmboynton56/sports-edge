@@ -1,8 +1,3 @@
-import { promises as fs } from "fs";
-import path from "path";
-
-import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
-
 export type FantasyPosition = "QB" | "RB" | "WR" | "TE" | "K" | "DST";
 
 export type FantasyScoring = {
@@ -94,7 +89,7 @@ export type FantasyFeed = {
   dataSource: "supabase" | "static_json" | "unavailable";
 };
 
-type SupabaseFantasyRow = Partial<FantasyProjection> & {
+export type SupabaseFantasyRow = Partial<FantasyProjection> & {
   player_id: string;
   player_name: string;
   position: FantasyPosition;
@@ -105,8 +100,6 @@ type SupabaseFantasyRow = Partial<FantasyProjection> & {
   statline_low: Record<string, number> | null;
   statline_high: Record<string, number> | null;
 };
-
-const FANTASY_PATH = path.join(process.cwd(), "public", "data", "fantasy_projections.json");
 
 export const DEFAULT_FANTASY_SCORING: FantasyScoring = {
   name: "Full PPR",
@@ -159,7 +152,7 @@ function unique(values: string[]) {
   return [...new Set(values.filter(Boolean))];
 }
 
-function normalizeProjection(row: SupabaseFantasyRow): FantasyProjection {
+export function normalizeProjection(row: SupabaseFantasyRow): FantasyProjection {
   return {
     player_id: String(row.player_id),
     player_name: String(row.player_name),
@@ -191,7 +184,7 @@ function normalizeProjection(row: SupabaseFantasyRow): FantasyProjection {
   };
 }
 
-function fromStatic(payload: Partial<FantasyFeed>, fallbackGaps: string[]): FantasyFeed {
+export function fromStatic(payload: Partial<FantasyFeed>, fallbackGaps: string[]): FantasyFeed {
   const preseason = (payload.projections ?? []).map((row) => normalizeProjection(row as SupabaseFantasyRow));
   const preseasonById = new Map(preseason.map((row) => [row.player_id, row]));
   return {
@@ -213,57 +206,6 @@ function fromStatic(payload: Partial<FantasyFeed>, fallbackGaps: string[]): Fant
     sources: payload.sources ?? [],
     dataSource: "static_json",
   };
-}
-
-export async function getFantasyFeed(scope: "preseason" | "week" = "preseason", week = 1): Promise<FantasyFeed> {
-  const season = new Date().getUTCFullYear();
-  const missing = getSupabaseMissingEnv();
-  const resource = scope === "preseason" ? "fantasy_player_projections_latest" : "fantasy_player_projections_latest";
-  // The public artifact currently contains more than 1,000 eligible players;
-  // keep the live path from silently truncating the board while retaining a
-  // bounded response for the browser.
-  const query = `?select=*&season=eq.${season}&scope=eq.${scope}&week=eq.${scope === "week" ? week : 0}&order=points.desc&limit=5000`;
-  const rows = await supabaseRest<SupabaseFantasyRow>(`${resource}${query}`);
-  if (rows?.length) {
-    return {
-      generatedAt: rows[0]?.updated_at ?? null,
-      season,
-      modelVersion: rows[0]?.model_version ?? "fantasy-v1",
-      productionStatus: "candidate",
-      defaultScoring: DEFAULT_FANTASY_SCORING,
-      projections: scope === "preseason" ? rows.map(normalizeProjection) : [],
-      weekly: scope === "week" ? { [String(week)]: rows.map(normalizeProjection) } : {},
-      adp: [],
-      metrics: {},
-      gaps: [],
-      sources: ["Supabase fantasy projections"],
-      dataSource: "supabase",
-    };
-  }
-
-  try {
-    const payload = JSON.parse(await fs.readFile(FANTASY_PATH, "utf8")) as Partial<FantasyFeed>;
-    const feed = fromStatic(payload, missing.length ? [`Supabase live feed unavailable: ${missing.join(", ")}.`] : []);
-    if (scope === "week") {
-      feed.projections = feed.weekly[String(week)] ?? [];
-    }
-    return feed;
-  } catch {
-    return {
-      generatedAt: null,
-      season,
-      modelVersion: "fantasy-unavailable",
-      productionStatus: "blocked",
-      defaultScoring: DEFAULT_FANTASY_SCORING,
-      projections: [],
-      weekly: {},
-      adp: [],
-      metrics: {},
-      gaps: unique([...missing.map((item) => `Missing ${item}.`), `No fantasy artifact found at ${FANTASY_PATH}.`]),
-      sources: [],
-      dataSource: "unavailable",
-    };
-  }
 }
 
 export function scoreStatline(

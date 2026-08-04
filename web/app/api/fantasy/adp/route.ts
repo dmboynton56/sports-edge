@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { getFantasyFeed } from "@/lib/data/fantasy";
+import { getFantasyFeed } from "@/lib/data/fantasy-server";
 
 export async function GET() {
   const feed = await getFantasyFeed("preseason");

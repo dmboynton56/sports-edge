@@ -1,6 +1,6 @@
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { FantasyBoard } from "@/components/fantasy/FantasyBoard";
-import { getFantasyFeed } from "@/lib/data/fantasy";
+import { getFantasyFeed } from "@/lib/data/fantasy-server";
 
 export default async function FantasyPage() {
   const feed = await getFantasyFeed("preseason");
