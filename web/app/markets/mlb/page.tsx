@@ -2,15 +2,20 @@ import { ChannelCard } from "@/components/dashboard/ChannelCard";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { MarketsTable } from "@/components/dashboard/MarketsTable";
 import { PageHeader, SectionHeading } from "@/components/dashboard/PageHeader";
+import { MlbEvaluationSummary } from "@/components/markets/MlbEvaluationSummary";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { getMlbVerticalSummary } from "@/lib/data/mlb-vertical";
 import { getProductionPredictionFeed } from "@/lib/data/player-markets";
 import { getSport } from "@/lib/markets-registry";
 
 const WINNER_MARKETS = new Set(["winner", "moneyline", "money_line", "ml"]);
 
 export default async function MlbMarketsPage() {
-  const feed = await getProductionPredictionFeed();
+  const [feed, evaluation] = await Promise.all([
+    getProductionPredictionFeed(),
+    getMlbVerticalSummary(),
+  ]);
   const mlb = getSport("mlb");
   const predictions = feed.predictions.filter(
     (prediction) =>
@@ -43,6 +48,22 @@ export default async function MlbMarketsPage() {
           />
         ))}
       </div>
+
+      <SectionHeading
+        title="Model evaluation and edges"
+        note={evaluation?.as_of_date ? `as of ${evaluation.as_of_date}` : "Awaiting the next evaluation artifact"}
+      />
+      {evaluation ? (
+        <MlbEvaluationSummary summary={evaluation} />
+      ) : (
+        <Card className="p-5">
+          <EmptyState
+            className="border-0 bg-transparent"
+            title="Evaluation artifact not published yet"
+            description="Run the MLB vertical evaluator to publish held-out metrics, free-odds coverage, and statistical edge rows."
+          />
+        </Card>
+      )}
 
       <SectionHeading title="Winner board" note="Pre-live team moneyline probabilities" />
       <Card className="overflow-hidden p-5">
