@@ -32,3 +32,40 @@ jobs:
         pytest tests/
       env:
         PYTHONPATH: .
+
+  web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Node 22
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+        cache: npm
+        cache-dependency-path: web/package-lock.json
+
+    - name: Install frontend dependencies
+      run: npm ci
+
+    - name: Run frontend unit tests
+      run: npm test
+
+    - name: Lint frontend
+      run: npm run lint
+
+    - name: Build frontend
+      run: npm run build
+
+    - name: Reject high and critical production advisories
+      run: npm audit --omit=dev --audit-level=high
+
+    - name: Install Chromium for browser smoke tests
+      run: npx playwright install --with-deps chromium
+
+    - name: Run browser smoke tests
+      run: npm run test:e2e

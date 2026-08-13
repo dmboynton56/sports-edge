@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       date:
-        description: "Anchor date in YYYY-MM-DD (defaults to current UTC date)"
+        description: "Denver slate date in YYYY-MM-DD (defaults to America/Denver today)"
         required: false
         default: ""
       run_pga:
@@ -27,19 +27,30 @@ on:
         description: "Sync generated player markets to BigQuery"
         required: false
         default: "true"
+      run_window:
+        description: "Board window: auto, morning, afternoon, or manual"
+        required: false
+        default: "auto"
+      apply_trusted_board_migration:
+        description: "Apply the versioned trusted-board migration (staging/rollout only)"
+        required: false
+        default: "false"
 
 concurrency:
-  group: sports-edge-player-markets
+  group: sports-edge-mlb-hr-refresh
   cancel-in-progress: false
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   PYTHONPATH: ${{ github.workspace }}/data-core
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
   RUN_PGA: ${{ github.event.inputs.run_pga || 'false' }}
   RUN_MLB_HR: ${{ github.event.inputs.run_mlb_hr || 'true' }}
   TRAIN_MLB_HR: ${{ github.event.inputs.train_mlb_hr || 'false' }}
   SYNC_SUPABASE: ${{ github.event.inputs.sync_supabase || 'true' }}
   SYNC_BIGQUERY: ${{ github.event.inputs.sync_bigquery || 'true' }}
+  RUN_WINDOW: ${{ github.event.inputs.run_window || 'auto' }}
+  APPLY_TRUSTED_BOARD_MIGRATION: ${{ github.event.inputs.apply_trusted_board_migration || 'false' }}
   ANCHOR_DATE: ${{ github.event.inputs.date || '' }}
   MLB_HR_STATCAST_MIN_COVERAGE: ${{ vars.MLB_HR_STATCAST_MIN_COVERAGE || '0.50' }}
   MLB_HR_STATCAST_MIN_BATTER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_BATTER_BBE || '5' }}
@@ -80,16 +91,67 @@ jobs:
         env:
           GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
-      - name: Resolve anchor date
+      - name: Resolve Denver slate date and board window
         id: dates
         shell: bash
         run: |
           if [ -n "$ANCHOR_DATE" ]; then
             DATE_VALUE="$ANCHOR_DATE"
           else
-            DATE_VALUE="$(date -u +%Y-%m-%d)"
+            DATE_VALUE="$(TZ=America/Denver date +%Y-%m-%d)"
+          fi
+          if [ "$RUN_WINDOW" = "auto" ]; then
+            HOUR="$(TZ=America/Denver date +%H)"
+            if [ "$HOUR" -lt 12 ]; then WINDOW_VALUE="morning"; else WINDOW_VALUE="afternoon"; fi
+          else
+            WINDOW_VALUE="$RUN_WINDOW"
           fi
           echo "date=$DATE_VALUE" >> "$GITHUB_OUTPUT"
+          echo "window=$WINDOW_VALUE" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare player-market serving schema
+        if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
+
+      - name: Prepare trusted-board migration for this run
+        if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' && env.APPLY_TRUSTED_BOARD_MIGRATION == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: python scripts/apply_supabase_sql_files.py supabase/migrations/20260811144616_mlb_hr_trusted_board.sql
+
+      - name: Start immutable MLB HR board run
+        id: board_run
+        if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          RUN_KEY="mlb-hr-${{ steps.dates.outputs.date }}-${{ steps.dates.outputs.window }}-${GITHUB_RUN_ID}"
+          python scripts/manage_mlb_hr_board_run.py start \
+            --run-key "$RUN_KEY" \
+            --slate-date "${{ steps.dates.outputs.date }}" \
+            --run-window "${{ steps.dates.outputs.window }}" \
+            --workflow-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "run_key=$RUN_KEY" >> "$GITHUB_OUTPUT"
 
       - name: Generate PGA tournament dashboard
         if: ${{ env.RUN_PGA == 'true' }}
@@ -208,6 +270,12 @@ jobs:
           else
             python scripts/validate_public_json.py
           fi
+          if [ "$RUN_MLB_HR" = "true" ]; then
+            python scripts/validate_mlb_hr_board_input.py \
+              ../web/public/data/mlb_home_runs.json \
+              --date "${{ steps.dates.outputs.date }}" \
+              --allow-empty
+          fi
 
       - name: Sync player markets to BigQuery
         if: ${{ env.SYNC_BIGQUERY == 'true' }}
@@ -220,6 +288,7 @@ jobs:
           python scripts/sync_player_markets_to_bigquery.py "${SYNC_ARGS[@]}"
 
       - name: Sync player markets to Supabase
+        id: sync_player_markets
         if: ${{ env.SYNC_SUPABASE == 'true' }}
         shell: bash
         env:
@@ -237,3 +306,83 @@ jobs:
             SYNC_ARGS+=(--skip-pga)
           fi
           python scripts/sync_player_markets_to_supabase.py "${SYNC_ARGS[@]}"
+
+      - name: Grade completed prior-slate MLB HR rows
+        id: grade_prior
+        if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          EVAL_DATE="$(date -d '${{ steps.dates.outputs.date }} -1 day' +%Y-%m-%d)"
+          python scripts/evaluate_mlb_home_run_predictions.py \
+            --from-supabase \
+            --date "$EVAL_DATE" \
+            --allow-empty \
+            --out-csv notebooks/cache/mlb_home_run_predictions_evaluated.csv \
+            --metrics-out notebooks/cache/mlb_home_run_prediction_outcome_metrics.json
+          if [ -s notebooks/cache/mlb_home_run_predictions_evaluated.csv ]; then
+            python scripts/sync_mlb_home_run_results_to_supabase.py \
+              --evaluated-csv notebooks/cache/mlb_home_run_predictions_evaluated.csv
+          fi
+
+      - name: Publish immutable MLB HR board rows
+        id: publish_board
+        if: ${{ always() && steps.board_run.outcome == 'success' && steps.sync_player_markets.outcome == 'success' && steps.grade_prior.outcome == 'success' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/manage_mlb_hr_board_run.py publish \
+            --run-key "${{ steps.board_run.outputs.run_key }}" \
+            --slate-date "${{ steps.dates.outputs.date }}"
+
+      - name: Finalize MLB HR board health
+        if: ${{ always() && steps.board_run.outcome == 'success' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          STATUS_ARGS=()
+          if [ "${{ steps.publish_board.outcome }}" != "success" ]; then
+            STATUS_ARGS+=(--status failed)
+          fi
+          python scripts/manage_mlb_hr_board_run.py finalize \
+            --run-key "${{ steps.board_run.outputs.run_key }}" \
+            "${STATUS_ARGS[@]}" | tee /tmp/mlb_hr_board_finalize.json
+
+      - name: Publish trusted-board run summary
+        if: ${{ always() && steps.board_run.outcome == 'success' }}
+        shell: bash
+        run: |
+          echo "### Trusted MLB HR board run" >> "$GITHUB_STEP_SUMMARY"
+          if [ -s /tmp/mlb_hr_board_finalize.json ]; then
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat /tmp/mlb_hr_board_finalize.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if [ -z "$DISCORD_WEBHOOK_URL" ] || [ ! -s /tmp/mlb_hr_board_finalize.json ]; then
+            echo "DISCORD_WEBHOOK_URL is not configured or no board summary was produced; skipping notification."
+            exit 0
+          fi
+          STATUS=$(tail -n 1 /tmp/mlb_hr_board_finalize.json | jq -r '.status // "unknown"')
+          COVERAGE=$(tail -n 1 /tmp/mlb_hr_board_finalize.json | jq -r '.top25_coverage // "n/a"')
+          curl -sf -X POST -H "Content-Type: application/json" \
+            -d "{\"content\":\"MLB HR board ${GITHUB_WORKFLOW} ${GITHUB_RUN_ID}: ${STATUS}, top-25 coverage ${COVERAGE}.\"}" \
+            "$DISCORD_WEBHOOK_URL"

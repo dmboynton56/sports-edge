@@ -11,9 +11,13 @@ on:
         description: "Force full feature snapshot rebuild"
         required: false
         default: "false"
+      run_mlb_hr:
+        description: "Deprecated escape hatch; MLB HR is canonical in player-markets-refresh"
+        required: false
+        default: "false"
 
 concurrency:
-  group: sports-edge-daily-refresh
+  group: ${{ github.event.inputs.run_mlb_hr == 'true' && 'sports-edge-mlb-hr-refresh' || 'sports-edge-daily-refresh' }}
   cancel-in-progress: false
 
 env:
@@ -22,6 +26,7 @@ env:
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
   DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
   FORCE_FULL_REBUILD: ${{ github.event.inputs.force_full_rebuild || 'false' }}
+  RUN_MLB_HR: ${{ github.event.inputs.run_mlb_hr || 'false' }}
   MLB_HR_STATCAST_MIN_COVERAGE: ${{ vars.MLB_HR_STATCAST_MIN_COVERAGE || '0.50' }}
   MLB_HR_STATCAST_MIN_BATTER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_BATTER_BBE || '5' }}
   MLB_HR_STATCAST_MIN_PITCHER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_PITCHER_BBE || '5' }}
@@ -161,7 +166,7 @@ jobs:
             --lookahead-days 0
 
       - name: Refresh Statcast cache for MLB HR blend
-        if: ${{ steps.plan.outputs.run_mlb == 'true' }}
+        if: ${{ env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         run: |
           python - <<'PY'
@@ -189,7 +194,7 @@ jobs:
           PY
 
       - name: Generate MLB HR Markets
-        if: ${{ steps.plan.outputs.run_mlb == 'true' }}
+        if: ${{ env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         run: |
           python scripts/predict_mlb_home_runs.py \
@@ -211,14 +216,18 @@ jobs:
             --mlb-hr-date "${{ steps.plan.outputs.anchor_date }}" \
             ../web/public/data/mlb_home_runs.json \
             ../web/public/data/predictions.json
+          python scripts/validate_mlb_hr_board_input.py \
+            ../web/public/data/mlb_home_runs.json \
+            --date "${{ steps.plan.outputs.anchor_date }}" \
+            --allow-empty
 
       - name: Sync MLB HR Markets to BigQuery
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
+        if: ${{ env.DRY_RUN != 'true' && env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         run: python scripts/sync_player_markets_to_bigquery.py --project "$PROJECT_ID" --skip-pga
 
       - name: Fetch MLB HR Odds
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
+        if: ${{ env.DRY_RUN != 'true' && env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
@@ -236,7 +245,7 @@ jobs:
             --sync-supabase
 
       - name: Sync MLB HR Markets to Supabase
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
+        if: ${{ env.DRY_RUN != 'true' && env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -360,7 +369,7 @@ jobs:
           python scripts/sync_final_scores.py --project "$PROJECT_ID" --lookback-days 10 --lookahead-days 1
 
       - name: Grade MLB HR Outcomes
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_mlb == 'true' }}
+        if: ${{ env.DRY_RUN != 'true' && env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

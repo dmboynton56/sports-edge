@@ -15,10 +15,13 @@ import {
 import { deriveDataQuality } from "@/lib/data/data-quality";
 import { getBigQueryMissingEnv } from "@/lib/data/bigquery";
 import { getPerformanceHistory } from "@/lib/data/performance";
+import { getMlbHomeRunBoardSnapshot } from "@/lib/data/player-markets";
 import { getSupabaseMissingEnv } from "@/lib/data/supabase";
 import { formatDateTime, formatNumber, formatPctFromWhole } from "@/lib/format";
 import { sportColor } from "@/lib/sports";
 import { cn } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 const STATUS_BADGE = {
   ok: { variant: "positive" as const, label: "Healthy" },
@@ -41,7 +44,10 @@ function groupGaps(gaps: string[]) {
 }
 
 export default async function DataQualityPage() {
-  const history = await getPerformanceHistory();
+  const [history, mlbHr] = await Promise.all([
+    getPerformanceHistory(),
+    getMlbHomeRunBoardSnapshot(),
+  ]);
   const rows = deriveDataQuality(history);
   const missingSupabase = getSupabaseMissingEnv();
   const missingBigQuery = getBigQueryMissingEnv();
@@ -89,6 +95,29 @@ export default async function DataQualityPage() {
           tone={envGaps ? "warning" : "accent"}
         />
       </div>
+
+      <Card className="mt-3">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle>Trusted MLB HR board</CardTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Current serving run for {mlbHr.slateDate}; the website fails closed when this contract is stale.
+            </p>
+          </div>
+          <Badge variant={mlbHr.status === "healthy" ? "positive" : mlbHr.status === "partial" ? "warning" : "missing"}>
+            {mlbHr.status}
+          </Badge>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-3 text-sm sm:grid-cols-4">
+            <div><div className="text-xs text-muted-foreground">Candidates</div><div className="font-semibold">{formatNumber(mlbHr.counts.candidates)}</div></div>
+            <div><div className="text-xs text-muted-foreground">Priced</div><div className="font-semibold">{formatNumber(mlbHr.counts.priced)}</div></div>
+            <div><div className="text-xs text-muted-foreground">Top-25 coverage</div><div className="font-semibold">{formatPctFromWhole(mlbHr.counts.top25Coverage == null ? null : mlbHr.counts.top25Coverage * 100)}</div></div>
+            <div><div className="text-xs text-muted-foreground">Last completed</div><div className="font-semibold">{formatDateTime(mlbHr.completedAt)}</div></div>
+          </div>
+          {mlbHr.gaps.length ? <div className="mt-4 flex flex-wrap gap-2">{mlbHr.gaps.map((gap) => <Badge key={gap} variant="missing">{gap}</Badge>)}</div> : null}
+        </CardContent>
+      </Card>
 
       <SectionHeading title="Coverage by source" note="Share of graded games that have odds attached" />
 

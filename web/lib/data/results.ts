@@ -19,7 +19,9 @@ export type GameResultRow = {
 };
 
 export type MlbHrResultRow = {
+  board_row_id: string | null;
   game_date: string;
+  game_id?: string;
   player_name: string;
   team: string | null;
   model_version: string;
@@ -27,6 +29,15 @@ export type MlbHrResultRow = {
   top_k_bucket: string | null;
   model_probability: number | null;
   actual_home_run: boolean | null;
+  actual_home_runs?: number | null;
+  actual_plate_appearances?: number | null;
+  evaluated_at?: string | null;
+  american_price?: number | null;
+  market_probability?: number | null;
+  edge?: number | null;
+  ev?: number | null;
+  odds_status?: string | null;
+  raw_record?: Record<string, unknown> | null;
 };
 
 export type PgaResultRow = {
@@ -71,10 +82,15 @@ export type ResultsSummary = {
   pushes: number;
   hitRate: number | null;
   roi: number | null;
+  pricedSample?: number;
+  pricedHitRate?: number | null;
+  flatUnits?: number | null;
+  modelOnlySample?: number;
+  modelOnlyHitRate?: number | null;
 };
 
 export type ResultsData = {
-  generatedAt: string;
+  generatedAt: string | null;
   summaries: ResultsSummary[];
   gameRows: GameResultRow[];
   mlbHrRows: MlbHrResultRow[];
@@ -136,8 +152,28 @@ export function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
   }
   return Array.from(groups.entries()).map(([key, group]) => {
     const [modelVersion, bucket] = key.split("|");
-    const wins = group.filter((row) => row.actual_home_run === true).length;
-    const losses = group.filter((row) => row.actual_home_run === false).length;
+    const evaluable = group.filter((row) => (row.actual_plate_appearances ?? 0) > 0 && row.actual_home_run != null);
+    const wins = evaluable.filter((row) => row.actual_home_run === true).length;
+    const losses = evaluable.filter((row) => row.actual_home_run === false).length;
+    const priced = evaluable.filter(
+      (row) =>
+        typeof row.american_price === "number" &&
+        row.american_price !== 0 &&
+        (row.odds_status === "ok" || row.odds_status === "raw_implied"),
+    );
+    const pricedWins = priced.filter((row) => row.actual_home_run === true).length;
+    const modelOnly = evaluable.filter((row) => !priced.includes(row));
+    const modelOnlyWins = modelOnly.filter((row) => row.actual_home_run === true).length;
+    const flatUnits = priced.reduce((sum, row) => {
+      if (row.actual_home_run !== true && row.actual_home_run !== false) return sum;
+      const price = row.american_price ?? 0;
+      const profit = row.actual_home_run
+        ? price > 0
+          ? price / 100
+          : 100 / Math.abs(price)
+        : -1;
+      return sum + profit;
+    }, 0);
     return {
       league: "MLB",
       market: `home_run ${bucket}`,
@@ -147,7 +183,12 @@ export function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
       losses,
       pushes: 0,
       hitRate: rate(wins, losses),
-      roi: null,
+      roi: priced.length ? flatUnits / priced.length : null,
+      pricedSample: priced.length,
+      pricedHitRate: rate(pricedWins, priced.length - pricedWins),
+      flatUnits,
+      modelOnlySample: modelOnly.length,
+      modelOnlyHitRate: rate(modelOnlyWins, modelOnly.length - modelOnlyWins),
     };
   });
 }
@@ -272,7 +313,7 @@ export async function getGameResultRows(league: string): Promise<RawResults<Game
 
 export async function getMlbHomeRunResultRows(): Promise<RawResults<MlbHrResultRow>> {
   const rows = await supabaseRest<MlbHrResultRow>(
-    "mlb_home_run_results?select=*&order=game_date.desc,rank.asc&limit=5000",
+    "mlb_home_run_published_results?select=*&order=game_date.desc,rank.asc&limit=5000",
   );
   return { rows: rows ?? [], gaps: resultGaps("MLB home run results", rows) };
 }
@@ -287,19 +328,29 @@ export async function getPgaResultRows(): Promise<RawResults<PgaResultRow>> {
 export async function getResultsData(): Promise<ResultsData> {
   const [gameRows, mlbHrRows, pgaRows] = await Promise.all([
     supabaseRest<GameResultRow>("game_prediction_results?select=*&order=game_date.desc&limit=5000"),
-    supabaseRest<MlbHrResultRow>("mlb_home_run_results?select=*&order=game_date.desc,rank.asc&limit=5000"),
+    supabaseRest<MlbHrResultRow>("mlb_home_run_published_results?select=*&order=game_date.desc,rank.asc&limit=5000"),
     supabaseRest<PgaResultRow>("pga_prediction_results?select=*&order=evaluated_at.desc&limit=5000"),
   ]);
 
-  const gaps = getSupabaseMissingEnv().map((name) => `Supabase results unavailable: missing ${name}.`);
+  const gaps = [
+    ...getSupabaseMissingEnv().map((name) => `Supabase results unavailable: missing ${name}.`),
+    ...resultGaps("game results", gameRows),
+    ...resultGaps("MLB home run published results", mlbHrRows),
+    ...resultGaps("PGA results", pgaRows),
+  ];
   const summaries = [
     ...summarizeGameResults(gameRows ?? []),
     ...summarizeMlbHr(mlbHrRows ?? []),
     ...summarizePga(pgaRows ?? []),
   ].filter((row) => row.sample > 0);
 
+  const timestamps = [
+    ...(gameRows ?? []).map((row) => (row as GameResultRow & { evaluated_at?: string }).evaluated_at),
+    ...(mlbHrRows ?? []).map((row) => row.evaluated_at),
+    ...(pgaRows ?? []).map((row) => row.evaluated_at),
+  ].filter((value): value is string => Boolean(value));
   return {
-    generatedAt: new Date().toISOString(),
+    generatedAt: timestamps.toSorted().at(-1) ?? null,
     summaries,
     gameRows: gameRows ?? [],
     mlbHrRows: mlbHrRows ?? [],

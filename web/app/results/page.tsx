@@ -23,7 +23,7 @@ export default async function ResultsPage() {
     <div>
       <PageHeader
         title="Results"
-        description="Live graded outcomes for model spread, winner, MLB home run, and PGA placement markets."
+        description="Official outcomes graded against the published pregame snapshot, with sportsbook performance separated from model-only accuracy."
         meta={data.generatedAt}
       />
 
@@ -52,8 +52,11 @@ export default async function ResultsPage() {
                 <TableHead>Market</TableHead>
                 <TableHead>Model</TableHead>
                 <TableHead>Sample</TableHead>
+                <TableHead>Priced</TableHead>
                 <TableHead>W-L-P</TableHead>
                 <TableHead>Hit Rate</TableHead>
+                <TableHead>Priced hit</TableHead>
+                <TableHead>Model-only</TableHead>
                 <TableHead>Flat ROI</TableHead>
               </TableRow>
             </TableHeader>
@@ -64,10 +67,13 @@ export default async function ResultsPage() {
                   <TableCell>{row.market}</TableCell>
                   <TableCell>{row.modelVersion}</TableCell>
                   <TableCell>{formatNumber(row.sample)}</TableCell>
+                  <TableCell>{row.pricedSample == null ? "—" : formatNumber(row.pricedSample)}</TableCell>
                   <TableCell>
                     {row.wins}-{row.losses}-{row.pushes}
                   </TableCell>
                   <TableCell>{formatPct(row.hitRate)}</TableCell>
+                  <TableCell>{row.pricedHitRate == null ? "—" : formatPct(row.pricedHitRate)}</TableCell>
+                  <TableCell>{row.modelOnlySample == null ? "—" : `${formatNumber(row.modelOnlySample)} · ${formatPct(row.modelOnlyHitRate)}`}</TableCell>
                   <TableCell>{formatPct(row.roi)}</TableCell>
                 </TableRow>
               ))}
@@ -160,8 +166,17 @@ export default async function ResultsPage() {
                     <TableCell>{row.model_version}</TableCell>
                     <TableCell>
                       <Badge variant={row.actual_home_run ? "accent" : row.actual_home_run === false ? "missing" : "outline"}>
-                        {row.actual_home_run ? "hit" : row.actual_home_run === false ? "miss" : "n/a"}
+                        {row.actual_plate_appearances === 0
+                          ? "void"
+                          : row.actual_home_run
+                            ? "hit"
+                            : row.actual_home_run === false
+                              ? "miss"
+                              : "n/a"}
                       </Badge>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        {row.american_price && row.odds_status ? "priced snapshot" : "model only"}
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}

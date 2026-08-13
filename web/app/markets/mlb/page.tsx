@@ -9,6 +9,8 @@ import { getMlbVerticalSummary } from "@/lib/data/mlb-vertical";
 import { getProductionPredictionFeed } from "@/lib/data/player-markets";
 import { getSport } from "@/lib/markets-registry";
 
+export const dynamic = "force-dynamic";
+
 const WINNER_MARKETS = new Set(["winner", "moneyline", "money_line", "ml"]);
 
 export default async function MlbMarketsPage() {

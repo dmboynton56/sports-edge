@@ -16,7 +16,7 @@ function coverageFromSample(sample: Record<string, number | string | null>) {
           ? sample.bigquery_scored_games
           : null;
 
-  if (!joined || !denominator) {
+  if (joined == null || denominator == null || denominator <= 0) {
     return { coveragePct: null, missingRows: null };
   }
 
@@ -58,10 +58,10 @@ export function deriveDataQuality(history: PerformanceHistory): DataQuality[] {
       missingRows: null,
       lastUpdated: history.generatedAt,
       blockingGaps:
-        history.oddspapi.validation_status === "ok"
+        ["ok", "pass"].includes(String(history.oddspapi.validation_status).toLowerCase())
           ? []
           : [`Validation status: ${history.oddspapi.validation_status ?? "n/a"}`],
-      status: history.oddspapi.validation_status === "ok" ? "ok" : "warning",
+      status: ["ok", "pass"].includes(String(history.oddspapi.validation_status).toLowerCase()) ? "ok" : "warning",
       notes:
         typeof history.oddspapi.cumulative_api_requests === "number"
           ? `${history.oddspapi.cumulative_api_requests} cumulative API requests recorded`

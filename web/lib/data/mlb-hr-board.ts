@@ -81,6 +81,33 @@ export type MlbHomeRunBoardData = {
   statcastHealth?: MlbHomeRunStatcastHealth;
 };
 
+export type MlbHrBoardSnapshotStatus =
+  | "healthy"
+  | "partial"
+  | "stale"
+  | "unavailable"
+  | "no_slate";
+
+export type MlbHrBoardSnapshot = {
+  slateDate: string;
+  status: MlbHrBoardSnapshotStatus;
+  modelStatus: "candidate";
+  runWindow: "morning" | "afternoon" | "manual";
+  predictionAsOf: string | null;
+  oddsAsOf: string | null;
+  counts: {
+    candidates: number;
+    priced: number;
+    top25Eligible: number;
+    top25Priced: number;
+    top25Coverage: number | null;
+  };
+  rows: MlbHomeRunPrediction[];
+  gaps: string[];
+  dataSource: "supabase_board" | "unavailable";
+  completedAt: string | null;
+};
+
 export const MLB_HR_V1_MODEL = "mlb-hr-v1";
 export const MLB_HR_STATCAST_BLEND_MODEL = "mlb-hr-torch-statcast-v1-blend";
 
