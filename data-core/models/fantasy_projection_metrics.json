@@ -494,7 +494,7 @@
         "baseline_mae": 0.0,
         "beats_baseline": false,
         "mae": 0.0,
-        "sample": 190,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
@@ -502,7 +502,7 @@
         "baseline_mae": 0.0,
         "beats_baseline": false,
         "mae": 0.0,
-        "sample": 190,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
@@ -510,7 +510,7 @@
         "baseline_mae": 0.0,
         "beats_baseline": false,
         "mae": 0.0,
-        "sample": 190,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
@@ -518,7 +518,7 @@
         "baseline_mae": 0.0,
         "beats_baseline": false,
         "mae": 0.0,
-        "sample": 190,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
@@ -526,15 +526,15 @@
         "baseline_mae": 0.0,
         "beats_baseline": false,
         "mae": 0.0,
-        "sample": 190,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
       "fumbles_lost": {
-        "baseline_mae": 0.358,
+        "baseline_mae": 0.356,
         "beats_baseline": false,
-        "mae": 0.359,
-        "sample": 190,
+        "mae": 0.358,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
@@ -542,7 +542,7 @@
         "baseline_mae": 0.016,
         "beats_baseline": true,
         "mae": 0.015,
-        "sample": 190,
+        "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
       },
@@ -550,63 +550,63 @@
         "baseline_mae": 0.026,
         "beats_baseline": false,
         "mae": 0.028,
-        "sample": 190,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
       "passing_yards": {
-        "baseline_mae": 1.126,
+        "baseline_mae": 1.12,
         "beats_baseline": false,
-        "mae": 1.219,
-        "sample": 190,
+        "mae": 1.213,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
       "receiving_tds": {
-        "baseline_mae": 1.842,
+        "baseline_mae": 1.838,
         "beats_baseline": true,
-        "mae": 1.529,
-        "sample": 190,
+        "mae": 1.522,
+        "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
       },
       "receiving_yards": {
-        "baseline_mae": 184.142,
+        "baseline_mae": 183.262,
         "beats_baseline": true,
-        "mae": 175.682,
-        "sample": 190,
+        "mae": 175.292,
+        "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
       },
       "receptions": {
-        "baseline_mae": 14.142,
+        "baseline_mae": 14.089,
         "beats_baseline": true,
-        "mae": 13.796,
-        "sample": 190,
+        "mae": 13.794,
+        "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
       },
       "rushing_tds": {
-        "baseline_mae": 0.1,
+        "baseline_mae": 0.099,
         "beats_baseline": false,
         "mae": 0.118,
-        "sample": 190,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
       "rushing_yards": {
-        "baseline_mae": 10.311,
+        "baseline_mae": 10.356,
         "beats_baseline": false,
-        "mae": 11.874,
-        "sample": 190,
+        "mae": 11.935,
+        "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
       },
       "two_point_conversions": {
-        "baseline_mae": 0.242,
+        "baseline_mae": 0.241,
         "beats_baseline": true,
-        "mae": 0.194,
-        "sample": 190,
+        "mae": 0.193,
+        "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
       }
