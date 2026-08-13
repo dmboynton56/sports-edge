@@ -2,6 +2,12 @@
 -- BigQuery or local model artifacts remain the source of truth; Supabase is the
 -- public read cache used by the Next.js app.
 
+-- The MLB views are rebuilt by later serving-schema files. Drop them first so
+-- this file remains idempotent when a prior health view added columns that
+-- the legacy definition does not contain.
+drop view if exists mlb_home_run_edges_latest;
+drop view if exists mlb_home_run_predictions_latest;
+
 create table if not exists pga_tournaments (
   id uuid primary key default gen_random_uuid(),
   event_key text not null unique,
