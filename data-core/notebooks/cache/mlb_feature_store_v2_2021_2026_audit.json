@@ -1,9 +1,9 @@
 {
-  "boxscore_rows": 13653,
-  "feature_rows": 13182,
-  "games_rows": 13653,
-  "home_win_rate": 0.5311788802913063,
-  "max_game_date": "2026-07-20",
+  "boxscore_rows": 13894,
+  "feature_rows": 13423,
+  "games_rows": 13894,
+  "home_win_rate": 0.5311033301050436,
+  "max_game_date": "2026-08-07",
   "min_game_date": "2021-04-06",
   "min_prior_games": 5,
   "missing_away_probable_pitcher": 8,
@@ -13,12 +13,12 @@
     "away_starter_pitches_last3_avg": 0.0,
     "away_team_bat_k_pg_15": 0.0,
     "combined_expected_total": 0.0,
-    "elevation": 0.0018965255651646185,
+    "elevation": 0.0018624748565894361,
     "home_starter_k9_last5": 0.0,
     "home_starter_pitches_last3_avg": 0.0,
     "home_team_bat_k_pg_15": 0.0,
     "temp_f": 0.0,
-    "wind_mph": 7.586102260658473e-05
+    "wind_mph": 7.449899426357744e-05
   },
   "observed-weather": [
     "temp_f",
@@ -31,8 +31,8 @@
     "is_dome_or_closed"
   ],
   "observed_weather_caveat": "Weather columns are observed game-time boxscore records used as pregame forecast proxies.",
-  "probable_matches_actual_pct": 99.83681214421253,
-  "rows": 13182,
+  "probable_matches_actual_pct": 99.83974358974359,
+  "rows": 13423,
   "seasons": [
     2021,
     2022,
@@ -41,6 +41,6 @@
     2025,
     2026
   ],
-  "starter_history_both_sides_pct": 94.60628129267182,
+  "starter_history_both_sides_pct": 94.64352231244878,
   "version": "v2"
 }

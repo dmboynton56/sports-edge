@@ -1,0 +1,57 @@
+import { promises as fs } from "fs";
+import path from "path";
+
+export type MlbVerticalMarket = {
+  market_type?: string;
+  model?: string;
+  model_version?: string;
+  test_rows?: number;
+  metrics?: Record<string, unknown>;
+  reference?: Record<string, unknown>;
+  odds?: {
+    status?: string;
+    coverage?: number | null;
+    matched_rows?: number;
+    positive_ev_rows?: number;
+    reason?: string;
+  };
+  quality_gate?: { status?: string; reasons?: string[] };
+};
+
+export type MlbVerticalSummary = {
+  generated_at?: string;
+  as_of_date?: string;
+  production_status?: string;
+  data_quality?: {
+    rows?: number;
+    min_game_date?: string | null;
+    max_game_date?: string | null;
+    status?: string;
+    warnings?: string[];
+  };
+  odds?: {
+    coverage?: number | null;
+    selected_rows?: number;
+    selected_by_source?: Record<string, number>;
+    status?: string;
+  };
+  markets?: Record<string, MlbVerticalMarket>;
+  edges?: {
+    rows?: number;
+    positive_statistical_signals?: number;
+    positive_ev_moneylines?: number;
+    odds_joined_rows?: number;
+  };
+  gaps?: string[];
+};
+
+const SUMMARY_PATH = path.join(process.cwd(), "public", "data", "mlb_vertical_evaluation.json");
+
+export async function getMlbVerticalSummary(): Promise<MlbVerticalSummary | null> {
+  try {
+    const raw = await fs.readFile(SUMMARY_PATH, "utf8");
+    return JSON.parse(raw) as MlbVerticalSummary;
+  } catch {
+    return null;
+  }
+}

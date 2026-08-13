@@ -70,45 +70,75 @@ def sync_results(path: Path) -> int:
     )
     evaluated_at = datetime.now(timezone.utc)
     rows = []
-    for _, row in frame.iterrows():
-        rows.append(
-            (
-                _clean(row.get("game_id")),
-                _clean(str(row.get("game_date"))[:10]),
-                _clean(str(row.get("player_id"))),
-                _clean(row.get("player_name")),
-                _clean(row.get("team")),
-                _clean(row.get("opponent")),
-                _clean(row.get("model_version")),
-                _clean(row.get("prediction_ts")),
-                _clean(row.get("rank")),
-                _top_k_bucket(row.get("rank")),
-                _clean(row.get("hr_probability")),
-                bool(int(float(row.get("actual_home_run")))),
-                _clean(row.get("actual_home_runs")),
-                _clean(row.get("actual_plate_appearances")),
-                evaluated_at,
-                json.dumps(row.where(pd.notna(row), None).to_dict(), default=str),
-            )
-        )
+    try:
+        with conn.cursor() as lookup:
+            for _, row in frame.iterrows():
+                game_id = _clean(row.get("game_id"))
+                player_id = _clean(str(row.get("player_id")))
+                model_version = _clean(row.get("model_version"))
+                event_time = _clean(row.get("event_time"))
+                lookup.execute(
+                    """
+                    select b.board_row_id
+                    from mlb_home_run_board_rows b
+                    join mlb_home_run_board_runs r on r.run_id = b.run_id
+                    where b.game_id = %s
+                      and b.player_id = %s
+                      and b.model_version = %s
+                      and r.status in ('healthy', 'partial')
+                      and (b.event_time is null or b.published_at <= b.event_time)
+                      and (%s is null or b.published_at <= %s)
+                    order by b.published_at desc
+                    limit 1
+                    """,
+                    (game_id, player_id, model_version, event_time, event_time),
+                    prepare=False,
+                )
+                board_match = lookup.fetchone()
+                board_row_id = board_match[0] if board_match else _clean(row.get("board_row_id"))
+                rows.append(
+                    (
+                        board_row_id,
+                        game_id,
+                        _clean(str(row.get("game_date"))[:10]),
+                        player_id,
+                        _clean(row.get("player_name")),
+                        _clean(row.get("team")),
+                        _clean(row.get("opponent")),
+                        model_version,
+                        _clean(row.get("prediction_ts")),
+                        _clean(row.get("rank")),
+                        _top_k_bucket(row.get("rank")),
+                        _clean(row.get("hr_probability")),
+                        bool(int(float(row.get("actual_home_run")))),
+                        _clean(row.get("actual_home_runs")),
+                        _clean(row.get("actual_plate_appearances")),
+                        evaluated_at,
+                        json.dumps(row.where(pd.notna(row), None).to_dict(), default=str),
+                    )
+                )
+    except Exception:
+        conn.close()
+        raise
 
     try:
         with conn.cursor() as cur:
             cur.executemany(
                 """
                 insert into mlb_home_run_results (
-                  game_id, game_date, player_id, player_name, team, opponent,
+                  board_row_id, game_id, game_date, player_id, player_name, team, opponent,
                   model_version, prediction_ts, rank, top_k_bucket,
                   model_probability, actual_home_run, actual_home_runs,
                   actual_plate_appearances, evaluated_at, raw_record
                 )
                 values (
-                  %s, %s, %s, %s, %s, %s,
+                  %s, %s, %s, %s, %s, %s, %s,
                   %s, %s, %s, %s,
                   %s, %s, %s, %s, %s, %s::jsonb
                 )
                 on conflict (game_id, player_id, model_version, prediction_ts)
                 do update set
+                  board_row_id = excluded.board_row_id,
                   rank = excluded.rank,
                   top_k_bucket = excluded.top_k_bucket,
                   model_probability = excluded.model_probability,

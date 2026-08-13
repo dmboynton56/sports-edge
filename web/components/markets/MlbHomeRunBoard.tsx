@@ -1,19 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
-import { Activity, AlertTriangle, DollarSign, LineChart, Percent } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Activity, AlertTriangle, Clock3, DollarSign, ShieldCheck } from "lucide-react";
 
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { Notice } from "@/components/dashboard/Notice";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -24,302 +18,317 @@ import {
 } from "@/components/ui/table";
 import {
   getMlbHomeRunModelLabel,
-  type MlbHomeRunBoardData,
   type MlbHomeRunPrediction,
-  type MlbHomeRunStatcastHealth,
+  type MlbHrBoardSnapshot,
 } from "@/lib/data/mlb-hr-board";
-import { formatDateTime, formatGamesSinceLastHr, formatNumber, formatPct } from "@/lib/format";
+import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
+
+type Filter = "all" | "priced" | "model-only";
+const PAGE_SIZE = 25;
 
 function formatAmerican(price: number | null | undefined) {
-  if (typeof price !== "number" || !Number.isFinite(price)) return "n/a";
+  if (typeof price !== "number" || !Number.isFinite(price) || price === 0) return "n/a";
   return price > 0 ? `+${price}` : `${price}`;
 }
 
-function sortRows(predictions: MlbHomeRunPrediction[]) {
-  return predictions.toSorted((a, b) => {
-    const aScore = typeof a.consensusScore === "number" ? a.consensusScore : (a.rank ?? Infinity);
-    const bScore = typeof b.consensusScore === "number" ? b.consensusScore : (b.rank ?? Infinity);
-    if (aScore !== bScore) return aScore - bScore;
-    return (b.modelProbability ?? 0) - (a.modelProbability ?? 0);
-  });
+function isPriced(row: MlbHomeRunPrediction) {
+  return row.oddsStatus === "ok" || row.oddsStatus === "raw_implied";
 }
 
-function formatRank(value: number | null | undefined) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "n/a";
-  return `#${Math.round(value)}`;
+function StatusBadge({ status }: { status: MlbHrBoardSnapshot["status"] }) {
+  const config = {
+    healthy: ["positive", "Healthy"],
+    partial: ["warning", "Partial coverage"],
+    stale: ["missing", "Stale"],
+    unavailable: ["destructive", "Unavailable"],
+    no_slate: ["outline", "No slate"],
+  } as const;
+  const [variant, label] = config[status];
+  return <Badge variant={variant}>{label}</Badge>;
 }
 
-function agreementVariant(agreement: string | null | undefined) {
-  if (agreement === "Consensus") return "accent";
-  if (agreement === "Missing Statcast" || agreement === "V1 only") return "missing";
-  return "outline";
-}
-
-function BoardMetrics({ rows, health }: { rows: MlbHomeRunPrediction[]; health?: MlbHomeRunStatcastHealth }) {
-  const best = rows[0];
-  const flagged = rows.filter((row) => (row.qualityFlags?.length ?? 0) > 0).length;
-  const rowsWithOdds = rows.filter((row) => row.oddsStatus && row.oddsStatus !== "missing_odds");
-  const positiveEdges = rows.filter((row) => (row.edge ?? 0) > 0).length;
-  const bestEdge = rows
-    .filter((row) => typeof row.edge === "number")
-    .toSorted((a, b) => (b.edge ?? -Infinity) - (a.edge ?? -Infinity))[0];
-
-  const statcastCoverage = health?.coverage ?? (
-    rows.length
-      ? rows.filter((row) => row.statcastAvailable !== false && row.statcastProbability != null).length / rows.length
-      : null
-  );
-
+function BoardMetrics({ snapshot }: { snapshot: MlbHrBoardSnapshot }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
       <MetricCard
         title="Candidates"
-        value={formatNumber(rows.length)}
-        detail="candidate model surface"
-        icon={LineChart}
-        tone={rows.length ? "accent" : "warning"}
-      />
-      <MetricCard
-        title="Top Probability"
-        value={best ? formatPct(best.v1Probability ?? best.modelProbability) : "n/a"}
-        detail={best ? `${best.player} vs ${best.opponent}` : "No slate rows"}
+        value={formatNumber(snapshot.counts.candidates)}
+        detail="all eligible model rows"
         icon={Activity}
+        tone={snapshot.counts.candidates ? "accent" : "warning"}
       />
       <MetricCard
-        title="Rows With Flags"
-        value={formatNumber(flagged)}
-        detail="Flags cover lineup, pitcher, and player-history gaps."
-        icon={AlertTriangle}
-        tone={flagged ? "warning" : "accent"}
-      />
-      <MetricCard
-        title="Odds Coverage"
-        value={formatPct(rows.length ? rowsWithOdds.length / rows.length : null)}
-        detail={`${formatNumber(rowsWithOdds.length)} candidates with sportsbook odds`}
-        icon={Percent}
-        tone={rowsWithOdds.length ? "accent" : "warning"}
-      />
-      <MetricCard
-        title="Statcast Coverage"
-        value={formatPct(statcastCoverage)}
-        detail={
-          health
-            ? `${formatNumber(health.readyRows)} of ${formatNumber(health.totalRows)} ready`
-            : "Derived from published board rows."
-        }
-        icon={Activity}
-        tone={health?.artifactLoaded === false || (statcastCoverage ?? 0) < 0.5 ? "warning" : "accent"}
-      />
-      <MetricCard
-        title="Positive Edges"
-        value={formatNumber(positiveEdges)}
-        detail={bestEdge ? `${bestEdge.player} ${formatAmerican(bestEdge.bestPrice)}` : "No priced edges"}
+        title="Priced"
+        value={formatNumber(snapshot.counts.priced)}
+        detail="fresh sportsbook snapshots"
         icon={DollarSign}
-        tone={positiveEdges ? "accent" : "default"}
+        tone={snapshot.counts.priced ? "accent" : "warning"}
+      />
+      <MetricCard
+        title="Top-25 coverage"
+        value={formatPct(snapshot.counts.top25Coverage)}
+        detail={
+          snapshot.counts.top25Eligible
+            ? `${snapshot.counts.top25Priced} of ${snapshot.counts.top25Eligible} priced`
+            : "No eligible denominator"
+        }
+        icon={ShieldCheck}
+        tone={(snapshot.counts.top25Coverage ?? 0) >= 0.8 ? "accent" : "warning"}
+      />
+      <MetricCard
+        title="Model status"
+        value="Candidate"
+        detail={getMlbHomeRunModelLabel("mlb-hr-v1")}
+        icon={Activity}
+      />
+      <MetricCard
+        title="Run window"
+        value={snapshot.runWindow}
+        detail={snapshot.completedAt ? `completed ${formatDateTime(snapshot.completedAt)}` : "not completed"}
+        icon={Clock3}
       />
     </div>
   );
 }
 
-function BoardTable({ rows }: { rows: MlbHomeRunPrediction[] }) {
+function PriceCell({ row }: { row: MlbHomeRunPrediction }) {
+  if (!isPriced(row)) {
+    return (
+      <div>
+        <div className="font-medium text-muted-foreground">Model only — no sportsbook price</div>
+      </div>
+    );
+  }
   return (
-    <TooltipProvider>
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-16">Rank</TableHead>
-            <TableHead>Player</TableHead>
-            <TableHead>Model Agreement</TableHead>
-            <TableHead>Consensus Score</TableHead>
-            <TableHead>V1 Rank</TableHead>
-            <TableHead>Statcast Rank</TableHead>
-            <TableHead className="w-20">Since HR</TableHead>
-            <TableHead>Game</TableHead>
-            <TableHead>Slot</TableHead>
-            <TableHead>Pitcher</TableHead>
-            <TableHead>HR Prob</TableHead>
-            <TableHead>Statcast Prob</TableHead>
-            <TableHead>Best Price</TableHead>
-            <TableHead>Market Prob</TableHead>
-            <TableHead>Edge / EV</TableHead>
-            <TableHead>Odds</TableHead>
-            <TableHead>Flags</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {rows.map((row, index) => (
-            <TableRow key={row.id}>
-              <TableCell>{index + 1}</TableCell>
-              <TableCell>
-                <div className="font-medium">{row.player}</div>
-                <div className="text-xs text-muted-foreground">{row.team}</div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={agreementVariant(row.modelAgreement)}>
-                  {row.modelAgreement ?? "V1 only"}
-                </Badge>
-              </TableCell>
-              <TableCell className="font-mono">{formatNumber(row.consensusScore, 0)}</TableCell>
-              <TableCell className="font-mono">{formatRank(row.v1Rank ?? row.rank)}</TableCell>
-              <TableCell>
-                <div className="font-mono">{formatRank(row.statcastRank)}</div>
-                <div className="text-xs text-muted-foreground">
-                  {row.statcastAvailable === false ? "unavailable" : row.statcastRank ? "ranked" : "n/a"}
-                </div>
-              </TableCell>
-              <TableCell>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span className="cursor-help font-mono text-sm">
-                      {formatGamesSinceLastHr(row.gamesSinceLastHr, row.qualityFlags)}
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {row.lastHrDate
-                      ? `Last HR: ${row.lastHrDate}. Based on last 45 days of boxscores.`
-                      : "No homer in the loaded boxscore history window (45 days)."}
-                  </TooltipContent>
-                </Tooltip>
-              </TableCell>
-              <TableCell>
-                <div>{row.opponent}</div>
-                <div className="text-xs text-muted-foreground">{formatDateTime(row.eventTime)}</div>
-              </TableCell>
-              <TableCell>
-                <div>{row.lineupSlot ?? "n/a"}</div>
-                <div className="text-xs text-muted-foreground">{row.lineupStatus}</div>
-              </TableCell>
-              <TableCell className="truncate">{row.opposingProbablePitcher ?? "n/a"}</TableCell>
-              <TableCell>
-                <div className="font-mono font-semibold">
-                  {formatPct(row.v1Probability ?? row.modelProbability)}
-                </div>
-                <div className="text-xs text-muted-foreground">v1</div>
-              </TableCell>
-              <TableCell>
-                <div className="font-mono">{formatPct(row.statcastProbability)}</div>
-                <div className="text-xs text-muted-foreground">
-                  {row.statcastAvailable === false
-                    ? "fallback"
-                    : row.statcastProbability != null
-                      ? "blend"
-                      : "n/a"}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="font-mono font-semibold">{formatAmerican(row.bestPrice)}</div>
-                <div className="text-xs text-muted-foreground">{row.bestBook ?? "missing"}</div>
-              </TableCell>
-              <TableCell>
-                <div className="font-mono">{formatPct(row.marketProbability ?? row.impliedProbability)}</div>
-                <div className="text-xs text-muted-foreground">
-                  {row.noVigProbability != null ? "no-vig" : row.impliedProbability != null ? "raw" : "n/a"}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div
-                  className={
-                    row.edge != null && row.edge > 0
-                      ? "font-mono font-semibold text-emerald-400"
-                      : row.edge != null && row.edge < 0
-                        ? "font-mono text-red-400"
-                        : "font-mono text-muted-foreground"
-                  }
-                >
-                  {row.edge != null && row.edge > 0 ? "+" : ""}
-                  {formatPct(row.edge)}
-                </div>
-                <div className="text-xs text-muted-foreground">EV {formatPct(row.ev)}</div>
-              </TableCell>
-              <TableCell>
-                <Badge variant={row.oddsStatus === "missing_odds" ? "missing" : "outline"}>
-                  {row.oddsStatus ?? "model only"}
-                </Badge>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  {formatNumber(row.oddsBooksCount)} books | {formatDateTime(row.oddsSnapshotTs)}
-                </div>
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1">
-                  {(row.qualityFlags ?? []).length ? (
-                    row.qualityFlags?.map((flag) => (
-                      <Badge key={flag} variant="outline">
-                        {flag}
-                      </Badge>
-                    ))
-                  ) : (
-                    <Badge variant="accent">clean</Badge>
-                  )}
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </TooltipProvider>
+    <div>
+      <div className="font-mono font-semibold">{formatAmerican(row.bestPrice ?? row.price)}</div>
+      <div className="text-xs text-muted-foreground">{row.bestBook ?? row.book}</div>
+    </div>
   );
 }
 
-type MlbHomeRunBoardProps = {
-  board: MlbHomeRunBoardData;
-};
-
-export function MlbHomeRunBoard({ board }: MlbHomeRunBoardProps) {
-  const activeModel = board.availableModels.includes(board.defaultModel)
-    ? board.defaultModel
-    : board.availableModels[0] ?? board.defaultModel;
-  const activeFeed = board.models[activeModel];
-  const gaps = Array.from(new Set([...(board.gaps ?? []), ...(activeFeed?.gaps ?? [])]));
-  const rows = useMemo(
-    () => sortRows(activeFeed?.predictions ?? []),
-    [activeFeed?.predictions],
+function EdgeCell({ row }: { row: MlbHomeRunPrediction }) {
+  if (!isPriced(row)) return <span className="text-muted-foreground">—</span>;
+  return (
+    <div>
+      <div className={row.edge != null && row.edge > 0 ? "font-mono font-semibold text-positive" : "font-mono"}>
+        {formatPct(row.edge)}
+      </div>
+      <div className="text-xs text-muted-foreground">EV {formatPct(row.ev)}</div>
+    </div>
   );
+}
 
-  if (!board.availableModels.length) {
+function CandidateCard({ row }: { row: MlbHomeRunPrediction }) {
+  const priced = isPriced(row);
+  return (
+    <article className="rounded-xl border border-border bg-card p-4 shadow-soft">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            Rank #{row.rank ?? "—"}
+          </div>
+          <h3 className="mt-1 font-display text-lg font-bold tracking-tight">{row.player}</h3>
+          <p className="text-sm text-muted-foreground">
+            {row.team ?? "—"} vs {row.opponent ?? "—"}
+          </p>
+        </div>
+        <Badge variant={priced ? "positive" : "missing"}>{priced ? "Priced" : "Model only"}</Badge>
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+        <div>
+          <div className="text-xs text-muted-foreground">HR probability</div>
+          <div className="font-mono font-semibold">{formatPct(row.modelProbability)}</div>
+        </div>
+        <div>
+          <div className="text-xs text-muted-foreground">Price</div>
+          <PriceCell row={row} />
+        </div>
+        {priced ? (
+          <>
+            <div>
+              <div className="text-xs text-muted-foreground">Market probability</div>
+              <div className="font-mono">{formatPct(row.marketProbability ?? row.impliedProbability)}</div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground">Edge / EV</div>
+              <EdgeCell row={row} />
+            </div>
+          </>
+        ) : null}
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <span>{row.eventTime ? formatDateTime(row.eventTime) : "Event time pending"}</span>
+        {row.oddsSnapshotTs ? <span>Odds {formatDateTime(row.oddsSnapshotTs)}</span> : null}
+        {(row.qualityFlags ?? []).map((flag) => (
+          <Badge key={flag} variant="outline">{flag}</Badge>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function DesktopRows({ rows }: { rows: MlbHomeRunPrediction[] }) {
+  return (
+    <div className="hidden overflow-x-auto md:block">
+      <Table className="min-w-[900px]">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-16">Rank</TableHead>
+            <TableHead>Player / game</TableHead>
+            <TableHead>HR probability</TableHead>
+            <TableHead>Price</TableHead>
+            <TableHead>Market probability</TableHead>
+            <TableHead>Edge / EV</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Odds as of</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => {
+            const priced = isPriced(row);
+            return (
+              <TableRow key={row.id}>
+                <TableCell className="font-mono">{row.rank ?? "—"}</TableCell>
+                <TableCell>
+                  <div className="font-semibold">{row.player}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {row.team ?? "—"} vs {row.opponent ?? "—"} · {row.eventTime ? formatDateTime(row.eventTime) : "time pending"}
+                  </div>
+                </TableCell>
+                <TableCell className="font-mono font-semibold">{formatPct(row.modelProbability)}</TableCell>
+                <TableCell><PriceCell row={row} /></TableCell>
+                <TableCell className="font-mono">{priced ? formatPct(row.marketProbability ?? row.impliedProbability) : "—"}</TableCell>
+                <TableCell><EdgeCell row={row} /></TableCell>
+                <TableCell><Badge variant={priced ? "positive" : "missing"}>{priced ? "Priced" : "Model only"}</Badge></TableCell>
+                <TableCell className="text-xs text-muted-foreground">{row.oddsSnapshotTs ? formatDateTime(row.oddsSnapshotTs) : "—"}</TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+
+export function MlbHomeRunBoard({ snapshot }: { snapshot: MlbHrBoardSnapshot }) {
+  const [filter, setFilter] = useState<Filter>("all");
+  const [page, setPage] = useState(0);
+  const filtered = useMemo(() => {
+    if (filter === "priced") return snapshot.rows.filter(isPriced);
+    if (filter === "model-only") return snapshot.rows.filter((row) => !isPriced(row));
+    return snapshot.rows;
+  }, [filter, snapshot.rows]);
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount - 1);
+  const pageRows = filtered.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+
+  if (snapshot.status === "stale" || snapshot.status === "unavailable" || snapshot.status === "no_slate") {
+    const title = snapshot.status === "no_slate"
+      ? "No MLB games on this slate"
+      : snapshot.status === "stale"
+        ? "Board updating"
+        : "Board unavailable";
+    const description = snapshot.status === "no_slate"
+      ? "The schedule was checked and no games were confirmed for today."
+      : "Candidate rows stay hidden until a current, validated Supabase run is available.";
     return (
-      <EmptyState
-        className="mt-4"
-        title="No home-run board today"
-        description="Batter probabilities publish once projected lineups and probable pitchers are posted for the slate. Check back closer to first pitch."
-        detail={<Notice title="Why it's empty" items={gaps} className="text-left" />}
-      />
+      <div className="mt-4 space-y-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between gap-3">
+              <div><StatusBadge status={snapshot.status} /></div>
+              <span className="text-xs text-muted-foreground">Slate {snapshot.slateDate}</span>
+            </div>
+            <EmptyState className="border-0 bg-transparent px-0 pb-0 pt-8" title={title} description={description} />
+          </CardContent>
+        </Card>
+        <Notice title="Why rows are hidden" items={snapshot.gaps.length ? snapshot.gaps : ["No current board health record was returned."]} />
+      </div>
     );
   }
 
   return (
     <div className="mt-4 space-y-4">
-      <Notice title={`${gaps.length} ${gaps.length === 1 ? "caveat" : "caveats"} on this board`} items={gaps} />
-
-      {board.statcastHealth?.artifactLoaded === false ? (
-        <Notice
-          tone="error"
-          title="Statcast blend unavailable"
-          items={[
-            board.statcastHealth.artifactError
-              ? `The blend artifact failed to load: ${board.statcastHealth.artifactError}`
-              : "The blend artifact failed to load, so rows fall back to v1 probabilities.",
-          ]}
-        />
-      ) : null}
-
-      <BoardMetrics rows={rows} health={board.statcastHealth} />
-
       <Card>
-        <CardHeader>
-          <CardTitle>
-            Home Run Probability Board - {getMlbHomeRunModelLabel(activeModel)}
-          </CardTitle>
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle className="flex flex-wrap items-center gap-2">
+              Trusted MLB HR board <StatusBadge status={snapshot.status} />
+            </CardTitle>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Slate {snapshot.slateDate} · Candidate model · {snapshot.runWindow} refresh
+            </p>
+          </div>
+          <div className="text-left text-xs text-muted-foreground sm:text-right">
+            <div>Predictions {formatDateTime(snapshot.predictionAsOf)}</div>
+            <div>Odds {formatDateTime(snapshot.oddsAsOf)}</div>
+          </div>
         </CardHeader>
         <CardContent>
-          <BoardTable rows={rows} />
+          <BoardMetrics snapshot={snapshot} />
         </CardContent>
       </Card>
 
-      {activeFeed && !rows.length ? (
-        <div className="mt-4 text-sm text-muted-foreground">
-          No rows available for {getMlbHomeRunModelLabel(activeModel)}.
-        </div>
+      {snapshot.status === "partial" ? (
+        <Notice
+          tone="warning"
+          title="Partial pricing coverage"
+          items={[
+            `Only ${snapshot.counts.top25Priced} of ${snapshot.counts.top25Eligible || "the eligible top-25"} candidates have fresh prices (${formatPct(snapshot.counts.top25Coverage)} coverage).`,
+            "Model-only rows remain visible for research, but they have no actionable price, edge, EV, or Kelly values.",
+          ]}
+        />
       ) : null}
+      {snapshot.gaps.length ? <Notice title="Data-source health" items={snapshot.gaps} /> : null}
+
+      <Card>
+        <CardHeader className="gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <CardTitle>All current candidates</CardTitle>
+              <p className="mt-1 text-sm text-muted-foreground">Rows for games within five minutes of first pitch are hidden.</p>
+            </div>
+            <div className="flex flex-wrap gap-1 rounded-lg bg-secondary p-1" aria-label="Candidate filters">
+              {(["all", "priced", "model-only"] as Filter[]).map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => { setFilter(value); setPage(0); }}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${filter === value ? "bg-card text-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  {value === "all" ? "All" : value === "priced" ? "Priced" : "Model-only"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-0 sm:px-5 sm:pb-5">
+          {pageRows.length ? (
+            <>
+              <DesktopRows rows={pageRows} />
+              <div className="space-y-3 px-5 md:hidden">
+                {pageRows.map((row) => <CandidateCard key={row.id} row={row} />)}
+              </div>
+              <div className="flex items-center justify-between border-t border-border px-5 py-4 text-sm text-muted-foreground">
+                <span>{filtered.length} {filtered.length === 1 ? "candidate" : "candidates"}</span>
+                <div className="flex items-center gap-2">
+                  <button type="button" className="rounded-md border border-border px-2.5 py-1 disabled:opacity-40" disabled={currentPage === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>Previous</button>
+                  <span>Page {currentPage + 1} of {pageCount}</span>
+                  <button type="button" className="rounded-md border border-border px-2.5 py-1 disabled:opacity-40" disabled={currentPage >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Next</button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <EmptyState className="border-0 bg-transparent py-12" title="No rows match this filter" description="Switch to All candidates to inspect the full current model surface." />
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <AlertTriangle className="size-3.5" />
+        <span>Priced rows are snapshots from the publication run. Historical edges are never recalculated from newer odds.</span>
+      </div>
     </div>
   );
 }

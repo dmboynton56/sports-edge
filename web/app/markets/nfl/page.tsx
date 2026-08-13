@@ -3,6 +3,8 @@ import { MarketsTable } from "@/components/dashboard/MarketsTable";
 import { PageHeader } from "@/components/dashboard/PageHeader";
 import { getProductionPredictionFeed } from "@/lib/data/player-markets";
 
+export const dynamic = "force-dynamic";
+
 export default async function NflMarketsPage() {
   const feed = await getProductionPredictionFeed();
   const predictions = feed.predictions.filter(

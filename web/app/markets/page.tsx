@@ -1,84 +1,85 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
-import { MarketsTable } from "@/components/dashboard/MarketsTable";
 import { PageHeader, SectionHeading } from "@/components/dashboard/PageHeader";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import { getProductionPredictionFeed } from "@/lib/data/player-markets";
-import { SPORTS, type SportEntry } from "@/lib/markets-registry";
-import { sportColor } from "@/lib/sports";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getMlbHomeRunBoardSnapshot } from "@/lib/data/player-markets";
+import { SPORTS, type MarketEntry, type SportEntry } from "@/lib/markets-registry";
+import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 
-function SportCard({ sport }: { sport: SportEntry }) {
-  const live = sport.markets.filter((market) => market.status === "live").length;
+export const dynamic = "force-dynamic";
 
+function statusLabel(sport: SportEntry, market: MarketEntry) {
+  if (sport.slug === "mlb" && market.slug === "home-runs") return "Trusted slice";
+  if (sport.emphasis === "seasonal") return "Seasonal";
+  return market.status === "live" ? "Research" : "Candidate";
+}
+
+function MarketCard({ sport, market, status }: { sport: SportEntry; market: MarketEntry; status: string }) {
   return (
-    <Card className="flex flex-col p-5">
-      <div className="flex items-center gap-3">
-        <span className={`h-6 w-[3px] rounded-full ${sportColor(sport.slug).fill}`} />
-        <h3 className="font-display text-xl font-bold tracking-tight">{sport.label}</h3>
-        <Badge variant={live ? "positive" : "outline"} className="ml-auto">
-          {live ? `${live} live` : "No board yet"}
-        </Badge>
-      </div>
-      <p className="mt-2 text-sm text-muted-foreground">{sport.description}</p>
-
-      <div className="mt-4 flex flex-col gap-1.5">
-        {sport.markets.map((market) => (
-          <Link
-            key={market.slug}
-            href={market.href}
-            className="group flex items-start gap-3 rounded-lg border border-border bg-background/60 px-3.5 py-3 transition-colors hover:border-accent/40 hover:bg-accent-soft"
-          >
-            <span className="min-w-0 flex-1">
-              <span className="block text-sm font-semibold text-foreground">
-                {market.label}
-              </span>
-              <span className="mt-0.5 block text-xs leading-relaxed text-muted-foreground">
-                {market.description}
-              </span>
-            </span>
-            <ArrowRight className="mt-0.5 size-4 shrink-0 text-muted-foreground transition-all group-hover:translate-x-0.5 group-hover:text-accent" />
-          </Link>
-        ))}
-      </div>
-    </Card>
+    <Link href={market.href} className="group block">
+      <Card className="h-full transition-colors group-hover:border-accent/50">
+        <CardHeader className="flex flex-row items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-base">{sport.label} · {market.label}</CardTitle>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{market.description}</p>
+          </div>
+          <Badge variant={status === "Trusted slice" ? "positive" : "outline"}>{status}</Badge>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between pt-0 text-sm font-medium text-accent">
+          Open market <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
 export default async function MarketsPage() {
-  const feed = await getProductionPredictionFeed();
-  const primarySports = SPORTS.filter((sport) => sport.emphasis === "primary");
-  const secondarySports = SPORTS.filter((sport) => sport.emphasis !== "primary");
+  const snapshot = await getMlbHomeRunBoardSnapshot();
+  const mlb = SPORTS.find((sport) => sport.slug === "mlb");
+  const trustedMarket = mlb?.markets.find((market) => market.slug === "home-runs");
+  const otherMarkets = SPORTS.flatMap((sport) => sport.markets
+    .filter((market) => !(sport.slug === "mlb" && market.slug === "home-runs"))
+    .map((market) => ({ sport, market })));
 
   return (
     <div>
       <PageHeader
         title="Markets"
-        description="Pick a league to see today's model numbers next to the book's."
-        meta={feed.generatedAt}
+        description="One trusted MLB HR path is live end to end. Other markets are clearly labeled until their serving and grading contracts are complete."
+        meta={`MLB HR ${snapshot.status} · refreshed ${formatDateTime(snapshot.completedAt)}`}
       />
 
+      {trustedMarket && mlb ? (
+        <Link href={trustedMarket.href} className="group block">
+          <Card className="border-accent/30 bg-accent-soft/30 transition-colors group-hover:border-accent/60">
+            <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex gap-3">
+                <ShieldCheck className="mt-0.5 size-5 text-accent" />
+                <div>
+                  <CardTitle>Trusted MLB HR board</CardTitle>
+                  <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">All current candidates, immutable sportsbook snapshots, top-25 pricing coverage, and explicit model-only labels.</p>
+                </div>
+              </div>
+              <Badge variant={snapshot.status === "healthy" ? "positive" : snapshot.status === "partial" ? "warning" : "missing"}>{snapshot.status}</Badge>
+            </CardHeader>
+            <CardContent className="grid gap-3 pt-0 text-sm sm:grid-cols-4">
+              <div><div className="text-xs text-muted-foreground">Candidates</div><div className="font-semibold">{formatNumber(snapshot.counts.candidates)}</div></div>
+              <div><div className="text-xs text-muted-foreground">Priced</div><div className="font-semibold">{formatNumber(snapshot.counts.priced)}</div></div>
+              <div><div className="text-xs text-muted-foreground">Top-25 coverage</div><div className="font-semibold">{formatPct(snapshot.counts.top25Coverage)}</div></div>
+              <div><div className="text-xs text-muted-foreground">Last refresh</div><div className="font-semibold">{formatDateTime(snapshot.completedAt)}</div></div>
+            </CardContent>
+          </Card>
+        </Link>
+      ) : null}
+
+      <SectionHeading title="Other markets" note="Serving status is explicit" />
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
-        {primarySports.map((sport) => (
-          <SportCard key={sport.slug} sport={sport} />
+        {otherMarkets.map(({ sport, market }) => (
+          <MarketCard key={`${sport.slug}-${market.slug}`} sport={sport} market={market} status={statusLabel(sport, market)} />
         ))}
       </div>
-
-      <SectionHeading title="Not running yet" note="Scaffolded, waiting on models or season" />
-      <div className="grid gap-3 md:grid-cols-3">
-        {secondarySports.map((sport) => (
-          <SportCard key={sport.slug} sport={sport} />
-        ))}
-      </div>
-
-      <SectionHeading
-        title="Pre-live model board"
-        note={`${feed.predictions.length} lines across every live market`}
-      />
-      <Card className="overflow-hidden p-5">
-        <MarketsTable initialPredictions={feed.predictions} initialGaps={feed.gaps} />
-      </Card>
     </div>
   );
 }

@@ -198,27 +198,31 @@ def load_predictions_from_supabase(game_date: str) -> pd.DataFrame:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                select
-                  game_id,
-                  game_date,
-                  event_time,
-                  player_id,
-                  player_name,
-                  team,
-                  opponent,
-                  venue,
-                  lineup_slot,
-                  hr_probability,
-                  baseline_probability,
-                  rank,
-                  confidence,
-                  model_version,
-                  prediction_ts,
-                  quality_flags,
-                  top_features
-                from mlb_home_run_predictions
-                where game_date = %s
-                order by model_version, rank nulls last, player_name
+                select distinct on (b.game_id, b.player_id, b.model_version)
+                  b.board_row_id,
+                  b.game_id,
+                  b.slate_date as game_date,
+                  b.event_time,
+                  b.player_id,
+                  b.player_name,
+                  b.team,
+                  b.opponent,
+                  b.venue,
+                  b.lineup_slot,
+                  b.model_probability as hr_probability,
+                  b.baseline_probability,
+                  b.rank,
+                  null::numeric as confidence,
+                  b.model_version,
+                  b.prediction_ts,
+                  b.quality_flags,
+                  '[]'::jsonb as top_features
+                from mlb_home_run_board_rows b
+                join mlb_home_run_board_runs r on r.run_id = b.run_id
+                where b.slate_date = %s
+                  and r.status in ('healthy', 'partial')
+                  and (b.event_time is null or b.published_at <= b.event_time)
+                order by b.game_id, b.player_id, b.model_version, b.published_at desc
                 """,
                 (game_date,),
                 prepare=False,
@@ -238,6 +242,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cache", type=Path, default=DEFAULT_CACHE)
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_OUT_CSV)
     parser.add_argument("--metrics-out", type=Path, default=DEFAULT_METRICS)
+    parser.add_argument("--allow-empty", action="store_true", help="Treat a slate with no published rows as a successful no-op.")
     parser.add_argument("--timeout", type=int, default=30)
     parser.add_argument("--sleep", type=float, default=0.04)
     return parser.parse_args()
@@ -251,12 +256,18 @@ def main() -> None:
             raise SystemExit("--date is required with --from-supabase")
         predictions = load_predictions_from_supabase(args.date)
         if predictions.empty:
+            if args.allow_empty:
+                print(f"No published MLB HR rows found for {args.date}; grading is a no-op.")
+                return
             raise SystemExit(f"No MLB HR predictions found in Supabase for {args.date}")
     else:
         predictions = pd.read_csv(args.predictions)
         if args.date and "game_date" in predictions.columns:
             predictions = predictions[predictions["game_date"].astype(str).str.slice(0, 10) == args.date].copy()
         if predictions.empty:
+            if args.allow_empty:
+                print("No MLB HR prediction rows to evaluate; grading is a no-op.")
+                return
             raise SystemExit("No MLB HR prediction rows to evaluate.")
     evaluated, metrics = evaluate_predictions(predictions, args.cache, timeout=args.timeout, sleep=args.sleep)
     args.out_csv.parent.mkdir(parents=True, exist_ok=True)

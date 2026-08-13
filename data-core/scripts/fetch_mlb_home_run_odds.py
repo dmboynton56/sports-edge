@@ -9,6 +9,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -23,6 +24,8 @@ from src.data.mlb_fetcher import fetch_mlb_schedule  # noqa: E402
 from src.data.mlb_hr_odds_fetcher import (  # noqa: E402
     DEFAULT_REGIONS,
     HR_MARKET,
+    HR_MARKETS,
+    SLATE_TIMEZONE,
     OddsApiClient,
     fetch_day_hr_odds,
     get_api_key,
@@ -127,12 +130,35 @@ def _write_outputs(odds: pd.DataFrame, audit: dict[str, Any], csv_out: Path, aud
     audit_out.write_text(dumps_strict(audit, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def _requested_markets(args: argparse.Namespace) -> list[str] | None:
+    if args.markets:
+        values = args.markets.split(",")
+    elif args.market:
+        values = [args.market]
+    else:
+        return None
+    return list(dict.fromkeys(value.strip() for value in values if value.strip())) or None
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fetch current MLB home run prop odds.")
-    parser.add_argument("--date", type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(), default=datetime.now(timezone.utc).date())
+    parser.add_argument(
+        "--date",
+        type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
+        default=datetime.now(ZoneInfo(SLATE_TIMEZONE)).date(),
+    )
     parser.add_argument("--season", type=int, default=None)
     parser.add_argument("--regions", default=DEFAULT_REGIONS)
-    parser.add_argument("--market", default=HR_MARKET)
+    parser.add_argument(
+        "--market",
+        default=None,
+        help="Optional single-market override; default fetches standard and alternate HR markets.",
+    )
+    parser.add_argument(
+        "--markets",
+        default=None,
+        help="Optional comma-separated provider market keys; overrides --market.",
+    )
     parser.add_argument("--out-csv", type=Path, default=DEFAULT_CSV_OUT)
     parser.add_argument("--audit-out", type=Path, default=DEFAULT_AUDIT_OUT)
     parser.add_argument("--sync-supabase", action="store_true")
@@ -144,6 +170,8 @@ def main() -> None:
     load_dotenv(REPO_ROOT / ".env")
     load_dotenv(ROOT / ".env", override=False)
     args = parse_args()
+    requested_markets = _requested_markets(args)
+    audit_market = requested_markets[0] if requested_markets and len(requested_markets) == 1 else HR_MARKET
 
     try:
         api_key = get_api_key()
@@ -153,7 +181,8 @@ def main() -> None:
         audit = {
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "gameDate": args.date.isoformat(),
-            "market": args.market,
+            "market": audit_market,
+            "markets": requested_markets or list(HR_MARKETS),
             "regions": args.regions,
             "oddsRows": 0,
             "gaps": ["ODDS_API_KEY not found in environment."],
@@ -168,7 +197,8 @@ def main() -> None:
         audit = {
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "gameDate": args.date.isoformat(),
-            "market": args.market,
+            "market": audit_market,
+            "markets": requested_markets or list(HR_MARKETS),
             "regions": args.regions,
             "oddsRows": 0,
             "gaps": [f"No MLB schedule rows fetched for {args.date}."],
@@ -183,7 +213,7 @@ def main() -> None:
         game_date=args.date,
         schedule=schedule,
         regions=args.regions,
-        market=args.market,
+        markets=requested_markets,
     )
     audit["generatedAt"] = datetime.now(timezone.utc).isoformat()
     synced = _sync_supabase(odds) if args.sync_supabase else 0

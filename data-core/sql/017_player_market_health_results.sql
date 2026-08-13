@@ -6,6 +6,12 @@
 drop view if exists mlb_home_run_edges_latest;
 drop view if exists mlb_home_run_predictions_latest;
 
+-- Keep database-side player keys identical to the odds fetcher's canonical
+-- ASCII normalization (diacritics removed, punctuation removed, suffixes
+-- ignored). Without this, names such as "Pete Crow-Armstrong" and
+-- "Julio Rodríguez" can have valid odds but fail the player join.
+create extension if not exists unaccent with schema extensions;
+
 alter table mlb_home_run_predictions
   add column if not exists statcast_coverage numeric check (statcast_coverage is null or (statcast_coverage >= 0 and statcast_coverage <= 1)),
   add column if not exists statcast_ready_rows int,
@@ -144,8 +150,13 @@ with latest_predictions as (
   select distinct on (game_date, game_id, player_id, model_version)
     *,
     trim(regexp_replace(
-      regexp_replace(lower(player_name), '(^|[ .])(jr|sr|iii|ii|iv|v)\.?($|[ .])', ' ', 'g'),
-      '[^a-z0-9]+',
+      regexp_replace(
+        regexp_replace(extensions.unaccent(lower(player_name)), '(^|[ .])(jr|sr|iii|ii|iv|v)\.?($|[ .])', ' ', 'g'),
+        '[^a-z0-9[:space:]]+',
+        '',
+        'g'
+      ),
+      '[[:space:]]+',
       ' ',
       'g'
     )) as normalized_player_name
@@ -156,7 +167,7 @@ latest_odds as (
   select distinct on (game_date, game_id, normalized_player_name, market, line, side, book)
     *
   from mlb_home_run_odds_snapshots
-  where market = 'batter_home_runs'
+  where market in ('batter_home_runs', 'batter_home_runs_alternate')
     and line = 0.5
   order by game_date, game_id, normalized_player_name, market, line, side, book,
     snapshot_ts desc, last_update desc, created_at desc
@@ -184,28 +195,31 @@ paired_over as (
   where lower(o.side) = 'over'
 ),
 best_over as (
-  select distinct on (game_date, game_id, normalized_player_name, market, line)
+  -- Standard and alternate 0.5-line markets are the same modeled event. Keep
+  -- the best available quote across either provider market, while retaining
+  -- the source market for auditability.
+  select distinct on (game_date, game_id, normalized_player_name, line)
     *
   from paired_over
-  order by game_date, game_id, normalized_player_name, market, line, price desc nulls last, snapshot_ts desc
+  order by game_date, game_id, normalized_player_name, line, price desc nulls last, snapshot_ts desc, market
 ),
 book_counts as (
   select
     game_date,
     game_id,
     normalized_player_name,
-    market,
     line,
     count(distinct book) as odds_books_count,
     max(snapshot_ts) as odds_snapshot_ts
   from paired_over
-  group by game_date, game_id, normalized_player_name, market, line
+  group by game_date, game_id, normalized_player_name, line
 ),
 priced as (
   select
     p.*,
     b.book as best_book,
     b.book_title as best_book_title,
+    b.market as best_market,
     b.price as best_price,
     b.implied_probability,
     b.no_vig_probability,
@@ -219,16 +233,14 @@ priced as (
     end as decimal_price
   from latest_predictions p
   left join best_over b
-    on b.game_date = p.game_date
+   on b.game_date = p.game_date
    and b.game_id = p.game_id
    and b.normalized_player_name = p.normalized_player_name
-   and b.market = 'batter_home_runs'
    and b.line = 0.5
   left join book_counts c
-    on c.game_date = p.game_date
+   on c.game_date = p.game_date
    and c.game_id = p.game_id
    and c.normalized_player_name = p.normalized_player_name
-   and c.market = 'batter_home_runs'
    and c.line = 0.5
 )
 select

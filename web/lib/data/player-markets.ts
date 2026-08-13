@@ -11,6 +11,7 @@ import {
   type MlbHomeRunModelFeed,
   type MlbHomeRunPrediction,
   type MlbHomeRunStatcastHealth,
+  type MlbHrBoardSnapshot,
 } from "@/lib/data/mlb-hr-board";
 import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
 
@@ -22,6 +23,7 @@ export {
   type MlbHomeRunFeed,
   type MlbHomeRunModelFeed,
   type MlbHomeRunPrediction,
+  type MlbHrBoardSnapshot,
 };
 
 const MLB_HR_PATH = path.join(process.cwd(), "public", "data", "mlb_home_runs.json");
@@ -39,15 +41,19 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
   if (!config.url || !config.anonKey) return null;
   const base = config.url.replace(/\/$/, "");
-  const response = await fetch(`${base}/rest/v1/${resource}`, {
-    headers: {
-      apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-    },
-    next: { revalidate: 60 },
-  });
-  if (!response.ok) return null;
-  return (await response.json()) as T[];
+  try {
+    const response = await fetch(`${base}/rest/v1/${resource}`, {
+      headers: {
+        apikey: config.anonKey,
+        Authorization: `Bearer ${config.anonKey}`,
+      },
+      next: { revalidate: 60 },
+    });
+    if (!response.ok) return null;
+    return (await response.json()) as T[];
+  } catch {
+    return null;
+  }
 }
 
 function uniqueGaps(gaps: (string | null | undefined)[]): string[] {
@@ -68,6 +74,17 @@ function todayInTimeZone(timeZone: string): string {
     month: "2-digit",
     day: "2-digit",
   }).formatToParts(new Date());
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+export function getMlbHrSlateDate(now = new Date()): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: MLB_SLATE_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
   const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
   return `${values.year}-${values.month}-${values.day}`;
 }
@@ -126,6 +143,76 @@ type SupabaseMlbHrEdgeRow = SupabaseMlbHrRow & {
   odds_books_count: number | null;
   odds_snapshot_ts: string | null;
   odds_status: string | null;
+};
+
+type SupabaseMlbHrBoardRunRow = {
+  run_id: string;
+  run_key: string;
+  slate_date: string;
+  model_version: string;
+  run_window: "morning" | "afternoon" | "manual";
+  status: "running" | "healthy" | "partial" | "failed" | "no_slate";
+  started_at: string;
+  completed_at: string | null;
+  workflow_url: string | null;
+  gaps: string[] | null;
+  validation_summary: Record<string, unknown> | null;
+  total_candidates: number;
+  priced_candidates: number;
+  top25_denominator: number;
+  top25_priced_count: number;
+  top25_coverage: number | null;
+  prediction_ts: string | null;
+  odds_ts: string | null;
+};
+
+type SupabaseMlbHrBoardRow = {
+  board_row_id: string;
+  run_id: string;
+  run_key: string;
+  run_slate_date: string;
+  run_window: "morning" | "afternoon" | "manual";
+  run_status: "healthy" | "partial";
+  run_completed_at: string | null;
+  run_prediction_ts: string | null;
+  run_odds_ts: string | null;
+  run_gaps: string[] | null;
+  run_total_candidates: number;
+  run_priced_candidates: number;
+  run_top25_denominator: number;
+  run_top25_priced_count: number;
+  run_top25_coverage: number | null;
+  slate_date: string;
+  game_id: string;
+  player_id: string;
+  player_name: string;
+  team: string | null;
+  opponent: string | null;
+  venue: string | null;
+  event_time: string | null;
+  lineup_slot: number | null;
+  lineup_status: string | null;
+  opposing_probable_pitcher: string | null;
+  model_version: string;
+  model_probability: number;
+  baseline_probability: number | null;
+  rank: number | null;
+  book: string | null;
+  american_price: number | null;
+  raw_market_probability: number | null;
+  no_vig_market_probability: number | null;
+  market_probability: number | null;
+  edge: number | null;
+  ev: number | null;
+  quarter_kelly: number | null;
+  odds_snapshot_ts: string | null;
+  odds_status: string;
+  odds_books_count: number | null;
+  quality_flags: string[] | null;
+  statcast_available: boolean | null;
+  statcast_coverage: number | null;
+  prediction_ts: string | null;
+  published_at: string;
 };
 
 type SupabasePgaTournamentRow = {
@@ -249,6 +336,245 @@ function mapSupabaseMlbEdge(row: SupabaseMlbHrEdgeRow): MlbHomeRunPrediction {
     oddsSnapshotTs: row.odds_snapshot_ts,
     oddsStatus: row.odds_status,
   };
+}
+
+function stringList(value: string[] | string | null | undefined): string[] {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed.filter(Boolean) : [value];
+  } catch {
+    return [value];
+  }
+}
+
+function mapBoardRow(row: SupabaseMlbHrBoardRow): MlbHomeRunPrediction {
+  const isV1 = row.model_version.startsWith(MLB_HR_V1_MODEL);
+  const priced = row.odds_status === "ok" || row.odds_status === "raw_implied";
+  return {
+    id: row.board_row_id,
+    sport: "MLB",
+    league: "MLB",
+    gameId: row.game_id,
+    gameDate: row.slate_date,
+    eventTime: row.event_time,
+    subject: `${row.player_name} HR`,
+    player: row.player_name,
+    market: "home_run",
+    book: row.book ?? "model",
+    line: 0.5,
+    price: priced ? row.american_price : null,
+    modelProbability: row.model_probability,
+    impliedProbability: priced ? row.market_probability ?? row.raw_market_probability : null,
+    edge: priced ? row.edge : null,
+    ev: priced ? row.ev : null,
+    kelly: priced ? row.quarter_kelly : null,
+    confidence: null,
+    modelVersion: row.model_version,
+    source: "Supabase mlb_home_run_board_latest",
+    updatedAt: row.prediction_ts,
+    team: row.team,
+    opponent: row.opponent,
+    venue: row.venue,
+    lineupSlot: row.lineup_slot,
+    lineupStatus: row.lineup_status,
+    opposingProbablePitcher: row.opposing_probable_pitcher,
+    baselineProbability: row.baseline_probability,
+    rank: row.rank,
+    qualityFlags: stringList(row.quality_flags),
+    topFeatures: [],
+    v1Probability: isV1 ? row.model_probability : null,
+    v1Rank: isV1 ? row.rank : null,
+    statcastProbability: null,
+    statcastRank: null,
+    statcastAvailable: row.statcast_available,
+    modelAgreement: isV1 ? "V1 only" : null,
+    consensusScore: row.rank,
+    marketSignalRank: null,
+    statcastCoverage: row.statcast_coverage,
+    statcastReadyRows: null,
+    statcastTotalRows: null,
+    statcastArtifactLoaded: null,
+    bestBook: priced ? row.book : null,
+    bestPrice: priced ? row.american_price : null,
+    noVigProbability: priced ? row.no_vig_market_probability : null,
+    marketProbability: priced ? row.market_probability : null,
+    oddsBooksCount: priced ? row.odds_books_count : null,
+    oddsSnapshotTs: priced ? row.odds_snapshot_ts : null,
+    oddsStatus: row.odds_status,
+  };
+}
+
+function localClock(now: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: MLB_SLATE_TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(now);
+  const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  const hour = Number(values.hour);
+  return { hour: hour === 24 ? 0 : hour, minute: Number(values.minute) };
+}
+
+function localMinutes(value: string | null | undefined): number | null {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  const clock = localClock(date);
+  return clock.hour * 60 + clock.minute;
+}
+
+function scheduledRunIsEligible(run: SupabaseMlbHrBoardRunRow, now: Date): boolean {
+  const slateDate = getMlbHrSlateDate(now);
+  if (run.slate_date !== slateDate || !run.completed_at) return false;
+  const clock = localClock(now);
+  const minutes = localMinutes(run.completed_at);
+  if (minutes == null) return false;
+  if (clock.hour < 8) return true;
+  if (clock.hour < 16) return (run.run_window === "morning" || run.run_window === "manual") && minutes >= 360;
+  return (run.run_window === "afternoon" || run.run_window === "manual") && minutes >= 840;
+}
+
+function boardStatusForRun(
+  run: SupabaseMlbHrBoardRunRow | null,
+  now: Date,
+): { status: MlbHrBoardSnapshot["status"]; gaps: string[] } {
+  const slateDate = getMlbHrSlateDate(now);
+  const beforeBoardOpen = localClock(now).hour < 8;
+  if (!run) {
+    return {
+      status: beforeBoardOpen ? "stale" : "unavailable",
+      gaps: [beforeBoardOpen ? "Board updating before 8:00 AM Mountain." : `No completed MLB HR run for ${slateDate}.`],
+    };
+  }
+  const gaps = stringList(run.gaps);
+  if (run.status === "no_slate") return { status: "no_slate", gaps };
+  if (run.status === "running" || run.status === "failed") {
+    return { status: "stale", gaps: uniqueGaps([...gaps, "The latest MLB HR run did not complete successfully."]) };
+  }
+  if (!scheduledRunIsEligible(run, now)) {
+    return {
+      status: "stale",
+      gaps: uniqueGaps([
+        ...gaps,
+        localClock(now).hour < 16
+          ? "Waiting for a current morning/manual run completed after 6:00 AM Mountain."
+          : "Waiting for a current afternoon/manual run completed after 2:00 PM Mountain.",
+      ]),
+    };
+  }
+  return { status: run.status === "partial" ? "partial" : "healthy", gaps };
+}
+
+export function deriveMlbHrBoardSnapshot(
+  run: SupabaseMlbHrBoardRunRow | null,
+  sourceRows: SupabaseMlbHrBoardRow[],
+  now = new Date(),
+): MlbHrBoardSnapshot {
+  const slateDate = getMlbHrSlateDate(now);
+  const boardStatus = boardStatusForRun(run, now);
+  if (!run || boardStatus.status === "stale" || boardStatus.status === "unavailable") {
+    return {
+      slateDate,
+      status: boardStatus.status,
+      modelStatus: "candidate",
+      runWindow: run?.run_window ?? "manual",
+      predictionAsOf: run?.prediction_ts ?? null,
+      oddsAsOf: run?.odds_ts ?? null,
+      counts: {
+        candidates: 0,
+        priced: 0,
+        top25Eligible: run?.top25_denominator ?? 0,
+        top25Priced: run?.top25_priced_count ?? 0,
+        top25Coverage: run?.top25_coverage ?? null,
+      },
+      rows: [],
+      gaps: boardStatus.gaps,
+      dataSource: run ? "supabase_board" : "unavailable",
+      completedAt: run?.completed_at ?? null,
+    };
+  }
+
+  const cutoff = now.getTime() + 5 * 60 * 1000;
+  const rows = sourceRows
+    .filter((row) => row.model_version.startsWith(MLB_HR_V1_MODEL))
+    .filter((row) => {
+      const eventTime = row.event_time ? new Date(row.event_time).getTime() : Number.NaN;
+      return Number.isFinite(eventTime) && eventTime > cutoff;
+    })
+    .sort((left, right) => (left.rank ?? Number.MAX_SAFE_INTEGER) - (right.rank ?? Number.MAX_SAFE_INTEGER));
+  const predictions = rows.map(mapBoardRow);
+  const priced = predictions.filter((row) => row.oddsStatus === "ok" || row.oddsStatus === "raw_implied");
+  return {
+    slateDate,
+    status: boardStatus.status,
+    modelStatus: "candidate",
+    runWindow: run.run_window,
+    predictionAsOf: run.prediction_ts,
+    oddsAsOf: run.odds_ts,
+    counts: {
+      candidates: predictions.length,
+      priced: priced.length,
+      top25Eligible: run.top25_denominator,
+      top25Priced: run.top25_priced_count,
+      top25Coverage: run.top25_coverage,
+    },
+    rows: predictions,
+    gaps: uniqueGaps([
+      ...boardStatus.gaps,
+      predictions.length < sourceRows.filter((row) => row.model_version.startsWith(MLB_HR_V1_MODEL)).length
+        ? "Rows for games that have started or begin within five minutes are hidden."
+        : null,
+    ]),
+    dataSource: "supabase_board",
+    completedAt: run.completed_at,
+  };
+}
+
+export async function getMlbHomeRunBoardSnapshot(now = new Date()): Promise<MlbHrBoardSnapshot> {
+  const slateDate = getMlbHrSlateDate(now);
+  if (process.env.MLB_HR_TRUSTED_BOARD_ENABLED === "false") {
+    return {
+      slateDate,
+      status: "unavailable",
+      modelStatus: "candidate",
+      runWindow: "manual",
+      predictionAsOf: null,
+      oddsAsOf: null,
+      counts: { candidates: 0, priced: 0, top25Eligible: 0, top25Priced: 0, top25Coverage: null },
+      rows: [],
+      gaps: ["Trusted MLB HR board is disabled by MLB_HR_TRUSTED_BOARD_ENABLED."],
+      dataSource: "unavailable",
+      completedAt: null,
+    };
+  }
+
+  const runs = await supabaseRest<SupabaseMlbHrBoardRunRow>(
+    `mlb_home_run_board_run_health?select=*&slate_date=eq.${slateDate}&limit=1`,
+  );
+  if (!runs) {
+    const unavailable = deriveMlbHrBoardSnapshot(null, [], now);
+    return { ...unavailable, gaps: uniqueGaps([...unavailable.gaps, ...supabaseConfigGaps()]) };
+  }
+  const run = runs[0] ?? null;
+  if (!run) {
+    const unavailable = deriveMlbHrBoardSnapshot(null, [], now);
+    return { ...unavailable, gaps: uniqueGaps([...unavailable.gaps, ...supabaseConfigGaps()]) };
+  }
+  const rows = await supabaseRest<SupabaseMlbHrBoardRow>(
+    `mlb_home_run_board_latest?select=*&run_slate_date=eq.${slateDate}&order=rank.asc&limit=500`,
+  );
+  if (!rows) {
+    return {
+      ...deriveMlbHrBoardSnapshot(run, [], now),
+      status: "unavailable",
+      gaps: uniqueGaps([...(stringList(run.gaps)), "Published MLB HR board rows are unavailable."]),
+      dataSource: "unavailable",
+    };
+  }
+  return deriveMlbHrBoardSnapshot(run, rows, now);
 }
 
 function buildFeedFromPayload(
@@ -484,6 +810,21 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
     };
   }
 
+  if (process.env.MLB_HR_USE_LOCAL_FIXTURE !== "true") {
+    return {
+      generatedAt: null,
+      defaultModel: modelVersion ?? MLB_HR_V1_MODEL,
+      modelVersion: "mlb-hr-v1-heuristic",
+      productionStatus: "candidate",
+      predictions: [],
+      gaps: uniqueGaps([
+        ...supabaseConfigGaps(),
+        "Supabase MLB HR source returned no current rows; local JSON is disabled for production serving.",
+      ]),
+      dataSource: "unavailable",
+    };
+  }
+
   try {
     const payload = JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
     return buildFeedFromPayload(payload, slateDate, targetModel, supabaseConfigGaps());
@@ -530,6 +871,21 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
       rows[0]?.prediction_ts ?? null,
       "supabase_predictions",
     );
+  }
+
+  if (process.env.MLB_HR_USE_LOCAL_FIXTURE !== "true") {
+    return {
+      generatedAt: null,
+      productionStatus: "candidate",
+      defaultModel: MLB_HR_V1_MODEL,
+      availableModels: [],
+      models: {},
+      gaps: [
+        ...supabaseConfigGaps(),
+        "Supabase MLB HR source returned no current rows; local JSON is disabled for production serving.",
+      ],
+      dataSource: "unavailable",
+    };
   }
 
   try {
@@ -711,10 +1067,17 @@ export async function getProductionPredictionFeed(): Promise<{
   gaps: string[];
 }> {
   const [mlb, pgaBoard] = await Promise.all([getMlbHomeRunFeed(), getPgaBoardData()]);
-  const pga = pgaBoard.normalizedMarkets ?? [];
+  const pga = pgaBoard.dataSource === "supabase_predictions" ? pgaBoard.normalizedMarkets ?? [] : [];
+  const mlbPredictions = mlb.dataSource === "supabase_edges" || mlb.dataSource === "supabase_predictions"
+    ? mlb.predictions
+    : [];
   return {
     generatedAt: mlb.generatedAt,
-    predictions: [...mlb.predictions, ...pga],
-    gaps: [...mlb.gaps, ...(pgaBoard.gaps ?? [])],
+    predictions: [...mlbPredictions, ...pga],
+    gaps: [
+      ...mlb.gaps,
+      ...(mlbPredictions.length ? [] : ["No current Supabase MLB HR rows; static artifacts are not a production fallback."]),
+      ...(pgaBoard.gaps ?? []),
+    ],
   };
 }

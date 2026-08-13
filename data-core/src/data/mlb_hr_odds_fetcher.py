@@ -1,7 +1,7 @@
 """MLB home run player-prop odds from The Odds API.
 
-This module fetches current event-level player props and normalizes
-`batter_home_runs` outcomes into one row per book/player/side/line.
+This module fetches current event-level player props and normalizes standard
+and alternate home-run outcomes into one row per book/player/side/line.
 """
 
 from __future__ import annotations
@@ -11,9 +11,11 @@ import os
 import re
 import time
 import unicodedata
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date, datetime, time as dt_time, timedelta, timezone
-from typing import Any, Iterable, Optional
+from typing import Any, Optional
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 import requests
@@ -28,9 +30,12 @@ LOG = logging.getLogger(__name__)
 BASE_URL = "https://api.the-odds-api.com/v4"
 SPORT_KEY = "baseball_mlb"
 HR_MARKET = "batter_home_runs"
+HR_ALTERNATE_MARKET = "batter_home_runs_alternate"
+HR_MARKETS = (HR_MARKET, HR_ALTERNATE_MARKET)
 DEFAULT_REGIONS = "us"
 DEFAULT_ODDS_FORMAT = "american"
 DEFAULT_LINE = 0.5
+SLATE_TIMEZONE = "America/Denver"
 
 
 class MlbHrOddsError(RuntimeError):
@@ -102,10 +107,39 @@ def normalize_team(name: object) -> str:
     return re.sub(r"[^a-z0-9]", "", str(name or "").lower())
 
 
-def utc_day_bounds(day: date) -> tuple[str, str]:
-    start = datetime.combine(day, dt_time.min, tzinfo=timezone.utc)
-    end = start + timedelta(days=1)
+def _normalize_markets(markets: Iterable[str] | str | None) -> tuple[str, ...]:
+    """Return a stable, de-duplicated list of provider market keys."""
+
+    if markets is None:
+        values: Iterable[str] = HR_MARKETS
+    elif isinstance(markets, str):
+        values = markets.split(",")
+    else:
+        values = markets
+    normalized = tuple(dict.fromkeys(str(value).strip() for value in values if str(value).strip()))
+    return normalized or HR_MARKETS
+
+
+def slate_day_bounds(day: date, *, timezone_name: str = SLATE_TIMEZONE) -> tuple[str, str]:
+    """Return UTC bounds for one local slate date.
+
+    The Odds API accepts UTC timestamps, while the product defines a slate in
+    America/Denver. Construct both local midnights independently so DST days
+    correctly span 23 or 25 hours instead of assuming a fixed 24-hour UTC day.
+    """
+
+    local_tz = ZoneInfo(timezone_name)
+    start_local = datetime.combine(day, dt_time.min, tzinfo=local_tz)
+    end_local = datetime.combine(day + timedelta(days=1), dt_time.min, tzinfo=local_tz)
+    start = start_local.astimezone(timezone.utc)
+    end = end_local.astimezone(timezone.utc)
     return start.isoformat().replace("+00:00", "Z"), end.isoformat().replace("+00:00", "Z")
+
+
+def utc_day_bounds(day: date) -> tuple[str, str]:
+    """Backward-compatible alias for the local Denver slate bounds."""
+
+    return slate_day_bounds(day)
 
 
 def _time_distance_seconds(left: object, right: pd.Timestamp) -> float:
@@ -121,7 +155,7 @@ def fetch_mlb_events(
     game_date: date,
     sport_key: str = SPORT_KEY,
 ) -> list[dict[str, Any]]:
-    start, end = utc_day_bounds(game_date)
+    start, end = slate_day_bounds(game_date)
     payload = client.get(
         f"/sports/{sport_key}/events",
         {
@@ -139,14 +173,16 @@ def fetch_event_hr_odds(
     event_id: str,
     sport_key: str = SPORT_KEY,
     regions: str = DEFAULT_REGIONS,
-    market: str = HR_MARKET,
+    market: str | None = None,
+    markets: Iterable[str] | str | None = None,
     odds_format: str = DEFAULT_ODDS_FORMAT,
 ) -> dict[str, Any]:
+    requested_markets = _normalize_markets(markets if markets is not None else market)
     payload = client.get(
         f"/sports/{sport_key}/events/{event_id}/odds",
         {
             "regions": regions,
-            "markets": market,
+            "markets": ",".join(requested_markets),
             "dateFormat": "iso",
             "oddsFormat": odds_format,
         },
@@ -227,19 +263,21 @@ def flatten_event_hr_odds(
     *,
     game_meta: Optional[dict[str, Any]] = None,
     snapshot_ts: Optional[str] = None,
-    target_market: str = HR_MARKET,
+    target_market: str | None = None,
+    target_markets: Iterable[str] | str | None = None,
 ) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     game_meta = game_meta or {}
     event_id = str(payload.get("id") or game_meta.get("provider_event_id") or "")
     snapshot = snapshot_ts or datetime.now(timezone.utc).isoformat()
+    requested_markets = _normalize_markets(target_markets if target_markets is not None else target_market)
 
     for bookmaker in payload.get("bookmakers") or []:
         book = bookmaker.get("key")
         book_title = bookmaker.get("title")
         for market in bookmaker.get("markets") or []:
             market_key = market.get("key")
-            if market_key != target_market:
+            if market_key not in requested_markets:
                 continue
             last_update = market.get("last_update") or bookmaker.get("last_update")
             for outcome in market.get("outcomes") or []:
@@ -289,14 +327,17 @@ def fetch_day_hr_odds(
     game_date: date,
     schedule: pd.DataFrame,
     regions: str = DEFAULT_REGIONS,
-    market: str = HR_MARKET,
+    market: str | None = None,
+    markets: Iterable[str] | str | None = None,
 ) -> tuple[pd.DataFrame, dict[str, Any]]:
+    requested_markets = _normalize_markets(markets if markets is not None else market)
     events = fetch_mlb_events(client, game_date=game_date)
     event_map = match_events_to_schedule(events, schedule)
     frames: list[pd.DataFrame] = []
     gaps: list[str] = []
     snapshot_ts = datetime.now(timezone.utc).isoformat()
 
+    event_market_rows: dict[str, set[str]] = {}
     for event in events:
         event_id = str(event.get("id") or "")
         meta = event_map.get(event_id)
@@ -304,25 +345,47 @@ def fetch_day_hr_odds(
             gaps.append(f"Unmatched Odds API MLB event {event_id}: {event.get('away_team')} at {event.get('home_team')}")
             continue
         try:
-            payload = fetch_event_hr_odds(client, event_id=event_id, regions=regions, market=market)
+            payload = fetch_event_hr_odds(client, event_id=event_id, regions=regions, markets=requested_markets)
         except MlbHrOddsError as exc:
             gaps.append(f"Odds fetch failed for {meta['game_id']}: {exc}")
             continue
-        frame = flatten_event_hr_odds(payload, game_meta=meta, snapshot_ts=snapshot_ts, target_market=market)
+        frame = flatten_event_hr_odds(payload, game_meta=meta, snapshot_ts=snapshot_ts, target_markets=requested_markets)
         if frame.empty:
-            gaps.append(f"No {market} odds returned for {meta['game_id']}")
+            gaps.append(f"No requested HR odds returned for {meta['game_id']}")
             continue
+        event_market_rows[meta["game_id"]] = set(frame["market"].dropna().astype(str))
         frames.append(frame)
 
     odds = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    market_rows = (
+        odds.groupby("market", dropna=False).size().astype(int).to_dict()
+        if not odds.empty
+        else {}
+    )
+    events_with_market = {
+        market_key: sum(market_key in markets_for_event for markets_for_event in event_market_rows.values())
+        for market_key in requested_markets
+    }
+    events_missing_market = {
+        market_key: sorted(
+            meta["game_id"]
+            for event_id, meta in event_map.items()
+            if market_key not in event_market_rows.get(meta["game_id"], set())
+        )
+        for market_key in requested_markets
+    }
     audit = {
         "sportKey": SPORT_KEY,
-        "market": market,
+        "market": requested_markets[0] if len(requested_markets) == 1 else HR_MARKET,
+        "markets": list(requested_markets),
         "regions": regions,
         "gameDate": game_date.isoformat(),
         "eventsReturned": len(events),
         "eventsMatched": len(event_map),
         "oddsRows": int(len(odds)),
+        "oddsRowsByMarket": market_rows,
+        "eventsWithMarket": events_with_market,
+        "eventsMissingMarket": events_missing_market,
         "apiRequests": client.request_count,
         "apiCreditsRemaining": client.response_meta.requests_remaining,
         "apiCreditsUsed": client.response_meta.requests_used,

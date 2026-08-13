@@ -26,6 +26,7 @@ const navItems = [
   { href: "/models", label: "Models" },
   { href: "/fantasy", label: "Fantasy" },
   { href: "/performance", label: "Performance" },
+  { href: "/results", label: "Results" },
   { href: "/insights", label: "Insights" },
   { href: "/data-quality", label: "Data quality" },
 ];
