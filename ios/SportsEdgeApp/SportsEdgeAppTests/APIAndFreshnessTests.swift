@@ -22,4 +22,11 @@ final class APIAndFreshnessTests: XCTestCase {
         XCTAssertEqual(FreshnessCalculator.status(updatedAt: recent, now: now, source: .supabase, gaps: ["offline fallback"]), .offline)
         XCTAssertEqual(FreshnessCalculator.status(updatedAt: nil, now: now, source: .unavailable), .missing)
     }
+
+    func testSupabaseTimestampIsDisplayable() {
+        XCTAssertNotEqual(
+            formattedTimestamp("2026-08-13 12:41:31.675907+00"),
+            "Not available"
+        )
+    }
 }

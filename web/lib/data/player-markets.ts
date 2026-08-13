@@ -439,7 +439,11 @@ function modelVersionFilter(modelVersion?: string): string {
 
 export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeRunFeed> {
   const slateDate = todayInTimeZone(MLB_SLATE_TIME_ZONE);
-  const versionQuery = modelVersionFilter(modelVersion);
+  // The mobile feed is a single-model surface. Without an explicit filter,
+  // the serving views contain both the V1 and Statcast-blend rows, and the
+  // rank-limited query can return duplicate players from the two models.
+  const targetModel = modelVersion ?? MLB_HR_V1_MODEL;
+  const versionQuery = modelVersionFilter(targetModel);
   const edgeRows = await supabaseRest<SupabaseMlbHrEdgeRow>(
     `mlb_home_run_edges_latest?select=*&game_date=eq.${slateDate}${versionQuery}&order=rank.asc&limit=120`,
   );
@@ -447,7 +451,7 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
     const missingOdds = edgeRows.filter((row) => row.odds_status === "missing_odds").length;
     return {
       generatedAt: edgeRows[0]?.prediction_ts ?? null,
-      defaultModel: modelVersion ?? MLB_HR_V1_MODEL,
+      defaultModel: targetModel,
       modelVersion: edgeRows[0]?.model_version ?? "mlb-hr-v1-heuristic",
       productionStatus: "candidate",
       predictions: edgeRows.map(mapSupabaseMlbEdge),
@@ -470,7 +474,7 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
   if (rows && rows.length) {
     return {
       generatedAt: rows[0]?.prediction_ts ?? null,
-      defaultModel: modelVersion ?? MLB_HR_V1_MODEL,
+      defaultModel: targetModel,
       modelVersion: rows[0]?.model_version ?? "mlb-hr-v1-heuristic",
       productionStatus: "candidate",
       predictions: rows.map(mapSupabaseMlb),
@@ -482,11 +486,11 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
 
   try {
     const payload = JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
-    return buildFeedFromPayload(payload, slateDate, modelVersion, supabaseConfigGaps());
+    return buildFeedFromPayload(payload, slateDate, targetModel, supabaseConfigGaps());
   } catch {
     return {
       generatedAt: null,
-      defaultModel: modelVersion ?? MLB_HR_V1_MODEL,
+      defaultModel: targetModel,
       modelVersion: "mlb-hr-v1-heuristic",
       productionStatus: "candidate",
       predictions: [],

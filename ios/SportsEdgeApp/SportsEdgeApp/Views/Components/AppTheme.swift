@@ -32,8 +32,37 @@ extension View {
 }
 
 func formattedTimestamp(_ raw: String?) -> String {
-    guard let raw, let date = ISO8601DateFormatter().date(from: raw) else { return "Not available" }
+    guard let raw, let date = parsedTimestamp(raw) else { return "Not available" }
     return date.formatted(date: .abbreviated, time: .shortened)
+}
+
+private func parsedTimestamp(_ raw: String) -> Date? {
+    var normalized = raw.replacingOccurrences(of: " ", with: "T")
+    if normalized.hasSuffix("+00") {
+        normalized += ":00"
+    }
+
+    let isoFormatter = ISO8601DateFormatter()
+    isoFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let date = isoFormatter.date(from: normalized) {
+        return date
+    }
+
+    isoFormatter.formatOptions = [.withInternetDateTime]
+    if let date = isoFormatter.date(from: normalized) {
+        return date
+    }
+
+    let formatter = DateFormatter()
+    formatter.locale = Locale(identifier: "en_US_POSIX")
+    formatter.timeZone = TimeZone(secondsFromGMT: 0)
+    for format in ["yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX", "yyyy-MM-dd'T'HH:mm:ssXXXXX"] {
+        formatter.dateFormat = format
+        if let date = formatter.date(from: normalized) {
+            return date
+        }
+    }
+    return nil
 }
 
 func formattedPercent(_ value: Double?, digits: Int = 1) -> String {
