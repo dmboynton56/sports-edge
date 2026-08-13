@@ -13,3 +13,11 @@ def test_mlb_hr_edges_view_uses_odds_api_player_key_normalization():
     # separator (for example, "crow-armstrong" -> "crowarmstrong") while
     # preserving normal word spaces.
     assert "'[^a-z0-9[:space:]]+'," in sql
+
+
+def test_mlb_hr_edges_view_uses_standard_and_alternate_half_run_markets():
+    sql = VIEW_SQL.read_text(encoding="utf-8").lower()
+
+    assert "market in ('batter_home_runs', 'batter_home_runs_alternate')" in sql
+    assert "b.market as best_market" in sql
+    assert "distinct on (game_date, game_id, normalized_player_name, line)" in sql

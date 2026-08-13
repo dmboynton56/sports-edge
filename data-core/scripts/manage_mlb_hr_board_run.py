@@ -77,7 +77,7 @@ def _fetch_rows(conn, args: argparse.Namespace) -> list[dict[str, Any]]:
               lineup_slot, lineup_status, opposing_probable_pitcher, hr_probability,
               baseline_probability, rank, model_version, prediction_ts, quality_flags,
               statcast_available, statcast_coverage,
-              best_book, best_price, implied_probability, no_vig_probability,
+              best_market, best_book, best_price, implied_probability, no_vig_probability,
               market_probability, edge, ev, kelly, odds_books_count,
               odds_snapshot_ts, odds_status
             from mlb_home_run_edges_latest
