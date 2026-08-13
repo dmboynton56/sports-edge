@@ -20,7 +20,10 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Overview" },
+  { href: "/nba", label: "NBA" },
+  { href: "/nfl", label: "NFL" },
   { href: "/markets", label: "Markets" },
+  { href: "/models", label: "Models" },
   { href: "/fantasy", label: "Fantasy" },
   { href: "/performance", label: "Performance" },
   { href: "/insights", label: "Insights" },

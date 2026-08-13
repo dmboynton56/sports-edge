@@ -9,9 +9,12 @@ import SwiftUI
 
 @main
 struct SportsEdgeAppApp: App {
+    @StateObject private var appStore = AppStore()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(appStore)
         }
     }
 }

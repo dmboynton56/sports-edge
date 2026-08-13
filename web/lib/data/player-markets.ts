@@ -181,7 +181,7 @@ function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
   const isV1 = row.model_version.startsWith(MLB_HR_V1_MODEL);
   const isStatcast = row.model_version === MLB_HR_STATCAST_BLEND_MODEL;
   return {
-    id: `${row.game_id}-${row.player_id}-hr`,
+    id: `${row.game_id}-${row.player_id}-${row.model_version}-hr`,
     sport: "MLB",
     league: "MLB",
     gameId: row.game_id,

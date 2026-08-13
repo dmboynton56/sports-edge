@@ -647,7 +647,8 @@ class GamePredictor:
     def predict_batch(self, games_df: pd.DataFrame, historical_games: pd.DataFrame,
                      play_by_play: Optional[pd.DataFrame] = None,
                      game_logs: Optional[pd.DataFrame] = None,
-                     injury_impacts: Optional[pd.DataFrame] = None) -> pd.DataFrame:
+                     injury_impacts: Optional[pd.DataFrame] = None,
+                     include_explanations: bool = False) -> pd.DataFrame:
         """
         Predict outcomes for multiple games.
         
@@ -663,6 +664,7 @@ class GamePredictor:
                     play_by_play,
                     game_logs,
                     injury_impacts=injury_impacts,
+                    include_explanations=include_explanations,
                 )
                 results.append(pred)
             except Exception as e:

@@ -6,6 +6,14 @@ import { PageHeader, SectionHeading } from "@/components/dashboard/PageHeader";
 import { PerformanceTables } from "@/components/dashboard/PerformanceTables";
 import { RoiChart } from "@/components/dashboard/RoiChart";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getPerformanceHistory } from "@/lib/data/performance";
 import { formatNumber, formatPct } from "@/lib/format";
 import { SPORTS } from "@/lib/markets-registry";
@@ -40,8 +48,55 @@ function sportCardFor(sport: (typeof SPORTS)[number], records: Performance[]) {
   );
 }
 
+function LeagueSection({
+  title,
+  records,
+}: {
+  title: string;
+  records: ReturnType<typeof getPerformanceHistory> extends Promise<infer T>
+    ? T extends { records: infer R }
+      ? R
+      : never
+    : never;
+}) {
+  if (!records.length) return null;
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Model</TableHead>
+              <TableHead>Market</TableHead>
+              <TableHead>Sample</TableHead>
+              <TableHead>ROI</TableHead>
+              <TableHead>Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {records.map((record) => (
+              <TableRow key={`${record.sport}-${record.modelVersion}-${record.market}`}>
+                <TableCell>{record.modelVersion}</TableCell>
+                <TableCell>{record.market}</TableCell>
+                <TableCell>{formatNumber(record.sampleSize)}</TableCell>
+                <TableCell>{formatPct(record.roi)}</TableCell>
+                <TableCell>{record.productionStatus}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+}
+
 export default async function PerformancePage() {
   const history = await getPerformanceHistory();
+  const nbaRecords = history.records.filter((record) => record.sport === "NBA");
+  const nflRecords = history.records.filter((record) => record.sport === "NFL");
   const roiRecords = history.records.filter((record) => typeof record.roi === "number");
   const positiveRoi = roiRecords.filter((record) => (record.roi ?? 0) > 0).length;
   const bestRoi = roiRecords.toSorted((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity))[0];
@@ -119,6 +174,11 @@ export default async function PerformancePage() {
             <PerformanceTables records={history.records} />
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <LeagueSection title="NBA Performance" records={nbaRecords} />
+        <LeagueSection title="NFL Performance" records={nflRecords} />
       </div>
     </div>
   );
