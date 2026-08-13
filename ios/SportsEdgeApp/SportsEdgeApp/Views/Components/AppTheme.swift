@@ -75,6 +75,14 @@ func formattedEdge(_ value: Double?) -> String {
     return "\(value >= 0 ? "+" : "")\(value.formatted(.number.precision(.fractionLength(1)))) pts"
 }
 
+func formattedMarketEdge(_ market: EnrichedPick) -> String {
+    guard let edge = market.edge else { return "—" }
+    if market.isTeamMarket {
+        return formattedEdge(edge)
+    }
+    return "\(edge >= 0 ? "+" : "")\(edge.formatted(.percent.precision(.fractionLength(1))))"
+}
+
 func route(for market: EnrichedPick) -> GameRoute {
     GameRoute(league: market.league, gameId: market.gameId, title: market.title)
 }

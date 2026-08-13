@@ -120,6 +120,16 @@ struct MarketsView: View {
     private func sorted(_ markets: [EnrichedPick]) -> [EnrichedPick] {
         switch appStore.sortOption {
         case .edge:
+            if viewModel.league == .mlb {
+                return markets.sorted {
+                    let leftProbability = $0.modelProbability ?? -.infinity
+                    let rightProbability = $1.modelProbability ?? -.infinity
+                    if leftProbability != rightProbability {
+                        return leftProbability > rightProbability
+                    }
+                    return abs($0.edge ?? 0) > abs($1.edge ?? 0)
+                }
+            }
             return markets.sorted { abs($0.edge ?? 0) > abs($1.edge ?? 0) }
         case .time:
             return markets.sorted { ($0.eventTime ?? "") < ($1.eventTime ?? "") }

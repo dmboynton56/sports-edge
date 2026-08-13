@@ -29,4 +29,36 @@ final class APIAndFreshnessTests: XCTestCase {
             "Not available"
         )
     }
+
+    func testPlayerMarketEdgeUsesPercentages() {
+        let market = EnrichedPick(
+            id: "mlb-test",
+            gameId: "game-test",
+            league: .mlb,
+            kind: .playerMarket,
+            title: "Test HR",
+            subtitle: "Batter",
+            eventTime: nil,
+            homeTeam: nil,
+            awayTeam: nil,
+            subject: "Batter",
+            market: "home_run",
+            book: "model",
+            line: 0.5,
+            price: nil,
+            modelProbability: 0.2,
+            impliedProbability: 0.15,
+            edge: 0.045,
+            ev: nil,
+            confidence: nil,
+            modelVersion: "mlb-hr-v1",
+            freshnessStatus: "fresh",
+            predictionTs: nil,
+            oddsTs: nil,
+            injuryAdjusted: false,
+            injuryDataMissing: false
+        )
+
+        XCTAssertEqual(formattedMarketEdge(market), "+4.5%")
+    }
 }

@@ -34,7 +34,7 @@ struct MarketRowContent: View {
             Spacer(minLength: 8)
 
             VStack(alignment: .trailing, spacing: 4) {
-                Text(formattedEdge(market.edge))
+                Text(formattedMarketEdge(market))
                     .font(.subheadline.monospacedDigit().weight(.bold))
                     .foregroundStyle((market.edge ?? 0) >= 0 ? AppTheme.positive : AppTheme.danger)
                 if market.isTeamMarket {
@@ -50,7 +50,7 @@ struct MarketRowContent: View {
         }
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(market.league.displayName), \(market.title), edge \(formattedEdge(market.edge)), model probability \(formattedPercent(market.modelProbability))")
+        .accessibilityLabel("\(market.league.displayName), \(market.title), edge \(formattedMarketEdge(market)), model probability \(formattedPercent(market.modelProbability))")
     }
 }
 
