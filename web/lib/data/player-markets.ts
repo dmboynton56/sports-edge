@@ -459,9 +459,14 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
     };
   }
 
-  const rows = await supabaseRest<SupabaseMlbHrRow>(
+  const latestRows = await supabaseRest<SupabaseMlbHrRow>(
     `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}${versionQuery}&order=rank.asc&limit=120`,
   );
+  const rows = latestRows?.length
+    ? latestRows
+    : await supabaseRest<SupabaseMlbHrRow>(
+        `mlb_home_run_predictions?select=*&game_date=eq.${slateDate}${versionQuery}&order=rank.asc&limit=120`,
+      );
   if (rows && rows.length) {
     return {
       generatedAt: rows[0]?.prediction_ts ?? null,
@@ -507,9 +512,14 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
     );
   }
 
-  const rows = await supabaseRest<SupabaseMlbHrRow>(
+  const latestRows = await supabaseRest<SupabaseMlbHrRow>(
     `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
   );
+  const rows = latestRows?.length
+    ? latestRows
+    : await supabaseRest<SupabaseMlbHrRow>(
+        `mlb_home_run_predictions?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
+      );
   if (rows && rows.length) {
     return buildBoardFromSupabaseRows(
       rows.map(mapSupabaseMlb),
@@ -643,9 +653,14 @@ export async function getPgaBoardData(): Promise<PgaBoardData> {
     return staticPayload;
   }
 
-  const rows = await supabaseRest<SupabasePgaPredictionRow>(
+  const latestRows = await supabaseRest<SupabasePgaPredictionRow>(
     `pga_player_predictions_latest?select=*&event_key=eq.${encodeURIComponent(tournament.event_key)}&order=win_prob.desc.nullslast&limit=250`,
   );
+  const rows = latestRows?.length
+    ? latestRows
+    : await supabaseRest<SupabasePgaPredictionRow>(
+        `pga_player_predictions?select=*&event_key=eq.${encodeURIComponent(tournament.event_key)}&order=win_prob.desc.nullslast&limit=250`,
+      );
   if (!rows?.length) {
     return staticPayload;
   }
