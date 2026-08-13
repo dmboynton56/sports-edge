@@ -6,6 +6,12 @@
 drop view if exists mlb_home_run_edges_latest;
 drop view if exists mlb_home_run_predictions_latest;
 
+-- Keep database-side player keys identical to the odds fetcher's canonical
+-- ASCII normalization (diacritics removed, punctuation removed, suffixes
+-- ignored). Without this, names such as "Pete Crow-Armstrong" and
+-- "Julio Rodríguez" can have valid odds but fail the player join.
+create extension if not exists unaccent with schema extensions;
+
 alter table mlb_home_run_predictions
   add column if not exists statcast_coverage numeric check (statcast_coverage is null or (statcast_coverage >= 0 and statcast_coverage <= 1)),
   add column if not exists statcast_ready_rows int,
@@ -144,8 +150,13 @@ with latest_predictions as (
   select distinct on (game_date, game_id, player_id, model_version)
     *,
     trim(regexp_replace(
-      regexp_replace(lower(player_name), '(^|[ .])(jr|sr|iii|ii|iv|v)\.?($|[ .])', ' ', 'g'),
-      '[^a-z0-9]+',
+      regexp_replace(
+        regexp_replace(extensions.unaccent(lower(player_name)), '(^|[ .])(jr|sr|iii|ii|iv|v)\.?($|[ .])', ' ', 'g'),
+        '[^a-z0-9[:space:]]+',
+        '',
+        'g'
+      ),
+      '[[:space:]]+',
       ' ',
       'g'
     )) as normalized_player_name
