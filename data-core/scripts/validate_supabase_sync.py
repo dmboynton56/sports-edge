@@ -200,6 +200,39 @@ def main() -> None:
                 (args.prediction_hours,),
             )
             report["mlb_recent_predictions"] = int(cur.fetchone()[0])
+
+            for league in ("NBA", "NFL"):
+                league_key = league.lower()
+                cur.execute(
+                    """
+                    WITH scoped AS (
+                      SELECT g.id
+                      FROM games g
+                      WHERE g.league = %s
+                        AND COALESCE(g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date)
+                          >= (now() AT TIME ZONE 'America/Denver')::date
+                        AND COALESCE(g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date)
+                          <= (now() AT TIME ZONE 'America/Denver')::date + (%s || ' days')::interval
+                    ),
+                    latest_pred AS (
+                      SELECT DISTINCT ON (p.game_id) p.game_id
+                      FROM model_predictions p
+                      JOIN scoped s ON s.id = p.game_id
+                      ORDER BY p.game_id, p.asof_ts DESC
+                    )
+                    SELECT
+                      (SELECT COUNT(*) FROM scoped) AS games,
+                      (SELECT COUNT(*) FROM latest_pred) AS with_prediction
+                    """,
+                    (league, 7 if league == "NFL" else 1),
+                )
+                games, with_prediction = cur.fetchone()
+                report[f"{league_key}_slate_window_games"] = int(games)
+                report[f"{league_key}_slate_with_prediction"] = int(with_prediction)
+                if games:
+                    report[f"{league_key}_slate_prediction_coverage_pct"] = round(
+                        100.0 * with_prediction / games, 1
+                    )
     finally:
         conn.close()
 

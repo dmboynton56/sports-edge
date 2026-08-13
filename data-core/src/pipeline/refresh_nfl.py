@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import List, Optional
 
 import pandas as pd
@@ -17,6 +18,8 @@ from dotenv import load_dotenv
 from google.cloud import bigquery
 
 from src.models.predictor import GamePredictor
+from src.utils.injury_loader import load_injury_impacts_from_supabase
+from src.utils.explanation_export import build_explanation_rows, write_explanation_cache
 
 
 def _parse_args() -> argparse.Namespace:
@@ -53,6 +56,16 @@ def _parse_args() -> argparse.Namespace:
         "--dry-run",
         action="store_true",
         help="Compute predictions but do not write to BigQuery.",
+    )
+    parser.add_argument(
+        "--injury-aware",
+        action="store_true",
+        help="Load player_impact_estimates from Supabase and adjust features.",
+    )
+    parser.add_argument(
+        "--include-explanations",
+        action="store_true",
+        help="Emit top feature drivers and write explanation cache for dashboard sync.",
     )
     return parser.parse_args()
 
@@ -183,7 +196,20 @@ def main() -> None:
     historical_data = {"historical_games": historical_games, "play_by_play": pbp}
 
     predictor = GamePredictor("NFL", model_version=args.model_version)
-    predictions = predictor.predict_batch(games_df, historical_games, pbp)
+
+    injury_impacts = None
+    if args.injury_aware:
+        game_ids = [str(gid) for gid in games_df["game_id"].dropna().tolist()]
+        injury_impacts = load_injury_impacts_from_supabase("NFL", game_ids=game_ids)
+        print(f"Loaded {len(injury_impacts)} injury impact rows for NFL refresh.")
+
+    predictions = predictor.predict_batch(
+        games_df,
+        historical_games,
+        pbp,
+        injury_impacts=injury_impacts,
+        include_explanations=args.include_explanations,
+    )
     if predictions.empty:
         print("No predictions were generated.")
         return
@@ -236,6 +262,16 @@ def main() -> None:
         if column not in predictions.columns:
             predictions[column] = None
     predictions = predictions[target_columns]
+
+    if args.include_explanations:
+        explanation_rows = build_explanation_rows(
+            predictions,
+            league="NFL",
+            model_version=args.model_version,
+        )
+        cache_dir = Path(__file__).resolve().parent.parent.parent / "notebooks" / "cache"
+        out_path = write_explanation_cache(explanation_rows, league="NFL", cache_dir=cache_dir)
+        print(f"Wrote {len(explanation_rows)} NFL explanations to {out_path}")
 
     if args.dry_run:
         print(predictions)

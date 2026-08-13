@@ -95,3 +95,198 @@ export function getEvaluationRuns(league?: string) {
 export function getEvaluationHistory(league?: string) {
   return getEvaluations("model_evaluation_history", league);
 }
+
+import type { Performance } from "@/lib/data/types";
+import { getPerformanceHistory } from "@/lib/data/performance";
+import { getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+
+export type ModelEvaluation = {
+  id: string;
+  league: string;
+  modelName: string;
+  modelVersion: string;
+  evaluationName: string;
+  generatedAt: string;
+  status: string;
+  metrics: Record<string, unknown>;
+  calibration: Record<string, unknown>;
+  artifactRefs: string[];
+  notes: string | null;
+};
+
+export type StrategyBacktest = {
+  id: string;
+  league: string;
+  modelName: string;
+  modelVersion: string;
+  strategyId: string;
+  market: string;
+  oddsSource: string | null;
+  sampleSize: number | null;
+  bets: number | null;
+  roi: number | null;
+  metrics: Record<string, unknown>;
+};
+
+export type ModelRegistryEntry = {
+  league: string;
+  modelVersion: string;
+  status: "production" | "candidate" | "archived";
+  notes: string;
+};
+
+const REGISTRY: ModelRegistryEntry[] = [
+  { league: "NBA", modelVersion: "v3", status: "production", notes: "Daily refresh spread + win prob" },
+  { league: "NFL", modelVersion: "v1", status: "production", notes: "Weekly spread + win prob" },
+  { league: "MLB", modelVersion: "v3", status: "production", notes: "Probability-only display" },
+];
+
+type SupabaseEvalRow = {
+  id: string;
+  league: string;
+  model_name: string;
+  model_version: string;
+  evaluation_name: string;
+  generated_at: string;
+  status: string;
+  metrics: Record<string, unknown>;
+  calibration: Record<string, unknown>;
+  artifact_refs: string[];
+  notes: string | null;
+};
+
+type SupabaseStrategyRow = {
+  id: string;
+  league: string;
+  model_name: string;
+  model_version: string;
+  strategy_id: string;
+  market: string;
+  odds_source: string | null;
+  sample_size: number | null;
+  bets: number | null;
+  roi: number | null;
+  metrics: Record<string, unknown>;
+};
+
+async function evaluationSupabaseRest<T>(resource: string): Promise<T[] | null> {
+  const config = getSupabaseRuntimeConfig();
+  if (!config.url || !config.anonKey) return null;
+  const base = config.url.replace(/\/$/, "");
+  const response = await fetch(`${base}/rest/v1/${resource}`, {
+    headers: {
+      apikey: config.anonKey,
+      Authorization: `Bearer ${config.anonKey}`,
+    },
+    next: { revalidate: 300 },
+  });
+  if (!response.ok) return null;
+  return (await response.json()) as T[];
+}
+
+function mapEval(row: SupabaseEvalRow): ModelEvaluation {
+  return {
+    id: row.id,
+    league: row.league,
+    modelName: row.model_name,
+    modelVersion: row.model_version,
+    evaluationName: row.evaluation_name,
+    generatedAt: row.generated_at,
+    status: row.status,
+    metrics: row.metrics ?? {},
+    calibration: row.calibration ?? {},
+    artifactRefs: row.artifact_refs ?? [],
+    notes: row.notes,
+  };
+}
+
+function mapStrategy(row: SupabaseStrategyRow): StrategyBacktest {
+  return {
+    id: row.id,
+    league: row.league,
+    modelName: row.model_name,
+    modelVersion: row.model_version,
+    strategyId: row.strategy_id,
+    market: row.market,
+    oddsSource: row.odds_source,
+    sampleSize: row.sample_size,
+    bets: row.bets,
+    roi: row.roi,
+    metrics: row.metrics ?? {},
+  };
+}
+
+function performanceToEval(record: Performance): ModelEvaluation {
+  return {
+    id: `${record.sport}-${record.modelVersion}`,
+    league: record.sport,
+    modelName: "sports_edge",
+    modelVersion: record.modelVersion,
+    evaluationName: `${record.market}-${record.season}`,
+    generatedAt: new Date().toISOString(),
+    status: record.productionStatus,
+    metrics: record.metrics,
+    calibration: {},
+    artifactRefs: record.artifactRefs,
+    notes: record.gaps.join("; ") || null,
+  };
+}
+
+function performanceToStrategy(record: Performance): StrategyBacktest | null {
+  if (record.roi == null) return null;
+  return {
+    id: `${record.sport}-${record.modelVersion}-strategy`,
+    league: record.sport,
+    modelName: "sports_edge",
+    modelVersion: record.modelVersion,
+    strategyId: `${record.market}-flat`,
+    market: record.market,
+    oddsSource: record.dataSource ?? null,
+    sampleSize: record.sampleSize,
+    bets: record.bets,
+    roi: record.roi,
+    metrics: record.metrics,
+  };
+}
+
+export async function getModelEvaluations(): Promise<ModelEvaluation[]> {
+  const rows = await evaluationSupabaseRest<SupabaseEvalRow>(
+    "model_evaluation_runs?order=generated_at.desc&limit=100",
+  );
+  if (rows?.length) return rows.map(mapEval);
+
+  const history = await getPerformanceHistory();
+  return history.records.map(performanceToEval);
+}
+
+export async function getStrategyBacktests(): Promise<StrategyBacktest[]> {
+  const rows = await evaluationSupabaseRest<SupabaseStrategyRow>(
+    "strategy_backtest_results?order=created_at.desc&limit=100",
+  );
+  if (rows?.length) return rows.map(mapStrategy);
+
+  const history = await getPerformanceHistory();
+  return history.records
+    .map(performanceToStrategy)
+    .filter((row): row is StrategyBacktest => row != null);
+}
+
+export function getModelRegistry(): ModelRegistryEntry[] {
+  return REGISTRY;
+}
+
+export async function getEvaluationsBundle() {
+  const [evaluations, strategies, registry] = await Promise.all([
+    getModelEvaluations(),
+    getStrategyBacktests(),
+    Promise.resolve(getModelRegistry()),
+  ]);
+  const gaps = getSupabaseMissingEnv();
+  return {
+    generatedAt: new Date().toISOString(),
+    evaluations,
+    strategies,
+    registry,
+    gaps: gaps.length ? [`Supabase eval tables unavailable: ${gaps.join(", ")}`] : [],
+  };
+}

@@ -8,17 +8,42 @@
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject private var appStore: AppStore
+    @StateObject private var router = AppRouter()
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        TabView(selection: $router.selectedTab) {
+            HomeView(appStore: appStore, repository: appStore.repository)
+                .tabItem { Label(AppTab.home.title, systemImage: AppTab.home.systemImage) }
+                .tag(AppTab.home)
+
+            MarketsView(appStore: appStore, repository: appStore.repository, path: $router.marketsPath)
+                .tabItem { Label(AppTab.markets.title, systemImage: AppTab.markets.systemImage) }
+                .tag(AppTab.markets)
+
+            PerformanceView(repository: appStore.repository)
+                .tabItem { Label(AppTab.performance.title, systemImage: AppTab.performance.systemImage) }
+                .tag(AppTab.performance)
+
+            InsightsView(repository: appStore.repository)
+                .tabItem { Label(AppTab.insights.title, systemImage: AppTab.insights.systemImage) }
+                .tag(AppTab.insights)
+
+            SettingsView(appStore: appStore)
+                .tabItem { Label(AppTab.settings.title, systemImage: AppTab.settings.systemImage) }
+                .tag(AppTab.settings)
         }
-        .padding()
+        .tint(AppTheme.accent)
+        .onOpenURL { url in
+            if let route = AppRouter.route(for: url) {
+                appStore.selectedLeague = route.league
+            }
+            router.open(url: url)
+        }
     }
 }
 
 #Preview {
     ContentView()
+        .environmentObject(AppStore())
 }

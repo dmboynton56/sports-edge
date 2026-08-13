@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import List, Optional
 
 import pandas as pd
@@ -20,6 +21,8 @@ from src.pipeline.refresh import build_features
 from src.models.predictor import GamePredictor
 from src.data.nba_fetcher import fetch_nba_games_for_date, fetch_nba_schedule
 from src.data.nba_game_logs_loader import load_nba_game_logs_from_bq
+from src.utils.injury_loader import load_injury_impacts_from_supabase
+from src.utils.explanation_export import build_explanation_rows, write_explanation_cache
 
 
 def _parse_args() -> argparse.Namespace:
@@ -55,6 +58,16 @@ def _parse_args() -> argparse.Namespace:
         "--skip-odds",
         action="store_true",
         help="Skip fetching odds from The Odds API (requires ODDS_API_KEY).",
+    )
+    parser.add_argument(
+        "--injury-aware",
+        action="store_true",
+        help="Load player_impact_estimates from Supabase and adjust features.",
+    )
+    parser.add_argument(
+        "--include-explanations",
+        action="store_true",
+        help="Emit top feature drivers and write explanation cache for dashboard sync.",
     )
     return parser.parse_args()
 
@@ -162,7 +175,20 @@ def main() -> None:
     predictor = GamePredictor("NBA", model_version=args.model_version)
     # Ensure games_df dates are normalized before passing to batch
     games_df['game_date'] = predictor._normalize_datetime(games_df['game_date'])
-    predictions = predictor.predict_batch(games_df, historical_games, game_logs=game_logs)
+
+    injury_impacts = None
+    if args.injury_aware:
+        game_ids = [str(gid) for gid in games_df["game_id"].dropna().tolist()]
+        injury_impacts = load_injury_impacts_from_supabase("NBA", game_ids=game_ids)
+        print(f"Loaded {len(injury_impacts)} injury impact rows for NBA refresh.")
+
+    predictions = predictor.predict_batch(
+        games_df,
+        historical_games,
+        game_logs=game_logs,
+        injury_impacts=injury_impacts,
+        include_explanations=args.include_explanations,
+    )
     
     if predictions.empty:
         print("No predictions were generated.")
@@ -217,6 +243,16 @@ def main() -> None:
         if column not in predictions.columns:
             predictions[column] = None
     predictions = predictions[target_columns]
+
+    if args.include_explanations:
+        explanation_rows = build_explanation_rows(
+            predictions,
+            league="NBA",
+            model_version=args.model_version,
+        )
+        cache_dir = Path(__file__).resolve().parent.parent.parent / "notebooks" / "cache"
+        out_path = write_explanation_cache(explanation_rows, league="NBA", cache_dir=cache_dir)
+        print(f"Wrote {len(explanation_rows)} NBA explanations to {out_path}")
 
     if args.dry_run:
         print(predictions[['game_id', 'predicted_spread', 'home_win_prob']])

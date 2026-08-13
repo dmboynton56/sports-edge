@@ -42,7 +42,10 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Overview", icon: Activity },
+  { href: "/nba", label: "NBA", icon: LineChart },
+  { href: "/nfl", label: "NFL", icon: LineChart },
   { href: "/markets", label: "Markets", icon: LineChart },
+  { href: "/models", label: "Models", icon: BarChart3 },
   { href: "/performance", label: "Performance", icon: BarChart3 },
   { href: "/insights", label: "Insights", icon: Newspaper },
   { href: "/data-quality", label: "Data Quality", icon: DatabaseZap },

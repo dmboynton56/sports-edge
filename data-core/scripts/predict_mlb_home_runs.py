@@ -898,7 +898,7 @@ def _predictions_to_rows(predictions: pd.DataFrame) -> list[dict[str, Any]]:
     rows = []
     for _, row in predictions.iterrows():
         payload = {
-                "id": f"{row['game_id']}-{row['player_id']}-hr",
+                "id": f"{row['game_id']}-{row['player_id']}-{row['model_version']}-hr",
                 "sport": "MLB",
                 "league": "MLB",
                 "gameId": row["game_id"],
