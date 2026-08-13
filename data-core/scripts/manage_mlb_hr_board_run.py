@@ -169,7 +169,6 @@ def publish_rows(conn, args: argparse.Namespace) -> None:
                 on conflict (run_id, model_version, game_id, player_id) do nothing
                 """,
                 insert_rows,
-                prepare=False,
             )
     conn.commit()
     print(json.dumps({"run_key": args.run_key, "published_rows": len(insert_rows), "published_at": publication_ts.isoformat()}))
