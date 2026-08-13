@@ -12,6 +12,8 @@ def test_trusted_board_migration_contains_serving_contract_guards():
     assert "top25_coverage is null" in sql
     assert "security_invoker = true" in sql
     assert "enable row level security" in sql
+    assert "revoke all privileges on table" in sql
+    assert "grant select on public.mlb_home_run_results to anon, authenticated" in sql
     assert "grant select on public.mlb_home_run_board_latest to anon, authenticated" in sql
     assert "mlb_home_run_results_board_row_id_fkey" in sql
 

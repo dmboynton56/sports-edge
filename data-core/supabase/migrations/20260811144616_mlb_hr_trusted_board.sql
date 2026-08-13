@@ -145,7 +145,6 @@ order by slate_date, completed_at desc nulls last, started_at desc;
 create or replace view public.mlb_home_run_board_latest
 with (security_invoker = true) as
 select
-  r.run_id,
   r.run_key,
   r.slate_date as run_slate_date,
   r.run_window,
@@ -168,7 +167,7 @@ with (security_invoker = true) as
 select
   result.*,
   board.run_id,
-  board.run_key,
+  run.run_key,
   board.published_at,
   board.book,
   board.american_price,
@@ -183,7 +182,9 @@ select
   board.quality_flags as board_quality_flags
 from public.mlb_home_run_results result
 left join public.mlb_home_run_board_rows board
-  on board.board_row_id = result.board_row_id;
+  on board.board_row_id = result.board_row_id
+left join public.mlb_home_run_board_runs run
+  on run.run_id = board.run_id;
 
 alter table public.mlb_home_run_board_runs enable row level security;
 alter table public.mlb_home_run_board_rows enable row level security;
@@ -196,10 +197,23 @@ create policy "public read MLB HR board runs"
 create policy "public read MLB HR board rows"
   on public.mlb_home_run_board_rows for select using (true);
 
--- Explicit grants are intentional: new Supabase projects no longer expose
--- newly-created public tables through the Data API implicitly.
+-- Explicit read-only grants are intentional: new Supabase projects no longer
+-- expose newly-created public tables through the Data API implicitly, while
+-- existing projects may still have broad default ACLs on public objects.
+revoke all privileges on table
+  public.mlb_home_run_board_runs,
+  public.mlb_home_run_board_rows,
+  public.mlb_home_run_results,
+  public.mlb_home_run_board_run_health,
+  public.mlb_home_run_board_latest,
+  public.mlb_home_run_published_results
+from anon, authenticated;
+
+-- Keep service_role and the database owner available to the workflow; only
+-- public Data API roles are intentionally restricted to reads.
 grant select on public.mlb_home_run_board_runs to anon, authenticated;
 grant select on public.mlb_home_run_board_rows to anon, authenticated;
+grant select on public.mlb_home_run_results to anon, authenticated;
 grant select on public.mlb_home_run_board_run_health to anon, authenticated;
 grant select on public.mlb_home_run_board_latest to anon, authenticated;
 grant select on public.mlb_home_run_published_results to anon, authenticated;
