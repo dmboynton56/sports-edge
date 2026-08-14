@@ -229,9 +229,9 @@
         "validation": "out_of_time_holdout"
       },
       "rushing_yards": {
-        "baseline_mae": 90.269,
+        "baseline_mae": 90.194,
         "beats_baseline": true,
-        "mae": 82.032,
+        "mae": 82.107,
         "sample": 67,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
@@ -329,7 +329,7 @@
       "receiving_yards": {
         "baseline_mae": 87.6,
         "beats_baseline": true,
-        "mae": 85.887,
+        "mae": 85.878,
         "sample": 115,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
@@ -337,7 +337,7 @@
       "receptions": {
         "baseline_mae": 10.078,
         "beats_baseline": false,
-        "mae": 10.204,
+        "mae": 10.202,
         "sample": 115,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
@@ -353,7 +353,7 @@
       "rushing_yards": {
         "baseline_mae": 199.835,
         "beats_baseline": false,
-        "mae": 212.877,
+        "mae": 212.856,
         "sample": 115,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
@@ -533,7 +533,7 @@
       "fumbles_lost": {
         "baseline_mae": 0.356,
         "beats_baseline": false,
-        "mae": 0.358,
+        "mae": 0.362,
         "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
@@ -549,7 +549,7 @@
       "passing_tds": {
         "baseline_mae": 0.026,
         "beats_baseline": false,
-        "mae": 0.028,
+        "mae": 0.026,
         "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
@@ -557,7 +557,7 @@
       "passing_yards": {
         "baseline_mae": 1.12,
         "beats_baseline": false,
-        "mae": 1.213,
+        "mae": 1.13,
         "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
@@ -565,7 +565,7 @@
       "receiving_tds": {
         "baseline_mae": 1.838,
         "beats_baseline": true,
-        "mae": 1.522,
+        "mae": 1.524,
         "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
@@ -573,7 +573,7 @@
       "receiving_yards": {
         "baseline_mae": 183.262,
         "beats_baseline": true,
-        "mae": 175.292,
+        "mae": 176.695,
         "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
@@ -581,7 +581,7 @@
       "receptions": {
         "baseline_mae": 14.089,
         "beats_baseline": true,
-        "mae": 13.794,
+        "mae": 13.854,
         "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
@@ -589,7 +589,7 @@
       "rushing_tds": {
         "baseline_mae": 0.099,
         "beats_baseline": false,
-        "mae": 0.118,
+        "mae": 0.114,
         "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
@@ -597,7 +597,7 @@
       "rushing_yards": {
         "baseline_mae": 10.356,
         "beats_baseline": false,
-        "mae": 11.935,
+        "mae": 11.663,
         "sample": 191,
         "selection": "prior_season_baseline",
         "validation": "out_of_time_holdout"
@@ -605,7 +605,7 @@
       "two_point_conversions": {
         "baseline_mae": 0.241,
         "beats_baseline": true,
-        "mae": 0.193,
+        "mae": 0.196,
         "sample": 191,
         "selection": "random_forest",
         "validation": "out_of_time_holdout"
