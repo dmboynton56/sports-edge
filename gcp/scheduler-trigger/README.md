@@ -34,7 +34,7 @@ gcloud run deploy sports-edge-scheduler-trigger \
   --region "$REGION" \
   --source gcp/scheduler-trigger \
   --no-allow-unauthenticated \
-  --set-env-vars "GITHUB_OWNER=$REPO_OWNER,GITHUB_REPO=$REPO_NAME,GITHUB_REF=$GITHUB_REF" \
+  --set-env-vars "GITHUB_OWNER=$REPO_OWNER,GITHUB_REPO=$REPO_NAME,GITHUB_REF=$GITHUB_REF,SERVICE_VERSION=player-markets-pga-off-v1" \
   --set-secrets "GITHUB_TOKEN=sports-edge-github-actions-token:latest"
 ```
 
@@ -97,7 +97,7 @@ gcloud scheduler jobs create http sports-edge-player-markets-refresh \
   --uri "$TRIGGER_URL/dispatch/player-markets-refresh" \
   --http-method POST \
   --headers "Content-Type=application/json" \
-  --message-body '{}' \
+  --message-body '{"inputs":{"run_pga":"false","run_mlb_hr":"true","train_mlb_hr":"false","sync_supabase":"true","sync_bigquery":"true"}}' \
   --oidc-service-account-email "$SCHEDULER_SA" \
   --oidc-token-audience "$TRIGGER_URL"
 
@@ -113,6 +113,16 @@ gcloud scheduler jobs create http sports-edge-world-cup-refresh \
   --oidc-service-account-email "$SCHEDULER_SA" \
   --oidc-token-audience "$TRIGGER_URL"
 ```
+
+Verify the deployed bridge before relying on the scheduler:
+
+```bash
+curl "$TRIGGER_URL/healthz"
+```
+
+The response should include `service_version: player-markets-pga-off-v1` and
+`player_markets_run_pga: false`. The explicit Scheduler body above also keeps
+the setting correct if an older bridge revision is accidentally still serving.
 
 Run one manually:
 

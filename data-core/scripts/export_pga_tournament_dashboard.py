@@ -21,7 +21,7 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.data.pga_odds_fetcher import fetch_and_summarize  # noqa: E402
-from src.pga.live_leaderboard import fetch_live_leaderboard, rounds_completed_from_leaderboard  # noqa: E402
+from src.pga.live_leaderboard import EspnScoreboardError, fetch_live_leaderboard, rounds_completed_from_leaderboard  # noqa: E402
 
 
 ARCHIVE = ROOT / "src" / "data" / "archive"
@@ -80,6 +80,14 @@ def _load_midtournament(path: Path | None) -> dict[str, Any] | None:
     if meta.get("score_source") != "espn_completed_round_scores_v1":
         return None
     return {"meta": meta, "predictions": df.to_dict(orient="records")}
+
+
+def _load_leaderboard_snapshot(path: Path) -> dict[str, Any]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    leaderboard = payload.get("leaderboard") if isinstance(payload, dict) else None
+    if not isinstance(leaderboard, dict):
+        raise ValueError(f"Leaderboard snapshot has no normalized leaderboard: {path}")
+    return leaderboard
 
 
 def _load_merged_results(main_path: Path, supp_path: Path) -> pd.DataFrame:
@@ -212,6 +220,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--current-out", type=Path, default=DEFAULT_CURRENT_OUT)
     parser.add_argument("--odds-key")
     parser.add_argument("--espn-match", action="append", default=[])
+    parser.add_argument("--espn-event-id", default="")
+    parser.add_argument("--leaderboard-json", type=Path)
     parser.add_argument("--skip-odds", action="store_true")
     parser.add_argument("--live-odds", action="store_true")
     parser.add_argument("--skip-leaderboard", action="store_true")
@@ -234,7 +244,18 @@ def main() -> None:
         except Exception as exc:
             market_odds = {"error": str(exc), "playerOdds": [], "books": []}
 
-    live_leaderboard = None if args.skip_leaderboard else fetch_live_leaderboard(espn_match=args.espn_match)
+    live_leaderboard = None
+    if not args.skip_leaderboard:
+        if args.leaderboard_json:
+            live_leaderboard = _load_leaderboard_snapshot(args.leaderboard_json)
+        else:
+            try:
+                live_leaderboard = fetch_live_leaderboard(
+                    espn_match=args.espn_match,
+                    espn_event_id=args.espn_event_id or None,
+                )
+            except EspnScoreboardError as exc:
+                print(f"WARNING: ESPN leaderboard unavailable; exporting without live leaderboard: {exc}")
     midtournament = _load_midtournament(args.midtournament_csv)
     if midtournament and live_leaderboard:
         current_completed = rounds_completed_from_leaderboard(live_leaderboard)

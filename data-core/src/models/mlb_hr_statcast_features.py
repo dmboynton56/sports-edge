@@ -153,6 +153,8 @@ def _retry_delay_seconds(response: requests.Response | None, *, attempt: int, re
 
 
 def _read_csv_cache(path: Path) -> pd.DataFrame:
+    if not path.exists():
+        return pd.DataFrame()
     try:
         return pd.read_csv(path)
     except pd.errors.EmptyDataError:
@@ -261,7 +263,7 @@ def fetch_statcast(
             frames.append(frame)
         time.sleep(sleep)
 
-    if (refresh or fetch_errors) and not cached.empty:
+    if not cached.empty:
         frames.append(cached)
 
     if not frames:
@@ -313,17 +315,9 @@ def preload_statcast_cache(
             raise TimeoutError("Statcast preload deadline reached before trailing refresh")
         return remaining
 
-    if start < trailing_start:
-        fetch_statcast(
-            start,
-            trailing_start - pd.Timedelta(days=1),
-            cache=cache,
-            refresh=False,
-            timeout=timeout,
-            deadline_seconds=remaining_deadline(),
-        )
-
-    return fetch_statcast(
+    # Refresh the newest window first. A deadline-limited run must never spend
+    # its entire budget walking old gaps before it reaches the current slate.
+    trailing = fetch_statcast(
         trailing_start,
         end,
         cache=cache,
@@ -331,6 +325,25 @@ def preload_statcast_cache(
         timeout=timeout,
         deadline_seconds=remaining_deadline(),
     )
+
+    if start < trailing_start:
+        try:
+            fetch_statcast(
+                start,
+                trailing_start - pd.Timedelta(days=1),
+                cache=cache,
+                refresh=False,
+                timeout=timeout,
+                deadline_seconds=remaining_deadline(),
+            )
+        except TimeoutError as exc:
+            warnings.warn(
+                f"Statcast historical backfill deferred after trailing refresh: {exc}",
+                RuntimeWarning,
+            )
+
+    refreshed = _read_csv_cache(cache)
+    return refreshed if not refreshed.empty else trailing
 
 
 def _pitch_category(pitch_type: Any) -> str:

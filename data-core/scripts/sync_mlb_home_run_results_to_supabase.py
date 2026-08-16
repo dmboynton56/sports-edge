@@ -87,7 +87,7 @@ def sync_results(path: Path) -> int:
                       and b.model_version = %s
                       and r.status in ('healthy', 'partial')
                       and (b.event_time is null or b.published_at <= b.event_time)
-                      and (%s is null or b.published_at <= %s)
+                      and (%s::timestamptz is null or b.published_at <= %s::timestamptz)
                     order by b.published_at desc
                     limit 1
                     """,

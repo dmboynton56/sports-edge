@@ -29,8 +29,8 @@ def _parse_args() -> argparse.Namespace:
         "--seasons",
         type=int,
         nargs="+",
-        default=list(range(2020, 2026)),
-        help="Seasons to import (default: 2020-2025).",
+        default=None,
+        help="Seasons to import (default: 2020 through the newest provider-supported season).",
     )
     parser.add_argument(
         "--replace",
@@ -104,6 +104,22 @@ def _load_module():
     return nfl
 
 
+def _provider_max_season(nfl: Any) -> int | None:
+    getter = getattr(nfl, "get_current_season", None)
+    if getter is None:
+        return None
+    try:
+        return int(getter())
+    except (TypeError, ValueError):
+        return None
+
+
+def _season_is_supported(season: int, provider_max_season: int | None) -> bool:
+    """Guard explicit requests as well as automatically selected seasons."""
+
+    return provider_max_season is None or season <= provider_max_season
+
+
 PBP_COLUMNS = [
     "game_id",
     "league",
@@ -155,9 +171,19 @@ def main() -> None:
     args = _parse_args()
     client = bigquery.Client(project=args.project)
     nfl = _load_module()
+    provider_max_season = _provider_max_season(nfl)
+    if provider_max_season is not None:
+        print(f"nflreadpy currently supports through season {provider_max_season}")
     utc_now = datetime.now(tz=timezone.utc)
+    requested_seasons = args.seasons or list(range(2020, (provider_max_season or 2025) + 1))
 
-    for season in args.seasons:
+    for season in requested_seasons:
+        if not _season_is_supported(season, provider_max_season):
+            print(
+                f"Skipping season {season}; nflreadpy currently supports through "
+                f"season {provider_max_season}."
+            )
+            continue
         print(f"Processing season {season}")
         pbp_rel = nfl.load_pbp(seasons=season)
         schedules_rel = nfl.load_schedules(seasons=season)

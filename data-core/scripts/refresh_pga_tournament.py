@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import tempfile
 import subprocess
 import sys
 from datetime import date, datetime, timezone
@@ -17,7 +18,13 @@ REPO_ROOT = ROOT.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.pga.live_leaderboard import EspnScoreboardError, event_matches, fetch_live_leaderboard, fetch_scoreboard, rounds_completed_from_leaderboard  # noqa: E402
+from src.pga.live_leaderboard import (  # noqa: E402
+    EspnScoreboardError,
+    event_matches,
+    fetch_leaderboard_event,
+    fetch_scoreboard,
+    rounds_completed_from_leaderboard,
+)
 from src.pga.tournament_registry import (  # noqa: E402
     DEFAULT_REGISTRY_PATH,
     PgaTournament,
@@ -40,6 +47,41 @@ def _run(cmd: list[str], *, dry_run: bool = False) -> None:
     if dry_run:
         return
     subprocess.run(cmd, cwd=ROOT, check=True)
+
+
+def _should_skip_leaderboard(phase: str, explicit: bool, *, has_snapshot: bool = False) -> bool:
+    """Skip live retrieval outside live/post phases unless a snapshot is supplied."""
+
+    return explicit or phase == "pre" or (phase == "post" and not has_snapshot)
+
+
+def _should_preserve_last_good_output(phase: str, leaderboard: dict[str, Any] | None) -> bool:
+    """Return whether a live/post refresh must no-op to protect the last good data."""
+
+    return phase in {"live", "post"} and not leaderboard
+
+
+def _write_leaderboard_snapshot(event: dict[str, Any], leaderboard: dict[str, Any]) -> Path:
+    """Write one normalized ESPN artifact shared by mid-update/export/results."""
+
+    competition = (event.get("competitions") or [{}])[0]
+    handle = tempfile.NamedTemporaryFile(
+        mode="w",
+        encoding="utf-8",
+        suffix=".json",
+        prefix="sports-edge-pga-",
+        delete=False,
+    )
+    path = Path(handle.name)
+    try:
+        json.dump(
+            {"event": event, "competition": competition, "leaderboard": leaderboard},
+            handle,
+            sort_keys=True,
+        )
+    finally:
+        handle.close()
+    return path
 
 
 def _load_state(path: Path = STATE_PATH) -> dict[str, Any]:
@@ -137,27 +179,58 @@ def _live_event_unmatched(registry, scoreboard: dict[str, Any] | None, *, as_of:
     return None
 
 
-def ensure_field(tournament: PgaTournament, *, force: bool, skip_fetch: bool, dry_run: bool) -> None:
+def ensure_field(
+    tournament: PgaTournament,
+    *,
+    force: bool,
+    skip_fetch: bool,
+    dry_run: bool,
+    allow_unavailable: bool = False,
+) -> bool:
     if tournament.field_json.exists() and not force:
         print(f"Field exists: {tournament.field_json}")
-        return
+        return True
     if skip_fetch:
         if not tournament.field_json.exists():
             raise SystemExit(f"Missing field file and --skip-field-fetch was set: {tournament.field_json}")
-        return
+        return True
     cmd = _field_fetch_command(tournament)
     if not cmd:
         if tournament.field_json.exists():
-            return
+            return True
         raise SystemExit(f"No field fetcher is configured for {tournament.key}; expected {tournament.field_json}")
-    _run(cmd, dry_run=dry_run)
+    try:
+        _run(cmd, dry_run=dry_run)
+    except subprocess.CalledProcessError:
+        if allow_unavailable and not tournament.field_json.exists():
+            print(
+                f"WARNING: ESPN has not published a usable field for {tournament.key}; "
+                "deferring pre-tournament predictions until the next refresh."
+            )
+            return False
+        raise
+    return tournament.field_json.exists() or dry_run
 
 
-def run_pretournament_predictions(tournament: PgaTournament, args: argparse.Namespace, *, dry_run: bool) -> None:
+def run_pretournament_predictions(
+    tournament: PgaTournament,
+    args: argparse.Namespace,
+    *,
+    dry_run: bool,
+    allow_unavailable_field: bool = False,
+) -> bool:
     if tournament.predictions_csv.exists() and not args.force_pre:
         print(f"Pre-tournament predictions exist: {tournament.predictions_csv}")
-        return
-    ensure_field(tournament, force=args.force_field, skip_fetch=args.skip_field_fetch, dry_run=dry_run)
+        return True
+    field_ready = ensure_field(
+        tournament,
+        force=args.force_field,
+        skip_fetch=args.skip_field_fetch,
+        dry_run=dry_run,
+        allow_unavailable=allow_unavailable_field,
+    )
+    if not field_ready:
+        return False
     cmd = [
         sys.executable,
         "scripts/predict_pga_tournament.py",
@@ -189,12 +262,14 @@ def run_pretournament_predictions(tournament: PgaTournament, args: argparse.Name
     if args.baseline_only:
         cmd.append("--baseline-only")
     _run(cmd, dry_run=dry_run)
+    return True
 
 
 def run_midtournament_update(
     tournament: PgaTournament,
     *,
     leaderboard: dict[str, Any],
+    leaderboard_snapshot: Path | None = None,
     args: argparse.Namespace,
     dry_run: bool,
 ) -> bool:
@@ -241,6 +316,10 @@ def run_midtournament_update(
     ]
     for pattern in tournament.espn_match:
         cmd.extend(["--espn-match", pattern])
+    if tournament.espn_event_id:
+        cmd.extend(["--espn-event-id", tournament.espn_event_id])
+    if leaderboard_snapshot:
+        cmd.extend(["--leaderboard-json", str(leaderboard_snapshot)])
     _run(cmd, dry_run=dry_run)
 
     state[tournament.key] = {
@@ -253,7 +332,13 @@ def run_midtournament_update(
     return True
 
 
-def run_post_results_fetch(tournament: PgaTournament, args: argparse.Namespace, *, dry_run: bool) -> None:
+def run_post_results_fetch(
+    tournament: PgaTournament,
+    args: argparse.Namespace,
+    *,
+    leaderboard_snapshot: Path | None = None,
+    dry_run: bool,
+) -> None:
     if args.skip_results_fetch:
         print("Skipping post-tournament ESPN results fetch.")
         return
@@ -265,6 +350,8 @@ def run_post_results_fetch(tournament: PgaTournament, args: argparse.Namespace, 
         "--as-of",
         _now_utc().isoformat(),
     ]
+    if leaderboard_snapshot:
+        cmd.extend(["--event-json", str(leaderboard_snapshot)])
     _run(cmd, dry_run=dry_run)
 
 
@@ -273,6 +360,7 @@ def export_dashboard(
     *,
     phase: str,
     args: argparse.Namespace,
+    leaderboard_snapshot: Path | None = None,
     dry_run: bool,
 ) -> None:
     if not tournament.predictions_csv.exists() and phase != "post":
@@ -311,11 +399,19 @@ def export_dashboard(
         cmd.extend(["--midtournament-csv", str(tournament.midtournament_csv)])
     for pattern in tournament.espn_match:
         cmd.extend(["--espn-match", pattern])
+    if tournament.espn_event_id:
+        cmd.extend(["--espn-event-id", tournament.espn_event_id])
+    if leaderboard_snapshot:
+        cmd.extend(["--leaderboard-json", str(leaderboard_snapshot)])
     if args.skip_odds:
         cmd.append("--skip-odds")
     if args.live_odds:
         cmd.append("--live-odds")
-    if args.skip_leaderboard:
+    if _should_skip_leaderboard(
+        phase,
+        args.skip_leaderboard,
+        has_snapshot=leaderboard_snapshot is not None,
+    ):
         cmd.append("--skip-leaderboard")
     _run(cmd, dry_run=dry_run)
 
@@ -372,13 +468,16 @@ def main() -> None:
     args = parse_args()
     registry = load_registry(args.registry)
     anchor = args.as_of or _now_utc().date().isoformat()
+    scoreboard: dict[str, Any] = {}
     try:
-        scoreboard = None if args.skip_leaderboard else fetch_scoreboard()
+        if not args.skip_leaderboard:
+            scoreboard = fetch_scoreboard()
     except EspnScoreboardError as exc:
-        if args.force_phase == "live":
-            raise SystemExit(str(exc)) from exc
         print(f"WARNING: {exc}")
-        scoreboard = None
+        # The Core event adapter below is the fallback. Keep an empty Site
+        # payload as a sentinel so we do not make the same blocked request a
+        # second time in this refresh.
+        scoreboard = {}
     tournament = resolve_active_tournament(
         registry,
         tournament_key=args.tournament_key or None,
@@ -392,9 +491,22 @@ def main() -> None:
         print(f"No PGA tournament is active for automation window at {anchor}; no-op.")
         return
 
+    phase_hint = infer_phase(
+        tournament,
+        as_of=anchor,
+        force_phase=args.force_phase or None,
+    )
+    event: dict[str, Any] | None = None
     leaderboard = None
-    if not args.skip_leaderboard and scoreboard is not None:
-        leaderboard = fetch_live_leaderboard(espn_match=tournament.espn_match, scoreboard=scoreboard)
+    if not args.skip_leaderboard and phase_hint != "pre":
+        try:
+            event, leaderboard = fetch_leaderboard_event(
+                espn_match=tournament.espn_match,
+                espn_event_id=tournament.espn_event_id,
+                scoreboard=scoreboard,
+            )
+        except EspnScoreboardError as exc:
+            print(f"WARNING: ESPN Site/Core leaderboard unavailable: {exc}")
 
     phase = infer_phase(
         tournament,
@@ -405,22 +517,57 @@ def main() -> None:
     print(f"Resolved PGA tournament: {tournament.key} ({tournament.name})")
     print(f"Refresh phase: {phase}")
 
-    if phase == "pre":
-        run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
-    elif phase == "live":
-        if not tournament.predictions_csv.exists():
-            run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
-        if leaderboard:
-            run_midtournament_update(tournament, leaderboard=leaderboard, args=args, dry_run=args.dry_run)
-        else:
-            raise SystemExit("No matched ESPN leaderboard available during live phase.")
-    elif phase == "post":
-        if not tournament.predictions_csv.exists():
-            run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
-        run_post_results_fetch(tournament, args, dry_run=args.dry_run)
+    if _should_preserve_last_good_output(phase, leaderboard):
+        print(
+            "WARNING: ESPN leaderboard is unavailable from both Site and Core APIs; "
+            "preserving the last committed public dashboard and warehouse rows."
+        )
+        return
 
-    export_dashboard(tournament, phase=phase, args=args, dry_run=args.dry_run)
-    sync_outputs(tournament, args, dry_run=args.dry_run)
+    snapshot_path: Path | None = None
+    if event is not None and leaderboard is not None:
+        snapshot_path = _write_leaderboard_snapshot(event, leaderboard)
+
+    try:
+        if phase == "pre":
+            if not run_pretournament_predictions(
+                tournament,
+                args,
+                dry_run=args.dry_run,
+                allow_unavailable_field=True,
+            ):
+                return
+        elif phase == "live":
+            if not tournament.predictions_csv.exists():
+                run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
+            run_midtournament_update(
+                tournament,
+                leaderboard=leaderboard,
+                leaderboard_snapshot=snapshot_path,
+                args=args,
+                dry_run=args.dry_run,
+            )
+        elif phase == "post":
+            if not tournament.predictions_csv.exists():
+                run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
+            run_post_results_fetch(
+                tournament,
+                args,
+                leaderboard_snapshot=snapshot_path,
+                dry_run=args.dry_run,
+            )
+
+        export_dashboard(
+            tournament,
+            phase=phase,
+            args=args,
+            leaderboard_snapshot=snapshot_path,
+            dry_run=args.dry_run,
+        )
+        sync_outputs(tournament, args, dry_run=args.dry_run)
+    finally:
+        if snapshot_path:
+            snapshot_path.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":

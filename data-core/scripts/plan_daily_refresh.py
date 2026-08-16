@@ -26,6 +26,7 @@ except ImportError:  # pragma: no cover - local unit tests do not need BigQuery
 
 LEAGUES = ("MLB", "NBA", "NFL", "WORLD_CUP")
 SLATE_TIME_ZONE = "America/Denver"
+NFL_PROVIDER_FALLBACK_MAX_SEASON = 2025
 
 
 @dataclass(frozen=True)
@@ -79,6 +80,22 @@ def season_year_for(league: str, anchor: date) -> int:
     if league == "WORLD_CUP":
         return anchor.year
     raise ValueError(f"Unsupported league: {league}")
+
+
+def nfl_provider_max_season() -> int:
+    """Return the newest NFL season the installed nflreadpy can load.
+
+    nflreadpy exposes the same capability check used by its loaders. Keep a
+    conservative fallback so planning remains safe if the optional provider
+    import is unavailable in a local environment.
+    """
+
+    try:
+        import nflreadpy as nfl  # noqa: WPS433
+
+        return int(nfl.get_current_season())
+    except Exception:  # noqa: BLE001 - a capability probe must never break planning
+        return NFL_PROVIDER_FALLBACK_MAX_SEASON
 
 
 def world_cup_tournament_window_for(season: int) -> tuple[date, date]:
@@ -158,6 +175,8 @@ def build_plan(
         "end_date": end_date.isoformat(),
         "force_full_rebuild": force_full_rebuild,
     }
+    nfl_max_season = nfl_provider_max_season()
+    plan["nfl_provider_max_season"] = nfl_max_season
 
     for league in LEAGUES:
         bq_games = None
@@ -169,7 +188,9 @@ def build_plan(
                 bq_error = str(exc)
 
         in_calendar = calendar_active(league, start_date, end_date, anchor)
-        run_league = force_full_rebuild or in_calendar or bool(bq_games)
+        season_year = season_year_for(league, anchor)
+        provider_ready = league != "NFL" or season_year <= nfl_max_season
+        run_league = (force_full_rebuild or in_calendar or bool(bq_games)) and provider_ready
 
         reasons = []
         if force_full_rebuild:
@@ -180,12 +201,16 @@ def build_plan(
             reasons.append("calendar season window")
         if bq_error:
             reasons.append(f"schedule query unavailable: {bq_error}")
+        if league == "NFL" and not provider_ready:
+            reasons.append(
+                f"nflreadpy supports through season {nfl_max_season}; waiting for season {season_year}"
+            )
         if not reasons:
             reasons.append("offseason and no scheduled games in window")
 
         key = league.lower()
         plan[f"run_{key}"] = run_league
-        plan[f"{key}_season"] = season_year_for(league, anchor)
+        plan[f"{key}_season"] = season_year
         plan[f"{key}_scheduled_games"] = bq_games
         plan[f"{key}_reason"] = "; ".join(reasons)
         if league == "WORLD_CUP":

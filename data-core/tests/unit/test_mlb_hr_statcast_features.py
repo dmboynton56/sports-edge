@@ -122,7 +122,7 @@ def test_fetch_statcast_uses_stale_cache_when_chunks_fail(tmp_path, monkeypatch)
     assert set(frame["batter"]) == {1, 2}
 
 
-def test_preload_statcast_cache_refreshes_only_trailing_window(tmp_path, monkeypatch):
+def test_preload_statcast_cache_refreshes_newest_window_before_historical_backfill(tmp_path, monkeypatch):
     cache = tmp_path / "mlb_statcast_2026.csv"
     calls: list[tuple[pd.Timestamp, pd.Timestamp, bool]] = []
 
@@ -141,7 +141,33 @@ def test_preload_statcast_cache_refreshes_only_trailing_window(tmp_path, monkeyp
     )
 
     assert calls == [
-        (pd.Timestamp("2026-03-18"), pd.Timestamp("2026-07-05"), False),
         (pd.Timestamp("2026-07-06"), pd.Timestamp("2026-07-15"), True),
+        (pd.Timestamp("2026-03-18"), pd.Timestamp("2026-07-05"), False),
     ]
+    assert frame.loc[0, "game_date"] == "2026-07-15"
+
+
+def test_preload_statcast_cache_defers_old_backfill_after_deadline(tmp_path, monkeypatch):
+    cache = tmp_path / "mlb_statcast_2026.csv"
+    calls: list[tuple[pd.Timestamp, pd.Timestamp, bool]] = []
+
+    def fake_fetch(start, end, *, cache, refresh, timeout, deadline_seconds):
+        calls.append((start, end, refresh))
+        if not refresh:
+            raise TimeoutError("simulated deadline")
+        return pd.DataFrame({"game_date": [end.strftime("%Y-%m-%d")]})
+
+    monkeypatch.setattr("src.models.mlb_hr_statcast_features.fetch_statcast", fake_fetch)
+
+    with pytest.warns(RuntimeWarning, match="historical backfill deferred"):
+        frame = preload_statcast_cache(
+            date(2026, 7, 16),
+            lookback_days=120,
+            refresh_days=10,
+            cache=cache,
+            deadline_seconds=360,
+        )
+
+    assert calls[0][2] is True
+    assert calls[1][2] is False
     assert frame.loc[0, "game_date"] == "2026-07-15"

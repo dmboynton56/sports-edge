@@ -15,6 +15,7 @@ return the "wrong" event (e.g. Puerto Rico Open vs Arnold Palmer) — one may be
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import sys
 from datetime import datetime, timezone
@@ -27,7 +28,8 @@ project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-from src.data.espn_pga_results import fetch_season_results
+from src.data.espn_pga_results import event_to_tsv_rows, fetch_season_results
+from src.pga.live_leaderboard import fetch_core_event
 
 ARCHIVE = Path(project_root) / "src" / "data" / "archive"
 DEFAULT_OUT = ARCHIVE / "pga_results_espn_supplement.tsv"
@@ -111,6 +113,8 @@ def main() -> None:
         help="Tour abbreviation (e.g. pga, liv, eur). Comma-separated for multiple.",
     )
     ap.add_argument("--out", type=Path, default=DEFAULT_OUT)
+    ap.add_argument("--event-json", type=Path, help="Normalized ESPN event/leaderboard artifact from the refresh orchestrator")
+    ap.add_argument("--espn-event-id", default="", help="Fetch one completed event from ESPN Core")
     ap.add_argument("--min-players", type=int, default=25, help="Min leaderboard size to accept")
     ap.add_argument(
         "--as-of",
@@ -141,23 +145,45 @@ def main() -> None:
     tours = [t.strip() for t in args.tour.split(",") if t.strip()]
 
     all_dfs: list[pd.DataFrame] = []
-    for season in seasons:
-        for tour in tours:
-            print(f"\nFetching {tour.upper()} {season}...")
-            try:
-                df, log = fetch_season_results(
-                    season,
-                    tour=tour,
-                    only_completed_before=cutoff,
-                    min_players=args.min_players,
-                )
-            except Exception as e:
-                print(f"  ERROR fetching {tour} {season}: {e}")
-                continue
-            for line in log:
-                print(line)
-            if not df.empty:
-                all_dfs.append(df)
+    if args.event_json or args.espn_event_id:
+        if args.event_json:
+            payload = json.loads(args.event_json.read_text(encoding="utf-8"))
+            event = payload.get("event") if isinstance(payload, dict) else None
+            competition = payload.get("competition") if isinstance(payload, dict) else None
+        else:
+            event = fetch_core_event(args.espn_event_id, min_players=args.min_players)
+            competition = (event.get("competitions") or [{}])[0]
+        if not isinstance(event, dict) or not isinstance(competition, dict):
+            raise SystemExit("Normalized ESPN event artifact is missing event/competition data")
+        status_type = ((competition.get("status") or {}).get("type") or {})
+        if status_type.get("completed") is not True:
+            print(f"Event {event.get('name') or event.get('id')} is not complete; no result rows written.")
+            sys.exit(1)
+        rows = event_to_tsv_rows(event, competition)
+        if len(rows) < args.min_players:
+            raise SystemExit(
+                f"Normalized ESPN event has only {len(rows)} competitors; minimum is {args.min_players}."
+            )
+        all_dfs.append(pd.DataFrame(rows))
+        print(f"\nUsing normalized ESPN Core event {event.get('name')}: {len(rows)} rows")
+    else:
+        for season in seasons:
+            for tour in tours:
+                print(f"\nFetching {tour.upper()} {season}...")
+                try:
+                    df, log = fetch_season_results(
+                        season,
+                        tour=tour,
+                        only_completed_before=cutoff,
+                        min_players=args.min_players,
+                    )
+                except Exception as e:
+                    print(f"  ERROR fetching {tour} {season}: {e}")
+                    continue
+                for line in log:
+                    print(line)
+                if not df.empty:
+                    all_dfs.append(df)
 
     if not all_dfs:
         print("No rows fetched; supplement not written.")

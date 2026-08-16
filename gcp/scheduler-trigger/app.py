@@ -15,6 +15,7 @@ OWNER = os.getenv("GITHUB_OWNER", "dmboynton56")
 REPO = os.getenv("GITHUB_REPO", "sports-edge")
 REF = os.getenv("GITHUB_REF", "main")
 PORT = int(os.getenv("PORT", "8080"))
+SERVICE_VERSION = os.getenv("SERVICE_VERSION", "player-markets-pga-off-v1")
 
 WORKFLOWS: dict[str, dict[str, Any]] = {
     "daily-refresh": {
@@ -106,7 +107,15 @@ def _dispatch(workflow: str, inputs: dict[str, str]) -> tuple[int, str]:
 class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path == "/healthz":
-            _json_response(self, 200, {"ok": True})
+            _json_response(
+                self,
+                200,
+                {
+                    "ok": True,
+                    "service_version": SERVICE_VERSION,
+                    "player_markets_run_pga": WORKFLOWS["player-markets-refresh"]["inputs"]["run_pga"],
+                },
+            )
             return
         _json_response(self, 404, {"error": "not_found"})
 
@@ -136,6 +145,7 @@ class Handler(BaseHTTPRequestHandler):
                 "github_body": response_body,
                 "workflow": slug,
                 "inputs": inputs,
+                "service_version": SERVICE_VERSION,
             },
         )
 

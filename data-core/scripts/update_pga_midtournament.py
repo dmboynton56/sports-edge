@@ -268,6 +268,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pred-csv", type=Path)
     parser.add_argument("--out-csv", type=Path)
     parser.add_argument("--espn-match", action="append", default=[])
+    parser.add_argument("--espn-event-id", default="")
+    parser.add_argument("--leaderboard-json", type=Path)
     parser.add_argument("--actual-weight", type=float, default=0.40)
     parser.add_argument("--n-sims", type=int, default=50000)
     parser.add_argument("--sg-std-default", type=float, default=2.5)
@@ -281,8 +283,18 @@ def main() -> tuple[pd.DataFrame, dict[str, Any], list[dict[str, Any]], list[dic
     pred_csv = args.pred_csv or default_pred_csv(args.tournament_key)
     out_csv = args.out_csv or default_out_csv(args.tournament_key)
 
-    print("Fetching live ESPN leaderboard...")
-    leaderboard = fetch_live_leaderboard(espn_match=args.espn_match)
+    if args.leaderboard_json:
+        payload = json.loads(args.leaderboard_json.read_text(encoding="utf-8"))
+        leaderboard = payload.get("leaderboard") if isinstance(payload, dict) else None
+        if not isinstance(leaderboard, dict):
+            raise SystemExit(f"Normalized leaderboard missing from {args.leaderboard_json}")
+        print(f"Using normalized ESPN leaderboard snapshot: {args.leaderboard_json}")
+    else:
+        print("Fetching live ESPN leaderboard...")
+        leaderboard = fetch_live_leaderboard(
+            espn_match=args.espn_match,
+            espn_event_id=args.espn_event_id or None,
+        )
     if not leaderboard:
         raise SystemExit(f"Could not fetch ESPN leaderboard for {args.tournament_key}.")
 
