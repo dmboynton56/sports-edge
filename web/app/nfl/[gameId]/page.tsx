@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getGameExplanation } from "@/lib/data/explanations";
 import { getTeamSlateGame } from "@/lib/data/team-markets";
-import { formatDateTime, formatPct } from "@/lib/format";
+import { formatPct } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 

@@ -12,8 +12,9 @@ export function getBigQueryRuntimeConfig(): BigQueryRuntimeConfig {
 
 export function getBigQueryMissingEnv() {
   const config = getBigQueryRuntimeConfig();
-  return [
+  const missing = [
     !config.projectId ? "BIGQUERY_PROJECT_ID or GCP_PROJECT_ID" : null,
     !config.credentialsConfigured ? "GOOGLE_APPLICATION_CREDENTIALS" : null,
-  ].filter(Boolean) as string[];
+  ];
+  return missing.filter((value): value is string => Boolean(value));
 }

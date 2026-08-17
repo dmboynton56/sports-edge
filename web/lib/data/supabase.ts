@@ -18,10 +18,11 @@ export function getSupabaseRuntimeConfig(): SupabaseRuntimeConfig {
 
 export function getSupabaseMissingEnv() {
   const config = getSupabaseRuntimeConfig();
-  return [
+  const missing = [
     !config.url ? "NEXT_PUBLIC_SUPABASE_URL or SUPABASE_URL" : null,
     !config.anonKey ? "NEXT_PUBLIC_SUPABASE_ANON_KEY or SUPABASE_ANON_KEY" : null,
-  ].filter(Boolean) as string[];
+  ];
+  return missing.filter((value): value is string => Boolean(value));
 }
 
 export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
@@ -38,6 +39,7 @@ export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
       next: { revalidate: 300 },
     });
     if (!response.ok) return null;
+    // SAFETY: Each caller supplies a typed Supabase select contract, and the REST endpoint returns an array for that query.
     return (await response.json()) as T[];
   } catch {
     return null;

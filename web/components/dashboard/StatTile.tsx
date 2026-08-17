@@ -2,11 +2,11 @@ import { cn } from "@/lib/utils";
 
 export type StatTone = "default" | "up" | "down";
 
-const TONE: Record<StatTone, string> = {
+const TONE = {
   default: "",
   up: "text-positive",
   down: "text-destructive",
-};
+} satisfies Record<StatTone, string>;
 
 /** A single figure with its label. Deliberately small — the page is navigation first. */
 export function StatTile({

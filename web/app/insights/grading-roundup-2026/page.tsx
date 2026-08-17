@@ -14,20 +14,21 @@ import {
 import { getPerformanceHistory } from "@/lib/data/performance";
 import { getResultsData } from "@/lib/data/results";
 import type { Performance } from "@/lib/data/types";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatNumber, formatPct } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
 function hasCalibration(record: Performance) {
   return [record.metrics.auc, record.metrics.brier, record.metrics.logLoss].some(
-    (value) => typeof value === "number" && Number.isFinite(value),
+    (value) => isFiniteNumber(value),
   );
 }
 
 function bestMeasuredRoi(records: Performance[]) {
   const values = records
     .map((record) => record.roi)
-    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+    .filter((value): value is number => isFiniteNumber(value));
   return values.length ? Math.max(...values) : null;
 }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct InsightsView: View {
+    @Environment(\.appTheme) private var theme
     @StateObject private var viewModel: InsightsViewModel
 
     init(repository: SportsEdgeRepository) {
@@ -51,13 +52,13 @@ struct InsightsView: View {
                                 Spacer()
                                 Text(evaluation.status.capitalized)
                                     .font(.caption.weight(.bold))
-                                    .foregroundStyle(evaluation.status == "approved" ? AppTheme.positive : AppTheme.warning)
+                                    .foregroundStyle(evaluation.status == "approved" ? theme.positive : theme.warning)
                             }
                             Text(evaluation.evaluationName)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             HStack(spacing: 10) {
-                                MetricTile(label: "ROI", value: evaluation.roi?.formatted(.percent.precision(.fractionLength(1))) ?? "—", tint: AppTheme.positive)
+                                MetricTile(label: "ROI", value: evaluation.roi?.formatted(.percent.precision(.fractionLength(1))) ?? "—", tint: theme.positive)
                                 MetricTile(label: "AUC", value: evaluation.auc?.formatted(.number.precision(.fractionLength(2))) ?? "—")
                             }
                         }
@@ -80,7 +81,7 @@ struct InsightsView: View {
                         Spacer()
                         Text(strategy.roi?.formatted(.percent.precision(.fractionLength(1))) ?? "—")
                             .font(.subheadline.monospacedDigit().weight(.bold))
-                            .foregroundStyle(AppTheme.positive)
+                            .foregroundStyle(theme.positive)
                     }
                     .appCard()
                 }
@@ -129,10 +130,10 @@ struct InsightsView: View {
 
     private func color(for status: String) -> Color {
         switch status {
-        case "ok": AppTheme.positive
-        case "warning": AppTheme.warning
-        case "blocked": AppTheme.danger
-        default: .secondary
+        case "ok": theme.positive
+        case "warning": theme.warning
+        case "blocked": theme.danger
+        default: theme.textSecondary
         }
     }
 }

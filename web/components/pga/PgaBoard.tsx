@@ -7,6 +7,7 @@ import {
   type MarketOddsData,
   type PlacementMarkets,
 } from '@/components/OddsEdgePanel';
+import type { JsonObject, JsonValue } from '@/lib/data/json';
 
 type PredRow = {
   player: string;
@@ -122,7 +123,7 @@ type MidTournamentData = {
     actual_weight: number;
     pretournament_weight: number;
     generated_at: string;
-    [key: string]: unknown;
+    [key: string]: JsonValue | undefined;
   };
   predictions: MidTournamentPred[];
 };
@@ -141,9 +142,9 @@ type Dashboard = {
     status: string;
   };
   predictions: PredRow[];
-  normalizedMarkets?: Record<string, unknown>[];
+  normalizedMarkets?: JsonObject[];
   gaps?: string[];
-  predictionMeta: Record<string, unknown>;
+  predictionMeta: JsonObject;
   espnSupplement: { path: string; rows: number; seasons?: number[] };
   mergedResults?: { mainPath: string; supplementPath: string; mergedRows: number };
   tournaments2026: TournRow[];
@@ -521,7 +522,7 @@ function LiveLeaderboardTab({
                                     ['Top 10', mt.sim_top10_pct],
                                     ['Top 20', mt.sim_top20_pct],
                                     ['Upd SG/R', null, mt.updated_sg_per_round],
-                                  ] as [string, number | null, number?][]).map(([label, pct, raw]) => (
+                                  ] satisfies [string, number | null, number?][]).map(([label, pct, raw]) => (
                                     <div key={label} className="rounded-md border border-border/50 bg-card/60 px-3 py-2">
                                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
                                       <div className="text-sm font-mono font-semibold">
@@ -543,7 +544,7 @@ function LiveLeaderboardTab({
                                       ['Top 20', pred.best_calibrated_target_top20_prob ?? pred.lr_target_top20_prob],
                                       ['Make Cut', pred.best_calibrated_target_made_cut_prob ?? pred.lr_target_made_cut_prob],
                                       ['Pre SG/R', null, pred.exp_sg_per_round],
-                                    ] as [string, number | undefined | null, number?][]).map(([label, prob, raw]) => (
+                                    ] satisfies [string, number | undefined | null, number?][]).map(([label, prob, raw]) => (
                                       <div key={label} className="rounded-md border border-border/50 bg-card/60 px-3 py-2">
                                         <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
                                         <div className="text-sm font-mono font-semibold text-muted-foreground">
@@ -568,7 +569,7 @@ function LiveLeaderboardTab({
                                     ['Top 20', pred.best_calibrated_target_top20_prob ?? pred.lr_target_top20_prob],
                                     ['Make Cut', pred.best_calibrated_target_made_cut_prob ?? pred.lr_target_made_cut_prob],
                                     ['MC Win', pred.sim_win_pct / 100],
-                                  ] as [string, number | undefined][]).map(([label, prob]) => (
+                                  ] satisfies [string, number | undefined][]).map(([label, prob]) => (
                                     <div key={label} className="rounded-md border border-border/50 bg-card/60 px-3 py-2">
                                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
                                       <div className="text-sm font-mono font-semibold">
@@ -586,7 +587,7 @@ function LiveLeaderboardTab({
                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                     {([
                                       ['Win', pred.edge_win, pred.ev_win, pred.best_price_win],
-                                    ] as [string, number | null | undefined, number | null | undefined, number | null | undefined][])
+                                    ] satisfies [string, number | null | undefined, number | null | undefined, number | null | undefined][])
                                       .filter(([, e]) => e != null)
                                       .map(([label, edgeVal, evVal, price]) => (
                                         <div
@@ -869,7 +870,7 @@ export default function PGAPage() {
                       ['top20_pct', 'Top 20%'],
                       ['win_delta_pct', 'Win Δ'],
                       ['pre_win_pct', 'Pre Win%'],
-                    ] as [PredictionSortKey, string][]
+                    ] satisfies [PredictionSortKey, string][]
                   ).map(([k, lab]) => (
                     <th
                       key={k}

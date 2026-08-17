@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 
+import { isFiniteNumber } from "@/lib/data/json";
 import type { Performance, PerformanceHistory, ProductionGate } from "@/lib/data/types";
 
 type RawPerformanceSport = {
@@ -47,7 +48,7 @@ function numberMetric(
 ) {
   for (const name of names) {
     const value = metrics?.[name];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (isFiniteNumber(value)) return value;
   }
   return null;
 }
@@ -72,10 +73,9 @@ function sampleSize(sample: Record<string, number | string | null> | undefined) 
   ];
   for (const key of preferred) {
     const value = sample[key];
-    if (typeof value === "number") return value;
+    if (isFiniteNumber(value)) return value;
   }
-  const first = Object.values(sample).find((value) => typeof value === "number");
-  return typeof first === "number" ? first : null;
+  return Object.values(sample).find(isFiniteNumber) ?? null;
 }
 
 function gateStatus(gates: ProductionGate[]): Performance["productionStatus"] {
@@ -87,7 +87,7 @@ function gateStatus(gates: ProductionGate[]): Performance["productionStatus"] {
 function metricMax(metrics: Record<string, string | number | null> | undefined, names: string[]) {
   const values = names
     .map((name) => metrics?.[name])
-    .filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+    .filter(isFiniteNumber);
   return values.length ? Math.max(...values) : null;
 }
 
@@ -238,7 +238,7 @@ export function normalizePerformanceHistory(raw: RawHistory): PerformanceHistory
 
 export async function getPerformanceHistory(): Promise<PerformanceHistory> {
   try {
-    const raw = JSON.parse(await fs.readFile(PERFORMANCE_PATH, "utf8")) as RawHistory;
+    const raw: RawHistory = JSON.parse(await fs.readFile(PERFORMANCE_PATH, "utf8"));
     return normalizePerformanceHistory(raw);
   } catch {
     return normalizePerformanceHistory(undefined);

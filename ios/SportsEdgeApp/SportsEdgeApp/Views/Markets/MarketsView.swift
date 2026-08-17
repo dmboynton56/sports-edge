@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MarketsView: View {
     @ObservedObject private var appStore: AppStore
+    @Environment(\.appTheme) private var theme
     @StateObject private var viewModel: MarketViewModel
     @Binding private var path: [GameRoute]
 
@@ -107,8 +108,8 @@ struct MarketsView: View {
                             .font(.subheadline.weight(.semibold))
                             .padding(.horizontal, 13)
                             .padding(.vertical, 9)
-                            .foregroundStyle(viewModel.league == league ? .white : .primary)
-                            .background(viewModel.league == league ? AppTheme.accent : Color.primary.opacity(0.07), in: Capsule())
+                            .foregroundStyle(viewModel.league == league ? theme.background : theme.textPrimary)
+                            .background(viewModel.league == league ? theme.accent : theme.surfaceMuted, in: Capsule())
                     }
                     .buttonStyle(.plain)
                     .accessibilityAddTraits(viewModel.league == league ? [.isSelected] : [])

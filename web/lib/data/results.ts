@@ -1,4 +1,5 @@
 import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
+import { isFiniteNumber, isJsonString } from "@/lib/data/json";
 
 export type GameResultRow = {
   league: string;
@@ -16,6 +17,7 @@ export type GameResultRow = {
   spread_result: "win" | "loss" | "push" | null;
   winner_result: "win" | "loss" | null;
   flat_ats_units: number | null;
+  evaluated_at?: string | null;
 };
 
 export type MlbHrResultRow = {
@@ -37,7 +39,7 @@ export type MlbHrResultRow = {
   edge?: number | null;
   ev?: number | null;
   odds_status?: string | null;
-  raw_record?: Record<string, unknown> | null;
+  raw_record?: import("@/lib/data/json").JsonObject | null;
 };
 
 export type PgaResultRow = {
@@ -157,7 +159,7 @@ export function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
     const losses = evaluable.filter((row) => row.actual_home_run === false).length;
     const priced = evaluable.filter(
       (row) =>
-        typeof row.american_price === "number" &&
+        isFiniteNumber(row.american_price) &&
         row.american_price !== 0 &&
         (row.odds_status === "ok" || row.odds_status === "raw_implied"),
     );
@@ -256,7 +258,7 @@ export function filterByWindow<T>(
 
   return rows.filter((row) => {
     const value = row[dateField];
-    if (typeof value !== "string") return false;
+    if (!isJsonString(value)) return false;
     const date = new Date(value.length === 10 ? `${value}T00:00:00Z` : value);
     return !Number.isNaN(date.getTime()) && date >= cutoff;
   });
@@ -345,7 +347,7 @@ export async function getResultsData(): Promise<ResultsData> {
   ].filter((row) => row.sample > 0);
 
   const timestamps = [
-    ...(gameRows ?? []).map((row) => (row as GameResultRow & { evaluated_at?: string }).evaluated_at),
+    ...(gameRows ?? []).map((row) => row.evaluated_at),
     ...(mlbHrRows ?? []).map((row) => row.evaluated_at),
     ...(pgaRows ?? []).map((row) => row.evaluated_at),
   ].filter((value): value is string => Boolean(value));

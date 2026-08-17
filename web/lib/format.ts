@@ -1,5 +1,7 @@
+import { isFiniteNumber } from "@/lib/data/json";
+
 export function formatNumber(value: number | null | undefined, digits = 0) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "n/a";
+  if (!isFiniteNumber(value)) return "n/a";
   return new Intl.NumberFormat("en-US", {
     maximumFractionDigits: digits,
     minimumFractionDigits: digits,
@@ -7,17 +9,17 @@ export function formatNumber(value: number | null | undefined, digits = 0) {
 }
 
 export function formatPct(value: number | null | undefined, digits = 1) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "n/a";
+  if (!isFiniteNumber(value)) return "n/a";
   return `${(value * 100).toFixed(digits)}%`;
 }
 
 export function formatPctFromWhole(value: number | null | undefined, digits = 1) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "n/a";
+  if (!isFiniteNumber(value)) return "n/a";
   return `${value.toFixed(digits)}%`;
 }
 
 export function formatMaybePctMetric(value: number | null | undefined, digits = 1) {
-  if (typeof value !== "number" || !Number.isFinite(value)) return "n/a";
+  if (!isFiniteNumber(value)) return "n/a";
   return Math.abs(value) <= 1 ? formatPct(value, digits) : formatNumber(value, digits);
 }
 
@@ -47,7 +49,7 @@ export function formatGamesSinceLastHr(
   value: number | null | undefined,
   qualityFlags?: string[] | null,
 ) {
-  if (typeof value === "number" && Number.isFinite(value)) {
+  if (isFiniteNumber(value)) {
     return `${Math.round(value)}g`;
   }
   if (qualityFlags?.includes("no_hr_in_history_window")) {

@@ -61,14 +61,18 @@ export type PlacementMarkets = Record<string, PlacementMarketSummary | MatchupEn
   matchups?: MatchupEntry[];
 };
 
-const MARKET_LABELS: Record<string, string> = {
+const MARKET_LABELS = {
   win: 'Outright Win',
   top5: 'Top 5',
   top10: 'Top 10',
   top20: 'Top 20',
   made_cut: 'Make Cut',
   frl: 'First Round Leader',
-};
+} satisfies Record<string, string>;
+
+function marketLabel(market: string): string {
+  return Object.entries(MARKET_LABELS).find(([candidate]) => candidate === market)?.[1] ?? market;
+}
 
 function formatAmerican(price: number) {
   return price > 0 ? `+${price}` : `${price}`;
@@ -96,7 +100,7 @@ function ValueBetsTable({ edges }: { edges: EdgeEntry[] }) {
       <td className="px-4 py-3 font-medium">{e.player}</td>
       <td className="px-4 py-3 text-center">
         <span className="text-[10px] font-bold uppercase tracking-wider bg-secondary px-2 py-0.5 rounded">
-          {MARKET_LABELS[e.market] ?? e.market}
+          {marketLabel(e.market)}
         </span>
       </td>
       <td className="px-4 py-3 text-right font-mono">{(e.modelProb * 100).toFixed(1)}%</td>
@@ -141,7 +145,7 @@ function ValueBetsTable({ edges }: { edges: EdgeEntry[] }) {
                   marketFilter === m ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:text-foreground'
                 }`}
               >
-                {MARKET_LABELS[m] ?? m} ({mEdges.length})
+                {marketLabel(m)} ({mEdges.length})
               </button>
             );
           })}
@@ -149,7 +153,7 @@ function ValueBetsTable({ edges }: { edges: EdgeEntry[] }) {
       )}
       {positive.length === 0 && marginal.length === 0 ? (
         <div className="text-sm text-muted-foreground py-6 text-center border border-dashed rounded-xl">
-          No positive-edge bets in {marketFilter === 'all' ? 'any market' : MARKET_LABELS[marketFilter] ?? marketFilter}.
+          No positive-edge bets in {marketFilter === 'all' ? 'any market' : marketLabel(marketFilter)}.
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border">
@@ -287,7 +291,7 @@ function MarketSummaryCards({
           return (
             <div key={mkt} className="rounded-xl border border-border bg-card p-4">
               <div className="flex items-center justify-between mb-3">
-                <h5 className="font-bold text-sm">{MARKET_LABELS[mkt] ?? mkt}</h5>
+                <h5 className="font-bold text-sm">{marketLabel(mkt)}</h5>
                 <span className="text-[10px] text-muted-foreground">
                   {summary.books.join(', ')} &middot; {timeSince(summary.capturedAt, now)}
                 </span>
@@ -375,7 +379,8 @@ export function OddsEdgePanel({
   marketOdds: MarketOddsData;
   placementMarkets?: PlacementMarkets;
 }) {
-  const [section, setSection] = useState<'value' | 'comparison' | 'overround' | 'markets' | 'matchups'>('value');
+  type OddsSection = 'value' | 'comparison' | 'overround' | 'markets' | 'matchups';
+  const [section, setSection] = useState<OddsSection>('value');
   const [now] = useState(() => Date.now());
 
   const staleHours = (now - new Date(marketOdds.fetchedAt).getTime()) / 3600000;
@@ -384,7 +389,7 @@ export function OddsEdgePanel({
   const hasPlacementMarkets = placementMarkets && Object.keys(placementMarkets).some(k => k !== 'matchups');
   const hasMatchups = placementMarkets?.matchups && placementMarkets.matchups.length > 0;
 
-  const tabs: [string, string][] = [
+  const tabs: [OddsSection, string][] = [
     ['value', 'Value Bets'],
     ['comparison', 'Line Shopping'],
     ['overround', 'Vig Analysis'],
@@ -417,7 +422,7 @@ export function OddsEdgePanel({
           {tabs.map(([key, label]) => (
             <button
               key={key}
-              onClick={() => setSection(key as typeof section)}
+              onClick={() => setSection(key)}
               className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 section === key ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
               }`}

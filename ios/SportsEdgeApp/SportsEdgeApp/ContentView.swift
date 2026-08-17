@@ -12,6 +12,8 @@ struct ContentView: View {
     @StateObject private var router = AppRouter()
 
     var body: some View {
+        let theme = appStore.themeVariant.palette
+
         TabView(selection: $router.selectedTab) {
             HomeView(appStore: appStore, repository: appStore.repository)
                 .tabItem { Label(AppTab.home.title, systemImage: AppTab.home.systemImage) }
@@ -33,7 +35,10 @@ struct ContentView: View {
                 .tabItem { Label(AppTab.settings.title, systemImage: AppTab.settings.systemImage) }
                 .tag(AppTab.settings)
         }
-        .tint(AppTheme.accent)
+        .tint(theme.accent)
+        .preferredColorScheme(.dark)
+        .background(theme.background.ignoresSafeArea())
+        .environment(\.appTheme, theme)
         .onOpenURL { url in
             if let route = AppRouter.route(for: url) {
                 appStore.selectedLeague = route.league

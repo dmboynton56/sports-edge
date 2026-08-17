@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getPerformanceHistory } from "@/lib/data/performance";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatNumber, formatPct } from "@/lib/format";
 import { SPORTS } from "@/lib/markets-registry";
 import type { Performance } from "@/lib/data/types";
@@ -34,9 +35,9 @@ function sportCardFor(sport: (typeof SPORTS)[number], records: Performance[]) {
       description={sport.description}
       figures={[
         {
-          value: typeof roi === "number" ? formatPct(roi) : "—",
+          value: isFiniteNumber(roi) ? formatPct(roi) : "—",
           label: "ROI",
-          tone: typeof roi === "number" ? (roi < 0 ? "down" : "up") : "default",
+          tone: isFiniteNumber(roi) ? (roi < 0 ? "down" : "up") : "default",
         },
         {
           value: formatNumber(record?.sampleSize ?? 0),
@@ -97,7 +98,7 @@ export default async function PerformancePage() {
   const history = await getPerformanceHistory();
   const nbaRecords = history.records.filter((record) => record.sport === "NBA");
   const nflRecords = history.records.filter((record) => record.sport === "NFL");
-  const roiRecords = history.records.filter((record) => typeof record.roi === "number");
+  const roiRecords = history.records.filter((record) => isFiniteNumber(record.roi));
   const positiveRoi = roiRecords.filter((record) => (record.roi ?? 0) > 0).length;
   const bestRoi = roiRecords.toSorted((a, b) => (b.roi ?? -Infinity) - (a.roi ?? -Infinity))[0];
   const blocked = history.records.filter((record) => record.productionStatus === "blocked").length;

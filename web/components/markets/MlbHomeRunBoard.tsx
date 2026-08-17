@@ -21,13 +21,15 @@ import {
   type MlbHomeRunPrediction,
   type MlbHrBoardSnapshot,
 } from "@/lib/data/mlb-hr-board";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 
 type Filter = "all" | "priced" | "model-only";
 const PAGE_SIZE = 25;
+const FILTERS = ["all", "priced", "model-only"] satisfies Filter[];
 
 function formatAmerican(price: number | null | undefined) {
-  if (typeof price !== "number" || !Number.isFinite(price) || price === 0) return "n/a";
+  if (!isFiniteNumber(price) || price === 0) return "n/a";
   return price > 0 ? `+${price}` : `${price}`;
 }
 
@@ -290,7 +292,7 @@ export function MlbHomeRunBoard({ snapshot }: { snapshot: MlbHrBoardSnapshot }) 
               <p className="mt-1 text-sm text-muted-foreground">Rows for games within five minutes of first pitch are hidden.</p>
             </div>
             <div className="flex flex-wrap gap-1 rounded-lg bg-secondary p-1" aria-label="Candidate filters">
-              {(["all", "priced", "model-only"] as Filter[]).map((value) => (
+              {FILTERS.map((value) => (
                 <button
                   key={value}
                   type="button"

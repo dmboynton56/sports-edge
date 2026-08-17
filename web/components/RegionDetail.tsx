@@ -1,7 +1,7 @@
 'use client';
 
 import type { MatchupSlot, TeamInfo } from '@/lib/bracketUtils';
-import { ROUND_NAMES, REGION_NAMES } from '@/lib/bracketUtils';
+import { regionName, roundName } from '@/lib/bracketUtils';
 
 interface RegionDetailProps {
   region: string;
@@ -123,7 +123,7 @@ export function RegionDetail({
   const isFinalFour = region === 'F4';
   const regionLabel = isFinalFour
     ? 'Final Four & Championship'
-    : `${REGION_NAMES[region] ?? region} Region`;
+    : `${regionName(region)} Region`;
 
   const lastRound = rounds[rounds.length - 1];
   const regionWinner = lastRound?.[0]?.winner;
@@ -147,9 +147,9 @@ export function RegionDetail({
       <div className="overflow-x-auto pb-2">
         <div className="flex gap-12 min-w-max items-start">
           {rounds.map((matchups, roundIdx) => {
-            const roundName = isFinalFour
-              ? ROUND_NAMES[roundIdx + 4] ?? `Round ${roundIdx + 4}`
-              : ROUND_NAMES[roundIdx] ?? `Round ${roundIdx}`;
+            const roundLabel = isFinalFour
+              ? roundName(roundIdx + 4)
+              : roundName(roundIdx);
 
             // Calculate vertical spacing to align matchups with their "source" matchups
             const spacingMultiplier = Math.pow(2, roundIdx);
@@ -160,7 +160,7 @@ export function RegionDetail({
             return (
               <div key={roundIdx} className="flex flex-col items-center shrink-0">
                 <p className="text-[10px] text-muted-foreground uppercase tracking-wider mb-3 font-semibold">
-                  {roundName}
+                  {roundLabel}
                 </p>
                 <div
                   className="flex flex-col"

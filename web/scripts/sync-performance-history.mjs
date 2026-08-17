@@ -17,7 +17,7 @@ const outputPath = path.join(webRoot, "public", "data", "performance_history.jso
 function metric(metrics, names) {
   for (const name of names) {
     const value = metrics?.[name];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (Number.isFinite(value)) return value;
   }
   return null;
 }
@@ -31,9 +31,9 @@ function sampleSize(sample) {
     "feature_rows",
     "supabase_graded_games",
   ]) {
-    if (typeof sample?.[key] === "number") return sample[key];
+    if (Number.isFinite(sample?.[key])) return sample[key];
   }
-  return Object.values(sample ?? {}).find((value) => typeof value === "number") ?? null;
+  return Object.values(sample ?? {}).find((value) => Number.isFinite(value)) ?? null;
 }
 
 function gateStatus(gates) {
@@ -45,7 +45,7 @@ function gateStatus(gates) {
 function metricMax(metrics, names) {
   const values = names
     .map((name) => metrics?.[name])
-    .filter((value) => typeof value === "number" && Number.isFinite(value));
+    .filter((value) => Number.isFinite(value));
   return values.length ? Math.max(...values) : null;
 }
 

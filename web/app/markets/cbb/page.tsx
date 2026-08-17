@@ -10,7 +10,6 @@ import { MatchupCard } from '@/components/MatchupCard';
 import {
   type TeamInfo,
   type MatchupSlot,
-  REGION_NAMES,
   computeRegionBracket,
   computeFinalFour,
   resetDownstream,
@@ -97,24 +96,25 @@ const SEED_MATCHUPS: [number, number][] = [
   [1, 16], [8, 9], [5, 12], [4, 13], [6, 11], [3, 14], [7, 10], [2, 15],
 ];
 
-const HIST_SEED_WIN_RATE: Record<string, number> = {
+const HIST_SEED_WIN_RATE = {
   '1-16': 0.993, '2-15': 0.94, '3-14': 0.85, '4-13': 0.79,
   '5-12': 0.65, '6-11': 0.63, '7-10': 0.61, '8-9': 0.52,
-};
+} satisfies Record<string, number>;
 
 function calibratedSeedProb(seedA: number, seedB: number): number {
   const lo = Math.min(seedA, seedB);
   const hi = Math.max(seedA, seedB);
   const key = `${lo}-${hi}`;
-  if (HIST_SEED_WIN_RATE[key] !== undefined) {
-    return seedA < seedB ? HIST_SEED_WIN_RATE[key] : 1 - HIST_SEED_WIN_RATE[key];
+  const historicalRate = Object.entries(HIST_SEED_WIN_RATE).find(([candidate]) => candidate === key)?.[1];
+  if (historicalRate !== undefined) {
+    return seedA < seedB ? historicalRate : 1 - historicalRate;
   }
   return 1 / (1 + Math.exp(-0.175 * (seedB - seedA)));
 }
 
 function buildSeedProbMatrix(teams: Omit<BracketTeam, 'probabilities'>[]): number[][] {
   const n = teams.length;
-  const matrix: number[][] = Array.from({ length: n }, () => new Array(n).fill(0.5));
+  const matrix: number[][] = Array.from({ length: n }, () => Array.from({ length: n }, () => 0.5));
   for (let i = 0; i < n; i++) {
     for (let j = 0; j < n; j++) {
       if (i === j) { matrix[i][j] = 0; continue; }

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct HomeView: View {
     @ObservedObject private var appStore: AppStore
+    @Environment(\.appTheme) private var theme
     @StateObject private var viewModel: HomeViewModel
 
     init(appStore: AppStore, repository: SportsEdgeRepository) {
@@ -66,7 +67,7 @@ struct HomeView: View {
                                 .foregroundStyle(.secondary)
                             Text(formattedEdge(summary.topEdge))
                                 .font(.title3.monospacedDigit().weight(.bold))
-                                .foregroundStyle(AppTheme.positive)
+                                .foregroundStyle(theme.positive)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .appCard()
@@ -107,7 +108,7 @@ struct HomeView: View {
         }
         .foregroundStyle(.white)
         .padding(20)
-        .background(AppTheme.heroGradient, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .background(theme.heroGradient, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 

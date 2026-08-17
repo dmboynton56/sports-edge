@@ -1,7 +1,7 @@
 'use client';
 
-import type { MatchupSlot, TeamInfo } from '@/lib/bracketUtils';
-import { REGION_NAMES } from '@/lib/bracketUtils';
+import type { MatchupSlot } from '@/lib/bracketUtils';
+import { regionName } from '@/lib/bracketUtils';
 
 interface MiniFullBracketProps {
   regionBrackets: Record<string, MatchupSlot[][]>;
@@ -10,7 +10,7 @@ interface MiniFullBracketProps {
   onRegionClick: (region: string) => void;
 }
 
-const ABBRS: Record<string, string> = {
+const ABBRS = {
   'Duke': 'DUKE', 'UConn': 'UCON', 'Michigan State': 'MSU', 'Kansas': 'KU',
   "St. John's": 'SJU', 'Louisville': 'LOU', 'UCLA': 'UCLA', 'Ohio State': 'OSU',
   'TCU': 'TCU', 'UCF': 'UCF', 'South Florida': 'USF', 'Northern Iowa': 'UNI',
@@ -27,10 +27,11 @@ const ABBRS: Record<string, string> = {
   'Texas Tech': 'TTU', 'Tennessee': 'TENN', 'Kentucky': 'UK', 'Georgia': 'UGA',
   'Saint Louis': 'SLU', 'Santa Clara': 'SCU', 'SMU': 'SMU', 'Akron': 'AKR',
   'Hofstra': 'HOF', 'Wright State': 'WSU', 'Tennessee State': 'TSU', 'UMBC': 'UMBC',
-};
+} satisfies Record<string, string>;
 
 function abbr(name: string): string {
-  return ABBRS[name] ?? name.slice(0, 4).toUpperCase();
+  return Object.entries(ABBRS).find(([candidate]) => candidate === name)?.[1]
+    ?? name.slice(0, 4).toUpperCase();
 }
 
 function RegionSummaryCard({
@@ -51,10 +52,6 @@ function RegionSummaryCard({
   );
   const totalSlots = 8 + 4 + 2 + 1; // 15 matchups per region
 
-  // Show the E8 matchup teams as a preview
-  const e8 = rounds[3]?.[0];
-  const s16teams = rounds[2]?.map(s => s.winner).filter(Boolean) as TeamInfo[];
-
   return (
     <button
       onClick={onClick}
@@ -65,7 +62,7 @@ function RegionSummaryCard({
       }`}
     >
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-bold">{REGION_NAMES[region]}</span>
+        <span className="text-xs font-bold">{regionName(region)}</span>
         <span className="text-[10px] text-muted-foreground">
           {picksInRegion}/{totalSlots}
         </span>

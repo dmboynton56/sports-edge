@@ -15,22 +15,30 @@ export type MatchupSlot = {
   winner: TeamInfo | null;
 };
 
-export const REGION_NAMES: Record<string, string> = {
+export const REGION_NAMES = {
   E: "East",
   W: "West",
   S: "South",
   M: "Midwest",
   F4: "Final Four",
-};
+} as const;
 
-export const ROUND_NAMES: Record<number, string> = {
+export const ROUND_NAMES = {
   0: "Round of 64",
   1: "Round of 32",
   2: "Sweet 16",
   3: "Elite 8",
   4: "Final Four",
   5: "Championship",
-};
+} as const;
+
+export function regionName(region: string): string {
+  return Object.entries(REGION_NAMES).find(([code]) => code === region)?.[1] ?? region;
+}
+
+export function roundName(round: number): string {
+  return Object.entries(ROUND_NAMES).find(([key]) => Number(key) === round)?.[1] ?? `Round ${round}`;
+}
 
 const SEED_MATCHUPS: [number, number][] = [
   [1, 16],

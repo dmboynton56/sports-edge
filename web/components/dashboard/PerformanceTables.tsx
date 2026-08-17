@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Performance } from "@/lib/data/types";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatMaybePctMetric, formatNumber, formatPct } from "@/lib/format";
 
 type ThresholdRow = {
@@ -29,7 +30,7 @@ type ThresholdRow = {
 function numberValue(row: Record<string, string | number | null>, keys: string[]) {
   for (const key of keys) {
     const value = row[key];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (isFiniteNumber(value)) return value;
   }
   return null;
 }
@@ -128,10 +129,10 @@ export function PerformanceTables({ records }: { records: Performance[] }) {
                 <TableCell>{record.modelVersion}</TableCell>
                 <TableCell>{formatNumber(record.sampleSize)}</TableCell>
                 <TableCell>{formatMaybePctMetric(record.metrics.accuracy)}</TableCell>
-                <TableCell>{formatNumber(record.metrics.auc as number | null, 4)}</TableCell>
-                <TableCell>{formatNumber(record.metrics.brier as number | null, 4)}</TableCell>
-                <TableCell>{formatNumber(record.metrics.logLoss as number | null, 4)}</TableCell>
-                <TableCell>{formatNumber(record.metrics.mae as number | null, 3)}</TableCell>
+                <TableCell>{formatNumber(record.metrics.auc, 4)}</TableCell>
+                <TableCell>{formatNumber(record.metrics.brier, 4)}</TableCell>
+                <TableCell>{formatNumber(record.metrics.logLoss, 4)}</TableCell>
+                <TableCell>{formatNumber(record.metrics.mae, 3)}</TableCell>
               </TableRow>
             ))}
           </TableBody>

@@ -2,12 +2,13 @@ import SwiftUI
 
 struct LoadingStateView: View {
     let message: String
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         VStack(spacing: 12) {
             ProgressView()
                 .controlSize(.large)
-                .tint(AppTheme.accent)
+                .tint(theme.accent)
             Text(message)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -21,12 +22,13 @@ struct LoadingStateView: View {
 struct ErrorStateView: View {
     let message: String
     let retry: () -> Void
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         VStack(spacing: 14) {
             Image(systemName: "wifi.exclamationmark")
                 .font(.system(size: 30, weight: .semibold))
-                .foregroundStyle(AppTheme.warning)
+                .foregroundStyle(theme.warning)
             Text("Couldn’t load this view")
                 .font(.headline)
             Text(message)
@@ -35,7 +37,7 @@ struct ErrorStateView: View {
                 .multilineTextAlignment(.center)
             Button("Try again", action: retry)
                 .buttonStyle(.borderedProminent)
-                .tint(AppTheme.accent)
+                .tint(theme.accent)
         }
         .frame(maxWidth: .infinity, minHeight: 260)
         .padding(24)
@@ -69,11 +71,12 @@ struct EmptyStateView: View {
 struct FreshnessBanner: View {
     let envelope: FreshnessMetadata
     let gaps: [String]
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: envelope.status == .offline ? "icloud.slash" : "clock.badge.checkmark")
-                .foregroundStyle(envelope.status == .fresh ? AppTheme.positive : AppTheme.warning)
+                .foregroundStyle(envelope.status == .fresh ? theme.positive : theme.warning)
             VStack(alignment: .leading, spacing: 3) {
                 Text("\(envelope.status.label) · \(envelope.source.label)")
                     .font(.subheadline.weight(.semibold))
@@ -90,7 +93,7 @@ struct FreshnessBanner: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(envelope.status == .fresh ? AppTheme.accentSoft.opacity(0.55) : Color.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(envelope.status == .fresh ? theme.accentSoft.opacity(0.75) : theme.warning.opacity(0.12), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .accessibilityElement(children: .combine)
     }
 }

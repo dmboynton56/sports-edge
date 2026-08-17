@@ -42,10 +42,10 @@ import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
-const WINDOWS: ResultsWindow[] = ["7d", "30d", "season", "all"];
+const WINDOWS = ["7d", "30d", "season", "all"] satisfies ResultsWindow[];
 
 function isResultsWindow(value: string | string[] | undefined): value is ResultsWindow {
-  return typeof value === "string" && WINDOWS.includes(value as ResultsWindow);
+  return value !== undefined && !Array.isArray(value) && WINDOWS.some((window) => window === value);
 }
 
 function MarketHeader({ market }: { market: MarketEntry }) {
@@ -177,7 +177,7 @@ type PgaEventSummary = {
 };
 
 function booleanRate(rows: PgaResultRow[], field: "top10_hit" | "top20_hit") {
-  const graded = rows.filter((row) => typeof row[field] === "boolean");
+  const graded = rows.filter((row) => row[field] !== null);
   return graded.length ? graded.filter((row) => row[field] === true).length / graded.length : null;
 }
 
@@ -349,7 +349,7 @@ export default async function SportPerformancePage({
   }
 
   const seasonLabel = String(new Date().getUTCFullYear());
-  const windowLabels: Record<ResultsWindow, string> = { "7d": "7 days", "30d": "30 days", season: seasonLabel, all: "All" };
+  const windowLabels = { "7d": "7 days", "30d": "30 days", season: seasonLabel, all: "All" } satisfies Record<ResultsWindow, string>;
 
   return (
     <div>

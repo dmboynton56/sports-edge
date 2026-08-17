@@ -13,20 +13,18 @@ import {
 } from "recharts";
 
 import type { Performance } from "@/lib/data/types";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatPct } from "@/lib/format";
 import { sportVar } from "@/lib/sports";
 
 export function RoiChartClient({ records }: { records: Performance[] }) {
-  const data = records
-    .filter((record) => typeof record.roi === "number")
-    .map((record) => ({
-      sport: record.sport,
-      roi: record.roi,
-    }));
+  const data = records.flatMap((record) =>
+    isFiniteNumber(record.roi) ? [{ sport: record.sport, roi: record.roi }] : [],
+  );
 
   // Every ROI is negative today. Pin zero into the domain so the bars hang from
   // a real baseline instead of collapsing into hairlines at the top of the plot.
-  const values = data.map((entry) => entry.roi as number);
+  const values = data.map((entry) => entry.roi);
   const low = Math.min(0, ...values);
   const high = Math.max(0, ...values);
   const pad = (high - low) * 0.15 || 0.01;

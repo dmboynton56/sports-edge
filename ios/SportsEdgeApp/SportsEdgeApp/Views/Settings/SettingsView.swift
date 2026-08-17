@@ -2,14 +2,54 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var appStore: AppStore
+    @Environment(\.appTheme) private var theme
     @State private var cacheCleared = false
 
     var body: some View {
         NavigationStack {
             Form {
+                Section {
+                    ForEach(ThemeVariant.allCases) { variant in
+                        Button {
+                            appStore.themeVariant = variant
+                        } label: {
+                            HStack(spacing: 12) {
+                                Image(systemName: variant.systemImage)
+                                    .font(.headline)
+                                    .foregroundStyle(variant.palette.accent)
+                                    .frame(width: 28, height: 28)
+                                    .background(variant.palette.accentSoft, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(variant.title)
+                                        .font(.headline)
+                                        .foregroundStyle(theme.textPrimary)
+                                    Text(variant.subtitle)
+                                        .font(.caption)
+                                        .foregroundStyle(theme.textSecondary)
+                                }
+
+                                Spacer()
+
+                                if appStore.themeVariant == variant {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundStyle(variant.palette.accent)
+                                }
+                            }
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(variant.title)
+                        .accessibilityValue(appStore.themeVariant == variant ? "Selected" : "Not selected")
+                    }
+                } header: {
+                    Text("Visual identity")
+                } footer: {
+                    Text("Sports Edge stays dark-first; this changes the app's signal color and atmosphere.")
+                }
+
                 Section("Data source") {
                     Toggle("Use fixture data", isOn: $appStore.usesFixtureData)
-                        .tint(AppTheme.accent)
+                        .tint(theme.accent)
                     LabeledContent("API endpoint") {
                         Text(AppConfiguration.apiBaseURL?.host ?? "Not configured")
                             .foregroundStyle(.secondary)
@@ -26,7 +66,7 @@ struct SettingsView: View {
                     if cacheCleared {
                         Text("Offline cache cleared.")
                             .font(.caption)
-                            .foregroundStyle(AppTheme.positive)
+                            .foregroundStyle(theme.positive)
                     }
                 }
 
@@ -41,7 +81,7 @@ struct SettingsView: View {
                                 Spacer()
                                 if appStore.trackedLeagues.contains(league) {
                                     Image(systemName: "checkmark")
-                                        .foregroundStyle(AppTheme.accent)
+                                        .foregroundStyle(theme.accent)
                                         .fontWeight(.bold)
                                 }
                             }
@@ -75,6 +115,8 @@ struct SettingsView: View {
                     LabeledContent("Minimum iOS", value: "18.0")
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(theme.background)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.large)
         }

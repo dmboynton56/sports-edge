@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import type { TeamInfo } from '@/lib/bracketUtils';
-import { ROUND_NAMES, REGION_NAMES } from '@/lib/bracketUtils';
+import { regionName, roundName } from '@/lib/bracketUtils';
 
 interface MatchupCardProps {
   teamA: TeamInfo;
@@ -40,10 +40,10 @@ export function MatchupCard({
     ? `Seed weighting shifts this matchup by ${(tournDelta * 100).toFixed(1)} percentage points`
     : 'Seed has minimal effect on this matchup';
 
-  const roundLabel = ROUND_NAMES[round] ?? `Round ${round}`;
+  const roundLabel = roundName(round);
   const regionLabel = region === 'F4'
     ? 'Final Four'
-    : `${REGION_NAMES[region] ?? region} Region`;
+    : `${regionName(region)} Region`;
 
   return (
     <div

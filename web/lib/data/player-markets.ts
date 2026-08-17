@@ -2,6 +2,7 @@ import { promises as fs } from "fs";
 import path from "path";
 
 import type { Prediction } from "@/lib/data/types";
+import { isJsonString, parseJson, type JsonObject } from "@/lib/data/json";
 import {
   getMlbHomeRunModelLabel,
   MLB_HR_STATCAST_BLEND_MODEL,
@@ -50,6 +51,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
       next: { revalidate: 60 },
     });
     if (!response.ok) return null;
+    // SAFETY: Each caller supplies a typed Supabase select contract, and the REST endpoint returns an array for that query.
     return (await response.json()) as T[];
   } catch {
     return null;
@@ -57,7 +59,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
 }
 
 function uniqueGaps(gaps: (string | null | undefined)[]): string[] {
-  return Array.from(new Set(gaps.filter(Boolean) as string[]));
+  return Array.from(new Set(gaps.filter((gap): gap is string => Boolean(gap))));
 }
 
 function supabaseConfigGaps(): string[] {
@@ -156,7 +158,7 @@ type SupabaseMlbHrBoardRunRow = {
   completed_at: string | null;
   workflow_url: string | null;
   gaps: string[] | null;
-  validation_summary: Record<string, unknown> | null;
+  validation_summary: JsonObject | null;
   total_candidates: number;
   priced_candidates: number;
   top25_denominator: number;
@@ -225,7 +227,7 @@ type SupabasePgaTournamentRow = {
   par: number | null;
   field_size: number | null;
   status: string;
-  raw_record: Record<string, unknown> | null;
+  raw_record: JsonObject | null;
   updated_at: string | null;
 };
 
@@ -254,13 +256,13 @@ type SupabasePgaPredictionRow = {
   quality_flags: string[] | null;
 };
 
-export type PgaBoardData = Record<string, unknown> & {
+export type PgaBoardData = {
   generatedAt: string | null;
   dataSource?: "supabase_predictions" | "static_json" | "unavailable";
   gaps?: string[];
-  event?: Record<string, unknown>;
-  predictions?: Record<string, unknown>[];
-  predictionMeta?: Record<string, unknown>;
+  event?: JsonObject;
+  predictions?: JsonObject[];
+  predictionMeta?: JsonObject;
   normalizedMarkets?: Prediction[];
 };
 
@@ -342,8 +344,10 @@ function stringList(value: string[] | string | null | undefined): string[] {
   if (Array.isArray(value)) return value.filter(Boolean);
   if (!value) return [];
   try {
-    const parsed = JSON.parse(value);
-    return Array.isArray(parsed) ? parsed.filter(Boolean) : [value];
+    const parsed = parseJson(value);
+    if (!Array.isArray(parsed)) return [value];
+    const strings = parsed.filter(isJsonString);
+    return strings.length === parsed.length ? strings : [value];
   } catch {
     return [value];
   }
@@ -437,10 +441,15 @@ function scheduledRunIsEligible(run: SupabaseMlbHrBoardRunRow, now: Date): boole
   return (run.run_window === "afternoon" || run.run_window === "manual") && minutes >= 840;
 }
 
+type BoardStatusResult = {
+  status: MlbHrBoardSnapshot["status"];
+  gaps: string[];
+};
+
 function boardStatusForRun(
   run: SupabaseMlbHrBoardRunRow | null,
   now: Date,
-): { status: MlbHrBoardSnapshot["status"]; gaps: string[] } {
+): BoardStatusResult {
   const slateDate = getMlbHrSlateDate(now);
   const beforeBoardOpen = localClock(now).hour < 8;
   if (!run) {
@@ -739,7 +748,7 @@ function buildBoardFromSupabaseRows(
       missingStatcast
         ? `Statcast features unavailable for ${missingStatcast} candidates; those rows use the V1 fallback.`
         : null,
-    ].filter(Boolean) as string[];
+    ].filter((gap): gap is string => Boolean(gap));
   }
 
   const availableModels = Object.keys(models);
@@ -826,6 +835,7 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
   }
 
   try {
+    // SAFETY: The local artifact is produced by the data-core feed contract consumed by this page.
     const payload = JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
     return buildFeedFromPayload(payload, slateDate, targetModel, supabaseConfigGaps());
   } catch {
@@ -889,6 +899,7 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
   }
 
   try {
+    // SAFETY: The local artifact is produced by the data-core feed contract consumed by this page.
     const payload = JSON.parse(await fs.readFile(MLB_HR_PATH, "utf8")) as MlbHomeRunFeed;
     return buildBoardFromPayload(payload, slateDate, supabaseConfigGaps());
   } catch {
@@ -916,6 +927,7 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
 
 export async function getPgaNormalizedMarkets(): Promise<Prediction[]> {
   try {
+    // SAFETY: The local artifact is produced by the PGA pipeline with an optional normalizedMarkets array.
     const payload = JSON.parse(await fs.readFile(PGA_TOURNAMENT_PATH, "utf8")) as {
       normalizedMarkets?: Prediction[];
     };
@@ -927,6 +939,7 @@ export async function getPgaNormalizedMarkets(): Promise<Prediction[]> {
 
 async function readPgaStaticPayload(fallbackGaps: string[] = []): Promise<PgaBoardData> {
   try {
+    // SAFETY: The local artifact is produced by the PGA pipeline and matches the PgaBoardData serving contract.
     const payload = JSON.parse(await fs.readFile(PGA_TOURNAMENT_PATH, "utf8")) as PgaBoardData;
     return {
       ...payload,
@@ -947,7 +960,7 @@ async function readPgaStaticPayload(fallbackGaps: string[] = []): Promise<PgaBoa
   }
 }
 
-function mapSupabasePgaPrediction(row: SupabasePgaPredictionRow): Record<string, unknown> {
+function mapSupabasePgaPrediction(row: SupabasePgaPredictionRow): JsonObject {
   return {
     player: row.player_name,
     player_id: row.player_id,
@@ -1031,14 +1044,14 @@ export async function getPgaBoardData(): Promise<PgaBoardData> {
     mapSupabasePgaMarket(row, "top10", row.top10_prob),
     mapSupabasePgaMarket(row, "top20", row.top20_prob),
     mapSupabasePgaMarket(row, "make_cut", row.make_cut_prob),
-  ]).filter(Boolean) as Prediction[];
+  ]).filter((market): market is Prediction => market !== null);
 
   return {
     ...staticPayload,
     generatedAt,
     dataSource: "supabase_predictions",
     event: {
-      ...(staticPayload.event ?? {}),
+      ...staticPayload.event,
       eventKey: tournament.event_key,
       name: tournament.name,
       season: tournament.season,
@@ -1051,7 +1064,7 @@ export async function getPgaBoardData(): Promise<PgaBoardData> {
     predictions: rows.map(mapSupabasePgaPrediction),
     normalizedMarkets,
     predictionMeta: {
-      ...(staticPayload.predictionMeta ?? {}),
+      ...staticPayload.predictionMeta,
       model_version: rows[0]?.model_version,
       n_players: rows.length,
       prediction_ts: generatedAt,

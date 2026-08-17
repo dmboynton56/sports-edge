@@ -15,6 +15,7 @@ import {
 import { deriveDataQuality } from "@/lib/data/data-quality";
 import { getMlbHomeRunBoardSnapshot } from "@/lib/data/player-markets";
 import { getPerformanceHistory } from "@/lib/data/performance";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatDateTime, formatNumber, formatPct, formatPctFromWhole } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -33,10 +34,10 @@ export default async function Home() {
   const unhealthySources = quality.filter((row) => row.status !== "ok").length + (mlbHr.status === "healthy" ? 0 : 1);
   const backtestRows = history.records.reduce((sum, row) => sum + (row.sampleSize ?? 0), 0);
   const noRoi = history.records
-    .filter((row) => typeof row.roi !== "number")
+    .filter((row) => !isFiniteNumber(row.roi))
     .map((row) => row.sport);
   const lowestCoverage = quality
-    .filter((row) => typeof row.coveragePct === "number")
+    .filter((row) => isFiniteNumber(row.coveragePct))
     .toSorted((a, b) => (a.coveragePct ?? 0) - (b.coveragePct ?? 0))[0];
   const gapSummary = [
     noRoi.length
@@ -146,8 +147,8 @@ export default async function Home() {
                   <TableCell className="hidden sm:table-cell">{record.modelVersion}</TableCell>
                   <TableCell>{record.market}</TableCell>
                   <TableCell className="text-right">{formatNumber(record.sampleSize)}</TableCell>
-                  <TableCell className={typeof roi === "number" ? `figure text-right text-[17px] ${roi < 0 ? "text-destructive" : "text-positive"}` : "text-right text-sm"}>
-                    {typeof roi === "number" ? formatPct(roi) : "No odds history"}
+                  <TableCell className={isFiniteNumber(roi) ? `figure text-right text-[17px] ${roi < 0 ? "text-destructive" : "text-positive"}` : "text-right text-sm"}>
+                    {isFiniteNumber(roi) ? formatPct(roi) : "No odds history"}
                   </TableCell>
                 </TableRow>
               );

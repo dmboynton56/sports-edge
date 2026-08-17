@@ -2,15 +2,16 @@ import SwiftUI
 
 struct MarketRowContent: View {
     let market: EnrichedPick
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
-                    .fill(AppTheme.accent.opacity(0.14))
+                    .fill(theme.accent.opacity(0.14))
                 Image(systemName: market.league.systemImage)
                     .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(AppTheme.accent)
+                    .foregroundStyle(theme.accent)
             }
             .frame(width: 38, height: 38)
 
@@ -36,7 +37,7 @@ struct MarketRowContent: View {
             VStack(alignment: .trailing, spacing: 4) {
                 Text(formattedMarketEdge(market))
                     .font(.subheadline.monospacedDigit().weight(.bold))
-                    .foregroundStyle((market.edge ?? 0) >= 0 ? AppTheme.positive : AppTheme.danger)
+                    .foregroundStyle((market.edge ?? 0) >= 0 ? theme.positive : theme.danger)
                 if market.isTeamMarket {
                     Text(formattedPercent(market.modelProbability))
                         .font(.caption.monospacedDigit())
@@ -57,11 +58,12 @@ struct MarketRowContent: View {
 struct FavoriteButton: View {
     let isFavorite: Bool
     let action: () -> Void
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         Button(action: action) {
             Image(systemName: isFavorite ? "star.fill" : "star")
-                .foregroundStyle(isFavorite ? .yellow : .secondary)
+                .foregroundStyle(isFavorite ? theme.warning : theme.textSecondary)
                 .frame(width: 34, height: 34)
                 .contentShape(Rectangle())
         }
@@ -74,13 +76,14 @@ struct EdgeCard: View {
     let market: EnrichedPick
     let isFavorite: Bool
     let toggleFavorite: () -> Void
+    @Environment(\.appTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top) {
                 Label(market.league.displayName, systemImage: market.league.systemImage)
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(AppTheme.accent)
+                    .foregroundStyle(theme.accent)
                 Spacer()
                 FavoriteButton(isFavorite: isFavorite, action: toggleFavorite)
             }
@@ -97,7 +100,7 @@ struct EdgeCard: View {
                         .foregroundStyle(.secondary)
                     Text(formattedEdge(market.edge))
                         .font(.system(size: 28, weight: .bold, design: .rounded))
-                        .foregroundStyle((market.edge ?? 0) >= 0 ? AppTheme.positive : AppTheme.danger)
+                        .foregroundStyle((market.edge ?? 0) >= 0 ? theme.positive : theme.danger)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 4) {

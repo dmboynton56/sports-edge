@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 type Tone = "warning" | "error" | "info";
 
-const TONE: Record<Tone, { box: string; head: string; body: string }> = {
+const TONE = {
   warning: {
     box: "border-warning/25 bg-warning-soft",
     head: "text-warning",
@@ -18,7 +18,7 @@ const TONE: Record<Tone, { box: string; head: string; body: string }> = {
     head: "text-foreground",
     body: "text-muted-foreground",
   },
-};
+} satisfies Record<Tone, { box: string; head: string; body: string }>;
 
 /**
  * Caveats that qualify the numbers next to them. One box, a short heading,

@@ -7,11 +7,11 @@ import type { StatTone } from "@/components/dashboard/StatTile";
 import { sportColor } from "@/lib/sports";
 import { cn } from "@/lib/utils";
 
-const TONE: Record<StatTone, string> = {
+const TONE = {
   default: "",
   up: "text-positive",
   down: "text-destructive",
-};
+} satisfies Record<StatTone, string>;
 
 export type ChannelChip = { sport: string; label: string; muted?: boolean };
 export type ChannelFigure = { value: string; label: string; tone?: StatTone };

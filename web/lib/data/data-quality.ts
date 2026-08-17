@@ -1,18 +1,19 @@
+import { isFiniteNumber } from "@/lib/data/json";
 import type { DataQuality, PerformanceHistory } from "@/lib/data/types";
 
 function coverageFromSample(sample: Record<string, number | string | null>) {
   const joined =
-    typeof sample.odds_joined_games === "number"
+    isFiniteNumber(sample.odds_joined_games)
       ? sample.odds_joined_games
-      : typeof sample.odds_rows === "number"
+      : isFiniteNumber(sample.odds_rows)
         ? sample.odds_rows
         : null;
   const denominator =
-    typeof sample.completed_games === "number"
+    isFiniteNumber(sample.completed_games)
       ? sample.completed_games
-      : typeof sample.test_games === "number"
+      : isFiniteNumber(sample.test_games)
         ? sample.test_games
-        : typeof sample.bigquery_scored_games === "number"
+        : isFiniteNumber(sample.bigquery_scored_games)
           ? sample.bigquery_scored_games
           : null;
 
@@ -52,7 +53,7 @@ export function deriveDataQuality(history: PerformanceHistory): DataQuality[] {
     rows.unshift({
       source: "OddsPapi validation",
       coveragePct:
-        typeof history.oddspapi.validation_match_rate === "number"
+        isFiniteNumber(history.oddspapi.validation_match_rate)
           ? history.oddspapi.validation_match_rate * 100
           : null,
       missingRows: null,
@@ -63,7 +64,7 @@ export function deriveDataQuality(history: PerformanceHistory): DataQuality[] {
           : [`Validation status: ${history.oddspapi.validation_status ?? "n/a"}`],
       status: ["ok", "pass"].includes(String(history.oddspapi.validation_status).toLowerCase()) ? "ok" : "warning",
       notes:
-        typeof history.oddspapi.cumulative_api_requests === "number"
+        isFiniteNumber(history.oddspapi.cumulative_api_requests)
           ? `${history.oddspapi.cumulative_api_requests} cumulative API requests recorded`
           : undefined,
     });

@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct PerformanceView: View {
+    @Environment(\.appTheme) private var theme
     @StateObject private var viewModel: PerformanceViewModel
 
     init(repository: SportsEdgeRepository) {
@@ -37,7 +38,7 @@ struct PerformanceView: View {
                 FreshnessBanner(envelope: envelope.freshness, gaps: envelope.gaps)
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 10) {
                     MetricTile(label: "Tracked bets", value: totalBets.formatted())
-                    MetricTile(label: "Average ROI", value: averageROI.formatted(.percent.precision(.fractionLength(1))), tint: AppTheme.positive)
+                    MetricTile(label: "Average ROI", value: averageROI.formatted(.percent.precision(.fractionLength(1))), tint: theme.positive)
                 }
 
                 if records.isEmpty {
@@ -69,10 +70,10 @@ struct PerformanceView: View {
                 Spacer()
                 Text(record.productionStatus.capitalized)
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(record.productionStatus == "approved" ? AppTheme.positive : AppTheme.warning)
+                    .foregroundStyle(record.productionStatus == "approved" ? theme.positive : theme.warning)
             }
             HStack(spacing: 10) {
-                MetricTile(label: "ROI", value: record.roi?.formatted(.percent.precision(.fractionLength(1))) ?? "—", tint: AppTheme.positive)
+                MetricTile(label: "ROI", value: record.roi?.formatted(.percent.precision(.fractionLength(1))) ?? "—", tint: theme.positive)
                 MetricTile(label: "Sample", value: record.sampleSize?.formatted() ?? "—")
             }
             DetailMetricRow(label: "Record", value: "\(record.wins ?? 0)-\(record.losses ?? 0)-\(record.pushes ?? 0)")
@@ -82,7 +83,7 @@ struct PerformanceView: View {
                 ForEach(record.gates) { gate in
                     HStack(spacing: 8) {
                         Image(systemName: gate.status == "pass" ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                            .foregroundStyle(gate.status == "pass" ? AppTheme.positive : AppTheme.warning)
+                            .foregroundStyle(gate.status == "pass" ? theme.positive : theme.warning)
                         Text(gate.label)
                             .font(.caption.weight(.semibold))
                         Spacer()

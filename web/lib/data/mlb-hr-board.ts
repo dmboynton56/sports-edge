@@ -111,11 +111,11 @@ export type MlbHrBoardSnapshot = {
 export const MLB_HR_V1_MODEL = "mlb-hr-v1";
 export const MLB_HR_STATCAST_BLEND_MODEL = "mlb-hr-torch-statcast-v1-blend";
 
-const MLB_MODEL_LABELS: Record<string, string> = {
+const MLB_MODEL_LABELS = {
   [MLB_HR_V1_MODEL]: "Random Forest (v1)",
   [MLB_HR_STATCAST_BLEND_MODEL]: "Statcast blend",
-};
+} satisfies Record<string, string>;
 
 export function getMlbHomeRunModelLabel(modelKey: string): string {
-  return MLB_MODEL_LABELS[modelKey] ?? modelKey;
+  return Object.entries(MLB_MODEL_LABELS).find(([candidate]) => candidate === modelKey)?.[1] ?? modelKey;
 }

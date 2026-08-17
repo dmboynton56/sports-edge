@@ -1,4 +1,7 @@
 import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
+import { isFiniteNumber } from "@/lib/data/json";
+
+type EvaluationMetricMap = Record<string, string | number | null | undefined>;
 
 export type EvaluationMetrics = {
   accuracy: number | null;
@@ -16,7 +19,7 @@ export type EvaluationRow = {
   test_start_date: string | null;
   test_end_date: string | null;
   generated_at: string;
-  metrics: Record<string, unknown>;
+  metrics: EvaluationMetricMap;
   status: string;
   displayMetrics: EvaluationMetrics;
 };
@@ -28,16 +31,16 @@ export type EvaluationData = {
 
 type RawEvaluationRow = Omit<EvaluationRow, "displayMetrics">;
 
-function numberMetric(metrics: Record<string, unknown>, names: string[]) {
+function numberMetric(metrics: EvaluationMetricMap, names: string[]) {
   for (const name of names) {
     const value = metrics[name];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (isFiniteNumber(value)) return value;
   }
   return null;
 }
 
 function normalizeRow(row: RawEvaluationRow): EvaluationRow {
-  const metrics = row.metrics && typeof row.metrics === "object" ? row.metrics : {};
+  const metrics = row.metrics;
   return {
     ...row,
     metrics,
@@ -108,8 +111,8 @@ export type ModelEvaluation = {
   evaluationName: string;
   generatedAt: string;
   status: string;
-  metrics: Record<string, unknown>;
-  calibration: Record<string, unknown>;
+  metrics: EvaluationMetricMap;
+  calibration: EvaluationMetricMap;
   artifactRefs: string[];
   notes: string | null;
 };
@@ -125,7 +128,7 @@ export type StrategyBacktest = {
   sampleSize: number | null;
   bets: number | null;
   roi: number | null;
-  metrics: Record<string, unknown>;
+  metrics: EvaluationMetricMap;
 };
 
 export type ModelRegistryEntry = {
@@ -149,8 +152,8 @@ type SupabaseEvalRow = {
   evaluation_name: string;
   generated_at: string;
   status: string;
-  metrics: Record<string, unknown>;
-  calibration: Record<string, unknown>;
+  metrics: EvaluationMetricMap;
+  calibration: EvaluationMetricMap;
   artifact_refs: string[];
   notes: string | null;
 };
@@ -166,7 +169,7 @@ type SupabaseStrategyRow = {
   sample_size: number | null;
   bets: number | null;
   roi: number | null;
-  metrics: Record<string, unknown>;
+  metrics: EvaluationMetricMap;
 };
 
 async function evaluationSupabaseRest<T>(resource: string): Promise<T[] | null> {
@@ -181,6 +184,7 @@ async function evaluationSupabaseRest<T>(resource: string): Promise<T[] | null> 
     next: { revalidate: 300 },
   });
   if (!response.ok) return null;
+  // SAFETY: Each caller supplies a typed Supabase select contract, and the REST endpoint returns an array for that query.
   return (await response.json()) as T[];
 }
 

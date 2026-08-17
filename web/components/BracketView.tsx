@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { regionName } from '@/lib/bracketUtils';
 
 export interface TeamProbabilities {
   R64: number;
@@ -27,10 +28,12 @@ interface BracketViewProps {
   constraints?: { team: string; action: string; round?: number }[];
 }
 
-const ROUND_LABELS = ['Round of 64', 'Round of 32', 'Sweet 16', 'Elite 8', 'Final Four', 'Championship', 'Champion'];
 const ROUND_KEYS: (keyof TeamProbabilities)[] = ['R64', 'R32', 'S16', 'E8', 'F4', 'Championship', 'Winner'];
-const REGION_NAMES: Record<string, string> = { E: 'East', W: 'West', S: 'South', M: 'Midwest' };
 const SEED_ORDER = [1, 16, 8, 9, 5, 12, 4, 13, 6, 11, 3, 14, 7, 10, 2, 15];
+
+function isBracketTeam(team: BracketTeam | undefined): team is BracketTeam {
+  return team !== undefined;
+}
 
 function getConfidenceColor(prob: number): string {
   if (prob >= 0.75) return 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400';
@@ -97,7 +100,7 @@ function RegionBracket({
 }) {
   const sortedTeams = useMemo(() => {
     const seedMap = new Map(teams.map(t => [t.seed, t]));
-    return SEED_ORDER.map(s => seedMap.get(s)).filter(Boolean) as BracketTeam[];
+    return SEED_ORDER.map(s => seedMap.get(s)).filter(isBracketTeam);
   }, [teams]);
 
   const constrainedTeams = new Set(
@@ -107,7 +110,7 @@ function RegionBracket({
   return (
     <div className="flex-1 min-w-[280px]">
       <h3 className="text-sm font-bold text-accent mb-2 uppercase tracking-wider">
-        {REGION_NAMES[region] || region} Region
+        {regionName(region)} Region
       </h3>
       <div className="space-y-0.5">
         {sortedTeams.map((team, i) => (
@@ -230,7 +233,7 @@ export function BracketView({ teams, onTeamClick, selectedTeam, constraints = []
                     </td>
                     <td className="text-center px-2 py-1.5 font-mono text-muted-foreground">{team.seed}</td>
                     <td className="text-center px-2 py-1.5 text-muted-foreground">
-                      {REGION_NAMES[team.region]?.[0] || team.region}
+                      {regionName(team.region)[0] || team.region}
                     </td>
                     {ROUND_KEYS.slice(1).map(key => {
                       const prob = team.probabilities[key];

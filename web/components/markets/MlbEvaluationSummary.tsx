@@ -1,41 +1,47 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { isFiniteNumber, isJsonObject, type JsonObject, type JsonValue } from "@/lib/data/json";
 import type { MlbVerticalSummary } from "@/lib/data/mlb-vertical";
 
-const LABELS: Record<string, string> = {
+const LABELS = {
   moneyline: "Moneyline",
   run_line: "Run line",
   total: "Totals",
   pitcher_strikeouts: "Pitcher strikeouts",
   batter_home_runs: "Batter home runs",
-};
+} satisfies Record<string, string>;
 
-function number(value: unknown, digits = 3) {
-  return typeof value === "number" && Number.isFinite(value) ? value.toFixed(digits) : "—";
+function labelFor(market: string): string {
+  return Object.entries(LABELS).find(([candidate]) => candidate === market)?.[1] ?? market;
 }
 
-function percent(value: unknown) {
-  return typeof value === "number" && Number.isFinite(value) ? `${(value * 100).toFixed(1)}%` : "—";
+function number(value: JsonValue | undefined, digits = 3) {
+  return isFiniteNumber(value) ? value.toFixed(digits) : "—";
 }
 
-function modelMetric(market: string, metrics: Record<string, unknown> | undefined) {
+function percent(value: JsonValue | undefined) {
+  return isFiniteNumber(value) ? `${(value * 100).toFixed(1)}%` : "—";
+}
+
+function modelMetric(market: string, metrics: JsonObject | undefined) {
   if (!metrics) return "—";
   if (market === "total") {
-    const binaryHeads = metrics.binary_heads as Record<string, Record<string, unknown>> | undefined;
-    const head = binaryHeads?.["8.5"]?.model as Record<string, unknown> | undefined;
-    return head?.brier == null ? "—" : `Brier ${number(head.brier)}`;
+    const binaryHeads = isJsonObject(metrics.binary_heads) ? metrics.binary_heads : undefined;
+    const head = isJsonObject(binaryHeads?.["8.5"]) ? binaryHeads["8.5"] : undefined;
+    const model = isJsonObject(head?.model) ? head.model : undefined;
+    return model?.brier == null ? "—" : `Brier ${number(model.brier)}`;
   }
   if (market === "batter_home_runs") {
-    const heldout = metrics.heldout_test as Record<string, unknown> | undefined;
+    const heldout = isJsonObject(metrics.heldout_test) ? metrics.heldout_test : undefined;
     return heldout?.brier == null ? "—" : `Brier ${number(heldout.brier)}`;
   }
   const brier = metrics.brier;
   if (brier != null) return `Brier ${number(brier)}`;
   if (metrics.mae != null) return `MAE ${number(metrics.mae)}`;
-  const regression = metrics.regression as Record<string, unknown> | undefined;
+  const regression = isJsonObject(metrics.regression) ? metrics.regression : undefined;
   if (regression?.mae != null) return `MAE ${number(regression.mae)}`;
-  const test = metrics.test as Record<string, unknown> | undefined;
-  const testModel = test?.model as Record<string, unknown> | undefined;
+  const test = isJsonObject(metrics.test) ? metrics.test : undefined;
+  const testModel = isJsonObject(test?.model) ? test.model : undefined;
   return testModel?.mae == null ? "—" : `MAE ${number(testModel.mae)}`;
 }
 
@@ -89,7 +95,7 @@ export function MlbEvaluationSummary({ summary }: { summary: MlbVerticalSummary 
                 const gateVariant = gate === "candidate" ? "positive" : gate === "blocked" ? "destructive" : "warning";
                 return (
                   <tr key={market} className="border-b border-border/70 last:border-0">
-                    <td className="px-5 py-3 font-semibold">{LABELS[market] ?? market}</td>
+                    <td className="px-5 py-3 font-semibold">{labelFor(market)}</td>
                     <td className="px-5 py-3 tabular-nums">{value.test_rows?.toLocaleString("en-US") ?? "—"}</td>
                     <td className="px-5 py-3">{modelMetric(market, value.metrics)}</td>
                     <td className="px-5 py-3 text-muted-foreground">

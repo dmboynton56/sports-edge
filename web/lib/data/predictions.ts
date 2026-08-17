@@ -1,6 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 
+import { isFiniteNumber } from "@/lib/data/json";
 import type { Prediction } from "@/lib/data/types";
 
 type RawPrediction = Partial<Prediction> & {
@@ -40,20 +41,20 @@ function normalizePrediction(raw: RawPrediction, index: number): Prediction {
     player: raw.player ?? null,
     market: raw.market ?? "n/a",
     book: raw.book ?? "n/a",
-    line: typeof raw.line === "number" ? raw.line : null,
-    price: typeof raw.price === "number" ? raw.price : null,
+    line: isFiniteNumber(raw.line) ? raw.line : null,
+    price: isFiniteNumber(raw.price) ? raw.price : null,
     modelProbability:
-      typeof raw.modelProbability === "number"
+      isFiniteNumber(raw.modelProbability)
         ? raw.modelProbability
         : raw.model_probability ?? null,
     impliedProbability:
-      typeof raw.impliedProbability === "number"
+      isFiniteNumber(raw.impliedProbability)
         ? raw.impliedProbability
         : raw.implied_probability ?? null,
-    edge: typeof raw.edge === "number" ? raw.edge : null,
-    ev: typeof raw.ev === "number" ? raw.ev : null,
-    kelly: typeof raw.kelly === "number" ? raw.kelly : null,
-    confidence: typeof raw.confidence === "number" ? raw.confidence : null,
+    edge: isFiniteNumber(raw.edge) ? raw.edge : null,
+    ev: isFiniteNumber(raw.ev) ? raw.ev : null,
+    kelly: isFiniteNumber(raw.kelly) ? raw.kelly : null,
+    confidence: isFiniteNumber(raw.confidence) ? raw.confidence : null,
     modelVersion: raw.modelVersion ?? raw.model_version ?? "n/a",
     source: raw.source,
     updatedAt: raw.updatedAt ?? null,
@@ -66,7 +67,9 @@ export async function getLocalPredictions(): Promise<{
   gaps: string[];
 }> {
   try {
-    const payload = JSON.parse(await fs.readFile(PREDICTIONS_PATH, "utf8")) as PredictionPayload;
+    const payload: PredictionPayload = JSON.parse(
+      await fs.readFile(PREDICTIONS_PATH, "utf8"),
+    );
     return {
       generatedAt: payload.generatedAt ?? payload.generated_at ?? null,
       predictions: (payload.predictions ?? []).map(normalizePrediction),

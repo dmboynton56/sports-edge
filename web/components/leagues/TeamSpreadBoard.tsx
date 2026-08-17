@@ -55,12 +55,12 @@ function toEnrichedPick(game: TeamSlateGame): EnrichedPick | null {
 }
 
 function FreshnessBadge({ status }: { status: FreshnessStatus }) {
-  const labels: Record<FreshnessStatus, string> = {
+  const labels = {
     fresh: "Fresh",
     stale: "Stale",
     no_prediction: "No pred",
     no_odds: "No odds",
-  };
+  } satisfies Record<FreshnessStatus, string>;
   return <Badge variant={freshnessVariant(status)}>{labels[status]}</Badge>;
 }
 
@@ -71,7 +71,7 @@ export function TeamSpreadBoard({
   feed: TeamSlateFeed;
   detailBasePath: "/nba" | "/nfl";
 }) {
-  const cardPicks = feed.games.map(toEnrichedPick).filter(Boolean) as EnrichedPick[];
+  const cardPicks = feed.games.map(toEnrichedPick).filter((pick): pick is EnrichedPick => pick !== null);
 
   return (
     <div className="space-y-4">

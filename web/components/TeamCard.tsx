@@ -1,6 +1,7 @@
 'use client';
 
 import type { BracketTeam, TeamProbabilities } from './BracketView';
+import { regionName } from '@/lib/bracketUtils';
 
 const ROUND_LABELS: { key: keyof TeamProbabilities; label: string }[] = [
   { key: 'R32', label: 'R32' },
@@ -10,10 +11,6 @@ const ROUND_LABELS: { key: keyof TeamProbabilities; label: string }[] = [
   { key: 'Championship', label: 'Title Game' },
   { key: 'Winner', label: 'Champion' },
 ];
-
-const REGION_NAMES: Record<string, string> = {
-  E: 'East', W: 'West', S: 'South', M: 'Midwest',
-};
 
 function ProbBar({ prob, label, highlight }: { prob: number; label: string; highlight?: boolean }) {
   const pct = prob * 100;
@@ -60,7 +57,7 @@ export function TeamCard({ team, baselineProbabilities, onClose }: TeamCardProps
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            {REGION_NAMES[team.region] || team.region} Region
+            {regionName(team.region)} Region
           </p>
         </div>
         {onClose && (

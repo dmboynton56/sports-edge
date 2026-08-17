@@ -1,3 +1,5 @@
+import type { JsonObject } from "@/lib/data/json";
+
 export const MOBILE_SCHEMA_VERSION = "1.0";
 
 export type MobileLeague = "NBA" | "NFL" | "MLB" | "PGA";
@@ -77,7 +79,7 @@ export type MobileGameExplanation = {
   injuryAdjusted: boolean;
   homeInjuryDelta: number | null;
   awayInjuryDelta: number | null;
-  baseVsAdjusted: Record<string, unknown> | null;
+  baseVsAdjusted: JsonObject | null;
 };
 
 export type MobileGameDetailData = {

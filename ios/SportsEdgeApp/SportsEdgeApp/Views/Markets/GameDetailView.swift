@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct GameDetailView: View {
+    @Environment(\.appTheme) private var theme
     @StateObject private var viewModel: GameDetailViewModel
 
     init(repository: SportsEdgeRepository, route: GameRoute) {
@@ -51,7 +52,7 @@ struct GameDetailView: View {
         VStack(alignment: .leading, spacing: 8) {
             Label("\(market.league.displayName) · \(market.market)", systemImage: market.league.systemImage)
                 .font(.subheadline.weight(.bold))
-                .foregroundStyle(AppTheme.accent)
+                .foregroundStyle(theme.accent)
             Text(market.title)
                 .font(.system(size: 30, weight: .bold, design: .rounded))
             Text(market.subtitle)
@@ -66,7 +67,7 @@ struct GameDetailView: View {
             Text("Prediction")
                 .font(.headline)
             HStack(spacing: 10) {
-                MetricTile(label: "Model edge", value: formattedEdge(market.edge), tint: (market.edge ?? 0) >= 0 ? AppTheme.positive : AppTheme.danger)
+                MetricTile(label: "Model edge", value: formattedEdge(market.edge), tint: (market.edge ?? 0) >= 0 ? theme.positive : theme.danger)
                 MetricTile(label: "Win probability", value: formattedPercent(market.modelProbability))
             }
             DetailMetricRow(label: "Book line", value: market.line?.formatted(.number.precision(.fractionLength(1))) ?? "—")
@@ -77,7 +78,7 @@ struct GameDetailView: View {
                     .font(.caption.weight(.bold))
                     .padding(.horizontal, 9)
                     .padding(.vertical, 5)
-                    .background(AppTheme.accent.opacity(0.14), in: Capsule())
+                    .background(theme.accent.opacity(0.14), in: Capsule())
                 if market.injuryAdjusted {
                     Text("Injury adjusted")
                         .font(.caption.weight(.bold))
@@ -99,7 +100,7 @@ struct GameDetailView: View {
                 if explanation.injuryAdjusted {
                     HStack(spacing: 8) {
                         Image(systemName: "cross.case.fill")
-                            .foregroundStyle(AppTheme.warning)
+                            .foregroundStyle(theme.warning)
                         Text("Injury-adjusted prediction")
                             .font(.subheadline.weight(.semibold))
                     }
@@ -112,11 +113,11 @@ struct GameDetailView: View {
                             Spacer()
                             Text(feature.impact >= 0 ? "+\(feature.impact, specifier: "%.1f")" : "\(feature.impact, specifier: "%.1f")")
                                 .font(.subheadline.monospacedDigit().weight(.bold))
-                                .foregroundStyle(feature.impact >= 0 ? AppTheme.positive : AppTheme.danger)
+                                .foregroundStyle(feature.impact >= 0 ? theme.positive : theme.danger)
                         }
                         GeometryReader { proxy in
                             Capsule()
-                                .fill(feature.impact >= 0 ? AppTheme.positive.opacity(0.68) : AppTheme.danger.opacity(0.68))
+                                .fill(feature.impact >= 0 ? theme.positive.opacity(0.68) : theme.danger.opacity(0.68))
                                 .frame(width: min(proxy.size.width, max(10, abs(feature.impact) * 28)), height: 6)
                         }
                         .frame(height: 6)

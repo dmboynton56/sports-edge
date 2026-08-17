@@ -13,15 +13,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getMlbHrExperimentSummary, type ExperimentMetricSet } from "@/lib/data/mlb-hr-experiment";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatNumber, formatPct } from "@/lib/format";
 
 function formatMetric(value?: number | null, digits = 4) {
-  if (typeof value !== "number" || Number.isNaN(value)) return "pending";
+  if (!isFiniteNumber(value)) return "pending";
   return value.toFixed(digits);
 }
 
 function formatDelta(value?: number | null, digits = 4, lowerIsBetter = true) {
-  if (typeof value !== "number" || Number.isNaN(value)) return "pending";
+  if (!isFiniteNumber(value)) return "pending";
   const good = lowerIsBetter ? value < 0 : value > 0;
   const sign = value > 0 ? "+" : "";
   return `${sign}${value.toFixed(digits)} ${good ? "better" : "worse"}`;

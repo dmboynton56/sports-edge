@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { isJsonObject } from "@/lib/data/json";
 import { ArrowDownUp, Check, ChevronDown, ChevronUp, type LucideIcon, RotateCcw, Settings2, Sparkles, Users, X } from "lucide-react";
 
 import {
@@ -103,6 +104,7 @@ function optimizeLineup(rows: DisplayProjection[], selected: Set<string>, roster
 function readPlannerState() {
   try {
     const raw = window.localStorage.getItem("sports-edge-fantasy-planner-v1");
+    // SAFETY: This localStorage record is written by this component and malformed values fall back to an empty planner state.
     return raw ? JSON.parse(raw) as { scoring?: FantasyScoring; roster?: FantasyRoster; drafted?: string[]; mine?: string[] } : {};
   } catch {
     return {};
@@ -154,6 +156,7 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
       fetch(`/api/fantasy/projections?scope=week&week=${week}`, { signal: controller.signal, cache: "no-store" })
         .then(async (response) => {
           if (!response.ok) throw new Error(`Weekly feed returned ${response.status}.`);
+          // SAFETY: The route returns the typed weekly projection payload owned by this page.
           return response.json() as Promise<{ projections?: FantasyProjection[]; gaps?: string[] }>;
         })
         .then((payload) => {
@@ -163,7 +166,7 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
             gaps: [...new Set([...current.gaps, ...(payload.gaps ?? [])])],
           }));
         })
-        .catch((error: unknown) => {
+        .catch((error) => {
           if (error instanceof DOMException && error.name === "AbortError") return;
           setWeeklyError(error instanceof Error ? error.message : "Unable to load weekly projections.");
         })
@@ -207,12 +210,15 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
   const lineup = useMemo(() => optimizeLineup(rows, mine, roster), [mine, roster, rows]);
   const topByPosition = useMemo(() => POSITIONS.slice(1).map((item) => ({ position: item, row: rows.filter((row) => row.position === item).sort((a, b) => b.displayPoints - a.displayPoints)[0] })).filter((item) => item.row), [rows]);
   const validation = useMemo(() => {
-    const rawTargets = (feed.metrics as { targets?: unknown }).targets;
-    if (!rawTargets || typeof rawTargets !== "object") return null;
-    const checks = Object.values(rawTargets as Record<string, Record<string, { beats_baseline?: boolean }>>).flatMap((group) => Object.values(group));
+    const rawTargets = isJsonObject(feed.metrics.targets) ? feed.metrics.targets : null;
+    if (!rawTargets) return null;
+    const checks = Object.values(rawTargets).flatMap((group) => {
+      if (!isJsonObject(group)) return [];
+      return Object.values(group).filter(isJsonObject);
+    });
     return {
-      holdout: Number((feed.metrics as { holdout_season?: unknown }).holdout_season ?? 0),
-      beats: checks.filter((check) => check.beats_baseline).length,
+      holdout: Number(feed.metrics.holdout_season ?? 0),
+      beats: checks.filter((check) => check.beats_baseline === true).length,
       total: checks.length,
     };
   }, [feed.metrics]);

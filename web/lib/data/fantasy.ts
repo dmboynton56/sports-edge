@@ -1,3 +1,5 @@
+import type { JsonObject } from "@/lib/data/json";
+
 export type FantasyPosition = "QB" | "RB" | "WR" | "TE" | "K" | "DST";
 
 export type FantasyScoring = {
@@ -82,8 +84,8 @@ export type FantasyFeed = {
   defaultScoring: FantasyScoring;
   projections: FantasyProjection[];
   weekly: Record<string, FantasyProjection[]>;
-  adp: Record<string, unknown>[];
-  metrics: Record<string, unknown>;
+  adp: JsonObject[];
+  metrics: JsonObject;
   gaps: string[];
   sources: string[];
   dataSource: "supabase" | "static_json" | "unavailable";
@@ -185,6 +187,7 @@ export function normalizeProjection(row: SupabaseFantasyRow): FantasyProjection 
 }
 
 export function fromStatic(payload: Partial<FantasyFeed>, fallbackGaps: string[]): FantasyFeed {
+  // SAFETY: The checked-in fantasy artifact uses the same row fields as the Supabase projection view.
   const preseason = (payload.projections ?? []).map((row) => normalizeProjection(row as SupabaseFantasyRow));
   const preseasonById = new Map(preseason.map((row) => [row.player_id, row]));
   return {
@@ -197,6 +200,7 @@ export function fromStatic(payload: Partial<FantasyFeed>, fallbackGaps: string[]
     weekly: Object.fromEntries(
       Object.entries(payload.weekly ?? {}).map(([week, rows]) => [
         week,
+        // SAFETY: Weekly rows are generated from the same FantasyProjection schema as preseason rows.
         (rows ?? []).map((row) => normalizeProjection({ ...preseasonById.get(String((row as SupabaseFantasyRow).player_id)), ...row } as SupabaseFantasyRow)),
       ]),
     ),

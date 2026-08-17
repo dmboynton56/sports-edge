@@ -36,6 +36,7 @@ final class AppStore: ObservableObject {
     static let trackedLeaguesKey = "sportsEdge.trackedLeagues"
     static let sortOptionKey = "sportsEdge.sortOption"
     static let favoritesKey = "sportsEdge.favorites"
+    static let themeVariantKey = "sportsEdge.themeVariant"
 
     let repository: SportsEdgeRepository
     private let defaults: UserDefaults
@@ -55,6 +56,9 @@ final class AppStore: ObservableObject {
     @Published var usesFixtureData: Bool {
         didSet { defaults.set(usesFixtureData, forKey: Self.fixtureModeKey); repository.mode = usesFixtureData ? .fixture : .live }
     }
+    @Published var themeVariant: ThemeVariant {
+        didSet { defaults.set(themeVariant.rawValue, forKey: Self.themeVariantKey) }
+    }
 
     init(defaults: UserDefaults = .standard, repository: SportsEdgeRepository? = nil) {
         self.defaults = defaults
@@ -67,6 +71,7 @@ final class AppStore: ObservableObject {
         self.trackedLeagues = storedTracked.isEmpty ? [.nba, .nfl] : Set(storedTracked)
         self.sortOption = MarketSortOption(rawValue: defaults.string(forKey: Self.sortOptionKey) ?? "edge") ?? .edge
         self.favorites = Set((defaults.array(forKey: Self.favoritesKey) as? [String]) ?? [])
+        self.themeVariant = ThemeVariant(rawValue: defaults.string(forKey: Self.themeVariantKey) ?? "") ?? .carbonGreen
     }
 
     func toggleTrackedLeague(_ league: League) {

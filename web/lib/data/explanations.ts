@@ -1,4 +1,5 @@
 import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import type { JsonObject } from "@/lib/data/json";
 
 export type FeatureDriver = {
   feature: string;
@@ -16,7 +17,7 @@ export type GameExplanation = {
   injuryAdjusted: boolean;
   homeInjuryDelta: number | null;
   awayInjuryDelta: number | null;
-  baseVsAdjusted: Record<string, unknown> | null;
+  baseVsAdjusted: JsonObject | null;
 };
 
 type SupabaseExplanationRow = {
@@ -28,7 +29,7 @@ type SupabaseExplanationRow = {
   injury_adjusted: boolean;
   home_injury_delta: number | null;
   away_injury_delta: number | null;
-  base_vs_adjusted: Record<string, unknown> | null;
+  base_vs_adjusted: JsonObject | null;
 };
 
 async function supabaseRest<T>(resource: string): Promise<T[] | null> {
@@ -43,12 +44,14 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
     next: { revalidate: 60 },
   });
   if (!response.ok) return null;
+  // SAFETY: The query selects the SupabaseExplanationRow columns and this endpoint returns an array.
   return (await response.json()) as T[];
 }
 
 function parseTopFeatures(raw: FeatureDriver[] | string): FeatureDriver[] {
   if (Array.isArray(raw)) return raw;
   try {
+    // SAFETY: The database column is written by the explanation pipeline as a FeatureDriver array.
     const parsed = JSON.parse(raw) as FeatureDriver[];
     return Array.isArray(parsed) ? parsed : [];
   } catch {

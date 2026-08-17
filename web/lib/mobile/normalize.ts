@@ -1,4 +1,5 @@
 import type { Prediction } from "@/lib/data/types";
+import { isFiniteNumber } from "@/lib/data/json";
 import { getGameExplanation, type GameExplanation } from "@/lib/data/explanations";
 import { getEvaluationsBundle } from "@/lib/data/evaluations";
 import { getMlbHomeRunFeed } from "@/lib/data/player-markets";
@@ -7,6 +8,16 @@ import { getPerformanceHistory } from "@/lib/data/performance";
 import { getTeamSlateFeed, getTeamSlateGame, type TeamSlateFeed, type TeamSlateGame } from "@/lib/data/team-markets";
 import type { MobileEnvelope, MobileFreshness, MobileFreshnessStatus, MobileGameDetailData, MobileHomeData, MobileInsightsData, MobileLeague, MobileMarket, MobileMarketsData, MobilePerformanceData, MobilePerformanceRecord, MobileSource } from "@/lib/mobile/types";
 import { MOBILE_SCHEMA_VERSION } from "@/lib/mobile/types";
+
+const MOBILE_LEAGUES = { NBA: true, NFL: true, MLB: true, PGA: true } as const;
+
+function isMobileLeague(value: string): value is MobileLeague {
+  return Object.keys(MOBILE_LEAGUES).includes(value);
+}
+
+function toMobileLeague(value: string, fallback: MobileLeague): MobileLeague {
+  return isMobileLeague(value) ? value : fallback;
+}
 
 function unique(values: string[]) {
   return Array.from(new Set(values.filter(Boolean)));
@@ -53,7 +64,7 @@ function teamMarket(game: TeamSlateGame): MobileMarket {
   return {
     id: `${game.league}-${game.gameId}`,
     gameId: game.gameId,
-    league: game.league as MobileLeague,
+    league: toMobileLeague(game.league.toUpperCase(), "NBA"),
     kind: "team_spread",
     title: `${game.awayTeam} @ ${game.homeTeam}`,
     subtitle: game.week != null ? `Week ${game.week}` : game.gameDate ?? "Upcoming game",
@@ -83,7 +94,7 @@ function playerMarket(prediction: Prediction): MobileMarket {
   return {
     id: prediction.id,
     gameId: prediction.gameId,
-    league: prediction.league.toUpperCase() as MobileLeague,
+    league: toMobileLeague(prediction.league.toUpperCase(), "MLB"),
     kind: "player_market",
     title: prediction.subject,
     subtitle: prediction.player ?? prediction.market,
@@ -204,7 +215,7 @@ export async function getMobileGameDetail(league: "NBA" | "NFL", gameId: string)
 function mapExplanation(explanation: GameExplanation) {
   return {
     gameId: explanation.gameId,
-    league: explanation.league as MobileLeague,
+    league: toMobileLeague(explanation.league.toUpperCase(), "NBA"),
     modelVersion: explanation.modelVersion,
     predictionTs: explanation.predictionTs,
     topFeatures: explanation.topFeatures,
@@ -239,11 +250,12 @@ export async function getMobilePerformance() {
     generatedAt: history.generatedAt,
     records: history.records.map(performanceRecord),
   };
+  const source: MobileSource = "static_json";
   return {
     data,
     gaps: history.gaps,
     updatedAt: history.generatedAt,
-    source: "static_json" as MobileSource,
+    source,
   };
 }
 
@@ -302,10 +314,12 @@ export async function getMobileInsights() {
   } as const;
 }
 
-function numberMetric(metrics: Record<string, unknown>, names: string[]) {
+type MetricMap = Record<string, string | number | null | undefined>;
+
+function numberMetric(metrics: MetricMap, names: string[]) {
   for (const name of names) {
     const value = metrics[name];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (isFiniteNumber(value)) return value;
   }
   return null;
 }

@@ -74,6 +74,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
     next: { revalidate: 60 },
   });
   if (!response.ok) return null;
+  // SAFETY: Each caller supplies a typed Supabase select contract, and the REST endpoint returns an array for that query.
   return (await response.json()) as T[];
 }
 

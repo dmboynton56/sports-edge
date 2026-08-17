@@ -9,6 +9,13 @@ export interface SimConstraint {
   round: number;
 }
 
+const ACTIONS = { eliminate: true, advance_to: true } as const;
+type SimAction = keyof typeof ACTIONS;
+
+function isSimAction(value: string): value is SimAction {
+  return Object.keys(ACTIONS).includes(value);
+}
+
 const ROUND_OPTIONS = [
   { value: 0, label: 'Round of 64' },
   { value: 1, label: 'Round of 32' },
@@ -41,7 +48,7 @@ export function SimulationControls({
 }: SimulationControlsProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTeam, setNewTeam] = useState('');
-  const [newAction, setNewAction] = useState<'eliminate' | 'advance_to'>('eliminate');
+  const [newAction, setNewAction] = useState<SimAction>('eliminate');
   const [newRound, setNewRound] = useState(0);
 
   const addConstraint = () => {
@@ -248,7 +255,9 @@ export function SimulationControls({
               <label className="text-[10px] text-muted-foreground">Action</label>
               <select
                 value={newAction}
-                onChange={e => setNewAction(e.target.value as 'eliminate' | 'advance_to')}
+                onChange={e => {
+                  if (isSimAction(e.target.value)) setNewAction(e.target.value);
+                }}
                 className="w-full bg-secondary border border-border rounded px-2 py-1 text-xs"
               >
                 <option value="eliminate">Eliminate in</option>

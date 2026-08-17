@@ -31,6 +31,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { Prediction } from "@/lib/data/types";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatDateTime, formatMaybePctMetric, formatNumber, formatPct } from "@/lib/format";
 import { sportColor } from "@/lib/sports";
 import { cn } from "@/lib/utils";
@@ -45,7 +46,7 @@ type SortKey =
   | "eventTime"
   | "modelVersion";
 
-const sortLabels: Record<SortKey, string> = {
+const sortLabels = {
   sport: "Sport",
   market: "Market",
   book: "Book",
@@ -54,16 +55,18 @@ const sortLabels: Record<SortKey, string> = {
   confidence: "Confidence",
   eventTime: "Start",
   modelVersion: "Model",
-};
+} satisfies Record<SortKey, string>;
 
-function valuesFor(predictions: Prediction[], key: keyof Prediction) {
-  return Array.from(new Set(predictions.map((prediction) => prediction[key]).filter(Boolean))).sort() as string[];
+const SORT_KEYS = ["sport", "eventTime", "market", "book", "edge", "ev", "confidence", "modelVersion"] satisfies SortKey[];
+
+function valuesFor(predictions: Prediction[], key: "sport" | "market" | "book" | "modelVersion") {
+  return Array.from(new Set(predictions.map((prediction) => prediction[key]).filter(Boolean))).sort();
 }
 
 function compare(a: Prediction, b: Prediction, key: SortKey, dir: "asc" | "desc") {
   const sign = dir === "asc" ? 1 : -1;
-  const av = a[key as keyof Prediction];
-  const bv = b[key as keyof Prediction];
+  const av = a[key];
+  const bv = b[key];
 
   if (key === "eventTime") {
     const at = a.eventTime ? new Date(a.eventTime).getTime() : Number.POSITIVE_INFINITY;
@@ -71,8 +74,10 @@ function compare(a: Prediction, b: Prediction, key: SortKey, dir: "asc" | "desc"
     return (at - bt) * sign;
   }
 
-  if (typeof av === "number" || typeof bv === "number") {
-    return (((av as number | null) ?? -Infinity) - ((bv as number | null) ?? -Infinity)) * sign;
+  if (isFiniteNumber(av) || isFiniteNumber(bv)) {
+    const aNumber = isFiniteNumber(av) ? av : -Infinity;
+    const bNumber = isFiniteNumber(bv) ? bv : -Infinity;
+    return (aNumber - bNumber) * sign;
   }
 
   return String(av ?? "").localeCompare(String(bv ?? "")) * sign;
@@ -265,7 +270,7 @@ export function MarketsTable({
         <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              {(["sport", "eventTime", "market", "book", "edge", "ev", "confidence", "modelVersion"] as SortKey[]).map((key) => (
+              {SORT_KEYS.map((key) => (
                 <TableHead key={key}>
                   <Button variant="ghost" size="sm" className="h-7 px-1" onClick={() => toggleSort(key)}>
                     {sortLabels[key]}
