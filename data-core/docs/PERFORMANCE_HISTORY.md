@@ -1,6 +1,6 @@
 # Sports Model Performance History
 
-Generated: 2026-08-10
+Generated: 2026-08-17
 
 | Sport | Version | Season | Market | Sample | Primary metrics | Odds status |
 | --- | --- | --- | --- | --- | --- | --- |
