@@ -516,6 +516,7 @@ export function deriveMlbHrBoardSnapshot(
     .sort((left, right) => (left.rank ?? Number.MAX_SAFE_INTEGER) - (right.rank ?? Number.MAX_SAFE_INTEGER));
   const predictions = rows.map(mapBoardRow);
   const priced = predictions.filter((row) => row.oddsStatus === "ok" || row.oddsStatus === "raw_implied");
+  const missingOdds = predictions.filter((row) => row.oddsStatus === "missing_odds").length;
   return {
     slateDate,
     status: boardStatus.status,
@@ -536,6 +537,11 @@ export function deriveMlbHrBoardSnapshot(
       predictions.length < sourceRows.filter((row) => row.model_version.startsWith(MLB_HR_V1_MODEL)).length
         ? "Rows for games that have started or begin within five minutes are hidden."
         : null,
+      missingOdds && priced.length === 0
+        ? `${missingOdds} candidates do not have a fresh valid sportsbook price. The serving run completed successfully, but upstream odds were unavailable at publication time.`
+        : missingOdds
+          ? `${missingOdds} candidates do not have a fresh valid sportsbook price.`
+          : null,
     ]),
     dataSource: "supabase_board",
     completedAt: run.completed_at,

@@ -272,14 +272,22 @@ export function MlbHomeRunBoard({ snapshot }: { snapshot: MlbHrBoardSnapshot }) 
         </CardContent>
       </Card>
 
-      {snapshot.status === "partial" ? (
+      {snapshot.status === "partial" || (snapshot.counts.candidates > 0 && snapshot.counts.priced === 0) ? (
         <Notice
           tone="warning"
-          title="Partial pricing coverage"
-          items={[
-            `Only ${snapshot.counts.top25Priced} of ${snapshot.counts.top25Eligible || "the eligible top-25"} candidates have fresh prices (${formatPct(snapshot.counts.top25Coverage)} coverage).`,
-            "Model-only rows remain visible for research, but they have no actionable price, edge, EV, or Kelly values.",
-          ]}
+          title={snapshot.counts.priced === 0 ? "No sportsbook prices available" : "Partial pricing coverage"}
+          items={
+            snapshot.counts.priced === 0
+              ? [
+                  `All ${snapshot.counts.candidates} candidates are model-only. The serving pipeline completed successfully, but no valid sportsbook prices were available at publication time.`,
+                  "This usually means the upstream odds provider (OddsPapi) had no fresh MLB HR markets when the board was generated. Model probabilities remain valid for research.",
+                  "Check the data-quality page for OddsPapi validation status and upstream coverage details.",
+                ]
+              : [
+                  `Only ${snapshot.counts.top25Priced} of ${snapshot.counts.top25Eligible || "the eligible top-25"} candidates have fresh prices (${formatPct(snapshot.counts.top25Coverage)} coverage).`,
+                  "Model-only rows remain visible for research, but they have no actionable price, edge, EV, or Kelly values.",
+                ]
+          }
         />
       ) : null}
       {snapshot.gaps.length ? <Notice title="Data-source health" items={snapshot.gaps} /> : null}

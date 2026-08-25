@@ -46,7 +46,11 @@ export default async function Home() {
     lowestCoverage
       ? `Lowest upstream coverage is ${lowestCoverage.sport ?? lowestCoverage.source} at ${formatPctFromWhole(lowestCoverage.coveragePct)}.`
       : null,
-    mlbHr.gaps.length ? `MLB HR board: ${mlbHr.gaps[0]}` : null,
+    mlbHr.counts.candidates > 0 && mlbHr.counts.priced === 0
+      ? `MLB HR board: ${mlbHr.counts.candidates} model-only candidates (no upstream sportsbook prices available).`
+      : mlbHr.gaps.length
+        ? `MLB HR board: ${mlbHr.gaps[0]}`
+        : null,
   ].filter(Boolean).join(" ");
   const marketChips: ChannelChip[] = [{
     sport: "mlb",
