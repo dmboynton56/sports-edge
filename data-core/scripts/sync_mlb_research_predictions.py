@@ -17,6 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 from supabase import Client, create_client
+import psycopg
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -26,6 +27,7 @@ from src.pipeline.mlb_research_markets import (
     load_mlb_totals_v1,
     score_research_markets_for_date,
 )
+from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MONEYLINE_MODEL = ROOT / "models" / "mlb_winner_model_v3.pkl"
@@ -55,11 +57,81 @@ def _prediction_id(game_pk: int, market: str, model_version: str) -> str:
     return hashlib.sha256(payload.encode()).hexdigest()[:16]
 
 
-def _build_moneyline_rows(df: pd.DataFrame, as_of_ts: datetime) -> list[dict]:
+def _fetch_latest_odds(conn) -> dict[tuple[int, str], dict]:
+    """Fetch latest odds snapshot for each game_pk and market.
+    
+    Returns a dict keyed by (game_pk, market) with odds data.
+    Market names: 'moneyline', 'run_line', 'total'
+    """
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            WITH latest_odds AS (
+                SELECT DISTINCT ON (game_id, market)
+                    game_id,
+                    book,
+                    market,
+                    line,
+                    price,
+                    metadata,
+                    snapshot_ts
+                FROM odds_snapshots
+                WHERE game_id LIKE 'MLB_%'
+                  AND market IN ('moneyline', 'run_line', 'total')
+                  AND snapshot_ts >= NOW() - INTERVAL '24 hours'
+                ORDER BY game_id, market, snapshot_ts DESC
+            )
+            SELECT 
+                game_id,
+                market,
+                book,
+                line,
+                price,
+                metadata,
+                snapshot_ts
+            FROM latest_odds
+            """
+        )
+        rows = cur.fetchall()
+    
+    odds_map = {}
+    for row in rows:
+        game_id, market, book, line, price, metadata, snapshot_ts = row
+        game_pk = int(game_id.replace("MLB_", ""))
+        
+        if (game_pk, market) not in odds_map:
+            odds_map[(game_pk, market)] = {
+                "book": book,
+                "line": float(line) if line is not None else None,
+                "price": int(price) if price is not None else None,
+                "metadata": metadata or {},
+                "snapshot_ts": snapshot_ts,
+            }
+    
+    return odds_map
+
+
+def _build_moneyline_rows(df: pd.DataFrame, as_of_ts: datetime, odds_map: dict) -> list[dict]:
     """Transform moneyline DataFrame into Supabase row format."""
     rows = []
     for _, row in df.iterrows():
         game_pk = int(row["game_pk"])
+        odds = odds_map.get((game_pk, "moneyline"))
+        
+        # Determine odds status
+        if odds and odds["price"] is not None:
+            odds_status = "ok"
+            odds_snapshot_ts = odds["snapshot_ts"].isoformat() if odds["snapshot_ts"] else None
+            best_book = odds["book"]
+            home_price = float(odds["price"])
+            away_price = float(odds["metadata"].get("away_price")) if odds["metadata"].get("away_price") else None
+        else:
+            odds_status = "missing_odds"
+            odds_snapshot_ts = None
+            best_book = None
+            home_price = None
+            away_price = None
+        
         rows.append(
             {
                 "prediction_id": _prediction_id(game_pk, "moneyline", "v3"),
@@ -78,17 +150,38 @@ def _build_moneyline_rows(df: pd.DataFrame, as_of_ts: datetime) -> list[dict]:
                 "as_of_ts": as_of_ts.isoformat(),
                 "home_win_prob": float(row["home_win_prob"]),
                 "away_win_prob": float(row["away_win_prob"]),
-                "odds_status": "missing_odds",  # No odds integration yet
+                "odds_status": odds_status,
+                "odds_snapshot_ts": odds_snapshot_ts,
+                "best_book": best_book,
+                "home_price": home_price,
+                "away_price": away_price,
             }
         )
     return rows
 
 
-def _build_runline_rows(df: pd.DataFrame, as_of_ts: datetime) -> list[dict]:
+def _build_runline_rows(df: pd.DataFrame, as_of_ts: datetime, odds_map: dict) -> list[dict]:
     """Transform run-line DataFrame into Supabase row format."""
     rows = []
     for _, row in df.iterrows():
         game_pk = int(row["game_pk"])
+        odds = odds_map.get((game_pk, "run_line"))
+        
+        # Determine odds status
+        if odds and odds["price"] is not None and odds["line"] is not None:
+            odds_status = "ok"
+            odds_snapshot_ts = odds["snapshot_ts"].isoformat() if odds["snapshot_ts"] else None
+            best_book = odds["book"]
+            # Assume home is -1.5; price is for home
+            home_runline_price = float(odds["price"])
+            away_runline_price = float(odds["metadata"].get("away_price")) if odds["metadata"].get("away_price") else None
+        else:
+            odds_status = "missing_odds"
+            odds_snapshot_ts = None
+            best_book = None
+            home_runline_price = None
+            away_runline_price = None
+        
         rows.append(
             {
                 "prediction_id": _prediction_id(game_pk, "run_line", "v1"),
@@ -107,17 +200,39 @@ def _build_runline_rows(df: pd.DataFrame, as_of_ts: datetime) -> list[dict]:
                 "as_of_ts": as_of_ts.isoformat(),
                 "p_home_cover_15": float(row["p_home_cover_15"]),
                 "p_away_cover_plus_15": float(row["p_away_cover_plus_15"]),
-                "odds_status": "missing_odds",
+                "odds_status": odds_status,
+                "odds_snapshot_ts": odds_snapshot_ts,
+                "best_book": best_book,
+                "home_runline_price": home_runline_price,
+                "away_runline_price": away_runline_price,
             }
         )
     return rows
 
 
-def _build_totals_rows(df: pd.DataFrame, as_of_ts: datetime) -> list[dict]:
+def _build_totals_rows(df: pd.DataFrame, as_of_ts: datetime, odds_map: dict) -> list[dict]:
     """Transform totals DataFrame into Supabase row format."""
     rows = []
     for _, row in df.iterrows():
         game_pk = int(row["game_pk"])
+        odds = odds_map.get((game_pk, "total"))
+        
+        # Determine odds status
+        if odds and odds["price"] is not None and odds["line"] is not None:
+            odds_status = "ok"
+            odds_snapshot_ts = odds["snapshot_ts"].isoformat() if odds["snapshot_ts"] else None
+            best_book = odds["book"]
+            total_line = float(odds["line"])
+            over_price = float(odds["price"])  # price is for over
+            under_price = float(odds["metadata"].get("under_price")) if odds["metadata"].get("under_price") else None
+        else:
+            odds_status = "missing_odds"
+            odds_snapshot_ts = None
+            best_book = None
+            total_line = None
+            over_price = None
+            under_price = None
+        
         rows.append(
             {
                 "prediction_id": _prediction_id(game_pk, "total", "v1"),
@@ -137,7 +252,12 @@ def _build_totals_rows(df: pd.DataFrame, as_of_ts: datetime) -> list[dict]:
                 "predicted_total": float(row["predicted_total"]),
                 "p_over_8_5": float(row["p_over_8_5"]),
                 "p_over_9_5": float(row["p_over_9_5"]),
-                "odds_status": "missing_odds",
+                "odds_status": odds_status,
+                "odds_snapshot_ts": odds_snapshot_ts,
+                "best_book": best_book,
+                "total_line": total_line,
+                "over_price": over_price,
+                "under_price": under_price,
             }
         )
     return rows
@@ -176,15 +296,39 @@ def main() -> None:
         min_prior_games=args.min_prior_games,
     )
 
-    moneyline_rows = _build_moneyline_rows(result.moneyline, as_of_ts)
-    runline_rows = _build_runline_rows(result.run_line, as_of_ts)
-    totals_rows = _build_totals_rows(result.totals, as_of_ts)
+    # Fetch latest odds from Supabase
+    creds = load_supabase_credentials()
+    pg_conn = create_pg_connection(
+        supabase_url=creds["url"],
+        password=creds["db_password"],
+        host_override=creds.get("db_host"),
+        port=creds["db_port"],
+        database=creds["db_name"],
+        user=creds["db_user"],
+    )
+    
+    try:
+        print("Fetching latest odds from Supabase...")
+        odds_map = _fetch_latest_odds(pg_conn)
+        print(f"Fetched odds for {len(odds_map)} (game_pk, market) pairs")
+    finally:
+        pg_conn.close()
+
+    moneyline_rows = _build_moneyline_rows(result.moneyline, as_of_ts, odds_map)
+    runline_rows = _build_runline_rows(result.run_line, as_of_ts, odds_map)
+    totals_rows = _build_totals_rows(result.totals, as_of_ts, odds_map)
 
     all_rows = moneyline_rows + runline_rows + totals_rows
+    
+    # Count rows with odds
+    ml_with_odds = sum(1 for r in moneyline_rows if r["odds_status"] == "ok")
+    rl_with_odds = sum(1 for r in runline_rows if r["odds_status"] == "ok")
+    tot_with_odds = sum(1 for r in totals_rows if r["odds_status"] == "ok")
+    
     print(f"\nPrepared {len(all_rows)} research prediction rows:")
-    print(f"  Moneyline: {len(moneyline_rows)}")
-    print(f"  Run-line: {len(runline_rows)}")
-    print(f"  Totals: {len(totals_rows)}")
+    print(f"  Moneyline: {len(moneyline_rows)} ({ml_with_odds} with odds)")
+    print(f"  Run-line: {len(runline_rows)} ({rl_with_odds} with odds)")
+    print(f"  Totals: {len(totals_rows)} ({tot_with_odds} with odds)")
 
     if args.dry_run:
         print("Dry-run mode: skipping Supabase write.")
