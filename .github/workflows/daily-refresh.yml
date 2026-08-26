@@ -216,8 +216,10 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
           python scripts/apply_supabase_sql_files.py sql/019_mlb_research_predictions.sql
+          python scripts/fetch_mlb_game_odds.py --date "${{ steps.plan.outputs.anchor_date }}" || echo "Warning: MLB odds fetch failed; predictions will be model-only"
           python scripts/sync_mlb_research_predictions.py --date "${{ steps.plan.outputs.anchor_date }}" --season "${{ steps.plan.outputs.mlb_season }}"
 
       - name: Refresh Statcast cache for MLB HR blend
