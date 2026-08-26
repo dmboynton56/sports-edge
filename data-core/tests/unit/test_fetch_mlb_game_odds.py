@@ -15,22 +15,25 @@ if str(SCRIPTS) not in sys.path:
     sys.path.insert(0, str(SCRIPTS))
 
 import fetch_mlb_game_odds as odds_fetcher
+from src.utils.team_codes import canonical_mlb_abbr
 
 
-def test_get_team_abbr_full_names():
+def test_canonical_mlb_abbr_full_names():
     """Test team abbreviation resolution from full names."""
-    assert odds_fetcher.get_team_abbr("New York Yankees") == "NYY"
-    assert odds_fetcher.get_team_abbr("Los Angeles Dodgers") == "LAD"
-    assert odds_fetcher.get_team_abbr("Boston Red Sox") == "BOS"
-    assert odds_fetcher.get_team_abbr("Chicago Cubs") == "CHC"
-    assert odds_fetcher.get_team_abbr("San Francisco Giants") == "SF"
+    assert canonical_mlb_abbr("New York Yankees") == "NYY"
+    assert canonical_mlb_abbr("Los Angeles Dodgers") == "LAD"
+    assert canonical_mlb_abbr("Boston Red Sox") == "BOS"
+    assert canonical_mlb_abbr("Chicago Cubs") == "CHC"
+    assert canonical_mlb_abbr("San Francisco Giants") == "SF"
+    assert canonical_mlb_abbr("Oakland Athletics") == "OAK"
 
 
-def test_get_team_abbr_already_abbr():
+def test_canonical_mlb_abbr_already_abbr():
     """Test that abbreviations pass through."""
-    assert odds_fetcher.get_team_abbr("NYY") == "NYY"
-    assert odds_fetcher.get_team_abbr("LAD") == "LAD"
-    assert odds_fetcher.get_team_abbr("BOS") == "BOS"
+    assert canonical_mlb_abbr("NYY") == "NYY"
+    assert canonical_mlb_abbr("LAD") == "LAD"
+    assert canonical_mlb_abbr("BOS") == "BOS"
+    assert canonical_mlb_abbr("OAK") == "OAK"
 
 
 def test_match_game_exact():
@@ -63,6 +66,33 @@ def test_match_game_exact():
     assert game_pk == 12345
     assert home_abbr == "NYY"
     assert away_abbr == "BOS"
+
+
+def test_match_game_with_athletics():
+    """Test Oakland Athletics matching (ATH vs OAK)."""
+    schedule = pd.DataFrame(
+        [
+            {
+                "game_pk": 12345,
+                "game_date": pd.to_datetime("2026-08-26").date(),
+                "home_team": "OAK",
+                "away_team": "TEX",
+            }
+        ]
+    )
+
+    # Odds API may use "Oakland Athletics"
+    event = {
+        "id": "test_event_1",
+        "home_team": "Oakland Athletics",
+        "away_team": "Texas Rangers",
+        "commence_time": "2026-08-26T19:00:00Z",
+    }
+
+    game_pk, home_abbr, away_abbr = odds_fetcher.match_game(event, schedule)
+    assert game_pk == 12345
+    assert home_abbr == "OAK"
+    assert away_abbr == "TEX"
 
 
 def test_match_game_fuzzy_date():
@@ -137,15 +167,21 @@ def test_select_best_bookmaker():
     assert best["key"] == "bovada"  # First available
 
 
-def test_extract_moneyline():
-    """Test moneyline extraction."""
+def test_extract_moneyline_realistic_payload():
+    """Test moneyline extraction with realistic Odds API payload.
+    
+    In real payloads, bookmaker does NOT have home_team/away_team keys.
+    Team names are on the event, not on bookmaker.
+    """
+    # Realistic bookmaker object (no home_team/away_team)
     bookmaker = {
         "key": "draftkings",
-        "home_team": "New York Yankees",
-        "away_team": "Boston Red Sox",
+        "title": "DraftKings",
+        "last_update": "2026-08-26T13:00:00Z",
         "markets": [
             {
                 "key": "h2h",
+                "last_update": "2026-08-26T13:00:00Z",
                 "outcomes": [
                     {"name": "New York Yankees", "price": -150},
                     {"name": "Boston Red Sox", "price": 130},
@@ -154,21 +190,29 @@ def test_extract_moneyline():
         ],
     }
 
-    home_price, away_price, book_key = odds_fetcher.extract_moneyline(bookmaker)
+    # Team names come from the event
+    home_team = "New York Yankees"
+    away_team = "Boston Red Sox"
+
+    home_price, away_price, book_key = odds_fetcher.extract_moneyline(
+        bookmaker, home_team, away_team
+    )
     assert home_price == -150
     assert away_price == 130
     assert book_key == "draftkings"
 
 
-def test_extract_runline():
-    """Test run-line extraction."""
+def test_extract_runline_realistic_payload():
+    """Test run-line extraction with realistic Odds API payload."""
+    # Realistic bookmaker object (no home_team/away_team)
     bookmaker = {
         "key": "fanduel",
-        "home_team": "New York Yankees",
-        "away_team": "Boston Red Sox",
+        "title": "FanDuel",
+        "last_update": "2026-08-26T13:00:00Z",
         "markets": [
             {
                 "key": "spreads",
+                "last_update": "2026-08-26T13:00:00Z",
                 "outcomes": [
                     {"name": "New York Yankees", "point": -1.5, "price": -120},
                     {"name": "Boston Red Sox", "point": 1.5, "price": 100},
@@ -177,7 +221,13 @@ def test_extract_runline():
         ],
     }
 
-    home_line, home_price, away_price, book_key = odds_fetcher.extract_runline(bookmaker)
+    # Team names come from the event
+    home_team = "New York Yankees"
+    away_team = "Boston Red Sox"
+
+    home_line, home_price, away_price, book_key = odds_fetcher.extract_runline(
+        bookmaker, home_team, away_team
+    )
     assert home_line == -1.5
     assert home_price == -120
     assert away_price == 100
@@ -204,3 +254,28 @@ def test_extract_totals():
     assert over_price == -110
     assert under_price == -110
     assert book_key == "betmgm"
+
+
+def test_extract_moneyline_returns_none_when_missing():
+    """Test extract_moneyline returns None when team names don't match."""
+    bookmaker = {
+        "key": "draftkings",
+        "markets": [
+            {
+                "key": "h2h",
+                "outcomes": [
+                    {"name": "Team A", "price": -150},
+                    {"name": "Team B", "price": 130},
+                ],
+            }
+        ],
+    }
+
+    # Wrong team names
+    home_price, away_price, book_key = odds_fetcher.extract_moneyline(
+        bookmaker, "Wrong Home", "Wrong Away"
+    )
+    assert home_price is None
+    assert away_price is None
+    assert book_key == "draftkings"  # Still returns book key
+

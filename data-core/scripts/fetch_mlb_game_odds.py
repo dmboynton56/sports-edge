@@ -56,76 +56,6 @@ def normalize_team(team_name: str) -> str:
     return re.sub(r"[^a-z0-9]", "", team_name.lower())
 
 
-def get_team_abbr(team_name: str) -> str | None:
-    """Get MLB team abbreviation from full name or abbreviation."""
-    abbr = canonical_mlb_abbr(team_name)
-    if abbr:
-        return abbr
-
-    # Try fuzzy matching common patterns
-    normalized = normalize_team(team_name)
-    mapping = {
-        "arizona": "ARI",
-        "diamondbacks": "ARI",
-        "atlanta": "ATL",
-        "braves": "ATL",
-        "baltimore": "BAL",
-        "orioles": "BAL",
-        "boston": "BOS",
-        "redsox": "BOS",
-        "chicago": None,  # ambiguous
-        "cubs": "CHC",
-        "whitesox": "CHW",
-        "cincinnati": "CIN",
-        "reds": "CIN",
-        "cleveland": "CLE",
-        "guardians": "CLE",
-        "colorado": "COL",
-        "rockies": "COL",
-        "detroit": "DET",
-        "tigers": "DET",
-        "houston": "HOU",
-        "astros": "HOU",
-        "kansascity": "KC",
-        "royals": "KC",
-        "losangeles": None,  # ambiguous
-        "angels": "LAA",
-        "dodgers": "LAD",
-        "miami": "MIA",
-        "marlins": "MIA",
-        "milwaukee": "MIL",
-        "brewers": "MIL",
-        "minnesota": "MIN",
-        "twins": "MIN",
-        "newyork": None,  # ambiguous
-        "mets": "NYM",
-        "yankees": "NYY",
-        "oakland": "OAK",
-        "athletics": "OAK",
-        "philadelphia": "PHI",
-        "phillies": "PHI",
-        "pittsburgh": "PIT",
-        "pirates": "PIT",
-        "sandiego": "SD",
-        "padres": "SD",
-        "sanfrancisco": "SF",
-        "giants": "SF",
-        "seattle": "SEA",
-        "mariners": "SEA",
-        "stlouis": "STL",
-        "cardinals": "STL",
-        "tampabay": "TB",
-        "rays": "TB",
-        "texas": "TEX",
-        "rangers": "TEX",
-        "toronto": "TOR",
-        "bluejays": "TOR",
-        "washington": "WSH",
-        "nationals": "WSH",
-    }
-    return mapping.get(normalized)
-
-
 def fetch_mlb_odds(api_key: str, markets: list[str] | None = None) -> list[dict[str, Any]]:
     """Fetch live MLB odds from The Odds API."""
     if markets is None:
@@ -152,22 +82,34 @@ def fetch_mlb_odds(api_key: str, markets: list[str] | None = None) -> list[dict[
 def match_game(
     event: dict[str, Any], schedule: pd.DataFrame
 ) -> tuple[int | None, str | None, str | None]:
-    """Match Odds API event to game_pk from schedule."""
+    """Match Odds API event to game_pk from schedule.
+    
+    Args:
+        event: Odds API event with home_team, away_team, commence_time
+        schedule: DataFrame with game_pk, game_date, home_team, away_team
+        
+    Returns:
+        (game_pk, home_abbr, away_abbr) or (None, home_abbr, away_abbr) if no match
+    """
     home_raw = event.get("home_team", "")
     away_raw = event.get("away_team", "")
-    home_abbr = get_team_abbr(home_raw)
-    away_abbr = get_team_abbr(away_raw)
+    home_abbr = canonical_mlb_abbr(home_raw)
+    away_abbr = canonical_mlb_abbr(away_raw)
 
     if not home_abbr or not away_abbr:
         LOGGER.warning(f"Could not resolve teams: {away_raw} @ {home_raw}")
         return None, None, None
 
+    # Convert commence_time to date for matching
     event_time = pd.to_datetime(event["commence_time"])
     event_date = event_time.date()
 
+    # Ensure schedule game_date is date type for comparison
+    schedule_dates = pd.to_datetime(schedule["game_date"]).dt.date
+
     # Try exact date + team match
     matches = schedule[
-        (schedule["game_date"] == event_date)
+        (schedule_dates == event_date)
         & (schedule["home_team"] == home_abbr)
         & (schedule["away_team"] == away_abbr)
     ]
@@ -179,7 +121,7 @@ def match_game(
     for offset in [-1, 1]:
         fuzzy_date = event_date + pd.Timedelta(days=offset)
         matches = schedule[
-            (schedule["game_date"] == fuzzy_date)
+            (schedule_dates == fuzzy_date)
             & (schedule["home_team"] == home_abbr)
             & (schedule["away_team"] == away_abbr)
         ]
@@ -206,15 +148,23 @@ def select_best_bookmaker(bookmakers: list[dict[str, Any]]) -> dict[str, Any] | 
     return bookmakers[0] if bookmakers else None
 
 
-def extract_moneyline(bookmaker: dict[str, Any]) -> tuple[int | None, int | None, str | None]:
-    """Extract home/away moneyline prices."""
+def extract_moneyline(
+    bookmaker: dict[str, Any], home_team: str, away_team: str
+) -> tuple[int | None, int | None, str | None]:
+    """Extract home/away moneyline prices.
+    
+    Args:
+        bookmaker: Bookmaker object from Odds API
+        home_team: Home team name from event (e.g., "New York Yankees")
+        away_team: Away team name from event
+    """
     market = next((m for m in bookmaker.get("markets", []) if m["key"] == "h2h"), None)
     if not market or len(market.get("outcomes", [])) < 2:
         return None, None, None
 
     outcomes = market["outcomes"]
-    home = next((o for o in outcomes if o.get("name") == bookmaker.get("home_team")), None)
-    away = next((o for o in outcomes if o.get("name") == bookmaker.get("away_team")), None)
+    home = next((o for o in outcomes if o.get("name") == home_team), None)
+    away = next((o for o in outcomes if o.get("name") == away_team), None)
 
     home_price = int(home["price"]) if home and home.get("price") is not None else None
     away_price = int(away["price"]) if away and away.get("price") is not None else None
@@ -224,16 +174,22 @@ def extract_moneyline(bookmaker: dict[str, Any]) -> tuple[int | None, int | None
 
 
 def extract_runline(
-    bookmaker: dict[str, Any],
+    bookmaker: dict[str, Any], home_team: str, away_team: str
 ) -> tuple[float | None, int | None, int | None, str | None]:
-    """Extract run-line (spread) for home team."""
+    """Extract run-line (spread) for home team.
+    
+    Args:
+        bookmaker: Bookmaker object from Odds API
+        home_team: Home team name from event (e.g., "New York Yankees")
+        away_team: Away team name from event
+    """
     market = next((m for m in bookmaker.get("markets", []) if m["key"] == "spreads"), None)
     if not market or len(market.get("outcomes", [])) < 2:
         return None, None, None, None
 
     outcomes = market["outcomes"]
-    home = next((o for o in outcomes if o.get("name") == bookmaker.get("home_team")), None)
-    away = next((o for o in outcomes if o.get("name") == bookmaker.get("away_team")), None)
+    home = next((o for o in outcomes if o.get("name") == home_team), None)
+    away = next((o for o in outcomes if o.get("name") == away_team), None)
 
     if not home or not away:
         return None, None, None, None
@@ -297,10 +253,14 @@ def sync_event_odds(
         return result
 
     game_id = f"MLB_{game_pk}"
+    
+    # Extract event-level team names for matching outcomes
+    event_home_team = event.get("home_team", "")
+    event_away_team = event.get("away_team", "")
 
     with conn.cursor() as cur:
         # Moneyline
-        home_ml, away_ml, ml_book = extract_moneyline(best)
+        home_ml, away_ml, ml_book = extract_moneyline(best, event_home_team, event_away_team)
         if home_ml is not None and away_ml is not None:
             cur.execute(
                 """
@@ -318,7 +278,9 @@ def sync_event_odds(
             result.moneyline_synced = 1
 
         # Run-line
-        rl_line, rl_home_price, rl_away_price, rl_book = extract_runline(best)
+        rl_line, rl_home_price, rl_away_price, rl_book = extract_runline(
+            best, event_home_team, event_away_team
+        )
         if rl_line is not None and rl_home_price is not None:
             cur.execute(
                 """
