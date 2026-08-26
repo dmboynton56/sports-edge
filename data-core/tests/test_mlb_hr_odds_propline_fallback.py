@@ -40,8 +40,8 @@ def test_match_events_to_schedule_by_teams_and_time():
             "game_pk": [123456],
             "game_date": ["2026-08-26"],
             "game_datetime": ["2026-08-26T19:05:00Z"],
-            "home_team": ["LAD"],
-            "away_team": ["NYY"],
+            "home_team": ["Los Angeles Dodgers"],
+            "away_team": ["New York Yankees"],
             "home_team_abbr": ["LAD"],
             "away_team_abbr": ["NYY"],
         }
@@ -66,8 +66,8 @@ def test_match_events_no_schedule_match():
             "game_pk": [999999],
             "game_date": ["2026-08-27"],
             "game_datetime": ["2026-08-27T19:05:00Z"],
-            "home_team": ["SF"],
-            "away_team": ["SD"],
+            "home_team": ["San Francisco Giants"],
+            "away_team": ["San Diego Padres"],
             "home_team_abbr": ["SF"],
             "away_team_abbr": ["SD"],
         }
@@ -123,8 +123,8 @@ def test_fetch_day_hr_odds_sets_provider_field(mock_fetch_event, mock_fetch_even
             "game_pk": [123456],
             "game_date": ["2026-08-26"],
             "game_datetime": ["2026-08-26T19:05:00Z"],
-            "home_team": ["LAD"],
-            "away_team": ["NYY"],
+            "home_team": ["Los Angeles Dodgers"],
+            "away_team": ["New York Yankees"],
             "home_team_abbr": ["LAD"],
             "away_team_abbr": ["NYY"],
         }
@@ -142,8 +142,8 @@ def test_fetch_day_hr_odds_sets_provider_field(mock_fetch_event, mock_fetch_even
     assert odds.iloc[0]["provider"] == "the_odds_api"
 
 
-@patch("src.data.propline_client.fetch_propline_mlb_events")
-@patch("src.data.propline_client.fetch_propline_event_odds")
+@patch("src.data.mlb_hr_odds_fetcher.fetch_propline_mlb_events")
+@patch("src.data.mlb_hr_odds_fetcher.fetch_propline_event_odds")
 def test_fetch_day_hr_odds_propline_sets_provider_field(mock_fetch_event, mock_fetch_events):
     """Test that fetch_day_hr_odds_propline sets provider='propline' in audit and rows."""
     mock_fetch_events.return_value = [
@@ -181,8 +181,8 @@ def test_fetch_day_hr_odds_propline_sets_provider_field(mock_fetch_event, mock_f
             "game_pk": [654321],
             "game_date": ["2026-08-26"],
             "game_datetime": ["2026-08-26T19:05:00Z"],
-            "home_team": ["LAD"],
-            "away_team": ["NYY"],
+            "home_team": ["Los Angeles Dodgers"],
+            "away_team": ["New York Yankees"],
             "home_team_abbr": ["LAD"],
             "away_team_abbr": ["NYY"],
         }
