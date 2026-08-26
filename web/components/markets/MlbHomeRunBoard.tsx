@@ -49,62 +49,15 @@ function StatusBadge({ status }: { status: MlbHrBoardSnapshot["status"] }) {
   return <Badge variant={variant}>{label}</Badge>;
 }
 
-function BoardMetrics({ snapshot }: { snapshot: MlbHrBoardSnapshot }) {
-  return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-      <MetricCard
-        title="Candidates"
-        value={formatNumber(snapshot.counts.candidates)}
-        detail="all eligible model rows"
-        icon={Activity}
-        tone={snapshot.counts.candidates ? "accent" : "warning"}
-      />
-      <MetricCard
-        title="Priced"
-        value={formatNumber(snapshot.counts.priced)}
-        detail="fresh sportsbook snapshots"
-        icon={DollarSign}
-        tone={snapshot.counts.priced ? "accent" : "warning"}
-      />
-      <MetricCard
-        title="Top-25 coverage"
-        value={formatPct(snapshot.counts.top25Coverage)}
-        detail={
-          snapshot.counts.top25Eligible
-            ? `${snapshot.counts.top25Priced} of ${snapshot.counts.top25Eligible} priced`
-            : "No eligible denominator"
-        }
-        icon={ShieldCheck}
-        tone={(snapshot.counts.top25Coverage ?? 0) >= 0.8 ? "accent" : "warning"}
-      />
-      <MetricCard
-        title="Model status"
-        value="Candidate"
-        detail={getMlbHomeRunModelLabel("mlb-hr-v1")}
-        icon={Activity}
-      />
-      <MetricCard
-        title="Run window"
-        value={snapshot.runWindow}
-        detail={snapshot.completedAt ? `completed ${formatDateTime(snapshot.completedAt)}` : "not completed"}
-        icon={Clock3}
-      />
-    </div>
-  );
-}
 
 function PriceCell({ row }: { row: MlbHomeRunPrediction }) {
   if (!isPriced(row)) {
-    return (
-      <div>
-        <div className="font-medium text-muted-foreground">Model only — no sportsbook price</div>
-      </div>
-    );
+    return <span className="tag">model only</span>;
   }
   return (
     <div>
-      <div className="font-mono font-semibold">{formatAmerican(row.bestPrice ?? row.price)}</div>
-      <div className="text-xs text-muted-foreground">{row.bestBook ?? row.book}</div>
+      <div className="num">{formatAmerican(row.bestPrice ?? row.price)}</div>
+      <div className="tag">{row.bestBook ?? row.book}</div>
     </div>
   );
 }
@@ -113,10 +66,10 @@ function EdgeCell({ row }: { row: MlbHomeRunPrediction }) {
   if (!isPriced(row)) return <span className="text-muted-foreground">—</span>;
   return (
     <div>
-      <div className={row.edge != null && row.edge > 0 ? "font-mono font-semibold text-positive" : "font-mono"}>
+      <div className={row.edge != null && row.edge > 0 ? "num text-positive" : "num"}>
         {formatPct(row.edge)}
       </div>
-      <div className="text-xs text-muted-foreground">EV {formatPct(row.ev)}</div>
+      <div className="tag">ev {formatPct(row.ev)}</div>
     </div>
   );
 }
@@ -172,18 +125,31 @@ function CandidateCard({ row }: { row: MlbHomeRunPrediction }) {
 
 function DesktopRows({ rows }: { rows: MlbHomeRunPrediction[] }) {
   return (
-    <div className="hidden overflow-x-auto md:block">
+    <div className="overflow-x-auto">
       <Table className="min-w-[900px]">
         <TableHeader>
           <TableRow>
-            <TableHead className="w-16">Rank</TableHead>
-            <TableHead>Player / game</TableHead>
-            <TableHead>HR probability</TableHead>
-            <TableHead>Price</TableHead>
-            <TableHead>Market probability</TableHead>
-            <TableHead>Edge / EV</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Odds as of</TableHead>
+            <TableHead className="w-12">
+              <span className="tag">rank</span>
+            </TableHead>
+            <TableHead>
+              <span className="tag">player / game</span>
+            </TableHead>
+            <TableHead>
+              <span className="tag">hr probability</span>
+            </TableHead>
+            <TableHead>
+              <span className="tag">price</span>
+            </TableHead>
+            <TableHead>
+              <span className="tag">market prob</span>
+            </TableHead>
+            <TableHead>
+              <span className="tag">edge</span>
+            </TableHead>
+            <TableHead>
+              <span className="tag">odds as of</span>
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -191,19 +157,18 @@ function DesktopRows({ rows }: { rows: MlbHomeRunPrediction[] }) {
             const priced = isPriced(row);
             return (
               <TableRow key={row.id}>
-                <TableCell className="font-mono">{row.rank ?? "—"}</TableCell>
+                <TableCell className="num">{row.rank ?? "—"}</TableCell>
                 <TableCell>
-                  <div className="font-semibold">{row.player}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {row.team ?? "—"} vs {row.opponent ?? "—"} · {row.eventTime ? formatDateTime(row.eventTime) : "time pending"}
+                  <div className="font-medium">{row.player}</div>
+                  <div className="tag">
+                    {row.team ?? "—"} vs {row.opponent ?? "—"}
                   </div>
                 </TableCell>
-                <TableCell className="font-mono font-semibold">{formatPct(row.modelProbability)}</TableCell>
+                <TableCell className="num">{formatPct(row.modelProbability)}</TableCell>
                 <TableCell><PriceCell row={row} /></TableCell>
-                <TableCell className="font-mono">{priced ? formatPct(row.marketProbability ?? row.impliedProbability) : "—"}</TableCell>
+                <TableCell className="num">{priced ? formatPct(row.marketProbability ?? row.impliedProbability) : "—"}</TableCell>
                 <TableCell><EdgeCell row={row} /></TableCell>
-                <TableCell><Badge variant={priced ? "positive" : "missing"}>{priced ? "Priced" : "Model only"}</Badge></TableCell>
-                <TableCell className="text-xs text-muted-foreground">{row.oddsSnapshotTs ? formatDateTime(row.oddsSnapshotTs) : "—"}</TableCell>
+                <TableCell className="tag">{row.oddsSnapshotTs ? formatDateTime(row.oddsSnapshotTs) : "—"}</TableCell>
               </TableRow>
             );
           })}
@@ -235,43 +200,23 @@ export function MlbHomeRunBoard({ snapshot }: { snapshot: MlbHrBoardSnapshot }) 
       ? "The schedule was checked and no games were confirmed for today."
       : "Candidate rows stay hidden until a current, validated Supabase run is available.";
     return (
-      <div className="mt-4 space-y-4">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div><StatusBadge status={snapshot.status} /></div>
-              <span className="text-xs text-muted-foreground">Slate {snapshot.slateDate}</span>
-            </div>
-            <EmptyState className="border-0 bg-transparent px-0 pb-0 pt-8" title={title} description={description} />
-          </CardContent>
-        </Card>
-        <Notice title="Why rows are hidden" items={snapshot.gaps.length ? snapshot.gaps : ["No current board health record was returned."]} />
+      <div className="space-y-4">
+        <div className="border border-border bg-card p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div><StatusBadge status={snapshot.status} /></div>
+            <span className="tag">slate {snapshot.slateDate}</span>
+          </div>
+          <EmptyState className="border-0 bg-transparent px-0 pb-0 pt-8" title={title} description={description} />
+        </div>
+        {snapshot.gaps.length ? (
+          <Notice title="Why rows are hidden" items={snapshot.gaps.length ? snapshot.gaps : ["No current board health record was returned."]} />
+        ) : null}
       </div>
     );
   }
 
   return (
-    <div className="mt-4 space-y-4">
-      <Card>
-        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <CardTitle className="flex flex-wrap items-center gap-2">
-              Trusted MLB HR board <StatusBadge status={snapshot.status} />
-            </CardTitle>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Slate {snapshot.slateDate} · Candidate model · {snapshot.runWindow} refresh
-            </p>
-          </div>
-          <div className="text-left text-xs text-muted-foreground sm:text-right">
-            <div>Predictions {formatDateTime(snapshot.predictionAsOf)}</div>
-            <div>Odds {formatDateTime(snapshot.oddsAsOf)}</div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <BoardMetrics snapshot={snapshot} />
-        </CardContent>
-      </Card>
-
+    <div className="space-y-6">
       {snapshot.status === "partial" || (snapshot.counts.candidates > 0 && snapshot.counts.priced === 0) ? (
         <Notice
           tone="warning"
@@ -292,51 +237,41 @@ export function MlbHomeRunBoard({ snapshot }: { snapshot: MlbHrBoardSnapshot }) 
       ) : null}
       {snapshot.gaps.length ? <Notice title="Data-source health" items={snapshot.gaps} /> : null}
 
-      <Card>
-        <CardHeader className="gap-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <CardTitle>All current candidates</CardTitle>
-              <p className="mt-1 text-sm text-muted-foreground">Rows for games within five minutes of first pitch are hidden.</p>
-            </div>
-            <div className="flex flex-wrap gap-1 rounded-lg bg-secondary p-1" aria-label="Candidate filters">
-              {FILTERS.map((value) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => { setFilter(value); setPage(0); }}
-                  className={`rounded-md px-3 py-1.5 text-xs font-semibold transition-colors ${filter === value ? "bg-card text-foreground shadow-soft" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  {value === "all" ? "All" : value === "priced" ? "Priced" : "Model-only"}
-                </button>
-              ))}
-            </div>
+      <div className="border border-border bg-card">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="tag">filter</div>
+          <div className="flex items-center gap-2">
+            {FILTERS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => { setFilter(value); setPage(0); }}
+                className={`px-2 py-1 text-xs transition-colors ${filter === value ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              >
+                {value === "all" ? "All" : value === "priced" ? "Priced" : "Model-only"}
+              </button>
+            ))}
           </div>
-        </CardHeader>
-        <CardContent className="p-0 sm:px-5 sm:pb-5">
-          {pageRows.length ? (
-            <>
-              <DesktopRows rows={pageRows} />
-              <div className="space-y-3 px-5 md:hidden">
-                {pageRows.map((row) => <CandidateCard key={row.id} row={row} />)}
+        </div>
+        {pageRows.length ? (
+          <>
+            <DesktopRows rows={pageRows} />
+            <div className="flex items-center justify-between border-t border-border px-4 py-3 text-xs">
+              <span className="num">{filtered.length} {filtered.length === 1 ? "candidate" : "candidates"}</span>
+              <div className="flex items-center gap-3">
+                <button type="button" className="tag disabled:opacity-40" disabled={currentPage === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>previous</button>
+                <span className="num">page {currentPage + 1} of {pageCount}</span>
+                <button type="button" className="tag disabled:opacity-40" disabled={currentPage >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>next</button>
               </div>
-              <div className="flex items-center justify-between border-t border-border px-5 py-4 text-sm text-muted-foreground">
-                <span>{filtered.length} {filtered.length === 1 ? "candidate" : "candidates"}</span>
-                <div className="flex items-center gap-2">
-                  <button type="button" className="rounded-md border border-border px-2.5 py-1 disabled:opacity-40" disabled={currentPage === 0} onClick={() => setPage((value) => Math.max(0, value - 1))}>Previous</button>
-                  <span>Page {currentPage + 1} of {pageCount}</span>
-                  <button type="button" className="rounded-md border border-border px-2.5 py-1 disabled:opacity-40" disabled={currentPage >= pageCount - 1} onClick={() => setPage((value) => Math.min(pageCount - 1, value + 1))}>Next</button>
-                </div>
-              </div>
-            </>
-          ) : (
-            <EmptyState className="border-0 bg-transparent py-12" title="No rows match this filter" description="Switch to All candidates to inspect the full current model surface." />
-          )}
-        </CardContent>
-      </Card>
+            </div>
+          </>
+        ) : (
+          <EmptyState className="border-0 bg-transparent py-12" title="No rows match this filter" description="Switch to All candidates to inspect the full current model surface." />
+        )}
+      </div>
 
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-        <AlertTriangle className="size-3.5" />
+      <div className="tag flex items-center gap-2">
+        <AlertTriangle className="size-3" />
         <span>Priced rows are snapshots from the publication run. Historical edges are never recalculated from newer odds.</span>
       </div>
     </div>

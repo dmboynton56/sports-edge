@@ -39,25 +39,23 @@ function useActive() {
 
 function BrandMark() {
   return (
-    <span className="inline-block size-[18px] shrink-0 border border-current" />
+    <span className="inline-block size-3 shrink-0 border border-current" />
   );
 }
 
-/** Desktop nav: pills riding in a sunken track. */
-function NavTrack() {
+function DesktopNav() {
   const isActive = useActive();
 
   return (
-    <nav className="ml-auto hidden rounded-xl bg-secondary p-1 lg:flex">
+    <nav className="ml-8 hidden items-center gap-6 lg:flex">
       {navItems.map((item) => (
         <Link
           key={item.href}
           href={item.href}
           aria-current={isActive(item.href) ? "page" : undefined}
           className={cn(
-            "rounded-lg px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
-            isActive(item.href) &&
-              "bg-card font-semibold text-foreground shadow-soft hover:text-foreground",
+            "text-sm font-medium transition-colors",
+            isActive(item.href) ? "text-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
           {item.label}
@@ -79,8 +77,8 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
           onClick={onNavigate}
           aria-current={isActive(item.href) ? "page" : undefined}
           className={cn(
-            "rounded-lg px-3 py-2.5 text-base font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground",
-            isActive(item.href) && "bg-secondary font-semibold text-foreground",
+            "px-3 py-2 text-sm font-medium transition-colors",
+            isActive(item.href) ? "text-foreground" : "text-muted-foreground hover:text-foreground",
           )}
         >
           {item.label}
@@ -90,9 +88,6 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
   );
 }
 
-// The theme lives on <html> (set by the pre-paint script in layout.tsx), so the
-// class list is the source of truth and React subscribes to it rather than
-// keeping a second copy.
 function subscribeToTheme(onChange: () => void) {
   const observer = new MutationObserver(onChange);
   observer.observe(document.documentElement, {
@@ -116,14 +111,14 @@ function ThemeToggle() {
   }
 
   return (
-    <Button
-      variant="outline"
-      size="icon"
+    <button
+      type="button"
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      className="text-muted-foreground transition-colors hover:text-foreground"
     >
-      {dark ? <Sun /> : <Moon />}
-    </Button>
+      {dark ? <Sun className="size-4" /> : <Moon className="size-4" />}
+    </button>
   );
 }
 
@@ -133,40 +128,40 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-background text-foreground">
-        <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-md">
-          <div className="mx-auto flex h-16 max-w-[1200px] items-center gap-3 px-4 sm:px-7">
+        <header className="border-b border-border bg-card">
+          <div className="mx-auto flex h-14 max-w-[1200px] items-center gap-3 px-4 sm:px-6">
             <Link
               href="/"
               aria-label="Sports Edge home"
-              className="flex min-w-fit items-center gap-2 font-display text-xl font-semibold tracking-tight"
+              className="flex items-center gap-1.5 text-sm font-medium"
             >
               <BrandMark />
               <span>Sports Edge</span>
             </Link>
 
-            <NavTrack />
+            <DesktopNav />
 
-            <div className="ml-auto flex items-center gap-2 lg:ml-2">
+            <div className="ml-auto flex items-center gap-4">
               <ThemeToggle />
               <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     className="lg:hidden"
                     aria-label="Open navigation"
                   >
-                    <Menu />
+                    <Menu className="size-4" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-72">
+                <SheetContent side="right" className="w-64">
                   <SheetHeader>
-                    <SheetTitle className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight">
+                    <SheetTitle className="flex items-center gap-1.5 text-sm font-medium">
                       <BrandMark />
                       Sports Edge
                     </SheetTitle>
                   </SheetHeader>
-                  <div className="mt-8">
+                  <div className="mt-6">
                     <MobileNav onNavigate={() => setOpen(false)} />
                   </div>
                 </SheetContent>
@@ -174,13 +169,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
           </div>
         </header>
-        <main className="mx-auto w-full max-w-[1200px] px-4 pb-20 pt-7 sm:px-7">
+        <main className="mx-auto w-full max-w-[1200px] px-4 pb-16 pt-6 sm:px-6">
           {children}
         </main>
-        <footer className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-16 text-sm text-muted-foreground sm:px-7">
-          <Link href="/data-quality" className="hover:text-foreground">
-            Data quality
-          </Link>
+        <footer className="border-t border-border bg-card">
+          <div className="mx-auto w-full max-w-[1200px] px-4 py-4 text-xs text-muted-foreground sm:px-6">
+            <Link href="/data-quality" className="hover:text-foreground">
+              Data quality
+            </Link>
+          </div>
         </footer>
       </div>
     </TooltipProvider>

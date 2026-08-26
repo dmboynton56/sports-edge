@@ -1,8 +1,8 @@
 import Link from "next/link";
-import { PageHeader } from "@/components/dashboard/PageHeader";
 import { MlbHomeRunBoard } from "@/components/markets/MlbHomeRunBoard";
 import { getMlbHomeRunBoardSnapshot } from "@/lib/data/player-markets";
 import { SPORTS } from "@/lib/markets-registry";
+import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -14,36 +14,56 @@ export default async function MarketsPage() {
 
   return (
     <div>
-      <PageHeader
-        title="MLB Home Runs"
-        description="Daily probability-first batter HR candidates from projected lineups, probable pitchers, venue context, and recent hitter form."
-        meta={`Candidate model · ${snapshot.slateDate} · ${snapshot.status}`}
-      />
+      <div className="mb-6 border-b border-border pb-4">
+        <h1 className="text-lg font-medium">MLB Home Runs</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Daily probability-first batter HR candidates · {snapshot.slateDate} · {snapshot.status}
+        </p>
+      </div>
 
-      <div className="mb-6 flex flex-wrap items-center gap-2 text-sm">
-        <span className="font-medium text-muted-foreground">MLB:</span>
-        <Link href="/markets/mlb/home-runs" className="rounded-md bg-secondary px-3 py-1.5 font-semibold text-foreground">
+      <div className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs">
+        <span className="tag">mlb</span>
+        <Link href="/markets/mlb/home-runs" className="font-medium text-foreground">
           Home runs
         </Link>
         {mlbMarkets.filter((m) => m.slug !== "home-runs").map((market) => (
           <Link
             key={market.slug}
             href={market.href}
-            className="rounded-md px-3 py-1.5 font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-foreground"
           >
             {market.short}
           </Link>
         ))}
-        <span className="ml-4 font-medium text-muted-foreground">Other:</span>
+        <span className="tag ml-2">other</span>
         {otherSports.map((sport) => (
           <Link
             key={sport.slug}
             href={sport.markets[0]?.href ?? `/markets/${sport.slug}`}
-            className="rounded-md px-3 py-1.5 font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+            className="text-muted-foreground transition-colors hover:text-foreground"
           >
             {sport.label}
           </Link>
         ))}
+      </div>
+
+      <div className="mb-6 flex gap-8 border-b border-border pb-4">
+        <div>
+          <div className="tag">candidates</div>
+          <div className="num mt-1 text-2xl">{formatNumber(snapshot.counts.candidates)}</div>
+        </div>
+        <div>
+          <div className="tag">priced</div>
+          <div className="num mt-1 text-2xl">{formatNumber(snapshot.counts.priced)}</div>
+        </div>
+        <div>
+          <div className="tag">top-25 coverage</div>
+          <div className="num mt-1 text-2xl">{formatPct(snapshot.counts.top25Coverage)}</div>
+        </div>
+        <div>
+          <div className="tag">refreshed</div>
+          <div className="num mt-1 text-sm">{formatDateTime(snapshot.completedAt)}</div>
+        </div>
       </div>
 
       <MlbHomeRunBoard snapshot={snapshot} />

@@ -1,19 +1,18 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, Newsreader } from "next/font/google";
+import { Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { AppShell } from "@/components/dashboard/AppShell";
 import "./globals.css";
 
-const sans = IBM_Plex_Sans({
-  weight: ["400", "500", "600", "700"],
+const sans = Instrument_Sans({
   subsets: ["latin"],
-  variable: "--font-sans",
+  variable: "--font-instrument-sans",
   display: "swap",
 });
 
-const display = Newsreader({
-  weight: ["400", "600", "700"],
+const mono = IBM_Plex_Mono({
+  weight: ["400", "500", "600"],
   subsets: ["latin"],
-  variable: "--font-display",
+  variable: "--font-ibm-plex-mono",
   display: "swap",
 });
 
@@ -42,7 +41,7 @@ export default function RootLayout({
     // :root, and a var() there can only see custom properties on the same element.
     <html
       lang="en"
-      className={`${sans.variable} ${display.variable}`}
+      className={`${sans.variable} ${mono.variable}`}
       suppressHydrationWarning
     >
       <head>
