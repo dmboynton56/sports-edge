@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState, useSyncExternalStore } from "react";
@@ -19,7 +18,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/markets", label: "Markets" },
+  { href: "/markets/mlb/home-runs", label: "Markets" },
   { href: "/models", label: "Models" },
   { href: "/fantasy", label: "Fantasy" },
   { href: "/record", label: "Record" },
@@ -31,7 +30,7 @@ function useActive() {
     if (href === "/record") {
       return pathname === "/record" || pathname.startsWith("/results") || pathname.startsWith("/performance");
     }
-    if (href === "/markets") {
+    if (href === "/markets/mlb/home-runs") {
       return pathname === "/" || pathname === "/markets" || pathname.startsWith("/markets/");
     }
     return pathname.startsWith(href);
@@ -182,6 +181,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         <main className="mx-auto w-full max-w-[1200px] px-4 pb-20 pt-7 sm:px-7">
           {children}
         </main>
+        <footer className="mx-auto w-full max-w-[1200px] px-4 pb-8 pt-16 text-sm text-muted-foreground sm:px-7">
+          <Link href="/data-quality" className="hover:text-foreground">
+            Data quality
+          </Link>
+        </footer>
       </div>
     </TooltipProvider>
   );

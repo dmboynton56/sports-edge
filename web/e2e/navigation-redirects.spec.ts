@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
-test("home redirects to markets", async ({ page }) => {
+test("home redirects to MLB HR board", async ({ page }) => {
   await page.goto("/");
-  await expect(page).toHaveURL(/\/markets/);
-  await expect(page.getByRole("heading", { name: "Markets" })).toBeVisible();
+  await expect(page).toHaveURL(/\/markets\/mlb\/home-runs/);
+  await expect(page.getByRole("heading", { name: "MLB Home Runs" })).toBeVisible();
 });
 
 test("results redirects to record", async ({ page }) => {
@@ -30,8 +30,15 @@ test("insights redirects to record", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Record" })).toBeVisible();
 });
 
-test("markets is active when on markets page", async ({ page }) => {
+test("markets is active when on HR board", async ({ page }) => {
+  await page.goto("/markets/mlb/home-runs");
+  const marketsLink = page.getByRole("link", { name: "Markets" }).first();
+  await expect(marketsLink).toHaveAttribute("aria-current", "page");
+});
+
+test("markets index also shows HR board", async ({ page }) => {
   await page.goto("/markets");
+  await expect(page.getByRole("heading", { name: "MLB Home Runs" })).toBeVisible();
   const marketsLink = page.getByRole("link", { name: "Markets" }).first();
   await expect(marketsLink).toHaveAttribute("aria-current", "page");
 });

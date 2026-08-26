@@ -38,11 +38,6 @@ const nextConfig: NextConfig = {
         destination: "/record",
         permanent: false,
       },
-      {
-        source: "/insights/:slug*",
-        destination: "/record",
-        permanent: false,
-      },
     ];
   },
 };
