@@ -223,9 +223,18 @@ export async function getMlbResearchBoard(
     };
   }
 
-  const predictions = rows.map(mapResearchRow);
+  // Filter out games that have started (or start within 5 minutes)
+  const cutoff = Date.now() + 5 * 60 * 1000;
+  const validRows = rows.filter((r) => {
+    if (!r.game_datetime) return true; // Keep rows without datetime
+    const eventTime = new Date(r.game_datetime).getTime();
+    return isFinite(eventTime) && eventTime > cutoff;
+  });
+
+  const predictions = validRows.map(mapResearchRow);
   const generatedAt = rows[0]?.as_of_ts ?? null;
-  const missingOdds = rows.filter((r) => r.odds_status === "missing_odds").length;
+  const missingOdds = validRows.filter((r) => r.odds_status === "missing_odds").length;
+  const filteredCount = rows.length - validRows.length;
 
   return {
     generatedAt,
@@ -234,6 +243,9 @@ export async function getMlbResearchBoard(
     predictions,
     gaps: [
       ...supabaseConfigGaps(),
+      filteredCount > 0
+        ? `${filteredCount} games have started or begin within five minutes (hidden).`
+        : null,
       missingOdds
         ? `${missingOdds} games do not have sportsbook prices (showing model probabilities only).`
         : null,

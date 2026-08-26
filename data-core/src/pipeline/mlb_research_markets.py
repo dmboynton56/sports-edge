@@ -4,21 +4,27 @@ Scoring module for MLB research markets: moneyline v3, run-line v1, and totals v
 
 This module loads trained model artifacts and scores pregame predictions for a
 date window. It does NOT train models or depend on gitignored feature artifacts.
+
+CRITICAL: totals v1 and run-line v1 were trained on v2 features (weather, starter
+rolling stats). Moneyline v3 uses v1 schedule-only features. Each market calls
+the correct feature builder for its training contract.
 """
 
 from __future__ import annotations
 
+import json
 import pickle
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
-from typing import Optional
+from typing import Mapping, Optional
 
 import numpy as np
 import pandas as pd
 
-from src.data.mlb_fetcher import fetch_mlb_schedule
+from src.data.mlb_fetcher import fetch_mlb_schedule, fetch_mlb_boxscores
 from src.models.mlb_winner_model import build_mlb_prediction_features
+from src.features.mlb_market_features import build_mlb_market_features
 from src.models.mlb_runline_model import cover_probability_from_residuals
 from src.models.mlb_totals_model import over_label, _normal_over_probability
 
@@ -59,12 +65,15 @@ def score_mlb_moneyline_v3(
     game_date: date,
     min_prior_games: int = 5,
 ) -> pd.DataFrame:
-    """Score home-win probabilities for a single game date using the v3 artifact."""
+    """Score home-win probabilities for a single game date using the v3 artifact.
+    
+    Moneyline v3 uses v1 schedule-only features (no weather/starters).
+    """
     schedule["game_date"] = pd.to_datetime(schedule["game_date"])
     games_to_score = schedule[schedule["game_date"].dt.date == game_date].copy()
     if games_to_score.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "home_win_prob", "away_win_prob"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "home_win_prob", "away_win_prob"]
         )
 
     history = schedule[
@@ -74,18 +83,18 @@ def score_mlb_moneyline_v3(
     ].copy()
     if history.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "home_win_prob", "away_win_prob"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "home_win_prob", "away_win_prob"]
         )
 
     features = build_mlb_prediction_features(history, games_to_score, min_prior_games=min_prior_games)
     if features.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "home_win_prob", "away_win_prob"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "home_win_prob", "away_win_prob"]
         )
 
     feature_cols = artifact["feature_columns"]
     probabilities = artifact["model"].predict_proba(features[feature_cols])[:, 1]
-    output = features[["game_pk", "game_date", "home_team", "away_team"]].copy()
+    output = features[["game_pk", "game_date", "game_datetime", "home_team", "away_team"]].copy()
     output["home_win_prob"] = probabilities
     output["away_win_prob"] = 1.0 - probabilities
     return output
@@ -95,15 +104,21 @@ def score_mlb_totals_v1(
     *,
     artifact: dict,
     schedule: pd.DataFrame,
+    boxscores: pd.DataFrame,
+    venue_meta: Mapping,
     game_date: date,
     min_prior_games: int = 5,
 ) -> pd.DataFrame:
-    """Score total runs and O/U probabilities for a single game date using the v1 artifact."""
+    """Score total runs and O/U probabilities for a single game date using the v1 artifact.
+    
+    CRITICAL: totals v1 was trained on v2 features (weather, starters). Must use
+    build_mlb_market_features, not build_mlb_prediction_features.
+    """
     schedule["game_date"] = pd.to_datetime(schedule["game_date"])
     games_to_score = schedule[schedule["game_date"].dt.date == game_date].copy()
     if games_to_score.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
         )
 
     history = schedule[
@@ -113,13 +128,21 @@ def score_mlb_totals_v1(
     ].copy()
     if history.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
         )
 
-    features = build_mlb_prediction_features(history, games_to_score, min_prior_games=min_prior_games)
+    # Build v2 features (requires boxscores & venue_meta for weather/starters)
+    features = build_mlb_market_features(
+        pd.concat([history, games_to_score], ignore_index=True),
+        boxscores,
+        venue_meta,
+        min_prior_games=min_prior_games,
+    )
+    # Filter to today's games only
+    features = features[features["game_pk"].isin(games_to_score["game_pk"])].copy()
     if features.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
         )
 
     feature_cols = artifact["feature_columns"]
@@ -128,7 +151,7 @@ def score_mlb_totals_v1(
     p_over_8_5 = _normal_over_probability(predicted_total, 8.5, sigma)
     p_over_9_5 = _normal_over_probability(predicted_total, 9.5, sigma)
 
-    output = features[["game_pk", "game_date", "home_team", "away_team"]].copy()
+    output = features[["game_pk", "game_date", "game_datetime", "home_team", "away_team"]].copy()
     output["predicted_total"] = predicted_total
     output["p_over_8_5"] = p_over_8_5
     output["p_over_9_5"] = p_over_9_5
@@ -139,15 +162,21 @@ def score_mlb_runline_v1(
     *,
     artifact: dict,
     schedule: pd.DataFrame,
+    boxscores: pd.DataFrame,
+    venue_meta: Mapping,
     game_date: date,
     min_prior_games: int = 5,
 ) -> pd.DataFrame:
-    """Score home -1.5 cover probabilities for a single game date using the v1 artifact."""
+    """Score home -1.5 cover probabilities for a single game date using the v1 artifact.
+    
+    CRITICAL: run-line v1 was trained on v2 features (weather, starters). Must use
+    build_mlb_market_features, not build_mlb_prediction_features.
+    """
     schedule["game_date"] = pd.to_datetime(schedule["game_date"])
     games_to_score = schedule[schedule["game_date"].dt.date == game_date].copy()
     if games_to_score.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
         )
 
     history = schedule[
@@ -157,20 +186,28 @@ def score_mlb_runline_v1(
     ].copy()
     if history.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
         )
 
-    features = build_mlb_prediction_features(history, games_to_score, min_prior_games=min_prior_games)
+    # Build v2 features (requires boxscores & venue_meta for weather/starters)
+    features = build_mlb_market_features(
+        pd.concat([history, games_to_score], ignore_index=True),
+        boxscores,
+        venue_meta,
+        min_prior_games=min_prior_games,
+    )
+    # Filter to today's games only
+    features = features[features["game_pk"].isin(games_to_score["game_pk"])].copy()
     if features.empty:
         return pd.DataFrame(
-            columns=["game_pk", "game_date", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
+            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
         )
 
     feature_cols = artifact["feature_columns"]
     classifier = artifact["classifier"]
     p_home_cover_15 = classifier.predict_proba(features[feature_cols])[:, 1]
 
-    output = features[["game_pk", "game_date", "home_team", "away_team"]].copy()
+    output = features[["game_pk", "game_date", "game_datetime", "home_team", "away_team"]].copy()
     output["p_home_cover_15"] = p_home_cover_15
     output["p_away_cover_plus_15"] = 1.0 - p_home_cover_15
     return output
@@ -187,9 +224,12 @@ def score_research_markets_for_date(
     min_prior_games: int = 5,
 ) -> ResearchMarketPredictions:
     """
-    Fetch the season schedule and score moneyline, run-line, and totals for a single game date.
+    Fetch the season schedule/boxscores and score moneyline, run-line, and totals for a single game date.
 
     Returns a ResearchMarketPredictions container with three DataFrames.
+    
+    CRITICAL: Moneyline v3 uses v1 schedule-only features. Totals v1 and run-line v1
+    use v2 features (weather, starters, venue) and require boxscores + venue_meta.
     """
     if season_start is None:
         season_start = date(season, 3, 1)
@@ -203,21 +243,42 @@ def score_research_markets_for_date(
     if schedule.empty:
         raise ValueError(f"No MLB schedule rows found for season={season} through {game_date}")
 
+    # Moneyline v3 uses v1 features (schedule-only, no boxscores needed)
     moneyline = score_mlb_moneyline_v3(
         artifact=moneyline_artifact,
         schedule=schedule,
         game_date=game_date,
         min_prior_games=min_prior_games,
     )
+    
+    # Totals v1 and run-line v1 use v2 features (need boxscores + venue_meta)
+    try:
+        boxscores = fetch_mlb_boxscores(season, start_date=season_start, end_date=game_date)
+    except Exception as e:
+        print(f"WARNING: Could not fetch boxscores for v2 features: {e}")
+        boxscores = pd.DataFrame()
+    
+    venue_meta_path = Path(__file__).parents[2] / "notebooks/cache/mlb_venue_meta.json"
+    if venue_meta_path.exists():
+        with open(venue_meta_path, encoding="utf-8") as f:
+            venue_meta = json.load(f)
+    else:
+        print(f"WARNING: Venue metadata not found at {venue_meta_path}; v2 features will be incomplete.")
+        venue_meta = {}
+    
     totals = score_mlb_totals_v1(
         artifact=totals_artifact,
         schedule=schedule,
+        boxscores=boxscores,
+        venue_meta=venue_meta,
         game_date=game_date,
         min_prior_games=min_prior_games,
     )
     runline = score_mlb_runline_v1(
         artifact=runline_artifact,
         schedule=schedule,
+        boxscores=boxscores,
+        venue_meta=venue_meta,
         game_date=game_date,
         min_prior_games=min_prior_games,
     )
