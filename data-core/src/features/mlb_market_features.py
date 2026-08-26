@@ -329,4 +329,143 @@ def build_mlb_market_features(
     return features.reset_index(drop=True)
 
 
-__all__ = ["OBSERVED_WEATHER_COLUMNS", "STARTER_PRIORS", "build_mlb_market_features"]
+def build_mlb_market_features_pregame(
+    games: pd.DataFrame,
+    boxscores: pd.DataFrame,
+    venue_meta: Mapping,
+    target_date: pd.Timestamp,
+    min_prior_games: int = 5,
+) -> pd.DataFrame:
+    """Build v2 features for uncompleted games on target_date for pregame scoring.
+    
+    Walks completed history to build rolling state (starters, team rolls, venue).
+    Emits feature rows for target_date games even when scores are null, using
+    probable pitchers + venue/weather proxies. Does NOT update rolling state
+    with target_date games.
+    
+    This is the prediction-time path for totals v1 and run-line v1. Training
+    uses build_mlb_market_features on completed games only.
+    
+    Args:
+        games: Full schedule including history + target_date games
+        boxscores: Completed game boxscores (may not include target_date)
+        venue_meta: Venue metadata for elevation/roof
+        target_date: Date to score (games with game_date == target_date)
+        min_prior_games: Minimum prior games for team rolling stats
+        
+    Returns:
+        DataFrame with one row per target_date game, including v2 feature columns.
+        If target_date games produce no rows, raises ValueError (fail loudly).
+    """
+    if games.empty:
+        raise ValueError("No MLB games provided.")
+    
+    target_date_normalized = pd.Timestamp(target_date).normalize()
+    
+    prepared = _prepare_games(games)
+    prepared["game_date_normalized"] = pd.to_datetime(prepared["game_date"]).dt.normalize()
+    
+    # Split: completed history vs target_date games (may be uncompleted)
+    completed_history = prepared[
+        (prepared["game_date_normalized"] < target_date_normalized)
+        & prepared["home_score"].notna()
+        & prepared["away_score"].notna()
+    ].copy()
+    
+    target_games = prepared[prepared["game_date_normalized"] == target_date_normalized].copy()
+    
+    if target_games.empty:
+        raise ValueError(f"No games found for target_date={target_date}")
+    
+    boxscore_rows = _boxscore_by_game(boxscores)
+    handedness = _load_handedness()
+    
+    # Build rolling state from completed history only
+    states, pitcher_states, venue_states = _empty_states()
+    pitcher_histories: dict[int, deque] = defaultdict(lambda: deque(maxlen=10))
+    pitcher_start_dates: dict[int, deque] = defaultdict(deque)
+    pitcher_career_starts: dict[int, int] = defaultdict(int)
+    team_histories: dict[int, deque] = defaultdict(lambda: deque(maxlen=15))
+    
+    for game in completed_history.itertuples(index=False):
+        game_date = pd.Timestamp(game.game_date)
+        boxscore = boxscore_rows.get(int(game.game_pk), {})
+        home_actual_id, home_line = _actual_starter_line(boxscore, "home")
+        away_actual_id, away_line = _actual_starter_line(boxscore, "away")
+        
+        _update_states_for_completed_game(game, states, pitcher_states, venue_states)
+        
+        for prefix, team_id, runs_scored, runs_allowed in (
+            ("home", int(game.home_team_id), int(game.home_score), int(game.away_score)),
+            ("away", int(game.away_team_id), int(game.away_score), int(game.home_score)),
+        ):
+            team_histories[team_id].append(
+                {
+                    "runs_scored": runs_scored,
+                    "runs_allowed": runs_allowed,
+                    "total_runs": runs_scored + runs_allowed,
+                    "bat_strikeouts": _nullable_float(boxscore.get(f"{prefix}_team_strikeouts")),
+                }
+            )
+        
+        for pitcher_id, line in ((home_actual_id, home_line), (away_actual_id, away_line)):
+            if pitcher_id is not None and line is not None:
+                pitcher_histories[pitcher_id].append(line)
+                pitcher_start_dates[pitcher_id].append(game_date)
+                pitcher_career_starts[pitcher_id] += 1
+    
+    # Emit feature rows for target_date games using probable pitchers
+    rows: list[dict] = []
+    for game in target_games.itertuples(index=False):
+        game_date = pd.Timestamp(game.game_date)
+        row = _feature_row_for_game(game, states, pitcher_states, venue_states, include_target=False)
+        
+        # Use probable pitcher IDs (not actual, since game is uncompleted or in-progress)
+        home_probable_id = _nullable_int(getattr(game, "home_probable_pitcher_id", None))
+        away_probable_id = _nullable_int(getattr(game, "away_probable_pitcher_id", None))
+        
+        row.update(_starter_features("home", home_probable_id, game_date, pitcher_histories, pitcher_career_starts, pitcher_start_dates, handedness))
+        row.update(_starter_features("away", away_probable_id, game_date, pitcher_histories, pitcher_career_starts, pitcher_start_dates, handedness))
+        row.update(_team_market_features("home", int(game.home_team_id), team_histories))
+        row.update(_team_market_features("away", int(game.away_team_id), team_histories))
+        
+        # Weather: use boxscore if available (game started recently), else NaN proxies
+        boxscore = boxscore_rows.get(int(game.game_pk), {})
+        venue = _venue_details(venue_meta, _nullable_int(getattr(game, "venue_id", None)))
+        row.update(_weather_features(boxscore, venue, pd.Timestamp(game.game_datetime)))
+        
+        # Diff features
+        for suffix in (
+            "k9_last5", "bb9_last5", "era_proxy_last5", "pitches_last3_avg",
+            "outs_per_start_last5", "starts_last365", "days_since_last_start",
+            "career_starts_prior", "has_history", "throws_r",
+        ):
+            row[f"starter_{suffix}_diff"] = row[f"home_starter_{suffix}"] - row[f"away_starter_{suffix}"]
+        row["runs_scored_pg_15_diff"] = row["home_runs_scored_pg_15"] - row["away_runs_scored_pg_15"]
+        row["runs_allowed_pg_15_diff"] = row["home_runs_allowed_pg_15"] - row["away_runs_allowed_pg_15"]
+        row["team_total_pg_15_diff"] = row["home_team_total_pg_15"] - row["away_team_total_pg_15"]
+        row["team_bat_k_pg_15_diff"] = row["home_team_bat_k_pg_15"] - row["away_team_bat_k_pg_15"]
+        row["combined_expected_total"] = (
+            row["home_runs_scored_pg_15"] + row["away_runs_allowed_pg_15"]
+            + row["away_runs_scored_pg_15"] + row["home_runs_allowed_pg_15"]
+        ) / 2.0
+        
+        rows.append(row)
+    
+    features = pd.DataFrame(rows)
+    if min_prior_games > 0:
+        features = features[
+            (features["home_games_played"] >= min_prior_games)
+            & (features["away_games_played"] >= min_prior_games)
+        ].copy()
+    
+    if features.empty:
+        raise ValueError(
+            f"Pregame scoring for target_date={target_date} produced no rows after min_prior_games={min_prior_games} filter. "
+            "This will result in empty research boards. Check that sufficient completed history exists."
+        )
+    
+    return features.reset_index(drop=True)
+
+
+__all__ = ["OBSERVED_WEATHER_COLUMNS", "STARTER_PRIORS", "build_mlb_market_features", "build_mlb_market_features_pregame"]

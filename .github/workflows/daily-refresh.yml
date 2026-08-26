@@ -204,6 +204,22 @@ jobs:
             --lookback-days 10 \
             --lookahead-days 0
 
+      - name: Generate MLB Research Markets
+        if: ${{ steps.plan.outputs.run_mlb == 'true' }}
+        continue-on-error: true
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/apply_supabase_sql_files.py sql/019_mlb_research_predictions.sql
+          python scripts/sync_mlb_research_predictions.py --date "${{ steps.plan.outputs.anchor_date }}" --season "${{ steps.plan.outputs.mlb_season }}"
+
       - name: Refresh Statcast cache for MLB HR blend
         if: ${{ env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
