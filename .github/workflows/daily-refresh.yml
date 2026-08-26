@@ -288,6 +288,7 @@ jobs:
         shell: bash
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
@@ -296,6 +297,7 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
+          # PropLine fallback: falls back to PROPLINE_API_KEY if ODDS_API_KEY fails or returns no prices.
           python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
           python scripts/fetch_mlb_home_run_odds.py \
             --date "${{ steps.plan.outputs.anchor_date }}" \
