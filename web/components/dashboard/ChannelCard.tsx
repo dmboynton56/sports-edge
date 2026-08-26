@@ -52,9 +52,6 @@ export function ChannelCard({
       )}
     >
       <div className="flex items-center gap-3">
-        {sport ? (
-          <span className={cn("h-6 w-[3px] shrink-0 rounded-full", sportColor(sport).fill)} />
-        ) : null}
         <h3 className="font-display text-[22px] font-bold tracking-tight">{title}</h3>
         {badge ? <span className="ml-auto">{badge}</span> : null}
       </div>

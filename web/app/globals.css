@@ -50,32 +50,32 @@
 
 @layer base {
   :root {
-    --background: 216 24% 96%;
-    --foreground: 215 29% 8%;
+    --background: 0 0% 100%;
+    --foreground: 220 13% 13%;
     --card: 0 0% 100%;
-    --card-foreground: 215 29% 8%;
+    --card-foreground: 220 13% 13%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 29% 8%;
-    --primary: 215 29% 8%;
+    --popover-foreground: 220 13% 13%;
+    --primary: 220 13% 13%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 26% 95%;
-    --secondary-foreground: 215 22% 24%;
-    --muted: 214 26% 95%;
-    --muted-foreground: 215 12% 50%;
-    --accent: 244 74% 53%;
+    --secondary: 220 13% 97%;
+    --secondary-foreground: 220 9% 20%;
+    --muted: 220 13% 97%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 13% 13%;
     --accent-foreground: 0 0% 100%;
-    --accent-soft: 245 90% 96%;
-    --destructive: 352 69% 51%;
+    --accent-soft: 220 13% 95%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --destructive-soft: 353 83% 96%;
-    --positive: 159 80% 30%;
-    --positive-soft: 158 60% 94%;
-    --warning: 32 88% 34%;
-    --warning-soft: 40 92% 93%;
-    --border: 216 23% 91%;
-    --input: 216 23% 91%;
-    --ring: 244 74% 53%;
-    --radius: 0.7rem;
+    --destructive-soft: 0 100% 97%;
+    --positive: 142 76% 36%;
+    --positive-soft: 142 76% 96%;
+    --warning: 38 92% 50%;
+    --warning-soft: 48 100% 96%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 220 13% 13%;
+    --radius: 0.5rem;
 
     --sport-nba: 18 76% 53%;
     --sport-mlb: 217 69% 39%;
@@ -84,36 +84,36 @@
     --sport-cbb: 271 52% 51%;
     --sport-nhl: 213 14% 40%;
 
-    --elevation-1: 0 1px 2px hsl(215 29% 8% / 0.05), 0 8px 24px -14px hsl(215 29% 8% / 0.2);
-    --elevation-2: 0 2px 4px hsl(215 29% 8% / 0.05), 0 20px 40px -22px hsl(215 29% 8% / 0.34);
+    --elevation-1: 0 1px 2px hsl(220 13% 13% / 0.04), 0 4px 16px -8px hsl(220 13% 13% / 0.08);
+    --elevation-2: 0 2px 4px hsl(220 13% 13% / 0.04), 0 12px 32px -12px hsl(220 13% 13% / 0.12);
   }
 
   .dark {
-    --background: 215 28% 7%;
-    --foreground: 214 29% 93%;
-    --card: 215 23% 11%;
-    --card-foreground: 214 29% 93%;
-    --popover: 215 23% 12%;
-    --popover-foreground: 214 29% 93%;
-    --primary: 214 29% 93%;
-    --primary-foreground: 215 28% 7%;
-    --secondary: 215 25% 15%;
-    --secondary-foreground: 214 20% 84%;
-    --muted: 215 25% 15%;
-    --muted-foreground: 215 14% 60%;
-    --accent: 244 90% 74%;
-    --accent-foreground: 215 28% 7%;
-    --accent-soft: 244 38% 20%;
-    --destructive: 352 100% 71%;
-    --destructive-foreground: 215 28% 7%;
-    --destructive-soft: 352 32% 20%;
-    --positive: 158 58% 50%;
-    --positive-soft: 158 30% 17%;
-    --warning: 38 95% 62%;
-    --warning-soft: 35 34% 18%;
-    --border: 217 21% 19%;
-    --input: 217 21% 19%;
-    --ring: 244 90% 74%;
+    --background: 220 13% 9%;
+    --foreground: 220 13% 98%;
+    --card: 220 13% 12%;
+    --card-foreground: 220 13% 98%;
+    --popover: 220 13% 12%;
+    --popover-foreground: 220 13% 98%;
+    --primary: 220 13% 98%;
+    --primary-foreground: 220 13% 9%;
+    --secondary: 220 13% 16%;
+    --secondary-foreground: 220 9% 84%;
+    --muted: 220 13% 16%;
+    --muted-foreground: 220 9% 64%;
+    --accent: 220 13% 98%;
+    --accent-foreground: 220 13% 9%;
+    --accent-soft: 220 13% 18%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --destructive-soft: 0 60% 16%;
+    --positive: 142 76% 36%;
+    --positive-soft: 142 76% 14%;
+    --warning: 38 92% 50%;
+    --warning-soft: 38 60% 16%;
+    --border: 220 13% 18%;
+    --input: 220 13% 18%;
+    --ring: 220 13% 98%;
 
     --sport-nba: 22 86% 63%;
     --sport-mlb: 217 68% 62%;
@@ -122,8 +122,8 @@
     --sport-cbb: 269 72% 69%;
     --sport-nhl: 213 15% 59%;
 
-    --elevation-1: 0 1px 2px hsl(0 0% 0% / 0.4), 0 8px 24px -14px hsl(0 0% 0% / 0.7);
-    --elevation-2: 0 2px 4px hsl(0 0% 0% / 0.4), 0 20px 40px -22px hsl(0 0% 0% / 0.85);
+    --elevation-1: 0 1px 2px hsl(0 0% 0% / 0.3), 0 4px 16px -8px hsl(0 0% 0% / 0.5);
+    --elevation-2: 0 2px 4px hsl(0 0% 0% / 0.3), 0 12px 32px -12px hsl(0 0% 0% / 0.6);
   }
 }
 

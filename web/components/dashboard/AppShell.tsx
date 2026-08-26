@@ -19,34 +19,32 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/", label: "Overview" },
-  { href: "/nba", label: "NBA" },
-  { href: "/nfl", label: "NFL" },
   { href: "/markets", label: "Markets" },
   { href: "/models", label: "Models" },
   { href: "/fantasy", label: "Fantasy" },
-  { href: "/performance", label: "Performance" },
-  { href: "/results", label: "Results" },
-  { href: "/insights", label: "Insights" },
-  { href: "/data-quality", label: "Data quality" },
+  { href: "/record", label: "Record" },
 ];
 
 function useActive() {
   const pathname = usePathname();
-  return (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+  return (href: string) => {
+    if (href === "/record") {
+      return pathname === "/record" || pathname.startsWith("/results") || pathname.startsWith("/performance");
+    }
+    if (href === "/markets") {
+      return pathname === "/" || pathname === "/markets" || pathname.startsWith("/markets/");
+    }
+    return pathname.startsWith(href);
+  };
 }
 
 function BrandMark() {
   return (
-    <Image
-      src="/sports-edge-mark.png"
-      alt=""
-      width={64}
-      height={64}
-      sizes="28px"
-      className="size-7 rounded-lg object-cover"
-    />
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+      <rect x="4" y="4" width="24" height="24" rx="2" stroke="currentColor" strokeWidth="2"/>
+      <path d="M12 10 L20 10 M12 16 L18 16 M12 22 L20 22" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
+      <path d="M20 10 L20 13" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
+    </svg>
   );
 }
 

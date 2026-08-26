@@ -18,6 +18,31 @@ const nextConfig: NextConfig = {
         destination: "/markets/mlb/home-runs",
         permanent: false,
       },
+      {
+        source: "/performance",
+        destination: "/record",
+        permanent: false,
+      },
+      {
+        source: "/performance/:sport",
+        destination: "/record",
+        permanent: false,
+      },
+      {
+        source: "/results",
+        destination: "/record",
+        permanent: false,
+      },
+      {
+        source: "/insights",
+        destination: "/record",
+        permanent: false,
+      },
+      {
+        source: "/insights/:slug*",
+        destination: "/record",
+        permanent: false,
+      },
     ];
   },
 };

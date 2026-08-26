@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 const themeScript = `
 try {
   var stored = localStorage.getItem("sports-edge-theme");
-  if (stored === "dark" || (!stored && matchMedia("(prefers-color-scheme: dark)").matches)) {
+  if (stored === "dark") {
     document.documentElement.classList.add("dark");
   }
 } catch (e) {}
