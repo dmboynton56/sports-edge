@@ -1,0 +1,294 @@
+# Canonical Market Registry for Sports Edge
+# 
+# This registry defines all sports betting markets that Sports Edge can model,
+# serve, or evaluate. Each entry drives ingestion, model dispatch, grading,
+# serving, and the web market registry.
+#
+# Fields:
+#   sport: Sport identifier (MLB, NBA, NFL, PGA, etc.)
+#   provider_sport_key: The Odds API sport key
+#   market_id: Canonical internal market identifier
+#   provider_market_key: The Odds API market key
+#   subject_type: team | player | field
+#   target_type: binary | count | continuous | placement
+#   sides: List of outcome sides (e.g., [over, under])
+#   result_source: Where game/player results come from
+#   model_name: Model identifier if one exists
+#   model_version: Model version (v1, v2, etc.) if applicable
+#   live_enabled: Whether this market is served live on the website
+#   backtest_enabled: Whether historical backtesting is enabled
+#   min_books: Minimum number of books required for a valid market
+#   max_price_age_minutes: Maximum age of odds before considered stale
+#   status: Current status note
+
+# ============================================================================
+# MLB Markets (in season, primary)
+# ============================================================================
+
+- sport: MLB
+  provider_sport_key: baseball_mlb
+  market_id: moneyline
+  provider_market_key: h2h
+  subject_type: team
+  target_type: binary
+  sides: [home, away]
+  result_source: mlb_stats_api
+  model_name: mlb_winner_model
+  model_version: v3
+  live_enabled: true
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Live with v3; v4 research showed negative results vs v1"
+
+- sport: MLB
+  provider_sport_key: baseball_mlb
+  market_id: run_line
+  provider_market_key: spreads
+  subject_type: team
+  target_type: binary
+  sides: [home, away]
+  result_source: mlb_stats_api
+  model_name: mlb_runline_model
+  model_version: v1
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Research v1 complete; awaiting historical spread prices and evaluation"
+
+- sport: MLB
+  provider_sport_key: baseball_mlb
+  market_id: total
+  provider_market_key: totals
+  subject_type: team
+  target_type: continuous
+  sides: [over, under]
+  result_source: mlb_stats_api
+  model_name: mlb_totals_model
+  model_version: v1
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Research v1 complete; needs forecast weather timing and historical totals prices"
+
+- sport: MLB
+  provider_sport_key: baseball_mlb
+  market_id: batter_home_runs
+  provider_market_key: batter_home_runs
+  subject_type: player
+  target_type: count
+  sides: [over, under]
+  result_source: mlb_stats_api
+  model_name: mlb_batter_home_runs
+  model_version: v1
+  live_enabled: true
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Live and trusted; currently 0-priced due to OddsPapi HR market unavailability"
+
+- sport: MLB
+  provider_sport_key: baseball_mlb
+  market_id: pitcher_strikeouts
+  provider_market_key: pitcher_strikeouts
+  subject_type: player
+  target_type: count
+  sides: [over, under]
+  result_source: mlb_stats_api
+  model_name: mlb_pitcher_strikeouts
+  model_version: v1
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Research v1 complete; feasibility passed, awaiting historical pitcher K prices"
+
+- sport: MLB
+  provider_sport_key: baseball_mlb
+  market_id: batter_rbis
+  provider_market_key: batter_rbis
+  subject_type: player
+  target_type: count
+  sides: [over, under]
+  result_source: mlb_stats_api
+  model_name: null
+  model_version: null
+  live_enabled: false
+  backtest_enabled: false
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Future candidate; no model or evaluation exists yet"
+
+# ============================================================================
+# NBA Markets (seasonal, resumes mid-October)
+# ============================================================================
+
+- sport: NBA
+  provider_sport_key: basketball_nba
+  market_id: moneyline
+  provider_market_key: h2h
+  subject_type: team
+  target_type: binary
+  sides: [home, away]
+  result_source: nba_stats_api
+  model_name: nba_winner_model
+  model_version: v1
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Seasonal; live_enabled becomes true when NBA season starts (~mid-October)"
+
+- sport: NBA
+  provider_sport_key: basketball_nba
+  market_id: spread
+  provider_market_key: spreads
+  subject_type: team
+  target_type: binary
+  sides: [home, away]
+  result_source: nba_stats_api
+  model_name: nba_spread_model
+  model_version: v1
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Seasonal; live_enabled becomes true when NBA season starts (~mid-October)"
+
+- sport: NBA
+  provider_sport_key: basketball_nba
+  market_id: total
+  provider_market_key: totals
+  subject_type: team
+  target_type: continuous
+  sides: [over, under]
+  result_source: nba_stats_api
+  model_name: null
+  model_version: null
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Seasonal; needs dedicated totals head before promotion"
+
+# ============================================================================
+# NFL Markets (scaffold, Week 1 on 2026-09-09)
+# ============================================================================
+
+- sport: NFL
+  provider_sport_key: americanfootball_nfl
+  market_id: moneyline
+  provider_market_key: h2h
+  subject_type: team
+  target_type: binary
+  sides: [home, away]
+  result_source: nflverse
+  model_name: nfl_winner_model
+  model_version: v1
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Scaffold until NFL Week 1 (2026-09-09); model exists but needs re-evaluation"
+
+- sport: NFL
+  provider_sport_key: americanfootball_nfl
+  market_id: spread
+  provider_market_key: spreads
+  subject_type: team
+  target_type: binary
+  sides: [home, away]
+  result_source: nflverse
+  model_name: nfl_spread_model
+  model_version: v1
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Scaffold until NFL Week 1 (2026-09-09); model exists but needs re-evaluation"
+
+- sport: NFL
+  provider_sport_key: americanfootball_nfl
+  market_id: total
+  provider_market_key: totals
+  subject_type: team
+  target_type: continuous
+  sides: [over, under]
+  result_source: nflverse
+  model_name: null
+  model_version: null
+  live_enabled: false
+  backtest_enabled: true
+  min_books: 2
+  max_price_age_minutes: 20
+  status: "Scaffold until NFL Week 1 (2026-09-09); needs dedicated totals head"
+
+# ============================================================================
+# PGA Markets (model-only placements; odds coverage weak outside majors)
+# ============================================================================
+
+- sport: PGA
+  provider_sport_key: golf_pga_championship
+  market_id: tournament_winner
+  provider_market_key: outrights
+  subject_type: player
+  target_type: placement
+  sides: [win]
+  result_source: pga_tour_api
+  model_name: pga_tournament_model
+  model_version: v1
+  live_enabled: true
+  backtest_enabled: false
+  min_books: 1
+  max_price_age_minutes: 60
+  status: "Live; The Odds API mainly covers majors, so most tournaments are model-only"
+
+- sport: PGA
+  provider_sport_key: golf_pga_championship
+  market_id: top_10
+  provider_market_key: top_10_finish
+  subject_type: player
+  target_type: placement
+  sides: [yes, no]
+  result_source: pga_tour_api
+  model_name: pga_tournament_model
+  model_version: v1
+  live_enabled: true
+  backtest_enabled: false
+  min_books: 1
+  max_price_age_minutes: 60
+  status: "Live; The Odds API coverage is weak, so most events are model-only"
+
+- sport: PGA
+  provider_sport_key: golf_pga_championship
+  market_id: top_20
+  provider_market_key: top_20_finish
+  subject_type: player
+  target_type: placement
+  sides: [yes, no]
+  result_source: pga_tour_api
+  model_name: pga_tournament_model
+  model_version: v1
+  live_enabled: true
+  backtest_enabled: false
+  min_books: 1
+  max_price_age_minutes: 60
+  status: "Live; The Odds API coverage is weak, so most events are model-only"
+
+- sport: PGA
+  provider_sport_key: golf_pga_championship
+  market_id: make_cut
+  provider_market_key: make_cut
+  subject_type: player
+  target_type: binary
+  sides: [yes, no]
+  result_source: pga_tour_api
+  model_name: pga_tournament_model
+  model_version: v1
+  live_enabled: false
+  backtest_enabled: false
+  min_books: 1
+  max_price_age_minutes: 60
+  status: "Optional market; hidden on no-cut events; weak provider coverage"
