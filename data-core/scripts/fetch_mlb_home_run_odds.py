@@ -26,10 +26,13 @@ from src.data.mlb_hr_odds_fetcher import (  # noqa: E402
     HR_MARKET,
     HR_MARKETS,
     SLATE_TIMEZONE,
+    MlbHrOddsError,
     OddsApiClient,
     fetch_day_hr_odds,
+    fetch_day_hr_odds_propline,
     get_api_key,
 )
+from src.data.propline_client import PropLineClient, PropLineError, get_propline_api_key  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
 
@@ -173,11 +176,22 @@ def main() -> None:
     requested_markets = _requested_markets(args)
     audit_market = requested_markets[0] if requested_markets and len(requested_markets) == 1 else HR_MARKET
 
+    # Try The Odds API first
+    odds_api_key = None
+    propline_api_key = None
     try:
-        api_key = get_api_key()
+        odds_api_key = get_api_key()
     except ValueError:
+        pass
+
+    try:
+        propline_api_key = get_propline_api_key()
+    except ValueError:
+        pass
+
+    if not odds_api_key and not propline_api_key:
         if not args.allow_missing_key:
-            raise
+            raise RuntimeError("Neither ODDS_API_KEY nor PROPLINE_API_KEY found in environment")
         audit = {
             "generatedAt": datetime.now(timezone.utc).isoformat(),
             "gameDate": args.date.isoformat(),
@@ -185,7 +199,8 @@ def main() -> None:
             "markets": requested_markets or list(HR_MARKETS),
             "regions": args.regions,
             "oddsRows": 0,
-            "gaps": ["ODDS_API_KEY not found in environment."],
+            "gaps": ["Neither ODDS_API_KEY nor PROPLINE_API_KEY found in environment."],
+            "provider": "none",
         }
         _write_outputs(pd.DataFrame(), audit, args.out_csv, args.audit_out)
         print(f"Wrote empty MLB HR odds audit to {args.audit_out}")
@@ -202,24 +217,98 @@ def main() -> None:
             "regions": args.regions,
             "oddsRows": 0,
             "gaps": [f"No MLB schedule rows fetched for {args.date}."],
+            "provider": "none",
         }
         _write_outputs(pd.DataFrame(), audit, args.out_csv, args.audit_out)
         print(f"Wrote empty MLB HR odds audit to {args.audit_out}")
         return
 
-    client = OddsApiClient(api_key=api_key)
-    odds, audit = fetch_day_hr_odds(
-        client,
-        game_date=args.date,
-        schedule=schedule,
-        regions=args.regions,
-        markets=requested_markets,
-    )
+    odds = pd.DataFrame()
+    audit: dict[str, Any] = {}
+    should_fallback = False
+    fallback_reason = ""
+
+    # Try The Odds API if key is available
+    if odds_api_key:
+        client = OddsApiClient(api_key=odds_api_key)
+        try:
+            odds, audit = fetch_day_hr_odds(
+                client,
+                game_date=args.date,
+                schedule=schedule,
+                regions=args.regions,
+                markets=requested_markets,
+            )
+            # Check for quota exhaustion or empty board
+            if audit.get("apiCreditsRemaining") == "0":
+                should_fallback = True
+                fallback_reason = "The Odds API quota exhausted (0 credits remaining)"
+            elif odds.empty or len(odds) == 0:
+                should_fallback = True
+                fallback_reason = "The Odds API returned 0 priced rows"
+        except MlbHrOddsError as exc:
+            error_str = str(exc)
+            # Fallback on 401 (auth), 429 (rate limit), or quota errors
+            if "401" in error_str or "429" in error_str or "quota" in error_str.lower():
+                should_fallback = True
+                fallback_reason = f"The Odds API error: {exc}"
+            else:
+                raise
+
+    # Fallback to PropLine if needed and available
+    if should_fallback and propline_api_key:
+        print(f"Falling back to PropLine: {fallback_reason}")
+        propline_client = PropLineClient(api_key=propline_api_key)
+        try:
+            odds, audit = fetch_day_hr_odds_propline(
+                propline_client,
+                game_date=args.date,
+                schedule=schedule,
+                markets=requested_markets,
+            )
+            audit["fallbackReason"] = fallback_reason
+        except PropLineError as exc:
+            print(f"PropLine fallback also failed: {exc}")
+            # Keep empty odds and original audit if both fail
+            if not audit:
+                audit = {
+                    "gameDate": args.date.isoformat(),
+                    "market": audit_market,
+                    "markets": requested_markets or list(HR_MARKETS),
+                    "oddsRows": 0,
+                    "gaps": [f"The Odds API failed: {fallback_reason}", f"PropLine fallback failed: {exc}"],
+                    "provider": "failed",
+                }
+    elif should_fallback and not propline_api_key:
+        print(f"Would fallback to PropLine but PROPLINE_API_KEY not set: {fallback_reason}")
+        audit["fallbackSkipped"] = "PROPLINE_API_KEY not configured"
+    elif not odds_api_key and propline_api_key:
+        # ODDS_API_KEY missing, go straight to PropLine
+        print("ODDS_API_KEY not set, using PropLine")
+        propline_client = PropLineClient(api_key=propline_api_key)
+        try:
+            odds, audit = fetch_day_hr_odds_propline(
+                propline_client,
+                game_date=args.date,
+                schedule=schedule,
+                markets=requested_markets,
+            )
+        except PropLineError as exc:
+            print(f"PropLine fetch failed: {exc}")
+            audit = {
+                "gameDate": args.date.isoformat(),
+                "market": audit_market,
+                "markets": requested_markets or list(HR_MARKETS),
+                "oddsRows": 0,
+                "gaps": [f"PropLine fetch failed: {exc}"],
+                "provider": "failed",
+            }
+
     audit["generatedAt"] = datetime.now(timezone.utc).isoformat()
     synced = _sync_supabase(odds) if args.sync_supabase else 0
     audit["supabaseRowsInserted"] = synced
     _write_outputs(odds, audit, args.out_csv, args.audit_out)
-    print(f"Wrote {len(odds)} MLB HR odds rows to {args.out_csv}")
+    print(f"Wrote {len(odds)} MLB HR odds rows to {args.out_csv} (provider: {audit.get('provider', 'unknown')})")
     print(f"Wrote MLB HR odds audit to {args.audit_out}")
     if args.sync_supabase:
         print(f"Synced {synced} MLB HR odds rows to Supabase")

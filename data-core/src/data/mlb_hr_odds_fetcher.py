@@ -1,7 +1,11 @@
-"""MLB home run player-prop odds from The Odds API.
+"""MLB home run player-prop odds from The Odds API with PropLine fallback.
 
 This module fetches current event-level player props and normalizes standard
 and alternate home-run outcomes into one row per book/player/side/line.
+
+When The Odds API key is missing, quota-exhausted, or returns 401/429, the
+fetcher falls back to PropLine if PROPLINE_API_KEY is set. PropLine event IDs
+are separate from The Odds API, so we join events by team names and commence_time.
 """
 
 from __future__ import annotations
@@ -22,6 +26,13 @@ import requests
 from dotenv import load_dotenv
 
 from src.data.odds_math import american_to_decimal, american_to_implied
+from src.data.propline_client import (
+    PropLineClient,
+    PropLineError,
+    fetch_propline_event_odds,
+    fetch_propline_mlb_events,
+    get_propline_api_key,
+)
 
 load_dotenv()
 
@@ -265,6 +276,7 @@ def flatten_event_hr_odds(
     snapshot_ts: Optional[str] = None,
     target_market: str | None = None,
     target_markets: Iterable[str] | str | None = None,
+    provider: str = "the_odds_api",
 ) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     game_meta = game_meta or {}
@@ -301,7 +313,7 @@ def flatten_event_hr_odds(
                         "game_pk": game_meta.get("game_pk"),
                         "game_date": game_meta.get("game_date"),
                         "event_time": game_meta.get("event_time") or payload.get("commence_time"),
-                        "provider": "the_odds_api",
+                        "provider": provider,
                         "provider_event_id": event_id,
                         "market": market_key,
                         "player_name": player_name,
@@ -349,7 +361,9 @@ def fetch_day_hr_odds(
         except MlbHrOddsError as exc:
             gaps.append(f"Odds fetch failed for {meta['game_id']}: {exc}")
             continue
-        frame = flatten_event_hr_odds(payload, game_meta=meta, snapshot_ts=snapshot_ts, target_markets=requested_markets)
+        frame = flatten_event_hr_odds(
+            payload, game_meta=meta, snapshot_ts=snapshot_ts, target_markets=requested_markets, provider="the_odds_api"
+        )
         if frame.empty:
             gaps.append(f"No requested HR odds returned for {meta['game_id']}")
             continue
@@ -391,5 +405,94 @@ def fetch_day_hr_odds(
         "apiCreditsUsed": client.response_meta.requests_used,
         "lastRequestCost": client.response_meta.requests_last,
         "gaps": gaps,
+        "provider": "the_odds_api",
+    }
+    return odds, audit
+
+
+def fetch_day_hr_odds_propline(
+    client: PropLineClient,
+    *,
+    game_date: date,
+    schedule: pd.DataFrame,
+    market: str | None = None,
+    markets: Iterable[str] | str | None = None,
+) -> tuple[pd.DataFrame, dict[str, Any]]:
+    """Fetch MLB HR odds from PropLine as a fallback to The Odds API.
+
+    PropLine event IDs are separate from The Odds API. We fetch all PropLine
+    events, join them to the schedule by team names + commence_time, then
+    fetch odds for matched events.
+
+    Args:
+        client: PropLine API client
+        game_date: Game date for slate (used to filter schedule)
+        schedule: MLB schedule DataFrame with game_pk, teams, game_datetime
+        market: Single market key (backwards compat)
+        markets: List or comma-separated market keys
+
+    Returns:
+        (odds_df, audit_dict) with provider="propline"
+    """
+    requested_markets = _normalize_markets(markets if markets is not None else market)
+    events = fetch_propline_mlb_events(client)
+    event_map = match_events_to_schedule(events, schedule)
+    frames: list[pd.DataFrame] = []
+    gaps: list[str] = []
+    snapshot_ts = datetime.now(timezone.utc).isoformat()
+
+    event_market_rows: dict[str, set[str]] = {}
+    for event in events:
+        event_id = str(event.get("id") or "")
+        meta = event_map.get(event_id)
+        if not meta:
+            gaps.append(f"Unmatched PropLine MLB event {event_id}: {event.get('away_team')} at {event.get('home_team')}")
+            continue
+        try:
+            payload = fetch_propline_event_odds(client, event_id=event_id, markets=requested_markets)
+        except PropLineError as exc:
+            gaps.append(f"PropLine odds fetch failed for {meta['game_id']}: {exc}")
+            continue
+        frame = flatten_event_hr_odds(
+            payload, game_meta=meta, snapshot_ts=snapshot_ts, target_markets=requested_markets, provider="propline"
+        )
+        if frame.empty:
+            gaps.append(f"No requested HR odds returned from PropLine for {meta['game_id']}")
+            continue
+        event_market_rows[meta["game_id"]] = set(frame["market"].dropna().astype(str))
+        frames.append(frame)
+
+    odds = pd.concat(frames, ignore_index=True) if frames else pd.DataFrame()
+    market_rows = (
+        odds.groupby("market", dropna=False).size().astype(int).to_dict()
+        if not odds.empty
+        else {}
+    )
+    events_with_market = {
+        market_key: sum(market_key in markets_for_event for markets_for_event in event_market_rows.values())
+        for market_key in requested_markets
+    }
+    events_missing_market = {
+        market_key: sorted(
+            meta["game_id"]
+            for event_id, meta in event_map.items()
+            if market_key not in event_market_rows.get(meta["game_id"], set())
+        )
+        for market_key in requested_markets
+    }
+    audit = {
+        "sportKey": SPORT_KEY,
+        "market": requested_markets[0] if len(requested_markets) == 1 else HR_MARKET,
+        "markets": list(requested_markets),
+        "gameDate": game_date.isoformat(),
+        "eventsReturned": len(events),
+        "eventsMatched": len(event_map),
+        "oddsRows": int(len(odds)),
+        "oddsRowsByMarket": market_rows,
+        "eventsWithMarket": events_with_market,
+        "eventsMissingMarket": events_missing_market,
+        "apiRequests": client.request_count,
+        "gaps": gaps,
+        "provider": "propline",
     }
     return odds, audit

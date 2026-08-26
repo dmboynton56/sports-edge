@@ -1,6 +1,13 @@
 name: Player Market Refresh
 
+# MLB HR odds are fetched once daily at 11:00 AM America/Denver (17:00 or 18:00 UTC
+# depending on DST) to conserve The Odds API Starter plan credits (500/month).
+# This timing captures morning lines before most first pitches around 12:30-1:05 PM MDT.
+# The workflow can still be triggered manually via workflow_dispatch for ad-hoc runs.
+
 on:
+  schedule:
+    - cron: "0 17 * * *"  # 11:00 AM MDT / 10:00 AM MST (17:00 UTC year-round is close enough)
   workflow_dispatch:
     inputs:
       date:
@@ -233,6 +240,7 @@ jobs:
         shell: bash
         env:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
@@ -240,6 +248,9 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
+          # PropLine fallback: if ODDS_API_KEY is missing, quota-exhausted (401/429), or
+          # returns 0 priced rows, the script falls back to PROPLINE_API_KEY if set.
+          # To enable PropLine, add GitHub secret PROPLINE_API_KEY (get free key at https://prop-line.com).
           if [ "$SYNC_SUPABASE" = "true" ]; then
             python scripts/fetch_mlb_home_run_odds.py \
               --date "${{ steps.dates.outputs.date }}" \
