@@ -111,11 +111,19 @@ export default async function DataQualityPage() {
         <CardContent>
           <div className="grid gap-3 text-sm sm:grid-cols-4">
             <div><div className="text-xs text-muted-foreground">Candidates</div><div className="font-semibold">{formatNumber(mlbHr.counts.candidates)}</div></div>
-            <div><div className="text-xs text-muted-foreground">Priced</div><div className="font-semibold">{formatNumber(mlbHr.counts.priced)}</div></div>
+            <div><div className="text-xs text-muted-foreground">Priced</div><div className={`font-semibold ${mlbHr.counts.priced === 0 && mlbHr.counts.candidates > 0 ? "text-warning" : ""}`}>{formatNumber(mlbHr.counts.priced)}</div></div>
             <div><div className="text-xs text-muted-foreground">Top-25 coverage</div><div className="font-semibold">{formatPctFromWhole(mlbHr.counts.top25Coverage == null ? null : mlbHr.counts.top25Coverage * 100)}</div></div>
             <div><div className="text-xs text-muted-foreground">Last completed</div><div className="font-semibold">{formatDateTime(mlbHr.completedAt)}</div></div>
           </div>
-          {mlbHr.gaps.length ? <div className="mt-4 flex flex-wrap gap-2">{mlbHr.gaps.map((gap) => <Badge key={gap} variant="missing">{gap}</Badge>)}</div> : null}
+          {mlbHr.counts.candidates > 0 && mlbHr.counts.priced === 0 ? (
+            <div className="mt-4 rounded-md border border-warning/40 bg-warning/10 p-3">
+              <p className="text-[13px] leading-relaxed text-muted-foreground">
+                <span className="font-semibold text-warning">No sportsbook prices:</span> The serving pipeline completed successfully and produced {formatNumber(mlbHr.counts.candidates)} model candidates, but no valid upstream sportsbook odds were available at publication time. This is a data-provider issue, not an infrastructure or code problem. Check OddsPapi validation status below.
+              </p>
+            </div>
+          ) : mlbHr.gaps.length ? (
+            <div className="mt-4 flex flex-wrap gap-2">{mlbHr.gaps.map((gap) => <Badge key={gap} variant="missing">{gap}</Badge>)}</div>
+          ) : null}
         </CardContent>
       </Card>
 
