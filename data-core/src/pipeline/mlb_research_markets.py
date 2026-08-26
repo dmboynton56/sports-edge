@@ -22,9 +22,10 @@ from typing import Mapping, Optional
 import numpy as np
 import pandas as pd
 
-from src.data.mlb_fetcher import fetch_mlb_schedule, fetch_mlb_boxscores
+from src.data.mlb_fetcher import fetch_mlb_schedule
+from src.data.mlb_boxscore_fetcher import fetch_mlb_boxscores
 from src.models.mlb_winner_model import build_mlb_prediction_features
-from src.features.mlb_market_features import build_mlb_market_features
+from src.features.mlb_market_features import build_mlb_market_features, build_mlb_market_features_pregame
 from src.models.mlb_runline_model import cover_probability_from_residuals
 from src.models.mlb_totals_model import over_label, _normal_over_probability
 
@@ -111,8 +112,8 @@ def score_mlb_totals_v1(
 ) -> pd.DataFrame:
     """Score total runs and O/U probabilities for a single game date using the v1 artifact.
     
-    CRITICAL: totals v1 was trained on v2 features (weather, starters). Must use
-    build_mlb_market_features, not build_mlb_prediction_features.
+    CRITICAL: totals v1 was trained on v2 features (weather, starters). Uses the pregame
+    scoring path (build_mlb_market_features_pregame) to emit rows for uncompleted games.
     """
     schedule["game_date"] = pd.to_datetime(schedule["game_date"])
     games_to_score = schedule[schedule["game_date"].dt.date == game_date].copy()
@@ -121,29 +122,18 @@ def score_mlb_totals_v1(
             columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
         )
 
-    history = schedule[
-        (schedule["game_date"].dt.date < game_date)
-        & schedule["home_score"].notna()
-        & schedule["away_score"].notna()
-    ].copy()
-    if history.empty:
-        return pd.DataFrame(
-            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
+    # Pregame scoring path: build rolling state from completed history, emit rows for target_date
+    try:
+        features = build_mlb_market_features_pregame(
+            games=schedule,
+            boxscores=boxscores,
+            venue_meta=venue_meta,
+            target_date=pd.Timestamp(game_date),
+            min_prior_games=min_prior_games,
         )
-
-    # Build v2 features (requires boxscores & venue_meta for weather/starters)
-    features = build_mlb_market_features(
-        pd.concat([history, games_to_score], ignore_index=True),
-        boxscores,
-        venue_meta,
-        min_prior_games=min_prior_games,
-    )
-    # Filter to today's games only
-    features = features[features["game_pk"].isin(games_to_score["game_pk"])].copy()
-    if features.empty:
-        return pd.DataFrame(
-            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "predicted_total", "p_over_8_5", "p_over_9_5"]
-        )
+    except ValueError as e:
+        print(f"ERROR: Pregame scoring failed for totals v1 on {game_date}: {e}")
+        raise
 
     feature_cols = artifact["feature_columns"]
     predicted_total = artifact["model"].predict(features[feature_cols])
@@ -169,8 +159,8 @@ def score_mlb_runline_v1(
 ) -> pd.DataFrame:
     """Score home -1.5 cover probabilities for a single game date using the v1 artifact.
     
-    CRITICAL: run-line v1 was trained on v2 features (weather, starters). Must use
-    build_mlb_market_features, not build_mlb_prediction_features.
+    CRITICAL: run-line v1 was trained on v2 features (weather, starters). Uses the pregame
+    scoring path (build_mlb_market_features_pregame) to emit rows for uncompleted games.
     """
     schedule["game_date"] = pd.to_datetime(schedule["game_date"])
     games_to_score = schedule[schedule["game_date"].dt.date == game_date].copy()
@@ -179,29 +169,18 @@ def score_mlb_runline_v1(
             columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
         )
 
-    history = schedule[
-        (schedule["game_date"].dt.date < game_date)
-        & schedule["home_score"].notna()
-        & schedule["away_score"].notna()
-    ].copy()
-    if history.empty:
-        return pd.DataFrame(
-            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
+    # Pregame scoring path: build rolling state from completed history, emit rows for target_date
+    try:
+        features = build_mlb_market_features_pregame(
+            games=schedule,
+            boxscores=boxscores,
+            venue_meta=venue_meta,
+            target_date=pd.Timestamp(game_date),
+            min_prior_games=min_prior_games,
         )
-
-    # Build v2 features (requires boxscores & venue_meta for weather/starters)
-    features = build_mlb_market_features(
-        pd.concat([history, games_to_score], ignore_index=True),
-        boxscores,
-        venue_meta,
-        min_prior_games=min_prior_games,
-    )
-    # Filter to today's games only
-    features = features[features["game_pk"].isin(games_to_score["game_pk"])].copy()
-    if features.empty:
-        return pd.DataFrame(
-            columns=["game_pk", "game_date", "game_datetime", "home_team", "away_team", "p_home_cover_15", "p_away_cover_plus_15"]
-        )
+    except ValueError as e:
+        print(f"ERROR: Pregame scoring failed for runline v1 on {game_date}: {e}")
+        raise
 
     feature_cols = artifact["feature_columns"]
     classifier = artifact["classifier"]
