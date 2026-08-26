@@ -449,8 +449,11 @@ def _round_complete_for_field(players: list[dict[str, Any]], round_no: int) -> b
     if not relevant:
         return False
     for player in relevant:
-        round_value = (player.get("rounds") or {}).get(round_no)
-        holes_played = (player.get("roundHoles") or {}).get(round_no)
+        rounds_dict = player.get("rounds") or {}
+        holes_dict = player.get("roundHoles") or {}
+        # Try both int and string keys for compatibility
+        round_value = rounds_dict.get(round_no) or rounds_dict.get(str(round_no))
+        holes_played = holes_dict.get(round_no) or holes_dict.get(str(round_no))
         if round_value is None:
             return False
         if holes_played is not None and holes_played < 18:
