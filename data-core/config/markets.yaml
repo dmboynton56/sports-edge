@@ -87,7 +87,7 @@
   backtest_enabled: true
   min_books: 2
   max_price_age_minutes: 20
-  status: "Live and trusted; currently 0-priced due to OddsPapi HR market unavailability"
+  status: "Live and trusted; currently 0-priced due to The Odds API missing fresh MLB HR markets—fail-closed is correct"
 
 - sport: MLB
   provider_sport_key: baseball_mlb
@@ -134,7 +134,7 @@
   sides: [home, away]
   result_source: nba_stats_api
   model_name: nba_winner_model
-  model_version: v1
+  model_version: v3
   live_enabled: false
   backtest_enabled: true
   min_books: 2
@@ -150,7 +150,7 @@
   sides: [home, away]
   result_source: nba_stats_api
   model_name: nba_spread_model
-  model_version: v1
+  model_version: v3
   live_enabled: false
   backtest_enabled: true
   min_books: 2
