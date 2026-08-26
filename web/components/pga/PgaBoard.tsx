@@ -41,6 +41,22 @@ type PredRow = {
   ev_win?: number | null;
   kelly_win?: number | null;
   book_odds_win?: Record<string, { price: number; implied: number; decimal: number }>;
+  // Mid-tournament fields
+  pre_tournament_win_prob?: number | null;
+  pre_tournament_top10_prob?: number | null;
+  pre_tournament_top20_prob?: number | null;
+  pre_tournament_made_cut_prob?: number | null;
+  rounds_completed?: number | null;
+  current_position?: number | null;
+  current_position_display?: string | null;
+  to_par?: number | null;
+  to_par_display?: string | null;
+  total_strokes?: number | null;
+  updated_sg_per_round?: number | null;
+  r1?: number | null;
+  r2?: number | null;
+  r3?: number | null;
+  r4?: number | null;
 };
 
 type FormRow = {
@@ -229,27 +245,69 @@ function strokesDisplay(value: number | null | undefined, digits = 2) {
 
 function preWinPct(row: PredRow | undefined) {
   if (!row) return null;
+  // Use explicit pre-tournament field if available (from mid-tournament merge)
+  if (row.pre_tournament_win_prob != null) return asPct(row.pre_tournament_win_prob);
+  // Otherwise fall back to current best calibrated
   return asPct(row.best_calibrated_target_win_prob ?? row.lr_target_win_prob) ?? row.sim_win_pct;
 }
 
 function preMakeCutPct(row: PredRow | undefined) {
   if (!row) return null;
+  if (row.pre_tournament_made_cut_prob != null) return asPct(row.pre_tournament_made_cut_prob);
   return asPct(row.best_calibrated_target_made_cut_prob ?? row.lr_target_made_cut_prob);
 }
 
 function preTop10Pct(row: PredRow | undefined) {
   if (!row) return null;
+  if (row.pre_tournament_top10_prob != null) return asPct(row.pre_tournament_top10_prob);
   return asPct(row.best_calibrated_target_top10_prob ?? row.lr_target_top10_prob) ?? row.sim_top10_pct;
 }
 
 function preTop20Pct(row: PredRow | undefined) {
   if (!row) return null;
+  if (row.pre_tournament_top20_prob != null) return asPct(row.pre_tournament_top20_prob);
   return asPct(row.best_calibrated_target_top20_prob ?? row.lr_target_top20_prob) ?? row.sim_top20_pct;
 }
 
 function buildOutlookRows(data: Dashboard): OutlookRow[] {
   const preByPlayer = Object.fromEntries(data.predictions.map((row) => [row.player, row]));
   const mtRows = data.midtournament?.predictions ?? [];
+  
+  // Check if any prediction has rounds_completed field (indicates mid-tournament merge)
+  const hasUpdatedPredictions = data.predictions.some(p => p.rounds_completed != null && p.rounds_completed > 0);
+  
+  if (hasUpdatedPredictions) {
+    // Use the merged predictions array which already has updated probabilities
+    return data.predictions.map((pred, index) => {
+      const winPct = asPct(pred.best_calibrated_target_win_prob ?? pred.lr_target_win_prob) ?? pred.sim_win_pct;
+      const preWin = pred.pre_tournament_win_prob != null ? asPct(pred.pre_tournament_win_prob) : winPct;
+      const completedRounds = [pred.r1 ?? null, pred.r2 ?? null, pred.r3 ?? null, pred.r4 ?? null];
+      return {
+        player: pred.player,
+        pre: pred,
+        rankLabel: String(index + 1),
+        positionLabel: pred.current_position_display ?? undefined,
+        toParDisplay: pred.to_par_display ?? undefined,
+        toParValue: pred.to_par ?? null,
+        completedRounds,
+        totalStrokes: pred.total_strokes ?? null,
+        updatedSg: pred.updated_sg_per_round ?? pred.exp_sg_per_round,
+        preSg: pred.exp_sg_per_round,
+        winPct,
+        makeCutPct: asPct(pred.best_calibrated_target_made_cut_prob ?? pred.lr_target_made_cut_prob),
+        top5Pct: pred.sim_top5_pct,
+        top10Pct: asPct(pred.best_calibrated_target_top10_prob ?? pred.lr_target_top10_prob) ?? pred.sim_top10_pct,
+        top20Pct: asPct(pred.best_calibrated_target_top20_prob ?? pred.lr_target_top20_prob) ?? pred.sim_top20_pct,
+        preWinPct: preWin,
+        preMakeCutPct: pred.pre_tournament_made_cut_prob != null ? asPct(pred.pre_tournament_made_cut_prob) : asPct(pred.best_calibrated_target_made_cut_prob ?? pred.lr_target_made_cut_prob),
+        preTop10Pct: pred.pre_tournament_top10_prob != null ? asPct(pred.pre_tournament_top10_prob) : asPct(pred.best_calibrated_target_top10_prob ?? pred.lr_target_top10_prob) ?? pred.sim_top10_pct,
+        preTop20Pct: pred.pre_tournament_top20_prob != null ? asPct(pred.pre_tournament_top20_prob) : asPct(pred.best_calibrated_target_top20_prob ?? pred.lr_target_top20_prob) ?? pred.sim_top20_pct,
+        winDeltaPct: preWin != null ? winPct - preWin : null,
+        rankChange: null,
+      };
+    });
+  }
+  
   if (mtRows.length > 0) {
     return mtRows.map((mt, index) => {
       const pre = preByPlayer[mt.pred_name] ?? preByPlayer[mt.player];
@@ -714,7 +772,19 @@ export default function PGAPage() {
   const eventPar = data?.event?.par;
   const roundMeta = data?.midtournament?.meta;
   const hasRoundUpdate = data?.midtournament != null && data.midtournament.predictions.length > 0;
-  const completedRoundLabel = roundMeta ? `After Round ${roundMeta.rounds_completed}` : 'Pre-tournament';
+  
+  // Check if predictions array has mid-tournament updates
+  const roundsCompletedInPredictions = data?.predictions?.find(p => p.rounds_completed != null)?.rounds_completed ?? 0;
+  const hasUpdatedPredictions = roundsCompletedInPredictions > 0;
+  const effectiveRoundsCompleted = hasUpdatedPredictions ? roundsCompletedInPredictions : (roundMeta?.rounds_completed ?? 0);
+  
+  // Check if this is a no-cut event (cut after round > 4 means no cut)
+  const cutAfterRound = roundMeta?.cut_after_round ?? 2;
+  const isNoCutEvent = cutAfterRound > 4;
+  
+  const completedRoundLabel = effectiveRoundsCompleted > 0 
+    ? `After Round ${effectiveRoundsCompleted}` 
+    : 'Pre-tournament';
   const liveRoundLabel = data?.liveLeaderboard
     ? `Round ${data.liveLeaderboard.currentRound} ${data.liveLeaderboard.status.toLowerCase()}`
     : data?.event?.status?.replace(/_/g, ' ');
@@ -853,16 +923,16 @@ export default function PGAPage() {
                 <tr className="border-b border-border bg-secondary/30">
                   <th className="text-left px-3 py-2 font-medium text-muted-foreground">#</th>
                   <th className="text-left px-3 py-2 font-medium text-muted-foreground">Player</th>
-                  {hasRoundUpdate && <th className="text-right px-3 py-2 font-medium text-muted-foreground">Pos</th>}
-                  {hasRoundUpdate && <th className="text-right px-3 py-2 font-medium text-muted-foreground">Score</th>}
-                  {hasRoundUpdate && Array.from({ length: roundMeta?.rounds_completed ?? 0 }, (_, i) => (
+                  {(hasRoundUpdate || hasUpdatedPredictions) && <th className="text-right px-3 py-2 font-medium text-muted-foreground">Pos</th>}
+                  {(hasRoundUpdate || hasUpdatedPredictions) && <th className="text-right px-3 py-2 font-medium text-muted-foreground">Score</th>}
+                  {(hasRoundUpdate || hasUpdatedPredictions) && Array.from({ length: effectiveRoundsCompleted }, (_, i) => (
                     <th key={`r${i + 1}`} className="text-right px-3 py-2 font-medium text-muted-foreground">
                       R{i + 1}
                     </th>
                   ))}
                   {(
                     [
-                      ['updated_sg', hasRoundUpdate ? 'Upd SG/R' : 'Exp SG/R'],
+                      ['updated_sg', (hasRoundUpdate || hasUpdatedPredictions) ? 'Upd SG/R' : 'Exp SG/R'],
                       ['win_pct', 'Win%'],
                       ['make_cut_pct', 'Cut%'],
                       ['top5_pct', 'Top 5%'],
@@ -871,7 +941,9 @@ export default function PGAPage() {
                       ['win_delta_pct', 'Win Δ'],
                       ['pre_win_pct', 'Pre Win%'],
                     ] satisfies [PredictionSortKey, string][]
-                  ).map(([k, lab]) => (
+                  )
+                    .filter(([k]) => !(isNoCutEvent && k === 'make_cut_pct'))
+                    .map(([k, lab]) => (
                     <th
                       key={k}
                       className="text-right px-3 py-2 font-medium text-muted-foreground cursor-pointer hover:text-foreground whitespace-nowrap"
@@ -909,24 +981,24 @@ export default function PGAPage() {
                             <span className="text-[10px] text-muted-foreground">{open ? 'Hide' : 'Details'}</span>
                           </div>
                         </td>
-                        {hasRoundUpdate && (
+                        {(hasRoundUpdate || hasUpdatedPredictions) && (
                           <td className="px-3 py-2 text-right font-mono text-muted-foreground">{r.positionLabel ?? '—'}</td>
                         )}
-                        {hasRoundUpdate && (
+                        {(hasRoundUpdate || hasUpdatedPredictions) && (
                           <td className={`px-3 py-2 text-right font-mono font-semibold ${toParColor(r.toParDisplay ?? '')}`}>
                             {r.toParDisplay ?? '—'}
                           </td>
                         )}
-                        {hasRoundUpdate && Array.from({ length: roundMeta?.rounds_completed ?? 0 }, (_, ri) => (
+                        {(hasRoundUpdate || hasUpdatedPredictions) && Array.from({ length: effectiveRoundsCompleted }, (_, ri) => (
                           <td key={ri} className="px-3 py-2 text-right font-mono text-muted-foreground">
                             {r.completedRounds[ri] ?? '—'}
                           </td>
                         ))}
                         <td className="px-3 py-2 text-right font-mono text-emerald-400/90">
-                          {strokesDisplay(r.updatedSg, hasRoundUpdate ? 2 : 3)}
+                          {strokesDisplay(r.updatedSg, (hasRoundUpdate || hasUpdatedPredictions) ? 2 : 3)}
                         </td>
                         <td className="px-3 py-2 text-right font-semibold">{pctDisplay(r.winPct)}</td>
-                        <td className="px-3 py-2 text-right">{pctDisplay(r.makeCutPct)}</td>
+                        {!isNoCutEvent && <td className="px-3 py-2 text-right">{pctDisplay(r.makeCutPct)}</td>}
                         <td className="px-3 py-2 text-right text-muted-foreground">{pctDisplay(r.top5Pct)}</td>
                         <td className="px-3 py-2 text-right text-muted-foreground">{pctDisplay(r.top10Pct)}</td>
                         <td className="px-3 py-2 text-right text-muted-foreground">{pctDisplay(r.top20Pct)}</td>
@@ -943,7 +1015,7 @@ export default function PGAPage() {
                       </tr>
                       {open && (
                         <tr className="bg-secondary/20 border-b border-border/50">
-                          <td colSpan={hasRoundUpdate ? 12 + (roundMeta?.rounds_completed ?? 0) : 10} className="px-4 py-3">
+                          <td colSpan={(hasRoundUpdate || hasUpdatedPredictions) ? 12 + effectiveRoundsCompleted : 10} className="px-4 py-3">
                             <div className="mb-4">
                               <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
                                 Current vs pre-tournament
@@ -951,7 +1023,7 @@ export default function PGAPage() {
                               <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                                 {[
                                   ['Win', pctDisplay(r.winPct), pctDisplay(r.preWinPct)],
-                                  ['Make Cut', pctDisplay(r.makeCutPct), pctDisplay(r.preMakeCutPct)],
+                                  ...(isNoCutEvent ? [] : [['Make Cut', pctDisplay(r.makeCutPct), pctDisplay(r.preMakeCutPct)] as [string, string, string]]),
                                   ['Top 10', pctDisplay(r.top10Pct), pctDisplay(r.preTop10Pct)],
                                   ['Top 20', pctDisplay(r.top20Pct), pctDisplay(r.preTop20Pct)],
                                   ['SG/R', strokesDisplay(r.updatedSg), strokesDisplay(r.preSg)],

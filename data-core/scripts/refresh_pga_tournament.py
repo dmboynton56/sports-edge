@@ -99,6 +99,20 @@ def _write_state(state: dict[str, Any], path: Path = STATE_PATH) -> None:
 
 
 def _existing_midtournament_state(tournament: PgaTournament) -> str | None:
+    # Check for latest round-specific file first
+    for round_no in range(tournament.total_rounds, 0, -1):
+        meta_path = tournament.midtournament_csv.with_name(
+            f"{tournament.key}_midtournament_R{round_no}.meta.json"
+        )
+        if meta_path.exists():
+            try:
+                meta = json.loads(meta_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                continue
+            if meta.get("score_source") == "espn_completed_round_scores_v1":
+                return meta.get("round_state_key")
+    
+    # Fall back to legacy single-file name
     meta_path = tournament.midtournament_csv.with_suffix(".meta.json")
     if not meta_path.exists():
         return None
@@ -292,6 +306,11 @@ def run_midtournament_update(
     if not tournament.predictions_csv.exists():
         run_pretournament_predictions(tournament, args, dry_run=dry_run)
 
+    # Use round-specific filename instead of overwriting single file
+    midtournament_csv = tournament.midtournament_csv.with_name(
+        f"{tournament.key}_midtournament_R{rounds_completed}.csv"
+    )
+    
     cmd = [
         sys.executable,
         "scripts/update_pga_midtournament.py",
@@ -310,7 +329,7 @@ def run_midtournament_update(
         "--pred-csv",
         str(tournament.predictions_csv),
         "--out-csv",
-        str(tournament.midtournament_csv),
+        str(midtournament_csv),
         "--n-sims",
         str(args.n_sims),
     ]
@@ -395,8 +414,21 @@ def export_dashboard(
         cmd.extend(["--course-yardage", str(tournament.yardage)])
     if tournament.odds_key:
         cmd.extend(["--odds-key", tournament.odds_key])
-    if phase != "pre" and tournament.midtournament_csv.exists():
-        cmd.extend(["--midtournament-csv", str(tournament.midtournament_csv)])
+    if phase != "pre":
+        # Find the latest round-specific midtournament CSV
+        latest_midtournament = None
+        for round_no in range(tournament.total_rounds, 0, -1):
+            candidate = tournament.midtournament_csv.with_name(
+                f"{tournament.key}_midtournament_R{round_no}.csv"
+            )
+            if candidate.exists():
+                latest_midtournament = candidate
+                break
+        # Fall back to legacy single-file name
+        if latest_midtournament is None and tournament.midtournament_csv.exists():
+            latest_midtournament = tournament.midtournament_csv
+        if latest_midtournament:
+            cmd.extend(["--midtournament-csv", str(latest_midtournament)])
     for pattern in tournament.espn_match:
         cmd.extend(["--espn-match", pattern])
     if tournament.espn_event_id:
@@ -550,6 +582,15 @@ def main() -> None:
         elif phase == "post":
             if not tournament.predictions_csv.exists():
                 run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
+            # Run midtournament update in post phase to capture final round
+            if leaderboard:
+                run_midtournament_update(
+                    tournament,
+                    leaderboard=leaderboard,
+                    leaderboard_snapshot=snapshot_path,
+                    args=args,
+                    dry_run=args.dry_run,
+                )
             run_post_results_fetch(
                 tournament,
                 args,

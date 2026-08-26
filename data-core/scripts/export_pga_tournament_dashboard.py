@@ -157,6 +157,71 @@ def _prob_from_prediction(row: dict[str, Any], key: str) -> float | None:
     return None
 
 
+def _merge_midtournament_into_predictions(
+    predictions: list[dict[str, Any]],
+    midtournament: dict[str, Any] | None,
+) -> list[dict[str, Any]]:
+    """Merge mid-tournament updated probabilities back into the main predictions array."""
+    if not midtournament or not midtournament.get("predictions"):
+        return predictions
+
+    mt_preds = midtournament["predictions"]
+    mt_meta = midtournament.get("meta", {})
+    rounds_completed = mt_meta.get("rounds_completed", 0)
+    cut_after_round = mt_meta.get("cut_after_round", 2)
+    is_no_cut_event = cut_after_round > 4  # Events with cut after round 5+ are effectively no-cut
+
+    # Build lookup from pred_name -> midtournament row
+    mt_by_pred_name = {row.get("pred_name"): row for row in mt_preds if row.get("pred_name")}
+    mt_by_player = {row.get("player"): row for row in mt_preds if row.get("player")}
+
+    merged = []
+    for pred in predictions:
+        player_name = pred.get("player")
+        mt_row = mt_by_pred_name.get(player_name) or mt_by_player.get(player_name)
+
+        if mt_row:
+            # Player has mid-tournament update - merge updated probabilities
+            merged_pred = dict(pred)
+            # Store pre-tournament probabilities with explicit keys
+            merged_pred["pre_tournament_win_prob"] = pred.get("best_calibrated_target_win_prob")
+            merged_pred["pre_tournament_top10_prob"] = pred.get("best_calibrated_target_top10_prob")
+            merged_pred["pre_tournament_top20_prob"] = pred.get("best_calibrated_target_top20_prob")
+            merged_pred["pre_tournament_made_cut_prob"] = pred.get("best_calibrated_target_made_cut_prob")
+
+            # Update with mid-tournament probabilities (convert from % to 0-1 range)
+            merged_pred["best_calibrated_target_win_prob"] = mt_row.get("sim_win_pct", 0) / 100.0
+            merged_pred["best_calibrated_target_top10_prob"] = mt_row.get("sim_top10_pct", 0) / 100.0
+            merged_pred["best_calibrated_target_top20_prob"] = mt_row.get("sim_top20_pct", 0) / 100.0
+            # For no-cut events, force make_cut to 100% for active players
+            if is_no_cut_event:
+                merged_pred["best_calibrated_target_made_cut_prob"] = 1.0
+            elif mt_row.get("sim_make_cut_pct") is not None:
+                merged_pred["best_calibrated_target_made_cut_prob"] = mt_row["sim_make_cut_pct"] / 100.0
+
+            # Add mid-tournament specific fields
+            merged_pred["rounds_completed"] = rounds_completed
+            merged_pred["current_position"] = mt_row.get("current_pos")
+            merged_pred["current_position_display"] = mt_row.get("current_pos_display")
+            merged_pred["to_par"] = mt_row.get("to_par")
+            merged_pred["to_par_display"] = mt_row.get("to_par_display")
+            merged_pred["total_strokes"] = mt_row.get("total_strokes")
+            merged_pred["updated_sg_per_round"] = mt_row.get("updated_sg_per_round")
+
+            # Copy round scores
+            for i in range(1, 5):
+                r_key = f"r{i}"
+                if mt_row.get(r_key) is not None:
+                    merged_pred[r_key] = mt_row[r_key]
+
+            merged.append(merged_pred)
+        else:
+            # Player not in mid-tournament update (likely missed cut) - keep original
+            merged.append(pred)
+
+    return merged
+
+
 def _build_normalized_markets(
     predictions: list[dict[str, Any]],
     event_time: str | None,
@@ -262,8 +327,12 @@ def main() -> None:
         meta_completed = int(midtournament.get("meta", {}).get("rounds_completed") or 0)
         if current_completed < meta_completed:
             midtournament = None
+    
+    # Merge mid-tournament probabilities into the main predictions array
+    merged_predictions = _merge_midtournament_into_predictions(predictions, midtournament)
+    
     normalized_markets = _build_normalized_markets(
-        predictions,
+        merged_predictions,
         args.start_date,
         model_version,
         tournament_key=args.tournament_key,
@@ -281,7 +350,7 @@ def main() -> None:
             "endDate": args.end_date,
             "status": args.status,
         },
-        "predictions": predictions,
+        "predictions": merged_predictions,
         "normalizedMarkets": normalized_markets,
         "predictionMeta": pred_meta,
         "espnSupplement": {"path": _rel_to_repo(SUPP), "rows": int(len(pd.read_csv(SUPP, sep="\t"))) if SUPP.exists() else 0},
@@ -304,7 +373,7 @@ def main() -> None:
     if args.current_out:
         args.current_out.parent.mkdir(parents=True, exist_ok=True)
         args.current_out.write_text(text, encoding="utf-8")
-    parts = [f"{len(predictions)} predictions", f"{len(normalized_markets)} market rows"]
+    parts = [f"{len(merged_predictions)} predictions", f"{len(normalized_markets)} market rows"]
     if live_leaderboard:
         parts.append(f"leaderboard {len(live_leaderboard['players'])} players")
     if midtournament:
