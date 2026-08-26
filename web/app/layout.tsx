@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import { IBM_Plex_Sans, Newsreader } from "next/font/google";
 import { AppShell } from "@/components/dashboard/AppShell";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({
+const sans = IBM_Plex_Sans({
+  weight: ["400", "500", "600", "700"],
   subsets: ["latin"],
-  variable: "--font-bricolage",
+  variable: "--font-sans",
   display: "swap",
 });
 
-const sans = Plus_Jakarta_Sans({
+const display = Newsreader({
+  weight: ["400", "600", "700"],
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-display",
   display: "swap",
 });
 

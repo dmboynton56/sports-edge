@@ -87,7 +87,7 @@ export function ChannelCard({
         </div>
       ) : null}
 
-      <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-secondary-foreground transition-colors group-hover:text-accent">
+      <span className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-secondary-foreground transition-colors group-hover:text-foreground">
         {cta}
         <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
       </span>

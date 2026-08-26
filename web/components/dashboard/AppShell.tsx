@@ -39,11 +39,7 @@ function useActive() {
 
 function BrandMark() {
   return (
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-      <rect x="4" y="4" width="24" height="24" rx="2" stroke="currentColor" strokeWidth="2"/>
-      <path d="M12 10 L20 10 M12 16 L18 16 M12 22 L20 22" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
-      <path d="M20 10 L20 13" stroke="currentColor" strokeWidth="2" strokeLinecap="square"/>
-    </svg>
+    <span className="inline-block size-[18px] shrink-0 border border-current" />
   );
 }
 
@@ -142,7 +138,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               href="/"
               aria-label="Sports Edge home"
-              className="flex min-w-fit items-center gap-2.5 font-display text-lg font-extrabold tracking-tight"
+              className="flex min-w-fit items-center gap-2 font-display text-xl font-semibold tracking-tight"
             >
               <BrandMark />
               <span>Sports Edge</span>
@@ -165,7 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-72">
                   <SheetHeader>
-                    <SheetTitle className="flex items-center gap-2.5 font-display text-lg font-extrabold tracking-tight">
+                    <SheetTitle className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight">
                       <BrandMark />
                       Sports Edge
                     </SheetTitle>
