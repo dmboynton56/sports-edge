@@ -267,6 +267,7 @@ def main() -> None:
                 markets=requested_markets,
             )
             audit["fallbackReason"] = fallback_reason
+            print(f"PropLine returned {audit.get('eventsReturned', 0)} events, matched {audit.get('eventsMatched', 0)}, priced {len(odds)} rows")
         except PropLineError as exc:
             print(f"PropLine fallback also failed: {exc}")
             # Keep empty odds and original audit if both fail
@@ -293,6 +294,7 @@ def main() -> None:
                 schedule=schedule,
                 markets=requested_markets,
             )
+            print(f"PropLine returned {audit.get('eventsReturned', 0)} events, matched {audit.get('eventsMatched', 0)}, priced {len(odds)} rows")
         except PropLineError as exc:
             print(f"PropLine fetch failed: {exc}")
             audit = {

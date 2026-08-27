@@ -424,6 +424,10 @@ def fetch_day_hr_odds_propline(
     events, join them to the schedule by team names + commence_time, then
     fetch odds for matched events.
 
+    PropLine includes alternate lines in the standard market key (e.g.,
+    batter_home_runs covers both 0.5 and alternates like 1.5, 2.5), so we
+    filter out the _alternate suffix that The Odds API uses.
+
     Args:
         client: PropLine API client
         game_date: Game date for slate (used to filter schedule)
@@ -435,8 +439,26 @@ def fetch_day_hr_odds_propline(
         (odds_df, audit_dict) with provider="propline"
     """
     requested_markets = _normalize_markets(markets if markets is not None else market)
-    events = fetch_propline_mlb_events(client)
+    # PropLine includes alternates in the standard market, so strip _alternate suffix
+    propline_markets = tuple(
+        m.replace("_alternate", "") for m in requested_markets
+    )
+    # Deduplicate in case both batter_home_runs and batter_home_runs_alternate were requested
+    propline_markets = tuple(dict.fromkeys(propline_markets))
+    events = fetch_propline_mlb_events(client, include_scores=True)
+    LOG.info(f"PropLine returned {len(events)} MLB events (from /events + /scores fallback)")
+    if not events and not schedule.empty:
+        # PropLine /events only returns upcoming + in-progress games.
+        # Log schedule games for debugging.
+        schedule_times = []
+        for _, row in schedule.head(3).iterrows():
+            game_time = pd.to_datetime(row.get("game_datetime"), utc=True, errors="coerce")
+            if pd.notna(game_time):
+                schedule_times.append(f"{row.get('away_team')} @ {row.get('home_team')} at {game_time.isoformat()}")
+        if schedule_times:
+            LOG.warning(f"PropLine returned 0 events but schedule has games: {'; '.join(schedule_times)}")
     event_map = match_events_to_schedule(events, schedule)
+    LOG.info(f"Matched {len(event_map)} PropLine events to schedule (schedule has {len(schedule)} games)")
     frames: list[pd.DataFrame] = []
     gaps: list[str] = []
     snapshot_ts = datetime.now(timezone.utc).isoformat()
@@ -449,7 +471,7 @@ def fetch_day_hr_odds_propline(
             gaps.append(f"Unmatched PropLine MLB event {event_id}: {event.get('away_team')} at {event.get('home_team')}")
             continue
         try:
-            payload = fetch_propline_event_odds(client, event_id=event_id, markets=requested_markets)
+            payload = fetch_propline_event_odds(client, event_id=event_id, markets=propline_markets)
         except PropLineError as exc:
             gaps.append(f"PropLine odds fetch failed for {meta['game_id']}: {exc}")
             continue

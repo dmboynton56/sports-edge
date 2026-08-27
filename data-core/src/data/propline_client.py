@@ -84,10 +84,38 @@ def get_propline_api_key() -> str:
     return key
 
 
-def fetch_propline_mlb_events(client: PropLineClient) -> list[dict[str, Any]]:
-    """Fetch all active MLB events from PropLine."""
+def fetch_propline_mlb_events(client: PropLineClient, *, include_scores: bool = True) -> list[dict[str, Any]]:
+    """Fetch all active MLB events from PropLine.
+    
+    Args:
+        client: PropLine API client
+        include_scores: If True and /events returns empty, also fetch from /scores
+                        to get recently completed games (which may still have odds)
+    
+    Returns:
+        List of event dicts compatible with The Odds API format
+    """
     payload = client.get(f"/sports/{PROPLINE_SPORT_KEY}/events")
-    return payload if isinstance(payload, list) else []
+    events = payload if isinstance(payload, list) else []
+    
+    # PropLine /events only returns upcoming + in-progress games.
+    # If empty and include_scores=True, try /scores to get recently completed games.
+    if not events and include_scores:
+        scores_payload = client.get(f"/sports/{PROPLINE_SPORT_KEY}/scores")
+        scores = scores_payload if isinstance(scores_payload, list) else []
+        # Convert scores to events format
+        for score in scores:
+            events.append({
+                "id": score.get("id"),
+                "sport_key": PROPLINE_SPORT_KEY,
+                "home_team": score.get("home_team"),
+                "away_team": score.get("away_team"),
+                "commence_time": score.get("commence_time"),
+                "live": False,
+                "completed": score.get("completed", True),
+            })
+    
+    return events
 
 
 def fetch_propline_event_odds(
