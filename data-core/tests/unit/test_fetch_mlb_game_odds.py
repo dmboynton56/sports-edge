@@ -25,15 +25,16 @@ def test_canonical_mlb_abbr_full_names():
     assert canonical_mlb_abbr("Boston Red Sox") == "BOS"
     assert canonical_mlb_abbr("Chicago Cubs") == "CHC"
     assert canonical_mlb_abbr("San Francisco Giants") == "SF"
-    assert canonical_mlb_abbr("Oakland Athletics") == "OAK"
+    assert canonical_mlb_abbr("Oakland Athletics") == "ATH"
 
 
 def test_canonical_mlb_abbr_already_abbr():
-    """Test that abbreviations pass through."""
+    """Test that abbreviations pass through or are canonicalized."""
     assert canonical_mlb_abbr("NYY") == "NYY"
     assert canonical_mlb_abbr("LAD") == "LAD"
     assert canonical_mlb_abbr("BOS") == "BOS"
-    assert canonical_mlb_abbr("OAK") == "OAK"
+    assert canonical_mlb_abbr("OAK") == "ATH"  # OAK canonicalizes to ATH
+    assert canonical_mlb_abbr("ATH") == "ATH"
 
 
 def test_match_game_exact():
@@ -75,7 +76,7 @@ def test_match_game_with_athletics():
             {
                 "game_pk": 12345,
                 "game_date": pd.to_datetime("2026-08-26").date(),
-                "home_team": "OAK",
+                "home_team": "ATH",  # Schedule uses canonical ATH
                 "away_team": "TEX",
             }
         ]
@@ -91,7 +92,7 @@ def test_match_game_with_athletics():
 
     game_pk, home_abbr, away_abbr = odds_fetcher.match_game(event, schedule)
     assert game_pk == 12345
-    assert home_abbr == "OAK"
+    assert home_abbr == "ATH"  # Canonicalized to ATH
     assert away_abbr == "TEX"
 
 

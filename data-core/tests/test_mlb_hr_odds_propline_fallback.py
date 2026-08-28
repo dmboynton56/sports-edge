@@ -214,3 +214,82 @@ def test_propline_client_uses_header_auth():
         call_kwargs = mock_get.call_args[1]
         assert call_kwargs["headers"]["X-API-Key"] == "test-key-123"
         assert "apiKey" not in (call_kwargs.get("params") or {})
+
+
+@patch("src.data.mlb_hr_odds_fetcher.fetch_propline_mlb_events")
+@patch("src.data.mlb_hr_odds_fetcher.fetch_propline_event_odds")
+def test_propline_strips_alternate_suffix_from_markets(mock_fetch_event, mock_fetch_events):
+    """Test that PropLine fallback strips _alternate suffix from market keys.
+    
+    PropLine includes alternate lines (1.5, 2.5) in the standard batter_home_runs
+    market, unlike The Odds API which uses separate batter_home_runs_alternate.
+    """
+    mock_fetch_events.return_value = [
+        {
+            "id": "prop999",
+            "home_team": "Los Angeles Dodgers",
+            "away_team": "New York Yankees",
+            "commence_time": "2026-08-26T19:05:00Z",
+        }
+    ]
+    mock_fetch_event.return_value = {
+        "id": "prop999",
+        "bookmakers": [
+            {
+                "key": "fanduel",
+                "title": "FanDuel",
+                "markets": [
+                    {
+                        "key": "batter_home_runs",
+                        "outcomes": [
+                            {
+                                "description": "Mookie Betts",
+                                "name": "Over",
+                                "price": 150,
+                                "point": 0.5,
+                            },
+                            {
+                                "description": "Mookie Betts",
+                                "name": "Over",
+                                "price": 400,
+                                "point": 1.5,
+                            },
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    schedule = pd.DataFrame(
+        {
+            "game_pk": [777777],
+            "game_date": ["2026-08-26"],
+            "game_datetime": ["2026-08-26T19:05:00Z"],
+            "home_team": ["Los Angeles Dodgers"],
+            "away_team": ["New York Yankees"],
+            "home_team_abbr": ["LAD"],
+            "away_team_abbr": ["NYY"],
+        }
+    )
+    client = MagicMock()
+    client.request_count = 2
+
+    # Request both standard and _alternate markets (The Odds API format)
+    odds, audit = fetch_day_hr_odds_propline(
+        client,
+        game_date=date(2026, 8, 26),
+        schedule=schedule,
+        markets=["batter_home_runs", "batter_home_runs_alternate"],
+    )
+
+    # PropLine should have been called with only batter_home_runs (no _alternate)
+    mock_fetch_event.assert_called_once()
+    call_kwargs = mock_fetch_event.call_args[1]
+    markets_arg = call_kwargs["markets"]
+    # Should be deduplicated to just ["batter_home_runs"]
+    assert len(markets_arg) == 1
+    assert markets_arg[0] == "batter_home_runs"
+
+    # Verify we got odds rows back
+    assert not odds.empty
+    assert len(odds) == 2  # Both 0.5 and 1.5 lines
