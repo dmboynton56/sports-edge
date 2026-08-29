@@ -169,7 +169,8 @@ def _merge_midtournament_into_predictions(
     mt_meta = midtournament.get("meta", {})
     rounds_completed = mt_meta.get("rounds_completed", 0)
     cut_after_round = mt_meta.get("cut_after_round", 2)
-    is_no_cut_event = cut_after_round > 4  # Events with cut after round 5+ are effectively no-cut
+    # No-cut events have cut_after_round > total_rounds (e.g. 999) or cut_rule == "no_cut"
+    is_no_cut_event = cut_after_round > 4
 
     # Build lookup from pred_name -> midtournament row
     mt_by_pred_name = {row.get("pred_name"): row for row in mt_preds if row.get("pred_name")}

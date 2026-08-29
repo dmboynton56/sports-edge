@@ -370,3 +370,25 @@ def test_cut_is_applied_only_after_configured_cut_round():
     assert [row["player"] for row in out_r2] == ["D"]
     assert cut_line_r2 == -1
     assert cut_applied_r2 is True
+
+
+def test_no_cut_event_keeps_all_players_active_through_all_rounds():
+    """Regression test: no-cut events (like Tour Championship) should keep all players active after any round."""
+    players = [
+        {"player": "Player 1", "toPar": "-10", "totalStrokes": 130},
+        {"player": "Player 2", "toPar": "-5", "totalStrokes": 135},
+        {"player": "Player 30", "toPar": "+8", "totalStrokes": 148},
+    ]
+    
+    # No-cut event: cut_after_round > total_rounds (e.g. 999)
+    for round_no in [1, 2, 3]:
+        active, out, cut_line, cut_applied = active_players_for_round_state(
+            players,
+            rounds_completed=round_no,
+            cut_after_round=999,
+            cut_size=30,
+        )
+        assert len(active) == 3, f"Round {round_no}: all players should remain active"
+        assert len(out) == 0, f"Round {round_no}: no players should be cut"
+        assert cut_line is None, f"Round {round_no}: no cut line should exist"
+        assert cut_applied is False, f"Round {round_no}: cut should never be applied"

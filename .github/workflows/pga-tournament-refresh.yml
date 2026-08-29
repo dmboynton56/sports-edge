@@ -172,6 +172,8 @@ jobs:
             data-core/notebooks/cache/*_predictions.meta.json
             data-core/notebooks/cache/*_midtournament.csv
             data-core/notebooks/cache/*_midtournament.meta.json
+            data-core/notebooks/cache/*_midtournament_R*.csv
+            data-core/notebooks/cache/*_midtournament_R*.meta.json
             data-core/notebooks/cache/pga_refresh_state*.json
           )
           git -C "$GITHUB_WORKSPACE" add "${paths[@]}"
