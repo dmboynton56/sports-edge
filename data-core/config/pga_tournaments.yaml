@@ -751,9 +751,9 @@ tournaments:
   start_date: '2026-08-27'
   end_date: '2026-08-30'
   total_rounds: 4
-  cut_after_round: 2
-  cut_size: 65
-  cut_rule: top_n_and_ties
+  cut_after_round: 999
+  cut_size: 30
+  cut_rule: no_cut
   field_source: espn
   prediction_window_days: 4
   post_window_days: 2
