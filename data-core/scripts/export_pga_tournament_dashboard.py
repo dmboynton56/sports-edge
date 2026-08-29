@@ -332,6 +332,19 @@ def main() -> None:
     # Merge mid-tournament probabilities into the main predictions array
     merged_predictions = _merge_midtournament_into_predictions(predictions, midtournament)
     
+    # Validation: if a round is complete but no midtournament data, fail
+    rounds_done = rounds_completed_from_leaderboard(live_leaderboard) if live_leaderboard else 0
+    if rounds_done > 0 and midtournament is None and args.status != "pre":
+        # Check if the pre-tournament predictions have any rounds_completed markers
+        has_midround_data = any(pred.get("rounds_completed") for pred in merged_predictions)
+        if not has_midround_data:
+            raise SystemExit(
+                f"VALIDATION FAILURE: {rounds_done} completed round(s) detected in leaderboard "
+                f"but no midtournament predictions exist. Refusing to publish stale pre-tournament "
+                f"predictions. The midtournament simulation must run and merge updated probabilities "
+                f"before the dashboard can be exported during live/post phases."
+            )
+    
     normalized_markets = _build_normalized_markets(
         merged_predictions,
         args.start_date,

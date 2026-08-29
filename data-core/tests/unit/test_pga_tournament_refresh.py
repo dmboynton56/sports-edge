@@ -392,3 +392,89 @@ def test_no_cut_event_keeps_all_players_active_through_all_rounds():
         assert len(out) == 0, f"Round {round_no}: no players should be cut"
         assert cut_line is None, f"Round {round_no}: no cut line should exist"
         assert cut_applied is False, f"Round {round_no}: cut should never be applied"
+
+
+def test_rounds_completed_detects_r2_complete_when_r3_in_progress():
+    """Regression test: R2 complete with R3 in progress should return 2, not 0.
+    
+    This test reproduces the Tour Championship R3 Saturday issue where J.J. Spaun
+    withdrew after 5 holes of R1 with status="Withdrawn" but toPar="+4" (not "WD").
+    Without checking the status field, he blocks R2 from being detected as complete.
+    """
+    leaderboard = {
+        "currentRound": 3,
+        "status": "In Progress",
+        "players": [
+            # Mix of players: some started R3, some haven't
+            {"player": "Ryan Gerard", "toPar": "-10", "status": "Scheduled", "rounds": {"1": 65, "2": 65, "3": 0}, "roundHoles": {"1": 18, "2": 18, "3": 0}},
+            {"player": "Tommy Fleetwood", "toPar": "-9", "status": "In Progress", "rounds": {"1": 66, "2": 65, "3": 67}, "roundHoles": {"1": 18, "2": 18, "3": 4}},
+            {"player": "Scottie Scheffler", "toPar": "-8", "status": "Scheduled", "rounds": {"1": 66, "2": 66, "3": 0}, "roundHoles": {"1": 18, "2": 18, "3": 0}},
+            # Player withdrew mid-R1 with incomplete data
+            {"player": "J.J. Spaun", "toPar": "+4", "status": "Withdrawn", "rounds": {"1": 23, "2": 0}, "roundHoles": {"1": 5, "2": 0}},
+        ],
+    }
+    
+    assert rounds_completed_from_leaderboard(leaderboard, total_rounds=4) == 2
+
+
+def test_export_fails_when_completed_round_with_no_midtournament_predictions():
+    """Regression test: export must fail if rounds are complete but predictions aren't updated.
+    
+    This prevents silently publishing stale pre-tournament predictions during live phases.
+    """
+    import tempfile
+    import json
+    import subprocess
+    from pathlib import Path
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmppath = Path(tmpdir)
+        pred_csv = tmppath / "predictions.csv"
+        pred_meta = tmppath / "predictions.meta.json"
+        out_json = tmppath / "output.json"
+        
+        # Write pre-tournament predictions (no rounds_completed markers)
+        pred_csv.write_text(
+            "player,best_calibrated_target_win_prob,best_calibrated_target_top10_prob\n"
+            "Scottie Scheffler,0.14,0.45\n"
+            "Rory McIlroy,0.09,0.38\n"
+        )
+        pred_meta.write_text(json.dumps({"generated_at": "2026-08-25T13:44:50Z", "model": "baseline"}))
+        
+        # Create a leaderboard snapshot with completed rounds
+        leaderboard_json = tmppath / "leaderboard.json"
+        leaderboard_json.write_text(json.dumps({
+            "event": {"name": "Tour Championship"},
+            "competition": {},
+            "leaderboard": {
+                "currentRound": 3,
+                "status": "In Progress",
+                "players": [
+                    {"player": "Scottie Scheffler", "toPar": "-8", "status": "Scheduled",
+                     "rounds": {"1": 66, "2": 66, "3": 0}, "roundHoles": {"1": 18, "2": 18, "3": 0}},
+                ],
+            },
+        }))
+        
+        # Try to export - should fail
+        cmd = [
+            sys.executable,
+            "scripts/export_pga_tournament_dashboard.py",
+            "--pred-csv", str(pred_csv),
+            "--out", str(out_json),
+            "--tournament-key", "tour_championship_2026",
+            "--event-name", "Tour Championship",
+            "--season", "2026",
+            "--course-name", "East Lake",
+            "--course-par", "70",
+            "--start-date", "2026-08-28",
+            "--end-date", "2026-08-31",
+            "--status", "in_progress",
+            "--leaderboard-json", str(leaderboard_json),
+            "--skip-odds",
+        ]
+        
+        result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+        
+        assert result.returncode != 0, "Export should fail when round is complete but no midtournament data"
+        assert "VALIDATION FAILURE" in result.stderr or "VALIDATION FAILURE" in result.stdout

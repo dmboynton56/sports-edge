@@ -16,6 +16,7 @@ ESPN_SCOREBOARD = "https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreb
 ESPN_CORE_EVENT = "https://sports.core.api.espn.com/v2/sports/golf/leagues/pga/events/{event_id}?lang=en&region=us"
 ESPN_HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; SportsEdge/1.0)"}
 INACTIVE_TO_PAR = {"WD", "DQ", "DNS", "CUT", "MDF", ""}
+INACTIVE_STATUS = {"Withdrawn", "Disqualified"}
 
 
 class EspnScoreboardError(RuntimeError):
@@ -26,6 +27,13 @@ def normalize_name(name: str) -> str:
     text = unicodedata.normalize("NFKD", str(name))
     text = "".join(ch for ch in text if not unicodedata.combining(ch))
     return " ".join(text.strip().lower().split())
+
+
+def _is_player_active(player: dict[str, Any]) -> bool:
+    """Return whether a player is active (not withdrawn, DQ'd, etc)."""
+    toPar = str(player.get("toPar") or "").upper()
+    status = str(player.get("status") or "")
+    return toPar not in INACTIVE_TO_PAR and status not in INACTIVE_STATUS
 
 
 def normalize_event_name(name: str) -> str:
@@ -441,11 +449,7 @@ def rounds_completed_from_leaderboard(leaderboard: dict[str, Any], *, total_roun
 
 
 def _round_complete_for_field(players: list[dict[str, Any]], round_no: int) -> bool:
-    relevant = [
-        player
-        for player in players
-        if str(player.get("toPar") or "").upper() not in {"WD", "DQ", "DNS", ""}
-    ]
+    relevant = [player for player in players if _is_player_active(player)]
     if not relevant:
         return False
     for player in relevant:

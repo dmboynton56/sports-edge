@@ -572,13 +572,20 @@ def main() -> None:
         elif phase == "live":
             if not tournament.predictions_csv.exists():
                 run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
-            run_midtournament_update(
+            rounds_done = rounds_completed_from_leaderboard(leaderboard, total_rounds=tournament.total_rounds) if leaderboard else 0
+            sims_ran = run_midtournament_update(
                 tournament,
                 leaderboard=leaderboard,
                 leaderboard_snapshot=snapshot_path,
                 args=args,
                 dry_run=args.dry_run,
             )
+            # Validation: if a round is complete, the sim MUST have run
+            if rounds_done > 0 and not sims_ran and not args.dry_run:
+                raise SystemExit(
+                    f"VALIDATION FAILURE: {rounds_done} completed round(s) detected but midtournament simulation did not run. "
+                    "Refusing to publish stale pre-tournament predictions as if they were current."
+                )
         elif phase == "post":
             if not tournament.predictions_csv.exists():
                 run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
@@ -606,6 +613,44 @@ def main() -> None:
             dry_run=args.dry_run,
         )
         sync_outputs(tournament, args, dry_run=args.dry_run)
+        
+        # Summary log for debugging
+        rounds_done = rounds_completed_from_leaderboard(leaderboard, total_rounds=tournament.total_rounds) if leaderboard else 0
+        current_round = leaderboard.get("currentRound") if leaderboard else None
+        
+        # Check if predictions were updated (by looking for midtournament file)
+        predictions_updated = False
+        scheffler_win = None
+        if phase in {"live", "post"} and rounds_done > 0:
+            for round_no in range(tournament.total_rounds, 0, -1):
+                midtournament_path = tournament.midtournament_csv.with_name(
+                    f"{tournament.key}_midtournament_R{round_no}.csv"
+                )
+                if midtournament_path.exists():
+                    predictions_updated = True
+                    break
+            if not predictions_updated and tournament.midtournament_csv.exists():
+                predictions_updated = True
+        
+        # Try to extract Scheffler's win prob from the published JSON
+        if tournament.current_json.exists():
+            try:
+                import json
+                with open(tournament.current_json) as f:
+                    pub_data = json.load(f)
+                    for pred in pub_data.get("predictions", []):
+                        if pred.get("player") == "Scottie Scheffler":
+                            scheffler_win = pred.get("best_calibrated_target_win_prob")
+                            break
+            except Exception:
+                pass
+        
+        print(
+            f"REFRESH SUMMARY: round={current_round} phase={phase} "
+            f"rounds_completed={rounds_done} sims_ran={'yes' if predictions_updated else 'no'} "
+            f"predictions_updated={'yes' if predictions_updated else 'no'} "
+            f"scheffler_win={scheffler_win:.5f if scheffler_win is not None else 'N/A'}"
+        )
     finally:
         if snapshot_path:
             snapshot_path.unlink(missing_ok=True)
