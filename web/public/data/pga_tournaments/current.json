@@ -1,7 +1,7 @@
 {
   "espnSupplement": {
     "path": "data-core/src/data/archive/pga_results_espn_supplement.tsv",
-    "rows": 50165
+    "rows": 50195
   },
   "event": {
     "course": "East Lake Golf Club",
@@ -11,20 +11,20 @@
     "par": 70,
     "season": 2026,
     "startDate": "2026-08-27",
-    "status": "in_progress",
+    "status": "completed",
     "yardage": 7440
   },
   "gaps": [
     "PGA model artifacts were unavailable; used deterministic baseline fallback.",
     "Course-fit is disabled for this non-Masters event unless full artifacts are present."
   ],
-  "generatedAt": "2026-08-30T20:54:01.036868+00:00",
+  "generatedAt": "2026-08-30T23:22:11.922749+00:00",
   "liveLeaderboard": {
     "currentRound": 4,
     "event": "TOUR Championship",
     "eventDate": "2026-08-27T04:00Z",
-    "fetchedAt": "2026-08-30T20:53:18.510849+00:00",
-    "isCompleted": false,
+    "fetchedAt": "2026-08-30T23:21:29.950003+00:00",
+    "isCompleted": true,
     "players": [
       {
         "player": "Scottie Scheffler",
@@ -34,18 +34,18 @@
           "1": 18,
           "2": 18,
           "3": 18,
-          "4": 15
+          "4": 18
         },
         "rounds": {
           "1": 65,
           "2": 67,
           "3": 66,
-          "4": 54
+          "4": 66
         },
-        "status": "In Progress",
-        "thru": "15",
-        "toPar": "-15",
-        "totalStrokes": 252
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-16",
+        "totalStrokes": 264
       },
       {
         "player": "Viktor Hovland",
@@ -55,149 +55,44 @@
           "1": 18,
           "2": 18,
           "3": 18,
-          "4": 14
+          "4": 18
         },
         "rounds": {
           "1": 64,
           "2": 66,
           "3": 65,
-          "4": 55
+          "4": 72
         },
-        "status": "In Progress",
-        "thru": "14",
-        "toPar": "-14",
-        "totalStrokes": 250
-      },
-      {
-        "player": "Adam Scott",
-        "position": 3,
-        "positionDisplay": "T3",
-        "roundHoles": {
-          "1": 18,
-          "2": 18,
-          "3": 18,
-          "4": 14
-        },
-        "rounds": {
-          "1": 66,
-          "2": 67,
-          "3": 65,
-          "4": 54
-        },
-        "status": "In Progress",
-        "thru": "14",
-        "toPar": "-12",
-        "totalStrokes": 252
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-13",
+        "totalStrokes": 267
       },
       {
         "player": "Ryan Gerard",
-        "position": 4,
-        "positionDisplay": "T3",
+        "position": 3,
+        "positionDisplay": "3",
         "roundHoles": {
           "1": 18,
           "2": 18,
           "3": 18,
-          "4": 14
+          "4": 18
         },
         "rounds": {
           "1": 65,
           "2": 65,
           "3": 66,
-          "4": 56
+          "4": 72
         },
-        "status": "In Progress",
-        "thru": "14",
+        "status": "Finish",
+        "thru": "18",
         "toPar": "-12",
-        "totalStrokes": 252
-      },
-      {
-        "player": "Chris Gotterup",
-        "position": 5,
-        "positionDisplay": "T3",
-        "roundHoles": {
-          "1": 18,
-          "2": 18,
-          "3": 18,
-          "4": 15
-        },
-        "rounds": {
-          "1": 64,
-          "2": 67,
-          "3": 67,
-          "4": 57
-        },
-        "status": "In Progress",
-        "thru": "15",
-        "toPar": "-12",
-        "totalStrokes": 255
-      },
-      {
-        "player": "Cameron Young",
-        "position": 6,
-        "positionDisplay": "T6",
-        "roundHoles": {
-          "1": 18,
-          "2": 18,
-          "3": 18,
-          "4": 16
-        },
-        "rounds": {
-          "1": 70,
-          "2": 62,
-          "3": 68,
-          "4": 60
-        },
-        "status": "In Progress",
-        "thru": "16",
-        "toPar": "-11",
-        "totalStrokes": 260
-      },
-      {
-        "player": "Rory McIlroy",
-        "position": 7,
-        "positionDisplay": "T6",
-        "roundHoles": {
-          "1": 18,
-          "2": 18,
-          "3": 18,
-          "4": 16
-        },
-        "rounds": {
-          "1": 68,
-          "2": 69,
-          "3": 63,
-          "4": 60
-        },
-        "status": "In Progress",
-        "thru": "16",
-        "toPar": "-11",
-        "totalStrokes": 260
-      },
-      {
-        "player": "Russell Henley",
-        "position": 8,
-        "positionDisplay": "T6",
-        "roundHoles": {
-          "1": 18,
-          "2": 18,
-          "3": 18,
-          "4": 17
-        },
-        "rounds": {
-          "1": 70,
-          "2": 65,
-          "3": 66,
-          "4": 63
-        },
-        "status": "In Progress",
-        "thru": "17",
-        "toPar": "-11",
-        "totalStrokes": 264
+        "totalStrokes": 268
       },
       {
         "player": "Alex Fitzpatrick",
-        "position": 9,
-        "positionDisplay": "T6",
+        "position": 4,
+        "positionDisplay": "T4",
         "roundHoles": {
           "1": 18,
           "2": 18,
@@ -216,9 +111,30 @@
         "totalStrokes": 269
       },
       {
+        "player": "Chris Gotterup",
+        "position": 5,
+        "positionDisplay": "T4",
+        "roundHoles": {
+          "1": 18,
+          "2": 18,
+          "3": 18,
+          "4": 18
+        },
+        "rounds": {
+          "1": 64,
+          "2": 67,
+          "3": 67,
+          "4": 71
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-11",
+        "totalStrokes": 269
+      },
+      {
         "player": "Jacob Bridgeman",
-        "position": 10,
-        "positionDisplay": "T6",
+        "position": 6,
+        "positionDisplay": "T4",
         "roundHoles": {
           "1": 18,
           "2": 18,
@@ -238,45 +154,129 @@
       },
       {
         "player": "Ludvig \u00c5berg",
+        "position": 7,
+        "positionDisplay": "T4",
+        "roundHoles": {
+          "1": 18,
+          "2": 18,
+          "3": 18,
+          "4": 18
+        },
+        "rounds": {
+          "1": 65,
+          "2": 68,
+          "3": 65,
+          "4": 71
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-11",
+        "totalStrokes": 269
+      },
+      {
+        "player": "Min Woo Lee",
+        "position": 8,
+        "positionDisplay": "T4",
+        "roundHoles": {
+          "1": 18,
+          "2": 18,
+          "3": 18,
+          "4": 18
+        },
+        "rounds": {
+          "1": 62,
+          "2": 73,
+          "3": 66,
+          "4": 68
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-11",
+        "totalStrokes": 269
+      },
+      {
+        "player": "Rory McIlroy",
+        "position": 9,
+        "positionDisplay": "T4",
+        "roundHoles": {
+          "1": 18,
+          "2": 18,
+          "3": 18,
+          "4": 18
+        },
+        "rounds": {
+          "1": 68,
+          "2": 69,
+          "3": 63,
+          "4": 69
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-11",
+        "totalStrokes": 269
+      },
+      {
+        "player": "Russell Henley",
+        "position": 10,
+        "positionDisplay": "T4",
+        "roundHoles": {
+          "1": 18,
+          "2": 18,
+          "3": 18,
+          "4": 18
+        },
+        "rounds": {
+          "1": 70,
+          "2": 65,
+          "3": 66,
+          "4": 68
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-11",
+        "totalStrokes": 269
+      },
+      {
+        "player": "Adam Scott",
         "position": 11,
         "positionDisplay": "T11",
         "roundHoles": {
           "1": 18,
           "2": 18,
           "3": 18,
-          "4": 14
+          "4": 18
         },
         "rounds": {
-          "1": 65,
-          "2": 68,
+          "1": 66,
+          "2": 67,
           "3": 65,
-          "4": 56
+          "4": 72
         },
-        "status": "In Progress",
-        "thru": "14",
+        "status": "Finish",
+        "thru": "18",
         "toPar": "-10",
-        "totalStrokes": 254
+        "totalStrokes": 270
       },
       {
-        "player": "Min Woo Lee",
+        "player": "Cameron Young",
         "position": 12,
         "positionDisplay": "T11",
         "roundHoles": {
           "1": 18,
           "2": 18,
           "3": 18,
-          "4": 17
+          "4": 18
         },
         "rounds": {
-          "1": 62,
-          "2": 73,
-          "3": 66,
-          "4": 64
+          "1": 70,
+          "2": 62,
+          "3": 68,
+          "4": 70
         },
-        "status": "In Progress",
-        "thru": "17",
+        "status": "Finish",
+        "thru": "18",
         "toPar": "-10",
-        "totalStrokes": 265
+        "totalStrokes": 270
       },
       {
         "player": "Tommy Fleetwood",
@@ -653,8 +653,8 @@
         "totalStrokes": 23
       }
     ],
-    "status": "In Progress",
-    "statusState": "in"
+    "status": "Final",
+    "statusState": "post"
   },
   "marketOdds": {
     "books": [],
@@ -663,7 +663,7 @@
   },
   "mergedResults": {
     "mainPath": "data-core/src/data/archive/pga_results_2001-2025.tsv",
-    "mergedRows": 178311,
+    "mergedRows": 178341,
     "supplementPath": "data-core/src/data/archive/pga_results_espn_supplement.tsv"
   },
   "midtournament": {
@@ -675,27 +675,27 @@
       "cut_line": null,
       "cut_size": 30,
       "event": "TOUR Championship",
-      "generated_at": "2026-08-30T20:53:47.521675+00:00",
-      "leaderboard_fetched_at": "2026-08-30T20:53:18.510849+00:00",
+      "generated_at": "2026-08-30T23:22:00.848280+00:00",
+      "leaderboard_fetched_at": "2026-08-30T23:21:29.950003+00:00",
       "made_cut": null,
       "n_sims": 50000,
       "out_players": 0,
       "pretournament_predictions": "/home/runner/work/sports-edge/sports-edge/data-core/notebooks/cache/tour_championship_2026_predictions.csv",
       "pretournament_weight": 0.6,
-      "remaining_rounds": 1,
+      "remaining_rounds": 0,
       "round_complete_validated": true,
-      "round_state_key": "tour_championship_2026:R3",
-      "rounds_completed": 3,
+      "round_state_key": "tour_championship_2026:R4",
+      "rounds_completed": 4,
       "score_source": "espn_completed_round_scores_v1",
       "seed": 20260618,
       "sg_std": 2.5,
-      "status": "In Progress",
+      "status": "Final",
       "tournament_key": "tour_championship_2026",
       "type": "midtournament"
     },
     "predictions": [
       {
-        "actual_sg_per_round": 15.666666666666666,
+        "actual_sg_per_round": 11.75,
         "current_pos": 1,
         "current_pos_display": "1",
         "player": "J.J. Spaun",
@@ -717,149 +717,14 @@
         "sim_top5_pct": 100.0,
         "sim_win_pct": 100.0,
         "to_par": -47.0,
-        "to_par_display": -47,
-        "total_strokes": 163.0,
-        "updated_sg_per_round": 6.297291669921986
+        "to_par_display": "-47",
+        "total_strokes": 233.0,
+        "updated_sg_per_round": 4.730625003255319
       },
       {
-        "actual_sg_per_round": 5.0,
+        "actual_sg_per_round": 4.0,
         "current_pos": 2,
         "current_pos_display": "2",
-        "player": "Viktor Hovland",
-        "pre_rank": 3,
-        "pre_sg_per_round": 1.2901247890290275,
-        "pre_top10_prob": 0.5578574606296667,
-        "pre_top20_prob": 0.8307867459729854,
-        "pre_top5_pct": 32.734,
-        "pre_win_prob": 0.07696,
-        "pred_name": "Viktor Hovland",
-        "r1": 64.0,
-        "r2": 66.0,
-        "r3": 65.0,
-        "r4": null,
-        "rank_change": 1,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 99.376,
-        "sim_top20_pct": 99.994,
-        "sim_top5_pct": 91.24,
-        "sim_win_pct": 0.0,
-        "to_par": -15.0,
-        "to_par_display": -15,
-        "total_strokes": 195.0,
-        "updated_sg_per_round": 2.7740748734174163
-      },
-      {
-        "actual_sg_per_round": 4.666666666666667,
-        "current_pos": 3,
-        "current_pos_display": "3",
-        "player": "Ryan Gerard",
-        "pre_rank": 22,
-        "pre_sg_per_round": -0.2636606367767464,
-        "pre_top10_prob": 0.1420790955297318,
-        "pre_top20_prob": 0.4208891008458997,
-        "pre_top5_pct": 4.71,
-        "pre_win_prob": 0.00546,
-        "pred_name": "Ryan Gerard",
-        "r1": 65.0,
-        "r2": 65.0,
-        "r3": 66.0,
-        "r4": null,
-        "rank_change": 19,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 95.498,
-        "sim_top20_pct": 99.946,
-        "sim_top5_pct": 70.712,
-        "sim_win_pct": 0.0,
-        "to_par": -14.0,
-        "to_par_display": -14,
-        "total_strokes": 196.0,
-        "updated_sg_per_round": 1.708470284600619
-      },
-      {
-        "actual_sg_per_round": 4.0,
-        "current_pos": 4,
-        "current_pos_display": "T4",
-        "player": "Adam Scott",
-        "pre_rank": 15,
-        "pre_sg_per_round": 0.7197873348767406,
-        "pre_top10_prob": 0.3795597869532109,
-        "pre_top20_prob": 0.7056039093218146,
-        "pre_top5_pct": 18.398,
-        "pre_win_prob": 0.03232,
-        "pred_name": "Adam Scott",
-        "r1": 66.0,
-        "r2": 67.0,
-        "r3": 65.0,
-        "r4": null,
-        "rank_change": 11,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 85.414,
-        "sim_top20_pct": 99.598,
-        "sim_top5_pct": 43.54,
-        "sim_win_pct": 0.0,
-        "to_par": -12.0,
-        "to_par_display": -12,
-        "total_strokes": 198.0,
-        "updated_sg_per_round": 2.0318724009260443
-      },
-      {
-        "actual_sg_per_round": 4.0,
-        "current_pos": 5,
-        "current_pos_display": "T4",
-        "player": "Chris Gotterup",
-        "pre_rank": 26,
-        "pre_sg_per_round": -0.2639762711778693,
-        "pre_top10_prob": 0.1445868697778849,
-        "pre_top20_prob": 0.4213076359699265,
-        "pre_top5_pct": 4.7780000000000005,
-        "pre_win_prob": 0.00496,
-        "pred_name": "Chris Gotterup",
-        "r1": 64.0,
-        "r2": 67.0,
-        "r3": 67.0,
-        "r4": null,
-        "rank_change": 21,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 79.078,
-        "sim_top20_pct": 99.256,
-        "sim_top5_pct": 33.594,
-        "sim_win_pct": 0.0,
-        "to_par": -12.0,
-        "to_par_display": -12,
-        "total_strokes": 198.0,
-        "updated_sg_per_round": 1.4416142372932783
-      },
-      {
-        "actual_sg_per_round": 4.0,
-        "current_pos": 6,
-        "current_pos_display": "T4",
-        "player": "Ludvig \u00c5berg",
-        "pre_rank": 9,
-        "pre_sg_per_round": 0.8939920920731343,
-        "pre_top10_prob": 0.4307699379621197,
-        "pre_top20_prob": 0.7480471616980131,
-        "pre_top5_pct": 22.13,
-        "pre_win_prob": 0.04234,
-        "pred_name": "Ludvig \u00c5berg",
-        "r1": 65.0,
-        "r2": 68.0,
-        "r3": 65.0,
-        "r4": null,
-        "rank_change": 3,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 85.97,
-        "sim_top20_pct": 99.668,
-        "sim_top5_pct": 45.256,
-        "sim_win_pct": 0.0,
-        "to_par": -12.0,
-        "to_par_display": -12,
-        "total_strokes": 198.0,
-        "updated_sg_per_round": 2.1363952552438805
-      },
-      {
-        "actual_sg_per_round": 4.0,
-        "current_pos": 7,
-        "current_pos_display": "T4",
         "player": "Scottie Scheffler",
         "pre_rank": 1,
         "pre_sg_per_round": 1.673621358733749,
@@ -871,265 +736,76 @@
         "r1": 65.0,
         "r2": 67.0,
         "r3": 66.0,
-        "r4": null,
-        "rank_change": -6,
+        "r4": 66.0,
+        "rank_change": -1,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 89.962,
-        "sim_top20_pct": 99.838,
-        "sim_top5_pct": 52.852,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 100.0,
         "sim_win_pct": 0.0,
-        "to_par": -12.0,
-        "to_par_display": -12,
-        "total_strokes": 198.0,
+        "to_par": -16.0,
+        "to_par_display": "-16",
+        "total_strokes": 264.0,
         "updated_sg_per_round": 2.6041728152402497
       },
       {
-        "actual_sg_per_round": 3.333333333333333,
-        "current_pos": 8,
-        "current_pos_display": "T8",
-        "player": "Cameron Young",
-        "pre_rank": 16,
-        "pre_sg_per_round": 0.6575638346395188,
-        "pre_top10_prob": 0.3622221467598855,
-        "pre_top20_prob": 0.6902778257583965,
-        "pre_top5_pct": 17.124,
-        "pre_win_prob": 0.0304,
-        "pred_name": "Cameron Young",
-        "r1": 70.0,
-        "r2": 62.0,
-        "r3": 68.0,
-        "r4": null,
-        "rank_change": 8,
+        "actual_sg_per_round": 3.25,
+        "current_pos": 3,
+        "current_pos_display": "3",
+        "player": "Viktor Hovland",
+        "pre_rank": 3,
+        "pre_sg_per_round": 1.2901247890290275,
+        "pre_top10_prob": 0.5578574606296667,
+        "pre_top20_prob": 0.8307867459729854,
+        "pre_top5_pct": 32.734,
+        "pre_win_prob": 0.07696,
+        "pred_name": "Viktor Hovland",
+        "r1": 64.0,
+        "r2": 66.0,
+        "r3": 65.0,
+        "r4": 72.0,
+        "rank_change": 0,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 54.248,
-        "sim_top20_pct": 96.132,
-        "sim_top5_pct": 13.352,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 100.0,
         "sim_win_pct": 0.0,
-        "to_par": -10.0,
-        "to_par_display": -10,
-        "total_strokes": 200.0,
-        "updated_sg_per_round": 1.7278716341170448
-      },
-      {
-        "actual_sg_per_round": 3.333333333333333,
-        "current_pos": 9,
-        "current_pos_display": "T8",
-        "player": "Rory McIlroy",
-        "pre_rank": 5,
-        "pre_sg_per_round": 1.21426484911032,
-        "pre_top10_prob": 0.5313788934594047,
-        "pre_top20_prob": 0.8160459778851781,
-        "pre_top5_pct": 30.622,
-        "pre_win_prob": 0.06918,
-        "pred_name": "Rory McIlroy",
-        "r1": 68.0,
-        "r2": 69.0,
-        "r3": 63.0,
-        "r4": null,
-        "rank_change": -4,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 59.968,
-        "sim_top20_pct": 97.04,
-        "sim_top5_pct": 16.688,
-        "sim_win_pct": 0.0,
-        "to_par": -10.0,
-        "to_par_display": -10,
-        "total_strokes": 200.0,
-        "updated_sg_per_round": 2.0618922427995257
+        "to_par": -13.0,
+        "to_par_display": "-13",
+        "total_strokes": 267.0,
+        "updated_sg_per_round": 2.0740748734174166
       },
       {
         "actual_sg_per_round": 3.0,
-        "current_pos": 10,
-        "current_pos_display": "T10",
-        "player": "Jacob Bridgeman",
-        "pre_rank": 28,
-        "pre_sg_per_round": -0.2618033434559599,
-        "pre_top10_prob": 0.142331100984641,
-        "pre_top20_prob": 0.4184083715812079,
-        "pre_top5_pct": 4.874,
-        "pre_win_prob": 0.0049,
-        "pred_name": "Jacob Bridgeman",
-        "r1": 68.0,
-        "r2": 67.0,
+        "current_pos": 4,
+        "current_pos_display": "4",
+        "player": "Ryan Gerard",
+        "pre_rank": 22,
+        "pre_sg_per_round": -0.2636606367767464,
+        "pre_top10_prob": 0.1420790955297318,
+        "pre_top20_prob": 0.4208891008458997,
+        "pre_top5_pct": 4.71,
+        "pre_win_prob": 0.00546,
+        "pred_name": "Ryan Gerard",
+        "r1": 65.0,
+        "r2": 65.0,
         "r3": 66.0,
-        "r4": null,
+        "r4": 72.0,
         "rank_change": 18,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 28.24,
-        "sim_top20_pct": 86.632,
-        "sim_top5_pct": 3.92,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 100.0,
         "sim_win_pct": 0.0,
-        "to_par": -9.0,
-        "to_par_display": -9,
-        "total_strokes": 201.0,
-        "updated_sg_per_round": 1.042917993926424
+        "to_par": -12.0,
+        "to_par_display": "-12",
+        "total_strokes": 268.0,
+        "updated_sg_per_round": 1.0418036179339525
       },
       {
-        "actual_sg_per_round": 3.0,
-        "current_pos": 11,
-        "current_pos_display": "T10",
-        "player": "Min Woo Lee",
-        "pre_rank": 13,
-        "pre_sg_per_round": 0.8009227530980494,
-        "pre_top10_prob": 0.4002062122923739,
-        "pre_top20_prob": 0.7244315313649219,
-        "pre_top5_pct": 20.16,
-        "pre_win_prob": 0.03718,
-        "pred_name": "Min Woo Lee",
-        "r1": 62.0,
-        "r2": 73.0,
-        "r3": 66.0,
-        "r4": null,
-        "rank_change": 2,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 37.694,
-        "sim_top20_pct": 91.374,
-        "sim_top5_pct": 6.532,
-        "sim_win_pct": 0.0,
-        "to_par": -9.0,
-        "to_par_display": -9,
-        "total_strokes": 201.0,
-        "updated_sg_per_round": 1.6805536518588298
-      },
-      {
-        "actual_sg_per_round": 3.0,
-        "current_pos": 12,
-        "current_pos_display": "T10",
-        "player": "Russell Henley",
-        "pre_rank": 10,
-        "pre_sg_per_round": 0.8424062328361588,
-        "pre_top10_prob": 0.4183077403862931,
-        "pre_top20_prob": 0.7387288729128723,
-        "pre_top5_pct": 21.03,
-        "pre_win_prob": 0.0398,
-        "pred_name": "Russell Henley",
-        "r1": 70.0,
-        "r2": 65.0,
-        "r3": 66.0,
-        "r4": null,
-        "rank_change": -2,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 38.052,
-        "sim_top20_pct": 91.558,
-        "sim_top5_pct": 6.5920000000000005,
-        "sim_win_pct": 0.0,
-        "to_par": -9.0,
-        "to_par_display": -9,
-        "total_strokes": 201.0,
-        "updated_sg_per_round": 1.7054437397016953
-      },
-      {
-        "actual_sg_per_round": 3.0,
-        "current_pos": 13,
-        "current_pos_display": "T10",
-        "player": "Sam Burns",
-        "pre_rank": 17,
-        "pre_sg_per_round": 0.5581895897669229,
-        "pre_top10_prob": 0.3319092190789073,
-        "pre_top20_prob": 0.6617180402211749,
-        "pre_top5_pct": 15.046,
-        "pre_win_prob": 0.02346,
-        "pred_name": "Sam Burns",
-        "r1": 66.0,
-        "r2": 68.0,
-        "r3": 67.0,
-        "r4": null,
-        "rank_change": 4,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 35.082,
-        "sim_top20_pct": 90.262,
-        "sim_top5_pct": 5.75,
-        "sim_win_pct": 0.0,
-        "to_par": -9.0,
-        "to_par_display": -9,
-        "total_strokes": 201.0,
-        "updated_sg_per_round": 1.5349137538601538
-      },
-      {
-        "actual_sg_per_round": 2.6666666666666665,
-        "current_pos": 14,
-        "current_pos_display": "T14",
-        "player": "Justin Rose",
-        "pre_rank": 30,
-        "pre_sg_per_round": -0.3294551082563318,
-        "pre_top10_prob": 0.1313646305595462,
-        "pre_top20_prob": 0.3974045609764809,
-        "pre_top5_pct": 4.258,
-        "pre_win_prob": 0.00442,
-        "pred_name": "Justin Rose",
-        "r1": 68.0,
-        "r2": 65.0,
-        "r3": 69.0,
-        "r4": null,
-        "rank_change": 16,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 15.021999999999998,
-        "sim_top20_pct": 73.586,
-        "sim_top5_pct": 1.394,
-        "sim_win_pct": 0.0,
-        "to_par": -8.0,
-        "to_par_display": -8,
-        "total_strokes": 202.0,
-        "updated_sg_per_round": 0.8689936017128675
-      },
-      {
-        "actual_sg_per_round": 2.6666666666666665,
-        "current_pos": 15,
-        "current_pos_display": "T14",
-        "player": "Matt Fitzpatrick",
-        "pre_rank": 7,
-        "pre_sg_per_round": 1.0734655716868826,
-        "pre_top10_prob": 0.4848121950489344,
-        "pre_top20_prob": 0.7849184057394516,
-        "pre_top5_pct": 26.334000000000003,
-        "pre_win_prob": 0.0563,
-        "pred_name": "Matt Fitzpatrick",
-        "r1": 66.0,
-        "r2": 67.0,
-        "r3": 69.0,
-        "r4": null,
-        "rank_change": -8,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 23.53,
-        "sim_top20_pct": 83.53,
-        "sim_top5_pct": 3.016,
-        "sim_win_pct": 0.0,
-        "to_par": -8.0,
-        "to_par_display": -8,
-        "total_strokes": 202.0,
-        "updated_sg_per_round": 1.7107460096787963
-      },
-      {
-        "actual_sg_per_round": 2.6666666666666665,
-        "current_pos": 16,
-        "current_pos_display": "T14",
-        "player": "Si Woo Kim",
-        "pre_rank": 29,
-        "pre_sg_per_round": -0.249128137541499,
-        "pre_top10_prob": 0.1447454896961123,
-        "pre_top20_prob": 0.4241831399830991,
-        "pre_top5_pct": 4.8340000000000005,
-        "pre_win_prob": 0.00466,
-        "pred_name": "Si Woo Kim",
-        "r1": 69.0,
-        "r2": 68.0,
-        "r3": 65.0,
-        "r4": null,
-        "rank_change": 13,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 15.158,
-        "sim_top20_pct": 74.59,
-        "sim_top5_pct": 1.478,
-        "sim_win_pct": 0.0,
-        "to_par": -8.0,
-        "to_par_display": -8,
-        "total_strokes": 202.0,
-        "updated_sg_per_round": 0.9171897841417672
-      },
-      {
-        "actual_sg_per_round": 2.333333333333333,
-        "current_pos": 17,
-        "current_pos_display": "T17",
+        "actual_sg_per_round": 2.75,
+        "current_pos": 5,
+        "current_pos_display": "T5",
         "player": "Alex Fitzpatrick",
         "pre_rank": 24,
         "pre_sg_per_round": -0.2446460569905224,
@@ -1141,76 +817,238 @@
         "r1": 68.0,
         "r2": 68.0,
         "r3": 67.0,
-        "r4": null,
-        "rank_change": 7,
+        "r4": 66.0,
+        "rank_change": 19,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 6.978,
-        "sim_top20_pct": 58.044,
-        "sim_top5_pct": 0.446,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 100.0,
         "sim_win_pct": 0.0,
-        "to_par": -7.0,
-        "to_par_display": -7,
-        "total_strokes": 203.0,
-        "updated_sg_per_round": 0.7865456991390201
+        "to_par": -11.0,
+        "to_par_display": "-11",
+        "total_strokes": 269.0,
+        "updated_sg_per_round": 0.9532123658056868
       },
       {
-        "actual_sg_per_round": 2.333333333333333,
-        "current_pos": 18,
-        "current_pos_display": "T17",
-        "player": "Collin Morikawa",
-        "pre_rank": 14,
-        "pre_sg_per_round": 0.8176900651580042,
-        "pre_top10_prob": 0.4073176639435114,
-        "pre_top20_prob": 0.7295750851208942,
-        "pre_top5_pct": 20.436,
-        "pre_win_prob": 0.03686,
-        "pred_name": "Collin Morikawa",
+        "actual_sg_per_round": 2.75,
+        "current_pos": 6,
+        "current_pos_display": "T5",
+        "player": "Chris Gotterup",
+        "pre_rank": 26,
+        "pre_sg_per_round": -0.2639762711778693,
+        "pre_top10_prob": 0.1445868697778849,
+        "pre_top20_prob": 0.4213076359699265,
+        "pre_top5_pct": 4.7780000000000005,
+        "pre_win_prob": 0.00496,
+        "pred_name": "Chris Gotterup",
         "r1": 64.0,
         "r2": 67.0,
-        "r3": 72.0,
-        "r4": null,
-        "rank_change": -4,
+        "r3": 67.0,
+        "r4": 71.0,
+        "rank_change": 20,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 11.174,
-        "sim_top20_pct": 67.244,
-        "sim_top5_pct": 0.882,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
-        "to_par": -7.0,
-        "to_par_display": -7,
-        "total_strokes": 203.0,
-        "updated_sg_per_round": 1.423947372428136
+        "to_par": -11.0,
+        "to_par_display": "-11",
+        "total_strokes": 269.0,
+        "updated_sg_per_round": 0.9416142372932784
       },
       {
-        "actual_sg_per_round": 2.333333333333333,
-        "current_pos": 19,
-        "current_pos_display": "T17",
-        "player": "Tom Kim",
-        "pre_rank": 18,
-        "pre_sg_per_round": 0.2813191379301036,
-        "pre_top10_prob": 0.2576069568196509,
-        "pre_top20_prob": 0.5854127535493294,
-        "pre_top5_pct": 10.558,
-        "pre_win_prob": 0.01462,
-        "pred_name": "Tom Kim",
-        "r1": 67.0,
+        "actual_sg_per_round": 2.75,
+        "current_pos": 7,
+        "current_pos_display": "T5",
+        "player": "Jacob Bridgeman",
+        "pre_rank": 28,
+        "pre_sg_per_round": -0.2618033434559599,
+        "pre_top10_prob": 0.142331100984641,
+        "pre_top20_prob": 0.4184083715812079,
+        "pre_top5_pct": 4.874,
+        "pre_win_prob": 0.0049,
+        "pred_name": "Jacob Bridgeman",
+        "r1": 68.0,
+        "r2": 67.0,
+        "r3": 66.0,
+        "r4": 68.0,
+        "rank_change": 21,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -11.0,
+        "to_par_display": "-11",
+        "total_strokes": 269.0,
+        "updated_sg_per_round": 0.9429179939264242
+      },
+      {
+        "actual_sg_per_round": 2.75,
+        "current_pos": 8,
+        "current_pos_display": "T5",
+        "player": "Ludvig \u00c5berg",
+        "pre_rank": 9,
+        "pre_sg_per_round": 0.8939920920731343,
+        "pre_top10_prob": 0.4307699379621197,
+        "pre_top20_prob": 0.7480471616980131,
+        "pre_top5_pct": 22.13,
+        "pre_win_prob": 0.04234,
+        "pred_name": "Ludvig \u00c5berg",
+        "r1": 65.0,
         "r2": 68.0,
-        "r3": 68.0,
-        "r4": null,
+        "r3": 65.0,
+        "r4": 71.0,
+        "rank_change": 1,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -11.0,
+        "to_par_display": "-11",
+        "total_strokes": 269.0,
+        "updated_sg_per_round": 1.6363952552438803
+      },
+      {
+        "actual_sg_per_round": 2.75,
+        "current_pos": 9,
+        "current_pos_display": "T5",
+        "player": "Min Woo Lee",
+        "pre_rank": 13,
+        "pre_sg_per_round": 0.8009227530980494,
+        "pre_top10_prob": 0.4002062122923739,
+        "pre_top20_prob": 0.7244315313649219,
+        "pre_top5_pct": 20.16,
+        "pre_win_prob": 0.03718,
+        "pred_name": "Min Woo Lee",
+        "r1": 62.0,
+        "r2": 73.0,
+        "r3": 66.0,
+        "r4": 68.0,
+        "rank_change": 4,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -11.0,
+        "to_par_display": "-11",
+        "total_strokes": 269.0,
+        "updated_sg_per_round": 1.5805536518588297
+      },
+      {
+        "actual_sg_per_round": 2.75,
+        "current_pos": 10,
+        "current_pos_display": "T5",
+        "player": "Rory McIlroy",
+        "pre_rank": 5,
+        "pre_sg_per_round": 1.21426484911032,
+        "pre_top10_prob": 0.5313788934594047,
+        "pre_top20_prob": 0.8160459778851781,
+        "pre_top5_pct": 30.622,
+        "pre_win_prob": 0.06918,
+        "pred_name": "Rory McIlroy",
+        "r1": 68.0,
+        "r2": 69.0,
+        "r3": 63.0,
+        "r4": 69.0,
+        "rank_change": -5,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 100.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -11.0,
+        "to_par_display": "-11",
+        "total_strokes": 269.0,
+        "updated_sg_per_round": 1.8285589094661925
+      },
+      {
+        "actual_sg_per_round": 2.75,
+        "current_pos": 11,
+        "current_pos_display": "T5",
+        "player": "Russell Henley",
+        "pre_rank": 10,
+        "pre_sg_per_round": 0.8424062328361588,
+        "pre_top10_prob": 0.4183077403862931,
+        "pre_top20_prob": 0.7387288729128723,
+        "pre_top5_pct": 21.03,
+        "pre_win_prob": 0.0398,
+        "pred_name": "Russell Henley",
+        "r1": 70.0,
+        "r2": 65.0,
+        "r3": 66.0,
+        "r4": 68.0,
         "rank_change": -1,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 8.767999999999999,
-        "sim_top20_pct": 62.522,
-        "sim_top5_pct": 0.622,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
-        "to_par": -7.0,
-        "to_par_display": -7,
-        "total_strokes": 203.0,
-        "updated_sg_per_round": 1.1021248160913957
+        "to_par": -11.0,
+        "to_par_display": "-11",
+        "total_strokes": 269.0,
+        "updated_sg_per_round": 1.6054437397016952
       },
       {
-        "actual_sg_per_round": 2.333333333333333,
-        "current_pos": 20,
-        "current_pos_display": "T17",
+        "actual_sg_per_round": 2.5,
+        "current_pos": 12,
+        "current_pos_display": "T12",
+        "player": "Adam Scott",
+        "pre_rank": 15,
+        "pre_sg_per_round": 0.7197873348767406,
+        "pre_top10_prob": 0.3795597869532109,
+        "pre_top20_prob": 0.7056039093218146,
+        "pre_top5_pct": 18.398,
+        "pre_win_prob": 0.03232,
+        "pred_name": "Adam Scott",
+        "r1": 66.0,
+        "r2": 67.0,
+        "r3": 65.0,
+        "r4": 72.0,
+        "rank_change": 3,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -10.0,
+        "to_par_display": "-10",
+        "total_strokes": 270.0,
+        "updated_sg_per_round": 1.4318724009260444
+      },
+      {
+        "actual_sg_per_round": 2.5,
+        "current_pos": 13,
+        "current_pos_display": "T12",
+        "player": "Cameron Young",
+        "pre_rank": 16,
+        "pre_sg_per_round": 0.6575638346395188,
+        "pre_top10_prob": 0.3622221467598855,
+        "pre_top20_prob": 0.6902778257583965,
+        "pre_top5_pct": 17.124,
+        "pre_win_prob": 0.0304,
+        "pred_name": "Cameron Young",
+        "r1": 70.0,
+        "r2": 62.0,
+        "r3": 68.0,
+        "r4": 70.0,
+        "rank_change": 3,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -10.0,
+        "to_par_display": "-10",
+        "total_strokes": 270.0,
+        "updated_sg_per_round": 1.394538300783711
+      },
+      {
+        "actual_sg_per_round": 2.5,
+        "current_pos": 14,
+        "current_pos_display": "T12",
         "player": "Tommy Fleetwood",
         "pre_rank": 4,
         "pre_sg_per_round": 1.2300962048744135,
@@ -1222,130 +1060,103 @@
         "r1": 66.0,
         "r2": 70.0,
         "r3": 67.0,
-        "r4": null,
-        "rank_change": -16,
+        "r4": 67.0,
+        "rank_change": -10,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 12.848,
-        "sim_top20_pct": 71.158,
-        "sim_top5_pct": 1.17,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
-        "to_par": -7.0,
-        "to_par_display": -7,
-        "total_strokes": 203.0,
-        "updated_sg_per_round": 1.6713910562579817
+        "to_par": -10.0,
+        "to_par_display": "-10",
+        "total_strokes": 270.0,
+        "updated_sg_per_round": 1.738057722924648
       },
       {
-        "actual_sg_per_round": 2.333333333333333,
-        "current_pos": 21,
-        "current_pos_display": "T17",
-        "player": "Wyndham Clark",
-        "pre_rank": 19,
-        "pre_sg_per_round": 0.1212268317604055,
-        "pre_top10_prob": 0.2172843347082051,
-        "pre_top20_prob": 0.5331956673750032,
-        "pre_top5_pct": 8.246,
-        "pre_win_prob": 0.01036,
-        "pred_name": "Wyndham Clark",
-        "r1": 67.0,
-        "r2": 69.0,
-        "r3": 67.0,
-        "r4": null,
-        "rank_change": -2,
+        "actual_sg_per_round": 2.25,
+        "current_pos": 15,
+        "current_pos_display": "T15",
+        "player": "Collin Morikawa",
+        "pre_rank": 14,
+        "pre_sg_per_round": 0.8176900651580042,
+        "pre_top10_prob": 0.4073176639435114,
+        "pre_top20_prob": 0.7295750851208942,
+        "pre_top5_pct": 20.436,
+        "pre_win_prob": 0.03686,
+        "pred_name": "Collin Morikawa",
+        "r1": 64.0,
+        "r2": 67.0,
+        "r3": 72.0,
+        "r4": 68.0,
+        "rank_change": -1,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 8.23,
-        "sim_top20_pct": 61.218,
-        "sim_top5_pct": 0.5760000000000001,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
-        "to_par": -7.0,
-        "to_par_display": -7,
-        "total_strokes": 203.0,
-        "updated_sg_per_round": 1.0060694323895767
+        "to_par": -9.0,
+        "to_par_display": "-9",
+        "total_strokes": 271.0,
+        "updated_sg_per_round": 1.3906140390948023
       },
       {
-        "actual_sg_per_round": 2.0,
-        "current_pos": 22,
-        "current_pos_display": "22",
-        "player": "Ryan Fox",
-        "pre_rank": 23,
-        "pre_sg_per_round": -0.2385593324558714,
-        "pre_top10_prob": 0.1470067108475457,
-        "pre_top20_prob": 0.4264300735118877,
-        "pre_top5_pct": 5.026,
-        "pre_win_prob": 0.0053,
-        "pred_name": "Ryan Fox",
-        "r1": 66.0,
+        "actual_sg_per_round": 2.25,
+        "current_pos": 16,
+        "current_pos_display": "T15",
+        "player": "Si Woo Kim",
+        "pre_rank": 29,
+        "pre_sg_per_round": -0.249128137541499,
+        "pre_top10_prob": 0.1447454896961123,
+        "pre_top20_prob": 0.4241831399830991,
+        "pre_top5_pct": 4.8340000000000005,
+        "pre_win_prob": 0.00466,
+        "pred_name": "Si Woo Kim",
+        "r1": 69.0,
         "r2": 68.0,
-        "r3": 70.0,
-        "r4": null,
+        "r3": 65.0,
+        "r4": 69.0,
+        "rank_change": 13,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -9.0,
+        "to_par_display": "-9",
+        "total_strokes": 271.0,
+        "updated_sg_per_round": 0.7505231174751006
+      },
+      {
+        "actual_sg_per_round": 2.25,
+        "current_pos": 17,
+        "current_pos_display": "T15",
+        "player": "Tom Kim",
+        "pre_rank": 18,
+        "pre_sg_per_round": 0.2813191379301036,
+        "pre_top10_prob": 0.2576069568196509,
+        "pre_top20_prob": 0.5854127535493294,
+        "pre_top5_pct": 10.558,
+        "pre_win_prob": 0.01462,
+        "pred_name": "Tom Kim",
+        "r1": 67.0,
+        "r2": 68.0,
+        "r3": 68.0,
+        "r4": 68.0,
         "rank_change": 1,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 2.73,
-        "sim_top20_pct": 39.372,
-        "sim_top5_pct": 0.126,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
-        "to_par": -6.0,
-        "to_par_display": -6,
-        "total_strokes": 204.0,
-        "updated_sg_per_round": 0.6568644005264772
+        "to_par": -9.0,
+        "to_par_display": "-9",
+        "total_strokes": 271.0,
+        "updated_sg_per_round": 1.0687914827580622
       },
       {
-        "actual_sg_per_round": 1.6666666666666667,
-        "current_pos": 23,
-        "current_pos_display": "T23",
-        "player": "Akshay Bhatia",
-        "pre_rank": 11,
-        "pre_sg_per_round": 0.8526048898518237,
-        "pre_top10_prob": 0.4208152597633116,
-        "pre_top20_prob": 0.7387126719419856,
-        "pre_top5_pct": 21.264,
-        "pre_win_prob": 0.03976,
-        "pred_name": "Akshay Bhatia",
-        "r1": 65.0,
-        "r2": 69.0,
-        "r3": 71.0,
-        "r4": null,
-        "rank_change": -12,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 1.79,
-        "sim_top20_pct": 32.096000000000004,
-        "sim_top5_pct": 0.064,
-        "sim_win_pct": 0.0,
-        "to_par": -5.0,
-        "to_par_display": -5,
-        "total_strokes": 205.0,
-        "updated_sg_per_round": 1.1782296005777608
-      },
-      {
-        "actual_sg_per_round": 1.6666666666666667,
-        "current_pos": 24,
-        "current_pos_display": "T23",
-        "player": "Gary Woodland",
-        "pre_rank": 27,
-        "pre_sg_per_round": -0.2585509930978415,
-        "pre_top10_prob": 0.1417974602672223,
-        "pre_top20_prob": 0.4191713453665242,
-        "pre_top5_pct": 4.682,
-        "pre_win_prob": 0.00496,
-        "pred_name": "Gary Woodland",
-        "r1": 66.0,
-        "r2": 68.0,
-        "r3": 71.0,
-        "r4": null,
-        "rank_change": 3,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 0.96,
-        "sim_top20_pct": 23.314,
-        "sim_top5_pct": 0.038,
-        "sim_win_pct": 0.0,
-        "to_par": -5.0,
-        "to_par_display": -5,
-        "total_strokes": 205.0,
-        "updated_sg_per_round": 0.5115360708079618
-      },
-      {
-        "actual_sg_per_round": 1.6666666666666667,
-        "current_pos": 25,
-        "current_pos_display": "T23",
+        "actual_sg_per_round": 2.25,
+        "current_pos": 18,
+        "current_pos_display": "T15",
         "player": "Xander Schauffele",
         "pre_rank": 2,
         "pre_sg_per_round": 1.279314746242736,
@@ -1357,22 +1168,103 @@
         "r1": 67.0,
         "r2": 71.0,
         "r3": 67.0,
-        "r4": null,
-        "rank_change": -23,
+        "r4": 66.0,
+        "rank_change": -16,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 2.302,
-        "sim_top20_pct": 36.092,
-        "sim_top5_pct": 0.086,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
-        "to_par": -5.0,
-        "to_par_display": -5,
-        "total_strokes": 205.0,
-        "updated_sg_per_round": 1.434255514412308
+        "to_par": -9.0,
+        "to_par_display": "-9",
+        "total_strokes": 271.0,
+        "updated_sg_per_round": 1.6675888477456415
       },
       {
-        "actual_sg_per_round": 1.3333333333333333,
-        "current_pos": 26,
-        "current_pos_display": "T26",
+        "actual_sg_per_round": 1.75,
+        "current_pos": 19,
+        "current_pos_display": "T19",
+        "player": "Akshay Bhatia",
+        "pre_rank": 11,
+        "pre_sg_per_round": 0.8526048898518237,
+        "pre_top10_prob": 0.4208152597633116,
+        "pre_top20_prob": 0.7387126719419856,
+        "pre_top5_pct": 21.264,
+        "pre_win_prob": 0.03976,
+        "pred_name": "Akshay Bhatia",
+        "r1": 65.0,
+        "r2": 69.0,
+        "r3": 71.0,
+        "r4": 68.0,
+        "rank_change": -8,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -7.0,
+        "to_par_display": "-7",
+        "total_strokes": 273.0,
+        "updated_sg_per_round": 1.2115629339110945
+      },
+      {
+        "actual_sg_per_round": 1.75,
+        "current_pos": 20,
+        "current_pos_display": "T19",
+        "player": "Justin Rose",
+        "pre_rank": 30,
+        "pre_sg_per_round": -0.3294551082563318,
+        "pre_top10_prob": 0.1313646305595462,
+        "pre_top20_prob": 0.3974045609764809,
+        "pre_top5_pct": 4.258,
+        "pre_win_prob": 0.00442,
+        "pred_name": "Justin Rose",
+        "r1": 68.0,
+        "r2": 65.0,
+        "r3": 69.0,
+        "r4": 71.0,
+        "rank_change": 10,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 100.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -7.0,
+        "to_par_display": "-7",
+        "total_strokes": 273.0,
+        "updated_sg_per_round": 0.502326935046201
+      },
+      {
+        "actual_sg_per_round": 1.75,
+        "current_pos": 21,
+        "current_pos_display": "T19",
+        "player": "Sam Burns",
+        "pre_rank": 17,
+        "pre_sg_per_round": 0.5581895897669229,
+        "pre_top10_prob": 0.3319092190789073,
+        "pre_top20_prob": 0.6617180402211749,
+        "pre_top5_pct": 15.046,
+        "pre_win_prob": 0.02346,
+        "pred_name": "Sam Burns",
+        "r1": 66.0,
+        "r2": 68.0,
+        "r3": 67.0,
+        "r4": 72.0,
+        "rank_change": -4,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -7.0,
+        "to_par_display": "-7",
+        "total_strokes": 273.0,
+        "updated_sg_per_round": 1.0349137538601538
+      },
+      {
+        "actual_sg_per_round": 1.25,
+        "current_pos": 22,
+        "current_pos_display": "T22",
         "player": "Hideki Matsuyama",
         "pre_rank": 6,
         "pre_sg_per_round": 1.0556121500663034,
@@ -1384,22 +1276,49 @@
         "r1": 69.0,
         "r2": 70.0,
         "r3": 67.0,
-        "r4": null,
-        "rank_change": -20,
+        "r4": 69.0,
+        "rank_change": -16,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 0.626,
-        "sim_top20_pct": 19.19,
-        "sim_top5_pct": 0.016,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
-        "to_par": -4.0,
-        "to_par_display": -4,
-        "total_strokes": 206.0,
-        "updated_sg_per_round": 1.1667006233731154
+        "to_par": -5.0,
+        "to_par_display": "-5",
+        "total_strokes": 275.0,
+        "updated_sg_per_round": 1.133367290039782
       },
       {
-        "actual_sg_per_round": 1.3333333333333333,
-        "current_pos": 27,
-        "current_pos_display": "T26",
+        "actual_sg_per_round": 1.25,
+        "current_pos": 23,
+        "current_pos_display": "T22",
+        "player": "Matt Fitzpatrick",
+        "pre_rank": 7,
+        "pre_sg_per_round": 1.0734655716868826,
+        "pre_top10_prob": 0.4848121950489344,
+        "pre_top20_prob": 0.7849184057394516,
+        "pre_top5_pct": 26.334000000000003,
+        "pre_win_prob": 0.0563,
+        "pred_name": "Matt Fitzpatrick",
+        "r1": 66.0,
+        "r2": 67.0,
+        "r3": 69.0,
+        "r4": 73.0,
+        "rank_change": -16,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -5.0,
+        "to_par_display": "-5",
+        "total_strokes": 275.0,
+        "updated_sg_per_round": 1.1440793430121294
+      },
+      {
+        "actual_sg_per_round": 1.25,
+        "current_pos": 24,
+        "current_pos_display": "T22",
         "player": "Patrick Cantlay",
         "pre_rank": 12,
         "pre_sg_per_round": 0.8089729933983808,
@@ -1411,76 +1330,49 @@
         "r1": 68.0,
         "r2": 70.0,
         "r3": 68.0,
-        "r4": null,
-        "rank_change": -15,
+        "r4": 69.0,
+        "rank_change": -12,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 0.584,
-        "sim_top20_pct": 17.708,
-        "sim_top5_pct": 0.024,
-        "sim_win_pct": 0.0,
-        "to_par": -4.0,
-        "to_par_display": -4,
-        "total_strokes": 206.0,
-        "updated_sg_per_round": 1.0187171293723618
-      },
-      {
-        "actual_sg_per_round": 1.3333333333333333,
-        "current_pos": 28,
-        "current_pos_display": "T26",
-        "player": "Robert MacIntyre",
-        "pre_rank": 8,
-        "pre_sg_per_round": 1.006141102752054,
-        "pre_top10_prob": 0.4670576735454153,
-        "pre_top20_prob": 0.7726071817475113,
-        "pre_top5_pct": 24.826,
-        "pre_win_prob": 0.04872,
-        "pred_name": "Robert MacIntyre",
-        "r1": 67.0,
-        "r2": 76.0,
-        "r3": 63.0,
-        "r4": null,
-        "rank_change": -20,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 0.582,
-        "sim_top20_pct": 18.614,
-        "sim_top5_pct": 0.032,
-        "sim_win_pct": 0.0,
-        "to_par": -4.0,
-        "to_par_display": -4,
-        "total_strokes": 206.0,
-        "updated_sg_per_round": 1.1370179949845656
-      },
-      {
-        "actual_sg_per_round": 1.0,
-        "current_pos": 29,
-        "current_pos_display": "T29",
-        "player": "Alex Smalley",
-        "pre_rank": 21,
-        "pre_sg_per_round": -0.2622410668845384,
-        "pre_top10_prob": 0.141684120826375,
-        "pre_top20_prob": 0.4167256831810339,
-        "pre_top5_pct": 4.7,
-        "pre_win_prob": 0.00546,
-        "pred_name": "Alex Smalley",
-        "r1": 67.0,
-        "r2": 68.0,
-        "r3": 72.0,
-        "r4": null,
-        "rank_change": -8,
-        "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 0.058,
-        "sim_top20_pct": 5.198,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
         "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
-        "to_par": -3.0,
-        "to_par_display": -3,
-        "total_strokes": 207.0,
-        "updated_sg_per_round": 0.2426553598692769
+        "to_par": -5.0,
+        "to_par_display": "-5",
+        "total_strokes": 275.0,
+        "updated_sg_per_round": 0.9853837960390284
       },
       {
-        "actual_sg_per_round": 1.0,
-        "current_pos": 30,
-        "current_pos_display": "T29",
+        "actual_sg_per_round": 1.25,
+        "current_pos": 25,
+        "current_pos_display": "T22",
+        "player": "Wyndham Clark",
+        "pre_rank": 19,
+        "pre_sg_per_round": 0.1212268317604055,
+        "pre_top10_prob": 0.2172843347082051,
+        "pre_top20_prob": 0.5331956673750032,
+        "pre_top5_pct": 8.246,
+        "pre_win_prob": 0.01036,
+        "pred_name": "Wyndham Clark",
+        "r1": 67.0,
+        "r2": 69.0,
+        "r3": 67.0,
+        "r4": 72.0,
+        "rank_change": -6,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -5.0,
+        "to_par_display": "-5",
+        "total_strokes": 275.0,
+        "updated_sg_per_round": 0.5727360990562433
+      },
+      {
+        "actual_sg_per_round": 0.75,
+        "current_pos": 26,
+        "current_pos_display": "26",
         "player": "Kristoffer Reitan",
         "pre_rank": 25,
         "pre_sg_per_round": -0.2562659550810386,
@@ -1492,17 +1384,125 @@
         "r1": 70.0,
         "r2": 69.0,
         "r3": 68.0,
-        "r4": null,
-        "rank_change": -5,
+        "r4": 70.0,
+        "rank_change": -1,
         "sim_make_cut_pct": 100.0,
-        "sim_top10_pct": 0.078,
-        "sim_top20_pct": 5.226,
-        "sim_top5_pct": 0.002,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
         "sim_win_pct": 0.0,
         "to_par": -3.0,
-        "to_par_display": -3,
-        "total_strokes": 207.0,
-        "updated_sg_per_round": 0.2462404269513768
+        "to_par_display": "-3",
+        "total_strokes": 277.0,
+        "updated_sg_per_round": 0.1462404269513768
+      },
+      {
+        "actual_sg_per_round": 0.5,
+        "current_pos": 27,
+        "current_pos_display": "27",
+        "player": "Ryan Fox",
+        "pre_rank": 23,
+        "pre_sg_per_round": -0.2385593324558714,
+        "pre_top10_prob": 0.1470067108475457,
+        "pre_top20_prob": 0.4264300735118877,
+        "pre_top5_pct": 5.026,
+        "pre_win_prob": 0.0053,
+        "pred_name": "Ryan Fox",
+        "r1": 66.0,
+        "r2": 68.0,
+        "r3": 70.0,
+        "r4": 74.0,
+        "rank_change": -4,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -2.0,
+        "to_par_display": "-2",
+        "total_strokes": 278.0,
+        "updated_sg_per_round": 0.0568644005264771
+      },
+      {
+        "actual_sg_per_round": 0.25,
+        "current_pos": 28,
+        "current_pos_display": "28",
+        "player": "Alex Smalley",
+        "pre_rank": 21,
+        "pre_sg_per_round": -0.2622410668845384,
+        "pre_top10_prob": 0.141684120826375,
+        "pre_top20_prob": 0.4167256831810339,
+        "pre_top5_pct": 4.7,
+        "pre_win_prob": 0.00546,
+        "pred_name": "Alex Smalley",
+        "r1": 67.0,
+        "r2": 68.0,
+        "r3": 72.0,
+        "r4": 72.0,
+        "rank_change": -7,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": -1.0,
+        "to_par_display": "-1",
+        "total_strokes": 279.0,
+        "updated_sg_per_round": -0.057344640130723
+      },
+      {
+        "actual_sg_per_round": 0.0,
+        "current_pos": 29,
+        "current_pos_display": "29",
+        "player": "Robert MacIntyre",
+        "pre_rank": 8,
+        "pre_sg_per_round": 1.006141102752054,
+        "pre_top10_prob": 0.4670576735454153,
+        "pre_top20_prob": 0.7726071817475113,
+        "pre_top5_pct": 24.826,
+        "pre_win_prob": 0.04872,
+        "pred_name": "Robert MacIntyre",
+        "r1": 67.0,
+        "r2": 76.0,
+        "r3": 63.0,
+        "r4": 74.0,
+        "rank_change": -21,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": 0.0,
+        "to_par_display": "E",
+        "total_strokes": 280.0,
+        "updated_sg_per_round": 0.6036846616512324
+      },
+      {
+        "actual_sg_per_round": -0.5,
+        "current_pos": 30,
+        "current_pos_display": "30",
+        "player": "Gary Woodland",
+        "pre_rank": 27,
+        "pre_sg_per_round": -0.2585509930978415,
+        "pre_top10_prob": 0.1417974602672223,
+        "pre_top20_prob": 0.4191713453665242,
+        "pre_top5_pct": 4.682,
+        "pre_win_prob": 0.00496,
+        "pred_name": "Gary Woodland",
+        "r1": 66.0,
+        "r2": 68.0,
+        "r3": 71.0,
+        "r4": 77.0,
+        "rank_change": -3,
+        "sim_make_cut_pct": 100.0,
+        "sim_top10_pct": 0.0,
+        "sim_top20_pct": 0.0,
+        "sim_top5_pct": 0.0,
+        "sim_win_pct": 0.0,
+        "to_par": 2.0,
+        "to_par_display": "+2",
+        "total_strokes": 282.0,
+        "updated_sg_per_round": -0.3551305958587049
       }
     ]
   },
@@ -1527,7 +1527,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Scottie Scheffler",
-      "updatedAt": "2026-08-30T20:54:01.036495+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922350+00:00"
     },
     {
       "book": "model",
@@ -1542,14 +1542,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.8996200000000001,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Scottie Scheffler",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Scottie Scheffler",
-      "updatedAt": "2026-08-30T20:54:01.036514+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922377+00:00"
     },
     {
       "book": "model",
@@ -1564,14 +1564,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.9983799999999999,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Scottie Scheffler",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Scottie Scheffler",
-      "updatedAt": "2026-08-30T20:54:01.036519+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922382+00:00"
     },
     {
       "book": "model",
@@ -1593,7 +1593,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Scottie Scheffler",
-      "updatedAt": "2026-08-30T20:54:01.036522+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922386+00:00"
     },
     {
       "book": "model",
@@ -1615,7 +1615,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Xander Schauffele",
-      "updatedAt": "2026-08-30T20:54:01.036526+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922389+00:00"
     },
     {
       "book": "model",
@@ -1630,14 +1630,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.02302,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Xander Schauffele",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Xander Schauffele",
-      "updatedAt": "2026-08-30T20:54:01.036529+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922393+00:00"
     },
     {
       "book": "model",
@@ -1652,14 +1652,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.36091999999999996,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Xander Schauffele",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Xander Schauffele",
-      "updatedAt": "2026-08-30T20:54:01.036535+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922399+00:00"
     },
     {
       "book": "model",
@@ -1681,7 +1681,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Xander Schauffele",
-      "updatedAt": "2026-08-30T20:54:01.036540+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922405+00:00"
     },
     {
       "book": "model",
@@ -1703,7 +1703,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Viktor Hovland",
-      "updatedAt": "2026-08-30T20:54:01.036544+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922409+00:00"
     },
     {
       "book": "model",
@@ -1718,14 +1718,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.9937600000000001,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Viktor Hovland",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Viktor Hovland",
-      "updatedAt": "2026-08-30T20:54:01.036548+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922412+00:00"
     },
     {
       "book": "model",
@@ -1740,14 +1740,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.99994,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Viktor Hovland",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Viktor Hovland",
-      "updatedAt": "2026-08-30T20:54:01.036551+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922416+00:00"
     },
     {
       "book": "model",
@@ -1769,7 +1769,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Viktor Hovland",
-      "updatedAt": "2026-08-30T20:54:01.036555+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922421+00:00"
     },
     {
       "book": "model",
@@ -1791,7 +1791,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tommy Fleetwood",
-      "updatedAt": "2026-08-30T20:54:01.036558+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922424+00:00"
     },
     {
       "book": "model",
@@ -1806,14 +1806,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.12848,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Tommy Fleetwood",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tommy Fleetwood",
-      "updatedAt": "2026-08-30T20:54:01.036560+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922427+00:00"
     },
     {
       "book": "model",
@@ -1828,14 +1828,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.71158,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Tommy Fleetwood",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tommy Fleetwood",
-      "updatedAt": "2026-08-30T20:54:01.036563+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922430+00:00"
     },
     {
       "book": "model",
@@ -1857,7 +1857,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tommy Fleetwood",
-      "updatedAt": "2026-08-30T20:54:01.036566+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922433+00:00"
     },
     {
       "book": "model",
@@ -1879,7 +1879,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rory McIlroy",
-      "updatedAt": "2026-08-30T20:54:01.036569+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922436+00:00"
     },
     {
       "book": "model",
@@ -1894,14 +1894,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.59968,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Rory McIlroy",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rory McIlroy",
-      "updatedAt": "2026-08-30T20:54:01.036572+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922439+00:00"
     },
     {
       "book": "model",
@@ -1916,14 +1916,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.9704,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Rory McIlroy",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rory McIlroy",
-      "updatedAt": "2026-08-30T20:54:01.036575+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922443+00:00"
     },
     {
       "book": "model",
@@ -1945,7 +1945,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rory McIlroy",
-      "updatedAt": "2026-08-30T20:54:01.036578+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922446+00:00"
     },
     {
       "book": "model",
@@ -1967,7 +1967,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Hideki Matsuyama",
-      "updatedAt": "2026-08-30T20:54:01.036581+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922449+00:00"
     },
     {
       "book": "model",
@@ -1982,14 +1982,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00626,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Hideki Matsuyama",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Hideki Matsuyama",
-      "updatedAt": "2026-08-30T20:54:01.036583+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922452+00:00"
     },
     {
       "book": "model",
@@ -2004,14 +2004,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.19190000000000002,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Hideki Matsuyama",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Hideki Matsuyama",
-      "updatedAt": "2026-08-30T20:54:01.036586+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922456+00:00"
     },
     {
       "book": "model",
@@ -2033,7 +2033,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Hideki Matsuyama",
-      "updatedAt": "2026-08-30T20:54:01.036589+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922460+00:00"
     },
     {
       "book": "model",
@@ -2055,7 +2055,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt Fitzpatrick",
-      "updatedAt": "2026-08-30T20:54:01.036592+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922464+00:00"
     },
     {
       "book": "model",
@@ -2070,14 +2070,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.2353,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Matt Fitzpatrick",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt Fitzpatrick",
-      "updatedAt": "2026-08-30T20:54:01.036595+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922468+00:00"
     },
     {
       "book": "model",
@@ -2092,14 +2092,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.8353,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Matt Fitzpatrick",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt Fitzpatrick",
-      "updatedAt": "2026-08-30T20:54:01.036598+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922471+00:00"
     },
     {
       "book": "model",
@@ -2121,7 +2121,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt Fitzpatrick",
-      "updatedAt": "2026-08-30T20:54:01.036601+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922474+00:00"
     },
     {
       "book": "model",
@@ -2143,7 +2143,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Robert MacIntyre",
-      "updatedAt": "2026-08-30T20:54:01.036604+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922477+00:00"
     },
     {
       "book": "model",
@@ -2158,14 +2158,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00582,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Robert MacIntyre",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Robert MacIntyre",
-      "updatedAt": "2026-08-30T20:54:01.036607+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922480+00:00"
     },
     {
       "book": "model",
@@ -2180,14 +2180,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.18614,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Robert MacIntyre",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Robert MacIntyre",
-      "updatedAt": "2026-08-30T20:54:01.036610+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922482+00:00"
     },
     {
       "book": "model",
@@ -2209,7 +2209,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Robert MacIntyre",
-      "updatedAt": "2026-08-30T20:54:01.036613+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922485+00:00"
     },
     {
       "book": "model",
@@ -2231,7 +2231,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Ludvig \u00c5berg",
-      "updatedAt": "2026-08-30T20:54:01.036616+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922489+00:00"
     },
     {
       "book": "model",
@@ -2246,14 +2246,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.8597,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ludvig \u00c5berg",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Ludvig \u00c5berg",
-      "updatedAt": "2026-08-30T20:54:01.036619+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922492+00:00"
     },
     {
       "book": "model",
@@ -2268,14 +2268,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.99668,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ludvig \u00c5berg",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Ludvig \u00c5berg",
-      "updatedAt": "2026-08-30T20:54:01.036622+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922494+00:00"
     },
     {
       "book": "model",
@@ -2297,7 +2297,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Ludvig \u00c5berg",
-      "updatedAt": "2026-08-30T20:54:01.036625+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922497+00:00"
     },
     {
       "book": "model",
@@ -2319,7 +2319,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Russell Henley",
-      "updatedAt": "2026-08-30T20:54:01.036628+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922500+00:00"
     },
     {
       "book": "model",
@@ -2334,14 +2334,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.38051999999999997,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Russell Henley",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Russell Henley",
-      "updatedAt": "2026-08-30T20:54:01.036631+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922503+00:00"
     },
     {
       "book": "model",
@@ -2356,14 +2356,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.9155800000000001,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Russell Henley",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Russell Henley",
-      "updatedAt": "2026-08-30T20:54:01.036634+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922506+00:00"
     },
     {
       "book": "model",
@@ -2385,7 +2385,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Russell Henley",
-      "updatedAt": "2026-08-30T20:54:01.036636+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922509+00:00"
     },
     {
       "book": "model",
@@ -2407,7 +2407,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Akshay Bhatia",
-      "updatedAt": "2026-08-30T20:54:01.036639+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922512+00:00"
     },
     {
       "book": "model",
@@ -2422,14 +2422,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0179,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Akshay Bhatia",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Akshay Bhatia",
-      "updatedAt": "2026-08-30T20:54:01.036643+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922515+00:00"
     },
     {
       "book": "model",
@@ -2444,14 +2444,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.32096,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Akshay Bhatia",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Akshay Bhatia",
-      "updatedAt": "2026-08-30T20:54:01.036645+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922518+00:00"
     },
     {
       "book": "model",
@@ -2473,7 +2473,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Akshay Bhatia",
-      "updatedAt": "2026-08-30T20:54:01.036648+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922521+00:00"
     },
     {
       "book": "model",
@@ -2495,7 +2495,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Patrick Cantlay",
-      "updatedAt": "2026-08-30T20:54:01.036651+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922524+00:00"
     },
     {
       "book": "model",
@@ -2510,14 +2510,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00584,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Patrick Cantlay",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Patrick Cantlay",
-      "updatedAt": "2026-08-30T20:54:01.036654+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922527+00:00"
     },
     {
       "book": "model",
@@ -2532,14 +2532,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.17708,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Patrick Cantlay",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Patrick Cantlay",
-      "updatedAt": "2026-08-30T20:54:01.036656+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922530+00:00"
     },
     {
       "book": "model",
@@ -2561,7 +2561,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Patrick Cantlay",
-      "updatedAt": "2026-08-30T20:54:01.036660+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922533+00:00"
     },
     {
       "book": "model",
@@ -2583,7 +2583,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Min Woo Lee",
-      "updatedAt": "2026-08-30T20:54:01.036663+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922535+00:00"
     },
     {
       "book": "model",
@@ -2598,14 +2598,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.37694000000000005,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Min Woo Lee",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Min Woo Lee",
-      "updatedAt": "2026-08-30T20:54:01.036665+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922538+00:00"
     },
     {
       "book": "model",
@@ -2620,14 +2620,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.91374,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Min Woo Lee",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Min Woo Lee",
-      "updatedAt": "2026-08-30T20:54:01.036668+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922541+00:00"
     },
     {
       "book": "model",
@@ -2649,7 +2649,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Min Woo Lee",
-      "updatedAt": "2026-08-30T20:54:01.036671+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922544+00:00"
     },
     {
       "book": "model",
@@ -2671,7 +2671,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Collin Morikawa",
-      "updatedAt": "2026-08-30T20:54:01.036674+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922547+00:00"
     },
     {
       "book": "model",
@@ -2686,14 +2686,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.11173999999999999,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Collin Morikawa",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Collin Morikawa",
-      "updatedAt": "2026-08-30T20:54:01.036677+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922550+00:00"
     },
     {
       "book": "model",
@@ -2708,14 +2708,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.67244,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Collin Morikawa",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Collin Morikawa",
-      "updatedAt": "2026-08-30T20:54:01.036680+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922553+00:00"
     },
     {
       "book": "model",
@@ -2737,7 +2737,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Collin Morikawa",
-      "updatedAt": "2026-08-30T20:54:01.036683+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922556+00:00"
     },
     {
       "book": "model",
@@ -2759,7 +2759,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Scott",
-      "updatedAt": "2026-08-30T20:54:01.036686+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922559+00:00"
     },
     {
       "book": "model",
@@ -2774,14 +2774,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.85414,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Adam Scott",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Scott",
-      "updatedAt": "2026-08-30T20:54:01.036688+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922562+00:00"
     },
     {
       "book": "model",
@@ -2796,14 +2796,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.99598,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Adam Scott",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Scott",
-      "updatedAt": "2026-08-30T20:54:01.036691+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922565+00:00"
     },
     {
       "book": "model",
@@ -2825,7 +2825,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Scott",
-      "updatedAt": "2026-08-30T20:54:01.036694+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922568+00:00"
     },
     {
       "book": "model",
@@ -2847,7 +2847,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Cameron Young",
-      "updatedAt": "2026-08-30T20:54:01.036697+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922571+00:00"
     },
     {
       "book": "model",
@@ -2862,14 +2862,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.54248,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Cameron Young",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Cameron Young",
-      "updatedAt": "2026-08-30T20:54:01.036700+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922574+00:00"
     },
     {
       "book": "model",
@@ -2884,14 +2884,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.9613200000000001,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Cameron Young",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Cameron Young",
-      "updatedAt": "2026-08-30T20:54:01.036703+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922577+00:00"
     },
     {
       "book": "model",
@@ -2913,7 +2913,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Cameron Young",
-      "updatedAt": "2026-08-30T20:54:01.036706+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922580+00:00"
     },
     {
       "book": "model",
@@ -2935,7 +2935,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sam Burns",
-      "updatedAt": "2026-08-30T20:54:01.036709+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922583+00:00"
     },
     {
       "book": "model",
@@ -2950,14 +2950,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.35082,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Sam Burns",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sam Burns",
-      "updatedAt": "2026-08-30T20:54:01.036712+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922586+00:00"
     },
     {
       "book": "model",
@@ -2972,14 +2972,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.90262,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Sam Burns",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sam Burns",
-      "updatedAt": "2026-08-30T20:54:01.036714+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922589+00:00"
     },
     {
       "book": "model",
@@ -3001,7 +3001,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sam Burns",
-      "updatedAt": "2026-08-30T20:54:01.036717+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922592+00:00"
     },
     {
       "book": "model",
@@ -3023,7 +3023,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tom Kim",
-      "updatedAt": "2026-08-30T20:54:01.036720+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922595+00:00"
     },
     {
       "book": "model",
@@ -3038,14 +3038,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.08768,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Tom Kim",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tom Kim",
-      "updatedAt": "2026-08-30T20:54:01.036723+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922598+00:00"
     },
     {
       "book": "model",
@@ -3060,14 +3060,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.62522,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Tom Kim",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tom Kim",
-      "updatedAt": "2026-08-30T20:54:01.036726+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922600+00:00"
     },
     {
       "book": "model",
@@ -3089,7 +3089,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tom Kim",
-      "updatedAt": "2026-08-30T20:54:01.036729+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922603+00:00"
     },
     {
       "book": "model",
@@ -3111,7 +3111,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Wyndham Clark",
-      "updatedAt": "2026-08-30T20:54:01.036731+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922606+00:00"
     },
     {
       "book": "model",
@@ -3126,14 +3126,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0823,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Wyndham Clark",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Wyndham Clark",
-      "updatedAt": "2026-08-30T20:54:01.036734+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922609+00:00"
     },
     {
       "book": "model",
@@ -3148,14 +3148,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.6121800000000001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Wyndham Clark",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Wyndham Clark",
-      "updatedAt": "2026-08-30T20:54:01.036737+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922612+00:00"
     },
     {
       "book": "model",
@@ -3177,7 +3177,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Wyndham Clark",
-      "updatedAt": "2026-08-30T20:54:01.036740+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922615+00:00"
     },
     {
       "book": "model",
@@ -3199,7 +3199,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "J.J. Spaun",
-      "updatedAt": "2026-08-30T20:54:01.036743+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922618+00:00"
     },
     {
       "book": "model",
@@ -3221,7 +3221,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "J.J. Spaun",
-      "updatedAt": "2026-08-30T20:54:01.036746+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922621+00:00"
     },
     {
       "book": "model",
@@ -3243,7 +3243,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "J.J. Spaun",
-      "updatedAt": "2026-08-30T20:54:01.036749+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922624+00:00"
     },
     {
       "book": "model",
@@ -3265,7 +3265,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "J.J. Spaun",
-      "updatedAt": "2026-08-30T20:54:01.036752+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922627+00:00"
     },
     {
       "book": "model",
@@ -3287,7 +3287,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Smalley",
-      "updatedAt": "2026-08-30T20:54:01.036754+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922630+00:00"
     },
     {
       "book": "model",
@@ -3302,14 +3302,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00058,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Alex Smalley",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Smalley",
-      "updatedAt": "2026-08-30T20:54:01.036757+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922633+00:00"
     },
     {
       "book": "model",
@@ -3324,14 +3324,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.051980000000000005,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Alex Smalley",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Smalley",
-      "updatedAt": "2026-08-30T20:54:01.036760+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922636+00:00"
     },
     {
       "book": "model",
@@ -3353,7 +3353,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Smalley",
-      "updatedAt": "2026-08-30T20:54:01.036763+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922639+00:00"
     },
     {
       "book": "model",
@@ -3375,7 +3375,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Gerard",
-      "updatedAt": "2026-08-30T20:54:01.036765+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922642+00:00"
     },
     {
       "book": "model",
@@ -3390,14 +3390,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.95498,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryan Gerard",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Gerard",
-      "updatedAt": "2026-08-30T20:54:01.036768+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922645+00:00"
     },
     {
       "book": "model",
@@ -3412,14 +3412,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.99946,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryan Gerard",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Gerard",
-      "updatedAt": "2026-08-30T20:54:01.036771+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922648+00:00"
     },
     {
       "book": "model",
@@ -3441,7 +3441,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Gerard",
-      "updatedAt": "2026-08-30T20:54:01.036774+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922651+00:00"
     },
     {
       "book": "model",
@@ -3463,7 +3463,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Fox",
-      "updatedAt": "2026-08-30T20:54:01.036777+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922654+00:00"
     },
     {
       "book": "model",
@@ -3478,14 +3478,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0273,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryan Fox",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Fox",
-      "updatedAt": "2026-08-30T20:54:01.036780+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922657+00:00"
     },
     {
       "book": "model",
@@ -3500,14 +3500,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.39372,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryan Fox",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Fox",
-      "updatedAt": "2026-08-30T20:54:01.036783+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922660+00:00"
     },
     {
       "book": "model",
@@ -3529,7 +3529,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Fox",
-      "updatedAt": "2026-08-30T20:54:01.036786+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922663+00:00"
     },
     {
       "book": "model",
@@ -3551,7 +3551,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Fitzpatrick",
-      "updatedAt": "2026-08-30T20:54:01.036789+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922666+00:00"
     },
     {
       "book": "model",
@@ -3566,14 +3566,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.06978,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Alex Fitzpatrick",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Fitzpatrick",
-      "updatedAt": "2026-08-30T20:54:01.036792+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922669+00:00"
     },
     {
       "book": "model",
@@ -3588,14 +3588,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.58044,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Alex Fitzpatrick",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Fitzpatrick",
-      "updatedAt": "2026-08-30T20:54:01.036794+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922672+00:00"
     },
     {
       "book": "model",
@@ -3617,7 +3617,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Fitzpatrick",
-      "updatedAt": "2026-08-30T20:54:01.036797+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922676+00:00"
     },
     {
       "book": "model",
@@ -3639,7 +3639,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Reitan",
-      "updatedAt": "2026-08-30T20:54:01.036800+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922679+00:00"
     },
     {
       "book": "model",
@@ -3654,14 +3654,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00078,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kristoffer Reitan",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Reitan",
-      "updatedAt": "2026-08-30T20:54:01.036803+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922682+00:00"
     },
     {
       "book": "model",
@@ -3676,14 +3676,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.05226,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kristoffer Reitan",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Reitan",
-      "updatedAt": "2026-08-30T20:54:01.036806+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922685+00:00"
     },
     {
       "book": "model",
@@ -3705,7 +3705,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Reitan",
-      "updatedAt": "2026-08-30T20:54:01.036809+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922688+00:00"
     },
     {
       "book": "model",
@@ -3727,7 +3727,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chris Gotterup",
-      "updatedAt": "2026-08-30T20:54:01.036811+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922691+00:00"
     },
     {
       "book": "model",
@@ -3742,14 +3742,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.79078,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Chris Gotterup",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chris Gotterup",
-      "updatedAt": "2026-08-30T20:54:01.036814+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922693+00:00"
     },
     {
       "book": "model",
@@ -3764,14 +3764,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.99256,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Chris Gotterup",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chris Gotterup",
-      "updatedAt": "2026-08-30T20:54:01.036817+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922697+00:00"
     },
     {
       "book": "model",
@@ -3793,7 +3793,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chris Gotterup",
-      "updatedAt": "2026-08-30T20:54:01.036820+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922699+00:00"
     },
     {
       "book": "model",
@@ -3815,7 +3815,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Gary Woodland",
-      "updatedAt": "2026-08-30T20:54:01.036823+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922702+00:00"
     },
     {
       "book": "model",
@@ -3830,14 +3830,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0096,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Gary Woodland",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Gary Woodland",
-      "updatedAt": "2026-08-30T20:54:01.036826+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922705+00:00"
     },
     {
       "book": "model",
@@ -3852,14 +3852,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.23314000000000001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Gary Woodland",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Gary Woodland",
-      "updatedAt": "2026-08-30T20:54:01.036828+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922708+00:00"
     },
     {
       "book": "model",
@@ -3881,7 +3881,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Gary Woodland",
-      "updatedAt": "2026-08-30T20:54:01.036831+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922711+00:00"
     },
     {
       "book": "model",
@@ -3903,7 +3903,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jacob Bridgeman",
-      "updatedAt": "2026-08-30T20:54:01.036834+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922714+00:00"
     },
     {
       "book": "model",
@@ -3918,14 +3918,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.2824,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jacob Bridgeman",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jacob Bridgeman",
-      "updatedAt": "2026-08-30T20:54:01.036837+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922717+00:00"
     },
     {
       "book": "model",
@@ -3940,14 +3940,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.8663200000000001,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jacob Bridgeman",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jacob Bridgeman",
-      "updatedAt": "2026-08-30T20:54:01.036840+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922720+00:00"
     },
     {
       "book": "model",
@@ -3969,7 +3969,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jacob Bridgeman",
-      "updatedAt": "2026-08-30T20:54:01.036843+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922723+00:00"
     },
     {
       "book": "model",
@@ -3991,7 +3991,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Si Woo Kim",
-      "updatedAt": "2026-08-30T20:54:01.036846+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922726+00:00"
     },
     {
       "book": "model",
@@ -4006,14 +4006,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.15158,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Si Woo Kim",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Si Woo Kim",
-      "updatedAt": "2026-08-30T20:54:01.036849+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922729+00:00"
     },
     {
       "book": "model",
@@ -4028,14 +4028,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.7459,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Si Woo Kim",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Si Woo Kim",
-      "updatedAt": "2026-08-30T20:54:01.036851+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922732+00:00"
     },
     {
       "book": "model",
@@ -4057,7 +4057,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Si Woo Kim",
-      "updatedAt": "2026-08-30T20:54:01.036854+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922734+00:00"
     },
     {
       "book": "model",
@@ -4079,7 +4079,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Justin Rose",
-      "updatedAt": "2026-08-30T20:54:01.036857+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922737+00:00"
     },
     {
       "book": "model",
@@ -4094,14 +4094,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.15022,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Justin Rose",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Justin Rose",
-      "updatedAt": "2026-08-30T20:54:01.036860+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922740+00:00"
     },
     {
       "book": "model",
@@ -4116,14 +4116,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.73586,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Justin Rose",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Justin Rose",
-      "updatedAt": "2026-08-30T20:54:01.036863+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922743+00:00"
     },
     {
       "book": "model",
@@ -4145,7 +4145,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Justin Rose",
-      "updatedAt": "2026-08-30T20:54:01.036866+00:00"
+      "updatedAt": "2026-08-30T23:22:11.922746+00:00"
     }
   ],
   "predictionMeta": {
@@ -4193,15 +4193,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.8996200000000001,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.9983799999999999,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 7,
-      "current_position_display": "T4",
+      "current_position": 2,
+      "current_position_display": "2",
       "exp_sg_per_round": 1.673621358733749,
       "player": "Scottie Scheffler",
       "player_id": 9478,
@@ -4215,17 +4215,17 @@
       "r1": 65.0,
       "r2": 67.0,
       "r3": 66.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 66.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 68.4,
       "sim_top20_pct": 92.536,
       "sim_top5_pct": 45.254,
       "sim_win_pct": 13.626,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -12.0,
-      "to_par_display": -12,
-      "total_strokes": 198.0,
+      "to_par": -16.0,
+      "to_par_display": "-16",
+      "total_strokes": 264.0,
       "updated_sg_per_round": 2.6041728152402497
     },
     {
@@ -4234,15 +4234,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.02302,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.36091999999999996,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 25,
-      "current_position_display": "T23",
+      "current_position": 18,
+      "current_position_display": "T15",
       "exp_sg_per_round": 1.279314746242736,
       "player": "Xander Schauffele",
       "player_id": 10140,
@@ -4256,18 +4256,18 @@
       "r1": 67.0,
       "r2": 71.0,
       "r3": 67.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 66.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 55.898,
       "sim_top20_pct": 86.658,
       "sim_top5_pct": 32.626,
       "sim_win_pct": 7.704,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -5.0,
-      "to_par_display": -5,
-      "total_strokes": 205.0,
-      "updated_sg_per_round": 1.434255514412308
+      "to_par": -9.0,
+      "to_par_display": "-9",
+      "total_strokes": 271.0,
+      "updated_sg_per_round": 1.6675888477456415
     },
     {
       "amateur": false,
@@ -4275,15 +4275,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.9937600000000001,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.99994,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "Norway",
-      "current_position": 2,
-      "current_position_display": "2",
+      "current_position": 3,
+      "current_position_display": "3",
       "exp_sg_per_round": 1.2901247890290275,
       "player": "Viktor Hovland",
       "player_id": 4364873,
@@ -4297,18 +4297,18 @@
       "r1": 64.0,
       "r2": 66.0,
       "r3": 65.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 72.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 56.482,
       "sim_top20_pct": 87.118,
       "sim_top5_pct": 32.734,
       "sim_win_pct": 7.696,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -15.0,
-      "to_par_display": -15,
-      "total_strokes": 195.0,
-      "updated_sg_per_round": 2.7740748734174163
+      "to_par": -13.0,
+      "to_par_display": "-13",
+      "total_strokes": 267.0,
+      "updated_sg_per_round": 2.0740748734174166
     },
     {
       "amateur": false,
@@ -4316,15 +4316,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.12848,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.71158,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "England",
-      "current_position": 20,
-      "current_position_display": "T17",
+      "current_position": 14,
+      "current_position_display": "T12",
       "exp_sg_per_round": 1.2300962048744135,
       "player": "Tommy Fleetwood",
       "player_id": 5539,
@@ -4338,18 +4338,18 @@
       "r1": 66.0,
       "r2": 70.0,
       "r3": 67.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 67.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 54.468,
       "sim_top20_pct": 86.212,
       "sim_top5_pct": 31.298,
       "sim_win_pct": 7.334,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -7.0,
-      "to_par_display": -7,
-      "total_strokes": 203.0,
-      "updated_sg_per_round": 1.6713910562579817
+      "to_par": -10.0,
+      "to_par_display": "-10",
+      "total_strokes": 270.0,
+      "updated_sg_per_round": 1.738057722924648
     },
     {
       "amateur": false,
@@ -4357,15 +4357,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.59968,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.9704,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "Northern Ireland",
-      "current_position": 9,
-      "current_position_display": "T8",
+      "current_position": 10,
+      "current_position_display": "T5",
       "exp_sg_per_round": 1.21426484911032,
       "player": "Rory McIlroy",
       "player_id": 3470,
@@ -4379,18 +4379,18 @@
       "r1": 68.0,
       "r2": 69.0,
       "r3": 63.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 69.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 53.708,
       "sim_top20_pct": 85.722,
       "sim_top5_pct": 30.622,
       "sim_win_pct": 6.918,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -10.0,
-      "to_par_display": -10,
-      "total_strokes": 200.0,
-      "updated_sg_per_round": 2.0618922427995257
+      "to_par": -11.0,
+      "to_par_display": "-11",
+      "total_strokes": 269.0,
+      "updated_sg_per_round": 1.8285589094661925
     },
     {
       "amateur": false,
@@ -4398,15 +4398,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.00626,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.19190000000000002,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "Japan",
-      "current_position": 26,
-      "current_position_display": "T26",
+      "current_position": 22,
+      "current_position_display": "T22",
       "exp_sg_per_round": 1.0556121500663034,
       "player": "Hideki Matsuyama",
       "player_id": 5860,
@@ -4420,18 +4420,18 @@
       "r1": 69.0,
       "r2": 70.0,
       "r3": 67.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 69.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 49.018,
       "sim_top20_pct": 82.67999999999999,
       "sim_top5_pct": 26.658,
       "sim_win_pct": 5.712,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -4.0,
-      "to_par_display": -4,
-      "total_strokes": 206.0,
-      "updated_sg_per_round": 1.1667006233731154
+      "to_par": -5.0,
+      "to_par_display": "-5",
+      "total_strokes": 275.0,
+      "updated_sg_per_round": 1.133367290039782
     },
     {
       "amateur": false,
@@ -4439,15 +4439,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.2353,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.8353,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "England",
-      "current_position": 15,
-      "current_position_display": "T14",
+      "current_position": 23,
+      "current_position_display": "T22",
       "exp_sg_per_round": 1.0734655716868826,
       "player": "Matt Fitzpatrick",
       "player_id": 9037,
@@ -4461,18 +4461,18 @@
       "r1": 66.0,
       "r2": 67.0,
       "r3": 69.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 73.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 48.906,
       "sim_top20_pct": 82.68799999999999,
       "sim_top5_pct": 26.334000000000003,
       "sim_win_pct": 5.63,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -8.0,
-      "to_par_display": -8,
-      "total_strokes": 202.0,
-      "updated_sg_per_round": 1.7107460096787963
+      "to_par": -5.0,
+      "to_par_display": "-5",
+      "total_strokes": 275.0,
+      "updated_sg_per_round": 1.1440793430121294
     },
     {
       "amateur": false,
@@ -4480,15 +4480,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.00582,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.18614,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "Scotland",
-      "current_position": 28,
-      "current_position_display": "T26",
+      "current_position": 29,
+      "current_position_display": "29",
       "exp_sg_per_round": 1.006141102752054,
       "player": "Robert MacIntyre",
       "player_id": 11378,
@@ -4502,18 +4502,18 @@
       "r1": 67.0,
       "r2": 76.0,
       "r3": 63.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 74.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 47.208,
       "sim_top20_pct": 81.57,
       "sim_top5_pct": 24.826,
       "sim_win_pct": 4.872,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -4.0,
-      "to_par_display": -4,
-      "total_strokes": 206.0,
-      "updated_sg_per_round": 1.1370179949845656
+      "to_par": 0.0,
+      "to_par_display": "E",
+      "total_strokes": 280.0,
+      "updated_sg_per_round": 0.6036846616512324
     },
     {
       "amateur": false,
@@ -4521,15 +4521,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.8597,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.99668,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "Sweden",
-      "current_position": 6,
-      "current_position_display": "T4",
+      "current_position": 8,
+      "current_position_display": "T5",
       "exp_sg_per_round": 0.8939920920731343,
       "player": "Ludvig \u00c5berg",
       "player_id": 4375972,
@@ -4543,18 +4543,18 @@
       "r1": 65.0,
       "r2": 68.0,
       "r3": 65.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 71.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 43.472,
       "sim_top20_pct": 79.214,
       "sim_top5_pct": 22.13,
       "sim_win_pct": 4.234,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -12.0,
-      "to_par_display": -12,
-      "total_strokes": 198.0,
-      "updated_sg_per_round": 2.1363952552438805
+      "to_par": -11.0,
+      "to_par_display": "-11",
+      "total_strokes": 269.0,
+      "updated_sg_per_round": 1.6363952552438803
     },
     {
       "amateur": false,
@@ -4562,15 +4562,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.38051999999999997,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.9155800000000001,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 12,
-      "current_position_display": "T10",
+      "current_position": 11,
+      "current_position_display": "T5",
       "exp_sg_per_round": 0.8424062328361588,
       "player": "Russell Henley",
       "player_id": 5409,
@@ -4584,18 +4584,18 @@
       "r1": 70.0,
       "r2": 65.0,
       "r3": 66.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 68.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 42.31,
       "sim_top20_pct": 78.38199999999999,
       "sim_top5_pct": 21.03,
       "sim_win_pct": 3.98,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -9.0,
-      "to_par_display": -9,
-      "total_strokes": 201.0,
-      "updated_sg_per_round": 1.7054437397016953
+      "to_par": -11.0,
+      "to_par_display": "-11",
+      "total_strokes": 269.0,
+      "updated_sg_per_round": 1.6054437397016952
     },
     {
       "amateur": false,
@@ -4603,15 +4603,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.0179,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.32096,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 23,
-      "current_position_display": "T23",
+      "current_position": 19,
+      "current_position_display": "T19",
       "exp_sg_per_round": 0.8526048898518237,
       "player": "Akshay Bhatia",
       "player_id": 4419142,
@@ -4625,18 +4625,18 @@
       "r1": 65.0,
       "r2": 69.0,
       "r3": 71.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 68.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 42.546,
       "sim_top20_pct": 78.314,
       "sim_top5_pct": 21.264,
       "sim_win_pct": 3.976,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -5.0,
-      "to_par_display": -5,
-      "total_strokes": 205.0,
-      "updated_sg_per_round": 1.1782296005777608
+      "to_par": -7.0,
+      "to_par_display": "-7",
+      "total_strokes": 273.0,
+      "updated_sg_per_round": 1.2115629339110945
     },
     {
       "amateur": false,
@@ -4644,15 +4644,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.00584,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.17708,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 27,
-      "current_position_display": "T26",
+      "current_position": 24,
+      "current_position_display": "T22",
       "exp_sg_per_round": 0.8089729933983808,
       "player": "Patrick Cantlay",
       "player_id": 6007,
@@ -4666,18 +4666,18 @@
       "r1": 68.0,
       "r2": 70.0,
       "r3": 68.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 69.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 41.108,
       "sim_top20_pct": 77.094,
       "sim_top5_pct": 20.312,
       "sim_win_pct": 3.768,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -4.0,
-      "to_par_display": -4,
-      "total_strokes": 206.0,
-      "updated_sg_per_round": 1.0187171293723618
+      "to_par": -5.0,
+      "to_par_display": "-5",
+      "total_strokes": 275.0,
+      "updated_sg_per_round": 0.9853837960390284
     },
     {
       "amateur": false,
@@ -4685,15 +4685,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.37694000000000005,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.91374,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "Australia",
-      "current_position": 11,
-      "current_position_display": "T10",
+      "current_position": 9,
+      "current_position_display": "T5",
       "exp_sg_per_round": 0.8009227530980494,
       "player": "Min Woo Lee",
       "player_id": 4410932,
@@ -4707,18 +4707,18 @@
       "r1": 62.0,
       "r2": 73.0,
       "r3": 66.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 68.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 40.294,
       "sim_top20_pct": 76.864,
       "sim_top5_pct": 20.16,
       "sim_win_pct": 3.718,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -9.0,
-      "to_par_display": -9,
-      "total_strokes": 201.0,
-      "updated_sg_per_round": 1.6805536518588298
+      "to_par": -11.0,
+      "to_par_display": "-11",
+      "total_strokes": 269.0,
+      "updated_sg_per_round": 1.5805536518588297
     },
     {
       "amateur": false,
@@ -4726,15 +4726,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.11173999999999999,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.67244,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 18,
-      "current_position_display": "T17",
+      "current_position": 15,
+      "current_position_display": "T15",
       "exp_sg_per_round": 0.8176900651580042,
       "player": "Collin Morikawa",
       "player_id": 10592,
@@ -4748,18 +4748,18 @@
       "r1": 64.0,
       "r2": 67.0,
       "r3": 72.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 68.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 41.082,
       "sim_top20_pct": 77.398,
       "sim_top5_pct": 20.436,
       "sim_win_pct": 3.686,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -7.0,
-      "to_par_display": -7,
-      "total_strokes": 203.0,
-      "updated_sg_per_round": 1.423947372428136
+      "to_par": -9.0,
+      "to_par_display": "-9",
+      "total_strokes": 271.0,
+      "updated_sg_per_round": 1.3906140390948023
     },
     {
       "amateur": false,
@@ -4767,15 +4767,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.85414,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.99598,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "Australia",
-      "current_position": 4,
-      "current_position_display": "T4",
+      "current_position": 12,
+      "current_position_display": "T12",
       "exp_sg_per_round": 0.7197873348767406,
       "player": "Adam Scott",
       "player_id": 388,
@@ -4789,18 +4789,18 @@
       "r1": 66.0,
       "r2": 67.0,
       "r3": 65.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 72.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 38.306,
       "sim_top20_pct": 75.03999999999999,
       "sim_top5_pct": 18.398,
       "sim_win_pct": 3.232,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -12.0,
-      "to_par_display": -12,
-      "total_strokes": 198.0,
-      "updated_sg_per_round": 2.0318724009260443
+      "to_par": -10.0,
+      "to_par_display": "-10",
+      "total_strokes": 270.0,
+      "updated_sg_per_round": 1.4318724009260444
     },
     {
       "amateur": false,
@@ -4808,15 +4808,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.54248,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.9613200000000001,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 8,
-      "current_position_display": "T8",
+      "current_position": 13,
+      "current_position_display": "T12",
       "exp_sg_per_round": 0.6575638346395188,
       "player": "Cameron Young",
       "player_id": 4425906,
@@ -4830,8 +4830,8 @@
       "r1": 70.0,
       "r2": 62.0,
       "r3": 68.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 70.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 36.568,
       "sim_top20_pct": 73.532,
       "sim_top5_pct": 17.124,
@@ -4839,9 +4839,9 @@
       "source": "masters_prediction_fallback",
       "starts_before": 20,
       "to_par": -10.0,
-      "to_par_display": -10,
-      "total_strokes": 200.0,
-      "updated_sg_per_round": 1.7278716341170448
+      "to_par_display": "-10",
+      "total_strokes": 270.0,
+      "updated_sg_per_round": 1.394538300783711
     },
     {
       "amateur": false,
@@ -4849,15 +4849,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.35082,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.90262,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 13,
-      "current_position_display": "T10",
+      "current_position": 21,
+      "current_position_display": "T19",
       "exp_sg_per_round": 0.5581895897669229,
       "player": "Sam Burns",
       "player_id": 9938,
@@ -4871,18 +4871,18 @@
       "r1": 66.0,
       "r2": 68.0,
       "r3": 67.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 72.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 33.416000000000004,
       "sim_top20_pct": 70.614,
       "sim_top5_pct": 15.046,
       "sim_win_pct": 2.346,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -9.0,
-      "to_par_display": -9,
-      "total_strokes": 201.0,
-      "updated_sg_per_round": 1.5349137538601538
+      "to_par": -7.0,
+      "to_par_display": "-7",
+      "total_strokes": 273.0,
+      "updated_sg_per_round": 1.0349137538601538
     },
     {
       "amateur": false,
@@ -4890,15 +4890,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.08768,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.62522,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "South Korea",
-      "current_position": 19,
-      "current_position_display": "T17",
+      "current_position": 17,
+      "current_position_display": "T15",
       "exp_sg_per_round": 0.2813191379301036,
       "player": "Tom Kim",
       "player_id": 4602673,
@@ -4912,18 +4912,18 @@
       "r1": 67.0,
       "r2": 68.0,
       "r3": 68.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 68.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 25.786,
       "sim_top20_pct": 62.870000000000005,
       "sim_top5_pct": 10.558,
       "sim_win_pct": 1.462,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -7.0,
-      "to_par_display": -7,
-      "total_strokes": 203.0,
-      "updated_sg_per_round": 1.1021248160913957
+      "to_par": -9.0,
+      "to_par_display": "-9",
+      "total_strokes": 271.0,
+      "updated_sg_per_round": 1.0687914827580622
     },
     {
       "amateur": false,
@@ -4931,15 +4931,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.0823,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.6121800000000001,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "USA",
-      "current_position": 21,
-      "current_position_display": "T17",
+      "current_position": 25,
+      "current_position_display": "T22",
       "exp_sg_per_round": 0.1212268317604055,
       "player": "Wyndham Clark",
       "player_id": 11119,
@@ -4953,18 +4953,18 @@
       "r1": 67.0,
       "r2": 69.0,
       "r3": 67.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 72.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 21.574,
       "sim_top20_pct": 57.344,
       "sim_top5_pct": 8.246,
       "sim_win_pct": 1.036,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -7.0,
-      "to_par_display": -7,
-      "total_strokes": 203.0,
-      "updated_sg_per_round": 1.0060694323895767
+      "to_par": -5.0,
+      "to_par_display": "-5",
+      "total_strokes": 275.0,
+      "updated_sg_per_round": 0.5727360990562433
     },
     {
       "amateur": false,
@@ -4995,7 +4995,7 @@
       "r2": null,
       "r3": null,
       "r4": null,
-      "rounds_completed": 3,
+      "rounds_completed": 4,
       "sim_top10_pct": 20.118,
       "sim_top20_pct": 55.128,
       "sim_top5_pct": 7.558,
@@ -5003,9 +5003,9 @@
       "source": "masters_prediction_fallback",
       "starts_before": 20,
       "to_par": -47.0,
-      "to_par_display": -47,
-      "total_strokes": 163.0,
-      "updated_sg_per_round": 6.297291669921986
+      "to_par_display": "-47",
+      "total_strokes": 233.0,
+      "updated_sg_per_round": 4.730625003255319
     },
     {
       "amateur": false,
@@ -5013,15 +5013,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.00058,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.051980000000000005,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "USA",
-      "current_position": 29,
-      "current_position_display": "T29",
+      "current_position": 28,
+      "current_position_display": "28",
       "exp_sg_per_round": -0.2622410668845384,
       "player": "Alex Smalley",
       "player_id": 9484,
@@ -5035,18 +5035,18 @@
       "r1": 67.0,
       "r2": 68.0,
       "r3": 72.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 72.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 13.806,
       "sim_top20_pct": 44.994,
       "sim_top5_pct": 4.7,
       "sim_win_pct": 0.5459999999999999,
       "source": "field_only_baseline",
       "starts_before": 0,
-      "to_par": -3.0,
-      "to_par_display": -3,
-      "total_strokes": 207.0,
-      "updated_sg_per_round": 0.2426553598692769
+      "to_par": -1.0,
+      "to_par_display": "-1",
+      "total_strokes": 279.0,
+      "updated_sg_per_round": -0.057344640130723
     },
     {
       "amateur": false,
@@ -5054,15 +5054,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.95498,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.99946,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "USA",
-      "current_position": 3,
-      "current_position_display": "3",
+      "current_position": 4,
+      "current_position_display": "4",
       "exp_sg_per_round": -0.2636606367767464,
       "player": "Ryan Gerard",
       "player_id": 5076021,
@@ -5076,18 +5076,18 @@
       "r1": 65.0,
       "r2": 65.0,
       "r3": 66.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 72.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 13.866,
       "sim_top20_pct": 45.522,
       "sim_top5_pct": 4.71,
       "sim_win_pct": 0.5459999999999999,
       "source": "field_only_baseline",
       "starts_before": 0,
-      "to_par": -14.0,
-      "to_par_display": -14,
-      "total_strokes": 196.0,
-      "updated_sg_per_round": 1.708470284600619
+      "to_par": -12.0,
+      "to_par_display": "-12",
+      "total_strokes": 268.0,
+      "updated_sg_per_round": 1.0418036179339525
     },
     {
       "amateur": false,
@@ -5095,15 +5095,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.0273,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.39372,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "New Zealand",
-      "current_position": 22,
-      "current_position_display": "22",
+      "current_position": 27,
+      "current_position_display": "27",
       "exp_sg_per_round": -0.2385593324558714,
       "player": "Ryan Fox",
       "player_id": 4251,
@@ -5117,18 +5117,18 @@
       "r1": 66.0,
       "r2": 68.0,
       "r3": 70.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 74.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 14.392,
       "sim_top20_pct": 46.08,
       "sim_top5_pct": 5.026,
       "sim_win_pct": 0.53,
       "source": "field_only_baseline",
       "starts_before": 0,
-      "to_par": -6.0,
-      "to_par_display": -6,
-      "total_strokes": 204.0,
-      "updated_sg_per_round": 0.6568644005264772
+      "to_par": -2.0,
+      "to_par_display": "-2",
+      "total_strokes": 278.0,
+      "updated_sg_per_round": 0.0568644005264771
     },
     {
       "amateur": false,
@@ -5136,15 +5136,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.06978,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.58044,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "England",
-      "current_position": 17,
-      "current_position_display": "T17",
+      "current_position": 5,
+      "current_position_display": "T5",
       "exp_sg_per_round": -0.2446460569905224,
       "player": "Alex Fitzpatrick",
       "player_id": 4364865,
@@ -5158,18 +5158,18 @@
       "r1": 68.0,
       "r2": 68.0,
       "r3": 67.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 66.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 14.596,
       "sim_top20_pct": 46.192,
       "sim_top5_pct": 4.836,
       "sim_win_pct": 0.528,
       "source": "field_only_baseline",
       "starts_before": 0,
-      "to_par": -7.0,
-      "to_par_display": -7,
-      "total_strokes": 203.0,
-      "updated_sg_per_round": 0.7865456991390201
+      "to_par": -11.0,
+      "to_par_display": "-11",
+      "total_strokes": 269.0,
+      "updated_sg_per_round": 0.9532123658056868
     },
     {
       "amateur": false,
@@ -5177,15 +5177,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.00078,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.05226,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "Norway",
-      "current_position": 30,
-      "current_position_display": "T29",
+      "current_position": 26,
+      "current_position_display": "26",
       "exp_sg_per_round": -0.2562659550810386,
       "player": "Kristoffer Reitan",
       "player_id": 4348470,
@@ -5199,8 +5199,8 @@
       "r1": 70.0,
       "r2": 69.0,
       "r3": 68.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 70.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 13.864,
       "sim_top20_pct": 45.388,
       "sim_top5_pct": 4.688,
@@ -5208,9 +5208,9 @@
       "source": "field_only_baseline",
       "starts_before": 0,
       "to_par": -3.0,
-      "to_par_display": -3,
-      "total_strokes": 207.0,
-      "updated_sg_per_round": 0.2462404269513768
+      "to_par_display": "-3",
+      "total_strokes": 277.0,
+      "updated_sg_per_round": 0.1462404269513768
     },
     {
       "amateur": false,
@@ -5218,15 +5218,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.79078,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.99256,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "USA",
-      "current_position": 5,
-      "current_position_display": "T4",
+      "current_position": 6,
+      "current_position_display": "T5",
       "exp_sg_per_round": -0.2639762711778693,
       "player": "Chris Gotterup",
       "player_id": 4690755,
@@ -5240,18 +5240,18 @@
       "r1": 64.0,
       "r2": 67.0,
       "r3": 67.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 71.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 14.202,
       "sim_top20_pct": 45.576,
       "sim_top5_pct": 4.7780000000000005,
       "sim_win_pct": 0.496,
       "source": "field_only_baseline",
       "starts_before": 0,
-      "to_par": -12.0,
-      "to_par_display": -12,
-      "total_strokes": 198.0,
-      "updated_sg_per_round": 1.4416142372932783
+      "to_par": -11.0,
+      "to_par_display": "-11",
+      "total_strokes": 269.0,
+      "updated_sg_per_round": 0.9416142372932784
     },
     {
       "amateur": false,
@@ -5259,15 +5259,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.0096,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.23314000000000001,
+      "best_calibrated_target_top20_prob": 0.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "USA",
-      "current_position": 24,
-      "current_position_display": "T23",
+      "current_position": 30,
+      "current_position_display": "30",
       "exp_sg_per_round": -0.2585509930978415,
       "player": "Gary Woodland",
       "player_id": 3550,
@@ -5281,18 +5281,18 @@
       "r1": 66.0,
       "r2": 68.0,
       "r3": 71.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 77.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 13.802,
       "sim_top20_pct": 45.28,
       "sim_top5_pct": 4.682,
       "sim_win_pct": 0.496,
       "source": "field_only_baseline",
       "starts_before": 0,
-      "to_par": -5.0,
-      "to_par_display": -5,
-      "total_strokes": 205.0,
-      "updated_sg_per_round": 0.5115360708079618
+      "to_par": 2.0,
+      "to_par_display": "+2",
+      "total_strokes": 282.0,
+      "updated_sg_per_round": -0.3551305958587049
     },
     {
       "amateur": false,
@@ -5300,15 +5300,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.2824,
+      "best_calibrated_target_top10_prob": 1.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.8663200000000001,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "USA",
-      "current_position": 10,
-      "current_position_display": "T10",
+      "current_position": 7,
+      "current_position_display": "T5",
       "exp_sg_per_round": -0.2618033434559599,
       "player": "Jacob Bridgeman",
       "player_id": 5054388,
@@ -5322,18 +5322,18 @@
       "r1": 68.0,
       "r2": 67.0,
       "r3": 66.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 68.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 13.89,
       "sim_top20_pct": 45.202,
       "sim_top5_pct": 4.874,
       "sim_win_pct": 0.49,
       "source": "field_only_baseline",
       "starts_before": 0,
-      "to_par": -9.0,
-      "to_par_display": -9,
-      "total_strokes": 201.0,
-      "updated_sg_per_round": 1.042917993926424
+      "to_par": -11.0,
+      "to_par_display": "-11",
+      "total_strokes": 269.0,
+      "updated_sg_per_round": 0.9429179939264242
     },
     {
       "amateur": false,
@@ -5341,15 +5341,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.15158,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.7459,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.35,
       "country": "South Korea",
       "current_position": 16,
-      "current_position_display": "T14",
+      "current_position_display": "T15",
       "exp_sg_per_round": -0.249128137541499,
       "player": "Si Woo Kim",
       "player_id": 7081,
@@ -5363,18 +5363,18 @@
       "r1": 69.0,
       "r2": 68.0,
       "r3": 65.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 69.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 14.146,
       "sim_top20_pct": 45.856,
       "sim_top5_pct": 4.8340000000000005,
       "sim_win_pct": 0.466,
       "source": "field_only_baseline",
       "starts_before": 0,
-      "to_par": -8.0,
-      "to_par_display": -8,
-      "total_strokes": 202.0,
-      "updated_sg_per_round": 0.9171897841417672
+      "to_par": -9.0,
+      "to_par_display": "-9",
+      "total_strokes": 271.0,
+      "updated_sg_per_round": 0.7505231174751006
     },
     {
       "amateur": false,
@@ -5382,15 +5382,15 @@
       "best_calibrated_target_made_cut_model": "cut_logit_baseline",
       "best_calibrated_target_made_cut_prob": 1.0,
       "best_calibrated_target_top10_model": "mc_logit_baseline",
-      "best_calibrated_target_top10_prob": 0.15022,
+      "best_calibrated_target_top10_prob": 0.0,
       "best_calibrated_target_top20_model": "mc_logit_baseline",
-      "best_calibrated_target_top20_prob": 0.73586,
+      "best_calibrated_target_top20_prob": 1.0,
       "best_calibrated_target_win_model": "mc_baseline",
       "best_calibrated_target_win_prob": 0.0,
       "confidence": 0.55,
       "country": "England",
-      "current_position": 14,
-      "current_position_display": "T14",
+      "current_position": 20,
+      "current_position_display": "T19",
       "exp_sg_per_round": -0.3294551082563318,
       "player": "Justin Rose",
       "player_id": 569,
@@ -5404,18 +5404,18 @@
       "r1": 68.0,
       "r2": 65.0,
       "r3": 69.0,
-      "r4": null,
-      "rounds_completed": 3,
+      "r4": 71.0,
+      "rounds_completed": 4,
       "sim_top10_pct": 12.768,
       "sim_top20_pct": 42.932,
       "sim_top5_pct": 4.258,
       "sim_win_pct": 0.442,
       "source": "masters_prediction_fallback",
       "starts_before": 20,
-      "to_par": -8.0,
-      "to_par_display": -8,
-      "total_strokes": 202.0,
-      "updated_sg_per_round": 0.8689936017128675
+      "to_par": -7.0,
+      "to_par_display": "-7",
+      "total_strokes": 273.0,
+      "updated_sg_per_round": 0.502326935046201
     }
   ],
   "recentByPlayer": {
@@ -8311,6 +8311,17 @@
     ],
     "Adam Scott": [
       {
+        "position": "T11",
+        "r1": 66.0,
+        "r2": 67.0,
+        "r3": 65.0,
+        "r4": 72.0,
+        "scoreToPar": "-10",
+        "start": "2026-08-27",
+        "total": 270,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T16",
         "r1": 68.0,
         "r2": 68.0,
@@ -8430,17 +8441,6 @@
         "start": "2026-04-09",
         "total": 286,
         "tournament": "Masters Tournament"
-      },
-      {
-        "position": "T21",
-        "r1": 67.0,
-        "r2": 66.0,
-        "r3": 68.0,
-        "r4": 71.0,
-        "scoreToPar": "-8",
-        "start": "2026-03-26",
-        "total": 272,
-        "tournament": "Texas Children's Houston Open"
       }
     ],
     "Adam Short": [
@@ -10000,6 +10000,17 @@
     ],
     "Akshay Bhatia": [
       {
+        "position": "T18",
+        "r1": 65.0,
+        "r2": 69.0,
+        "r3": 71.0,
+        "r4": 68.0,
+        "scoreToPar": "-7",
+        "start": "2026-08-27",
+        "total": 273,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T12",
         "r1": 67.0,
         "r2": 68.0,
@@ -10119,17 +10130,6 @@
         "start": "2026-04-30",
         "total": 282,
         "tournament": "Cadillac Championship"
-      },
-      {
-        "position": "T16",
-        "r1": 73.0,
-        "r2": 63.0,
-        "r3": 69.0,
-        "r4": 70.0,
-        "scoreToPar": "-9",
-        "start": "2026-04-16",
-        "total": 275,
-        "tournament": "RBC Heritage"
       }
     ],
     "Akshay Sharma": [
@@ -12289,6 +12289,17 @@
     ],
     "Alex Fitzpatrick": [
       {
+        "position": "T4",
+        "r1": 68.0,
+        "r2": 68.0,
+        "r3": 67.0,
+        "r4": 66.0,
+        "scoreToPar": "-11",
+        "start": "2026-08-27",
+        "total": 269,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T44",
         "r1": 66.0,
         "r2": 72.0,
@@ -12408,17 +12419,6 @@
         "start": "2026-04-30",
         "total": 279,
         "tournament": "Cadillac Championship"
-      },
-      {
-        "position": "1",
-        "r1": 70.0,
-        "r2": 68.0,
-        "r3": 72.0,
-        "r4": 69.0,
-        "scoreToPar": "-9",
-        "start": "2026-03-26",
-        "total": 279,
-        "tournament": "Hero Indian Open"
       }
     ],
     "Alex Gaugert": [
@@ -13086,6 +13086,17 @@
     ],
     "Alex Smalley": [
       {
+        "position": "27",
+        "r1": 67.0,
+        "r2": 68.0,
+        "r3": 72.0,
+        "r4": 72.0,
+        "scoreToPar": "-1",
+        "start": "2026-08-27",
+        "total": 279,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T16",
         "r1": 69.0,
         "r2": 68.0,
@@ -13205,17 +13216,6 @@
         "start": "2026-04-30",
         "total": 278,
         "tournament": "Cadillac Championship"
-      },
-      {
-        "position": "T14",
-        "r1": 68.0,
-        "r2": 68.0,
-        "r3": 71.0,
-        "r4": 71.0,
-        "scoreToPar": "-10",
-        "start": "2026-04-02",
-        "total": 278,
-        "tournament": "Valero Texas Open"
       }
     ],
     "Alex Vogelsong": [
@@ -52027,6 +52027,17 @@
     ],
     "Cameron Young": [
       {
+        "position": "T11",
+        "r1": 70.0,
+        "r2": 62.0,
+        "r3": 68.0,
+        "r4": 70.0,
+        "scoreToPar": "-10",
+        "start": "2026-08-27",
+        "total": 270,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T37",
         "r1": 71.0,
         "r2": 65.0,
@@ -52146,17 +52157,6 @@
         "start": "2026-04-16",
         "total": 276,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "T3",
-        "r1": 73.0,
-        "r2": 67.0,
-        "r3": 65.0,
-        "r4": 73.0,
-        "scoreToPar": "-10",
-        "start": "2026-04-09",
-        "total": 278,
-        "tournament": "Masters Tournament"
       }
     ],
     "Camiko Smith": [
@@ -60378,6 +60378,17 @@
         "position": "T4",
         "r1": 64.0,
         "r2": 67.0,
+        "r3": 67.0,
+        "r4": 71.0,
+        "scoreToPar": "-11",
+        "start": "2026-08-27",
+        "total": 269,
+        "tournament": "TOUR Championship"
+      },
+      {
+        "position": "T4",
+        "r1": 64.0,
+        "r2": 67.0,
         "r3": 68.0,
         "r4": 69.0,
         "scoreToPar": "-12",
@@ -60494,17 +60505,6 @@
         "start": "2026-05-07",
         "total": 277,
         "tournament": "Truist Championship"
-      },
-      {
-        "position": "T38",
-        "r1": 73.0,
-        "r2": 71.0,
-        "r3": 69.0,
-        "r4": 71.0,
-        "scoreToPar": "-4",
-        "start": "2026-04-30",
-        "total": 284,
-        "tournament": "Cadillac Championship"
       }
     ],
     "Chris Gray": [
@@ -65978,6 +65978,17 @@
     ],
     "Collin Morikawa": [
       {
+        "position": "T14",
+        "r1": 64.0,
+        "r2": 67.0,
+        "r3": 72.0,
+        "r4": 68.0,
+        "scoreToPar": "-9",
+        "start": "2026-08-27",
+        "total": 271,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T4",
         "r1": 68.0,
         "r2": 65.0,
@@ -66097,17 +66108,6 @@
         "start": "2026-03-12",
         "total": null,
         "tournament": "THE PLAYERS Championship"
-      },
-      {
-        "position": "5",
-        "r1": 66.0,
-        "r2": 71.0,
-        "r3": 70.0,
-        "r4": 70.0,
-        "scoreToPar": "-11",
-        "start": "2026-03-05",
-        "total": 277,
-        "tournament": "Arnold Palmer Invitational pres. by Mastercard"
       }
     ],
     "Colm Campbell Jr.": [
@@ -105284,6 +105284,17 @@
     ],
     "Gary Woodland": [
       {
+        "position": "29",
+        "r1": 66.0,
+        "r2": 68.0,
+        "r3": 71.0,
+        "r4": 77.0,
+        "scoreToPar": "+2",
+        "start": "2026-08-27",
+        "total": 282,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T4",
         "r1": 64.0,
         "r2": 65.0,
@@ -105403,17 +105414,6 @@
         "start": "2026-04-30",
         "total": 284,
         "tournament": "Cadillac Championship"
-      },
-      {
-        "position": "T8",
-        "r1": 65.0,
-        "r2": 70.0,
-        "r3": 66.0,
-        "r4": 72.0,
-        "scoreToPar": "-11",
-        "start": "2026-04-16",
-        "total": 273,
-        "tournament": "RBC Heritage"
       }
     ],
     "Gator Todd": [
@@ -117035,6 +117035,17 @@
     ],
     "Hideki Matsuyama": [
       {
+        "position": "T21",
+        "r1": 69.0,
+        "r2": 70.0,
+        "r3": 67.0,
+        "r4": 69.0,
+        "scoreToPar": "-5",
+        "start": "2026-08-27",
+        "total": 275,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T28",
         "r1": 72.0,
         "r2": 68.0,
@@ -117154,17 +117165,6 @@
         "start": "2026-05-07",
         "total": 295,
         "tournament": "Truist Championship"
-      },
-      {
-        "position": "T53",
-        "r1": 70.0,
-        "r2": 71.0,
-        "r3": 74.0,
-        "r4": 71.0,
-        "scoreToPar": "-2",
-        "start": "2026-04-30",
-        "total": 286,
-        "tournament": "Cadillac Championship"
       }
     ],
     "Hidemasa Hoshino": [
@@ -121996,6 +121996,17 @@
     ],
     "J.J. Spaun": [
       {
+        "position": "CUT",
+        "r1": 23.0,
+        "r2": 0.0,
+        "r3": null,
+        "r4": null,
+        "scoreToPar": "+4",
+        "start": "2026-08-27",
+        "total": null,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T22",
         "r1": 64.0,
         "r2": 66.0,
@@ -122115,17 +122126,6 @@
         "start": "2026-05-07",
         "total": 273,
         "tournament": "Truist Championship"
-      },
-      {
-        "position": "T14",
-        "r1": 72.0,
-        "r2": 69.0,
-        "r3": 72.0,
-        "r4": 67.0,
-        "scoreToPar": "-8",
-        "start": "2026-04-30",
-        "total": 280,
-        "tournament": "Cadillac Championship"
       }
     ],
     "J.L. Lewis": [
@@ -125553,6 +125553,17 @@
     ],
     "Jacob Bridgeman": [
       {
+        "position": "T4",
+        "r1": 68.0,
+        "r2": 67.0,
+        "r3": 66.0,
+        "r4": 68.0,
+        "scoreToPar": "-11",
+        "start": "2026-08-27",
+        "total": 269,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "9",
         "r1": 66.0,
         "r2": 72.0,
@@ -125672,17 +125683,6 @@
         "start": "2026-05-07",
         "total": 285,
         "tournament": "Truist Championship"
-      },
-      {
-        "position": "T65",
-        "r1": 79.0,
-        "r2": 71.0,
-        "r3": 68.0,
-        "r4": 72.0,
-        "scoreToPar": "+2",
-        "start": "2026-04-30",
-        "total": 290,
-        "tournament": "Cadillac Championship"
       }
     ],
     "Jacob Eggers": [
@@ -162327,6 +162327,17 @@
     ],
     "Justin Rose": [
       {
+        "position": "T18",
+        "r1": 68.0,
+        "r2": 65.0,
+        "r3": 69.0,
+        "r4": 71.0,
+        "scoreToPar": "-7",
+        "start": "2026-08-27",
+        "total": 273,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T22",
         "r1": 69.0,
         "r2": 67.0,
@@ -162446,17 +162457,6 @@
         "start": "2026-04-09",
         "total": 278,
         "tournament": "Masters Tournament"
-      },
-      {
-        "position": "T13",
-        "r1": 72.0,
-        "r2": 68.0,
-        "r3": 70.0,
-        "r4": 72.0,
-        "scoreToPar": "-6",
-        "start": "2026-03-12",
-        "total": 282,
-        "tournament": "THE PLAYERS Championship"
       }
     ],
     "Justin Shin": [
@@ -174072,6 +174072,17 @@
     ],
     "Kristoffer Reitan": [
       {
+        "position": "25",
+        "r1": 70.0,
+        "r2": 69.0,
+        "r3": 68.0,
+        "r4": 70.0,
+        "scoreToPar": "-3",
+        "start": "2026-08-27",
+        "total": 277,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T22",
         "r1": 67.0,
         "r2": 67.0,
@@ -174191,17 +174202,6 @@
         "start": "2026-04-30",
         "total": 280,
         "tournament": "Cadillac Championship"
-      },
-      {
-        "position": "T41",
-        "r1": 72.0,
-        "r2": 68.0,
-        "r3": 73.0,
-        "r4": 77.0,
-        "scoreToPar": "+2",
-        "start": "2026-04-09",
-        "total": 290,
-        "tournament": "Masters Tournament"
       }
     ],
     "Kristoffer Ventura": [
@@ -182936,6 +182936,17 @@
     ],
     "Ludvig \u00c5berg": [
       {
+        "position": "T4",
+        "r1": 65.0,
+        "r2": 68.0,
+        "r3": 65.0,
+        "r4": 71.0,
+        "scoreToPar": "-11",
+        "start": "2026-08-27",
+        "total": 269,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T16",
         "r1": 66.0,
         "r2": 70.0,
@@ -183055,17 +183066,6 @@
         "start": "2026-04-16",
         "total": 271,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "T21",
-        "r1": 74.0,
-        "r2": 70.0,
-        "r3": 69.0,
-        "r4": 72.0,
-        "scoreToPar": "-3",
-        "start": "2026-04-09",
-        "total": 285,
-        "tournament": "Masters Tournament"
       }
     ],
     "Luis Carrera": [
@@ -195609,6 +195609,17 @@
     ],
     "Matt Fitzpatrick": [
       {
+        "position": "T21",
+        "r1": 66.0,
+        "r2": 67.0,
+        "r3": 69.0,
+        "r4": 73.0,
+        "scoreToPar": "-5",
+        "start": "2026-08-27",
+        "total": 275,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T28",
         "r1": 65.0,
         "r2": 72.0,
@@ -195728,17 +195739,6 @@
         "start": "2026-04-16",
         "total": 266,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "T18",
-        "r1": 74.0,
-        "r2": 69.0,
-        "r3": 70.0,
-        "r4": 71.0,
-        "scoreToPar": "-4",
-        "start": "2026-04-09",
-        "total": 284,
-        "tournament": "Masters Tournament"
       }
     ],
     "Matt Ford": [
@@ -211366,6 +211366,17 @@
     ],
     "Min Woo Lee": [
       {
+        "position": "T4",
+        "r1": 62.0,
+        "r2": 73.0,
+        "r3": 66.0,
+        "r4": 68.0,
+        "scoreToPar": "-11",
+        "start": "2026-08-27",
+        "total": 269,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T47",
         "r1": 69.0,
         "r2": 72.0,
@@ -211485,17 +211496,6 @@
         "start": "2026-04-16",
         "total": 281,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "CUT",
-        "r1": 78.0,
-        "r2": 77.0,
-        "r3": 0.0,
-        "r4": null,
-        "scoreToPar": "+11",
-        "start": "2026-04-09",
-        "total": 155,
-        "tournament": "Masters Tournament"
       }
     ],
     "Minchel Choi": [
@@ -224298,6 +224298,17 @@
     ],
     "Patrick Cantlay": [
       {
+        "position": "T21",
+        "r1": 68.0,
+        "r2": 70.0,
+        "r3": 68.0,
+        "r4": 69.0,
+        "scoreToPar": "-5",
+        "start": "2026-08-27",
+        "total": 275,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "2",
         "r1": 67.0,
         "r2": 65.0,
@@ -224417,17 +224428,6 @@
         "start": "2026-04-16",
         "total": 273,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "T12",
-        "r1": 77.0,
-        "r2": 67.0,
-        "r3": 66.0,
-        "r4": 73.0,
-        "scoreToPar": "-5",
-        "start": "2026-04-09",
-        "total": 283,
-        "tournament": "Masters Tournament"
       }
     ],
     "Patrick Cover": [
@@ -244225,6 +244225,17 @@
     ],
     "Robert MacIntyre": [
       {
+        "position": "28",
+        "r1": 67.0,
+        "r2": 76.0,
+        "r3": 63.0,
+        "r4": 74.0,
+        "scoreToPar": "E",
+        "start": "2026-08-27",
+        "total": 280,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T7",
         "r1": 68.0,
         "r2": 69.0,
@@ -244344,17 +244355,6 @@
         "start": "2026-05-07",
         "total": 286,
         "tournament": "Truist Championship"
-      },
-      {
-        "position": "T42",
-        "r1": 66.0,
-        "r2": 68.0,
-        "r3": 71.0,
-        "r4": 73.0,
-        "scoreToPar": "-6",
-        "start": "2026-04-16",
-        "total": 278,
-        "tournament": "RBC Heritage"
       }
     ],
     "Robert McClellan": [
@@ -248384,6 +248384,17 @@
     ],
     "Rory McIlroy": [
       {
+        "position": "T4",
+        "r1": 68.0,
+        "r2": 69.0,
+        "r3": 63.0,
+        "r4": 69.0,
+        "scoreToPar": "-11",
+        "start": "2026-08-27",
+        "total": 269,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "3",
         "r1": 64.0,
         "r2": 69.0,
@@ -248503,17 +248514,6 @@
         "start": "2026-03-05",
         "total": 140,
         "tournament": "Arnold Palmer Invitational pres. by Mastercard"
-      },
-      {
-        "position": "T2",
-        "r1": 66.0,
-        "r2": 65.0,
-        "r3": 69.0,
-        "r4": 67.0,
-        "scoreToPar": "-17",
-        "start": "2026-02-19",
-        "total": 267,
-        "tournament": "The Genesis Invitational"
       }
     ],
     "Rory Sabbatini": [
@@ -250017,6 +250017,17 @@
     ],
     "Russell Henley": [
       {
+        "position": "T4",
+        "r1": 70.0,
+        "r2": 65.0,
+        "r3": 66.0,
+        "r4": 68.0,
+        "scoreToPar": "-11",
+        "start": "2026-08-27",
+        "total": 269,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T12",
         "r1": 67.0,
         "r2": 66.0,
@@ -250136,17 +250147,6 @@
         "start": "2026-04-16",
         "total": 276,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "T3",
-        "r1": 73.0,
-        "r2": 71.0,
-        "r3": 66.0,
-        "r4": 68.0,
-        "scoreToPar": "-10",
-        "start": "2026-04-09",
-        "total": 278,
-        "tournament": "Masters Tournament"
       }
     ],
     "Russell Knox": [
@@ -251115,6 +251115,17 @@
     ],
     "Ryan Fox": [
       {
+        "position": "26",
+        "r1": 66.0,
+        "r2": 68.0,
+        "r3": 70.0,
+        "r4": 74.0,
+        "scoreToPar": "-2",
+        "start": "2026-08-27",
+        "total": 278,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T47",
         "r1": 71.0,
         "r2": 69.0,
@@ -251234,17 +251245,6 @@
         "start": "2026-04-30",
         "total": 283,
         "tournament": "Cadillac Championship"
-      },
-      {
-        "position": "T16",
-        "r1": 65.0,
-        "r2": 72.0,
-        "r3": 67.0,
-        "r4": 71.0,
-        "scoreToPar": "-9",
-        "start": "2026-04-16",
-        "total": 275,
-        "tournament": "RBC Heritage"
       }
     ],
     "Ryan Garrity": [
@@ -251283,6 +251283,17 @@
       }
     ],
     "Ryan Gerard": [
+      {
+        "position": "3",
+        "r1": 65.0,
+        "r2": 65.0,
+        "r3": 66.0,
+        "r4": 72.0,
+        "scoreToPar": "-12",
+        "start": "2026-08-27",
+        "total": 268,
+        "tournament": "TOUR Championship"
+      },
       {
         "position": "T16",
         "r1": 70.0,
@@ -251403,17 +251414,6 @@
         "start": "2026-05-07",
         "total": 288,
         "tournament": "Truist Championship"
-      },
-      {
-        "position": "T30",
-        "r1": 72.0,
-        "r2": 72.0,
-        "r3": 69.0,
-        "r4": 70.0,
-        "scoreToPar": "-5",
-        "start": "2026-04-30",
-        "total": 283,
-        "tournament": "Cadillac Championship"
       }
     ],
     "Ryan Hall": [
@@ -255417,6 +255417,17 @@
     ],
     "Sam Burns": [
       {
+        "position": "T18",
+        "r1": 66.0,
+        "r2": 68.0,
+        "r3": 67.0,
+        "r4": 72.0,
+        "scoreToPar": "-7",
+        "start": "2026-08-27",
+        "total": 273,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T28",
         "r1": 71.0,
         "r2": 67.0,
@@ -255536,17 +255547,6 @@
         "start": "2026-04-16",
         "total": 275,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "T7",
-        "r1": 67.0,
-        "r2": 71.0,
-        "r3": 68.0,
-        "r4": 73.0,
-        "scoreToPar": "-9",
-        "start": "2026-04-09",
-        "total": 279,
-        "tournament": "Masters Tournament"
       }
     ],
     "Sam Choi": [
@@ -262372,6 +262372,17 @@
     ],
     "Scottie Scheffler": [
       {
+        "position": "1",
+        "r1": 65.0,
+        "r2": 67.0,
+        "r3": 66.0,
+        "r4": 66.0,
+        "scoreToPar": "-16",
+        "start": "2026-08-27",
+        "total": 264,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T12",
         "r1": 72.0,
         "r2": 65.0,
@@ -262491,17 +262502,6 @@
         "start": "2026-04-30",
         "total": 275,
         "tournament": "Cadillac Championship"
-      },
-      {
-        "position": "T1",
-        "r1": 68.0,
-        "r2": 67.0,
-        "r3": 64.0,
-        "r4": 67.0,
-        "scoreToPar": "-18",
-        "start": "2026-04-16",
-        "total": 266,
-        "tournament": "RBC Heritage"
       }
     ],
     "Scotty Kennon": [
@@ -267711,6 +267711,17 @@
     ],
     "Si Woo Kim": [
       {
+        "position": "T14",
+        "r1": 69.0,
+        "r2": 68.0,
+        "r3": 65.0,
+        "r4": 69.0,
+        "scoreToPar": "-9",
+        "start": "2026-08-27",
+        "total": 271,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T33",
         "r1": 70.0,
         "r2": 69.0,
@@ -267830,17 +267841,6 @@
         "start": "2026-05-07",
         "total": 288,
         "tournament": "Truist Championship"
-      },
-      {
-        "position": "T4",
-        "r1": 70.0,
-        "r2": 68.0,
-        "r3": 69.0,
-        "r4": 70.0,
-        "scoreToPar": "-11",
-        "start": "2026-04-30",
-        "total": 277,
-        "tournament": "Cadillac Championship"
       }
     ],
     "Siddharth Nadimpalli": [
@@ -287859,6 +287859,17 @@
     ],
     "Tom Kim": [
       {
+        "position": "T14",
+        "r1": 67.0,
+        "r2": 68.0,
+        "r3": 68.0,
+        "r4": 68.0,
+        "scoreToPar": "-9",
+        "start": "2026-08-27",
+        "total": 271,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T28",
         "r1": 72.0,
         "r2": 69.0,
@@ -287978,17 +287989,6 @@
         "start": "2026-04-02",
         "total": 144,
         "tournament": "Valero Texas Open"
-      },
-      {
-        "position": "T56",
-        "r1": 70.0,
-        "r2": 65.0,
-        "r3": 69.0,
-        "r4": 74.0,
-        "scoreToPar": "-2",
-        "start": "2026-03-26",
-        "total": 278,
-        "tournament": "Texas Children's Houston Open"
       }
     ],
     "Tom Kite": [
@@ -290040,6 +290040,17 @@
     ],
     "Tommy Fleetwood": [
       {
+        "position": "T11",
+        "r1": 66.0,
+        "r2": 70.0,
+        "r3": 67.0,
+        "r4": 67.0,
+        "scoreToPar": "-10",
+        "start": "2026-08-27",
+        "total": 270,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T47",
         "r1": 69.0,
         "r2": 69.0,
@@ -290159,17 +290170,6 @@
         "start": "2026-04-30",
         "total": 282,
         "tournament": "Cadillac Championship"
-      },
-      {
-        "position": "T52",
-        "r1": 76.0,
-        "r2": 67.0,
-        "r3": 69.0,
-        "r4": 67.0,
-        "scoreToPar": "-5",
-        "start": "2026-04-16",
-        "total": 279,
-        "tournament": "RBC Heritage"
       }
     ],
     "Tommy Gainey": [
@@ -295033,14 +295033,14 @@
       },
       {
         "position": "CUT",
-        "r1": 72.0,
-        "r2": 71.0,
+        "r1": 75.0,
+        "r2": 73.0,
         "r3": null,
         "r4": null,
-        "scoreToPar": "+1",
+        "scoreToPar": "+6",
         "start": "2024-11-21",
-        "total": 143,
-        "tournament": "BMW Australian PGA Championship"
+        "total": 148,
+        "tournament": "The RSM Classic"
       }
     ],
     "Tyler Dunlap": [
@@ -297815,6 +297815,17 @@
     ],
     "Viktor Hovland": [
       {
+        "position": "2",
+        "r1": 64.0,
+        "r2": 66.0,
+        "r3": 65.0,
+        "r4": 72.0,
+        "scoreToPar": "-13",
+        "start": "2026-08-27",
+        "total": 267,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "T33",
         "r1": 71.0,
         "r2": 63.0,
@@ -297934,17 +297945,6 @@
         "start": "2026-04-16",
         "total": 278,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "T18",
-        "r1": 75.0,
-        "r2": 71.0,
-        "r3": 71.0,
-        "r4": 67.0,
-        "scoreToPar": "-4",
-        "start": "2026-04-09",
-        "total": 284,
-        "tournament": "Masters Tournament"
       }
     ],
     "Viktor Kofod-Olsen": [
@@ -304426,6 +304426,17 @@
     ],
     "Wyndham Clark": [
       {
+        "position": "T21",
+        "r1": 67.0,
+        "r2": 69.0,
+        "r3": 67.0,
+        "r4": 72.0,
+        "scoreToPar": "-5",
+        "start": "2026-08-27",
+        "total": 275,
+        "tournament": "TOUR Championship"
+      },
+      {
         "position": "1",
         "r1": 64.0,
         "r2": 64.0,
@@ -304545,17 +304556,6 @@
         "start": "2026-05-14",
         "total": 145,
         "tournament": "PGA Championship"
-      },
-      {
-        "position": "T16",
-        "r1": 68.0,
-        "r2": 68.0,
-        "r3": 70.0,
-        "r4": 69.0,
-        "scoreToPar": "-9",
-        "start": "2026-04-16",
-        "total": 275,
-        "tournament": "RBC Heritage"
       }
     ],
     "Xander Basson": [
@@ -304583,6 +304583,17 @@
       }
     ],
     "Xander Schauffele": [
+      {
+        "position": "T14",
+        "r1": 67.0,
+        "r2": 71.0,
+        "r3": 67.0,
+        "r4": 66.0,
+        "scoreToPar": "-9",
+        "start": "2026-08-27",
+        "total": 271,
+        "tournament": "TOUR Championship"
+      },
       {
         "position": "T26",
         "r1": 70.0,
@@ -304703,17 +304714,6 @@
         "start": "2026-04-16",
         "total": 274,
         "tournament": "RBC Heritage"
-      },
-      {
-        "position": "T9",
-        "r1": 70.0,
-        "r2": 72.0,
-        "r3": 70.0,
-        "r4": 68.0,
-        "scoreToPar": "-8",
-        "start": "2026-04-09",
-        "total": 280,
-        "tournament": "Masters Tournament"
       }
     ],
     "Xiang Fang": [
@@ -310925,6 +310925,11 @@
       "players": 50,
       "start": "2026-08-20",
       "tournament": "BMW Championship"
+    },
+    {
+      "players": 30,
+      "start": "2026-08-27",
+      "tournament": "TOUR Championship"
     }
   ]
 }
