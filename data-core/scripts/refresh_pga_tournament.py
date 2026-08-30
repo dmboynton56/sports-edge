@@ -645,11 +645,12 @@ def main() -> None:
             except Exception:
                 pass
         
+        scheffler_win_str = f"{scheffler_win:.5f}" if scheffler_win is not None else "N/A"
         print(
             f"REFRESH SUMMARY: round={current_round} phase={phase} "
             f"rounds_completed={rounds_done} sims_ran={'yes' if predictions_updated else 'no'} "
             f"predictions_updated={'yes' if predictions_updated else 'no'} "
-            f"scheffler_win={scheffler_win:.5f if scheffler_win is not None else 'N/A'}"
+            f"scheffler_win={scheffler_win_str}"
         )
     finally:
         if snapshot_path:
