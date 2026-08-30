@@ -27,7 +27,9 @@ from scripts.mlb_hr_board_contract import (  # noqa: E402
     coverage_stats,
     is_priced_row,
     parse_timestamp,
+    schedule_confirms_slate_over,
 )
+from src.data.mlb_fetcher import fetch_mlb_schedule  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
 
@@ -91,9 +93,68 @@ def _fetch_rows(conn, args: argparse.Namespace) -> list[dict[str, Any]]:
         return [dict(zip(columns, row)) for row in cur.fetchall()]
 
 
+def _previous_nonempty_board(conn, args: argparse.Namespace) -> tuple[str, list[str]] | None:
+    """Return the most recent public, non-empty snapshot for this slate."""
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            select r.run_key, array_agg(distinct b.game_id)
+            from mlb_home_run_board_runs r
+            join mlb_home_run_board_rows b on b.run_id = r.run_id
+            where r.slate_date = %s
+              and r.run_key <> %s
+              and r.status in ('healthy', 'partial')
+            group by r.run_id, r.run_key, r.completed_at, r.started_at
+            order by r.completed_at desc nulls last, r.started_at desc
+            limit 1
+            """,
+            (args.slate_date, args.run_key),
+            prepare=False,
+        )
+        result = cur.fetchone()
+    if result is None:
+        return None
+    return str(result[0]), [str(game_id) for game_id in result[1] if game_id]
+
+
+def _official_schedule_confirms_slate_over(slate_date: str, expected_game_ids: list[str]) -> bool:
+    slate_year = datetime.fromisoformat(slate_date).year
+    schedule = fetch_mlb_schedule(
+        slate_year,
+        game_types=("R", "F", "D", "L", "W"),
+        start_date=slate_date,
+        end_date=slate_date,
+        include_uncompleted=True,
+    )
+    return schedule_confirms_slate_over(schedule.to_dict("records"), expected_game_ids)
+
+
+def _refuse_unsafe_empty_overwrite(conn, args: argparse.Namespace, rows: list[dict[str, Any]]) -> None:
+    if rows:
+        return
+    previous = _previous_nonempty_board(conn, args)
+    if previous is None:
+        return
+    previous_run_key, expected_game_ids = previous
+    try:
+        slate_over = _official_schedule_confirms_slate_over(args.slate_date, expected_game_ids)
+    except Exception as exc:  # noqa: BLE001 - schedule uncertainty must fail closed
+        raise RuntimeError(
+            f"Refusing empty MLB HR board publish for {args.slate_date}: the existing non-empty "
+            f"board {previous_run_key} is protected because official slate completion could not be verified: {exc}"
+        ) from exc
+    if not slate_over:
+        raise RuntimeError(
+            f"Refusing empty MLB HR board publish for {args.slate_date}: the existing non-empty "
+            f"board {previous_run_key} remains live because the official MLB schedule is not fully final."
+        )
+
+
 def publish_rows(conn, args: argparse.Namespace) -> None:
     publication_ts = _now(args.timestamp)
     rows = _fetch_rows(conn, args)
+    _refuse_unsafe_empty_overwrite(conn, args, rows)
     with conn.cursor() as cur:
         cur.execute("select run_id from mlb_home_run_board_runs where run_key = %s", (args.run_key,), prepare=False)
         result = cur.fetchone()

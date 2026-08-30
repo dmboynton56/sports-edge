@@ -2,6 +2,7 @@ from pathlib import Path
 
 
 MIGRATION = Path(__file__).parents[2] / "supabase" / "migrations" / "20260811144616_mlb_hr_trusted_board.sql"
+EMPTY_OVERWRITE_GUARD = Path(__file__).parents[2] / "supabase" / "migrations" / "20260830120000_guard_mlb_hr_empty_overwrite.sql"
 
 
 def test_trusted_board_migration_contains_serving_contract_guards():
@@ -23,3 +24,9 @@ def test_published_board_contract_cannot_recompute_historical_edges():
     assert "board.edge" in sql
     assert "board.ev" in sql
     assert "board.odds_snapshot_ts" in sql
+
+
+def test_failed_runs_cannot_replace_the_last_public_board():
+    sql = EMPTY_OVERWRITE_GUARD.read_text(encoding="utf-8").lower()
+    assert "where status in ('healthy', 'partial', 'no_slate')" in sql
+    assert "where status <> 'running'" not in sql

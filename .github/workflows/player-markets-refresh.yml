@@ -141,6 +141,18 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: python scripts/apply_supabase_sql_files.py supabase/migrations/20260811144616_mlb_hr_trusted_board.sql
 
+      - name: Apply trusted-board empty-overwrite guard
+        if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: python scripts/apply_supabase_sql_files.py supabase/migrations/20260830120000_guard_mlb_hr_empty_overwrite.sql
+
       - name: Start immutable MLB HR board run
         id: board_run
         if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' }}

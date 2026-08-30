@@ -118,6 +118,30 @@ describe("MLB HR trusted board snapshot", () => {
     expect(snapshot.rows).toHaveLength(0);
   });
 
+  it("serves a healthy afternoon refresh immediately after the 2 PM threshold", () => {
+    const afternoonRun: Run = {
+      ...baseRun,
+      run_key: "mlb-hr-2026-08-11-afternoon-101",
+      run_window: "afternoon",
+      started_at: "2026-08-11T20:30:00Z",
+      completed_at: "2026-08-11T20:41:00Z",
+      total_candidates: 120,
+      priced_candidates: 113,
+      top25_denominator: 25,
+      top25_priced_count: 24,
+      top25_coverage: 0.96,
+    };
+    const snapshot = deriveMlbHrBoardSnapshot(
+      afternoonRun,
+      [boardRow({ event_time: "2026-08-12T00:00:00Z" })],
+      new Date("2026-08-11T20:45:00Z"),
+    );
+
+    expect(snapshot.status).toBe("healthy");
+    expect(snapshot.counts.candidates).toBe(1);
+    expect(snapshot.counts.priced).toBe(1);
+  });
+
   it("represents a confirmed no-slate run explicitly", () => {
     const snapshot = deriveMlbHrBoardSnapshot({ ...baseRun, status: "no_slate" }, [], new Date("2026-08-11T16:00:00Z"));
     expect(snapshot.status).toBe("no_slate");

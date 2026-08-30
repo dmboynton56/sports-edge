@@ -14,6 +14,7 @@ from scripts.mlb_hr_board_contract import (
     no_vig_probability,
     quarter_kelly,
     resolve_slate_date,
+    schedule_confirms_slate_over,
     select_latest_pregame_publication,
     summarize_flat_results,
 )
@@ -66,6 +67,20 @@ def test_run_classification_includes_no_slate_and_partial():
     assert classify_run(has_slate=True, source_ok=True, predictions_valid=True, top25_coverage=0.79) == "partial"
     assert classify_run(has_slate=True, source_ok=True, predictions_valid=True, top25_coverage=0.8) == "healthy"
     assert classify_run(has_slate=True, source_ok=False, predictions_valid=True, top25_coverage=1) == "failed"
+
+
+def test_slate_over_requires_complete_official_schedule_and_expected_games():
+    expected = ["MLB_1", "MLB_2"]
+    assert schedule_confirms_slate_over(
+        [{"game_pk": 1, "completed": True}, {"game_pk": 2, "completed": True}],
+        expected,
+    )
+    assert not schedule_confirms_slate_over(
+        [{"game_pk": 1, "completed": True}, {"game_pk": 2, "completed": False}],
+        expected,
+    )
+    assert not schedule_confirms_slate_over([{"game_pk": 1, "completed": True}], expected)
+    assert not schedule_confirms_slate_over([], expected)
 
 
 def test_latest_pregame_snapshot_wins_over_morning_run():

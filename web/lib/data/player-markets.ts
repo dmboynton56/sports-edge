@@ -437,7 +437,10 @@ function scheduledRunIsEligible(run: SupabaseMlbHrBoardRunRow, now: Date): boole
   const minutes = localMinutes(run.completed_at);
   if (minutes == null) return false;
   if (clock.hour < 8) return true;
-  if (clock.hour < 16) return (run.run_window === "morning" || run.run_window === "manual") && minutes >= 360;
+  if (clock.hour < 16) {
+    if (run.run_window === "afternoon") return minutes >= 840;
+    return (run.run_window === "morning" || run.run_window === "manual") && minutes >= 360;
+  }
   return (run.run_window === "afternoon" || run.run_window === "manual") && minutes >= 840;
 }
 

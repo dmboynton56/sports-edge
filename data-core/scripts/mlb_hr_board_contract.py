@@ -152,6 +152,23 @@ def classify_run(
     return "partial"
 
 
+def schedule_confirms_slate_over(
+    schedule_rows: Iterable[Mapping[str, Any]],
+    expected_game_ids: Iterable[str],
+) -> bool:
+    """Return true only when the official schedule confirms every slate game is final.
+
+    ``expected_game_ids`` comes from the last non-empty published board.  Requiring
+    those games to still appear prevents an empty or partial schedule response from
+    being mistaken for a completed slate.
+    """
+
+    rows = list(schedule_rows)
+    expected = {str(game_id).removeprefix("MLB_") for game_id in expected_game_ids if game_id}
+    scheduled = {str(row.get("game_pk")) for row in rows if row.get("game_pk") is not None}
+    return bool(rows) and bool(expected) and expected <= scheduled and all(bool(row.get("completed")) for row in rows)
+
+
 def select_latest_pregame_publication(
     rows: Iterable[Mapping[str, Any]],
     game_start: datetime | str,
@@ -277,6 +294,7 @@ __all__ = [
     "quarter_kelly",
     "resolve_slate_date",
     "run_window_for",
+    "schedule_confirms_slate_over",
     "select_latest_pregame_publication",
     "summarize_flat_results",
 ]
