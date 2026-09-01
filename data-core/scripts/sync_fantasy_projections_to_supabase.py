@@ -21,13 +21,23 @@ from src.utils.supabase_pg import load_supabase_credentials  # noqa: E402
 
 
 DEFAULT_ARTIFACT = ROOT / "web" / "public" / "data" / "fantasy_projections.json"
+DEFAULT_RETAIN_RUNS = 7
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--artifact", type=Path, default=DEFAULT_ARTIFACT)
+    parser.add_argument(
+        "--retain-runs",
+        type=int,
+        default=DEFAULT_RETAIN_RUNS,
+        help="Number of recent Supabase projection runs to retain (default: 7)",
+    )
     parser.add_argument("--dry-run", action="store_true")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.retain_runs < 1:
+        parser.error("--retain-runs must be at least 1")
+    return args
 
 
 def connection_string() -> str:
@@ -131,8 +141,25 @@ def main() -> None:
                         row.get("updated_at") or payload.get("generatedAt"),
                     ),
                 )
+            cursor.execute(
+                """
+                delete from fantasy_projection_runs
+                where run_id in (
+                  select run_id
+                  from fantasy_projection_runs
+                  order by generated_at desc, run_id desc
+                  offset %s
+                )
+                returning run_id
+                """,
+                (args.retain_runs,),
+            )
+            pruned_runs = len(cursor.fetchall())
         connection.commit()
-    print(f"Synced {len(rows)} fantasy rows to Supabase run {run_id}")
+    print(
+        f"Synced {len(rows)} fantasy rows to Supabase run {run_id}; "
+        f"pruned {pruned_runs} superseded runs (retaining {args.retain_runs})"
+    )
 
 
 if __name__ == "__main__":
