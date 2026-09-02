@@ -52,6 +52,50 @@ def _clean(value: Any) -> Any:
     return value
 
 
+def _odds_already_used_today(denver_date: str) -> tuple[bool, str | None]:
+    """Check if The Odds API was already used for this Denver date.
+    
+    Returns:
+        (already_used, provider_used) - True if 'the_odds_api' provider was used today
+    """
+    try:
+        creds = load_supabase_credentials()
+        if not creds.get("url") or not creds.get("db_password"):
+            return False, None
+        
+        conn = create_pg_connection(
+            supabase_url=creds["url"],
+            password=creds["db_password"],
+            host_override=creds.get("db_host"),
+            port=creds["db_port"],
+            database=creds["db_name"],
+            user=creds["db_user"],
+        )
+        try:
+            with conn.cursor() as cur:
+                # Check if The Odds API was already used today by looking at odds_snapshots
+                cur.execute(
+                    """
+                    select distinct provider
+                    from mlb_home_run_odds_snapshots
+                    where game_date = %s
+                      and provider = 'the_odds_api'
+                    limit 1
+                    """,
+                    (denver_date,),
+                    prepare=False,
+                )
+                result = cur.fetchone()
+                if result:
+                    return True, result[0]
+                return False, None
+        finally:
+            conn.close()
+    except Exception as exc:
+        print(f"Warning: Could not check Odds API usage for {denver_date}: {exc}")
+        return False, None
+
+
 def _sync_supabase(odds: pd.DataFrame) -> int:
     if odds.empty:
         return 0
@@ -176,6 +220,10 @@ def main() -> None:
     requested_markets = _requested_markets(args)
     audit_market = requested_markets[0] if requested_markets and len(requested_markets) == 1 else HR_MARKET
 
+    # Check if Odds API was already used today (Denver date)
+    denver_date = args.date.isoformat()
+    odds_used_today, prior_provider = _odds_already_used_today(denver_date)
+    
     # Try The Odds API first
     odds_api_key = None
     propline_api_key = None
@@ -228,8 +276,13 @@ def main() -> None:
     should_fallback = False
     fallback_reason = ""
 
-    # Try The Odds API if key is available
-    if odds_api_key:
+    # Skip Odds API if already used today (conserve credits)
+    if odds_used_today and odds_api_key:
+        should_fallback = True
+        fallback_reason = f"The Odds API already used today for {denver_date} (conserving credits: at most one Odds API call per Denver day)"
+        print(fallback_reason)
+    # Try The Odds API if key is available and not already used today
+    elif odds_api_key:
         client = OddsApiClient(api_key=odds_api_key)
         try:
             odds, audit = fetch_day_hr_odds(
@@ -239,6 +292,7 @@ def main() -> None:
                 regions=args.regions,
                 markets=requested_markets,
             )
+            print(f"The Odds API returned {len(odds)} priced rows, {audit.get('apiCreditsRemaining', 'unknown')} credits remaining")
             # Check for quota exhaustion or empty board
             if audit.get("apiCreditsRemaining") == "0":
                 should_fallback = True
@@ -267,6 +321,9 @@ def main() -> None:
                 markets=requested_markets,
             )
             audit["fallbackReason"] = fallback_reason
+            if odds_used_today:
+                audit["oddsAlreadyUsedToday"] = True
+                audit["priorProvider"] = prior_provider
             print(f"PropLine returned {audit.get('eventsReturned', 0)} events, matched {audit.get('eventsMatched', 0)}, priced {len(odds)} rows")
         except PropLineError as exc:
             print(f"PropLine fallback also failed: {exc}")
@@ -283,6 +340,9 @@ def main() -> None:
     elif should_fallback and not propline_api_key:
         print(f"Would fallback to PropLine but PROPLINE_API_KEY not set: {fallback_reason}")
         audit["fallbackSkipped"] = "PROPLINE_API_KEY not configured"
+        if odds_used_today:
+            audit["oddsAlreadyUsedToday"] = True
+            audit["priorProvider"] = prior_provider
     elif not odds_api_key and propline_api_key:
         # ODDS_API_KEY missing, go straight to PropLine
         print("ODDS_API_KEY not set, using PropLine")
@@ -310,7 +370,9 @@ def main() -> None:
     synced = _sync_supabase(odds) if args.sync_supabase else 0
     audit["supabaseRowsInserted"] = synced
     _write_outputs(odds, audit, args.out_csv, args.audit_out)
-    print(f"Wrote {len(odds)} MLB HR odds rows to {args.out_csv} (provider: {audit.get('provider', 'unknown')})")
+    provider = audit.get('provider', 'unknown')
+    credits_info = f", {audit.get('apiCreditsRemaining', 'unknown')} credits remaining" if provider == 'the_odds_api' else ""
+    print(f"Wrote {len(odds)} MLB HR odds rows to {args.out_csv} (provider: {provider}{credits_info})")
     print(f"Wrote MLB HR odds audit to {args.audit_out}")
     if args.sync_supabase:
         print(f"Synced {synced} MLB HR odds rows to Supabase")
