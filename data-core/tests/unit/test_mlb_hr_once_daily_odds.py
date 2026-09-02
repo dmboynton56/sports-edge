@@ -29,7 +29,14 @@ def test_odds_already_used_today_returns_true_when_the_odds_api_used():
     mock_cursor.fetchone.return_value = ("the_odds_api",)
     
     with patch("fetch_mlb_home_run_odds.load_supabase_credentials") as mock_creds:
-        mock_creds.return_value = {"url": "http://test", "db_password": "test"}
+        mock_creds.return_value = {
+            "url": "http://test",
+            "db_password": "test",
+            "db_host": None,
+            "db_port": 5432,
+            "db_name": "postgres",
+            "db_user": "postgres",
+        }
         with patch("fetch_mlb_home_run_odds.create_pg_connection", return_value=mock_conn):
             already_used, provider = _odds_already_used_today(denver_date)
     
@@ -51,7 +58,14 @@ def test_odds_already_used_today_returns_false_when_no_odds_today():
     mock_cursor.fetchone.return_value = None
     
     with patch("fetch_mlb_home_run_odds.load_supabase_credentials") as mock_creds:
-        mock_creds.return_value = {"url": "http://test", "db_password": "test"}
+        mock_creds.return_value = {
+            "url": "http://test",
+            "db_password": "test",
+            "db_host": None,
+            "db_port": 5432,
+            "db_name": "postgres",
+            "db_user": "postgres",
+        }
         with patch("fetch_mlb_home_run_odds.create_pg_connection", return_value=mock_conn):
             already_used, provider = _odds_already_used_today(denver_date)
     
