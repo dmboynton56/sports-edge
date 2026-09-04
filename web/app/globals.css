@@ -45,27 +45,31 @@
   --shadow-soft: var(--elevation-1);
   --shadow-lift: var(--elevation-2);
 
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-display: var(--font-bricolage), var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  /* One family throughout. `font-display` stays a distinct token so call sites
+     keep reading as intent, but it resolves to the same face — hierarchy comes
+     from weight and tracking, not from a second typeface. */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 @layer base {
   :root {
-    --background: 216 24% 96%;
-    --foreground: 215 29% 8%;
+    --background: 240 6% 97%;
+    --foreground: 240 6% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 215 29% 8%;
+    --card-foreground: 240 6% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 29% 8%;
-    --primary: 215 29% 8%;
+    --popover-foreground: 240 6% 8%;
+    --primary: 240 6% 8%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 214 26% 95%;
-    --secondary-foreground: 215 22% 24%;
-    --muted: 214 26% 95%;
-    --muted-foreground: 215 12% 50%;
-    --accent: 244 74% 53%;
+    --secondary: 240 6% 94%;
+    --secondary-foreground: 240 5% 26%;
+    --muted: 240 6% 94%;
+    --muted-foreground: 240 4% 46%;
+    /* #3557FF */
+    --accent: 230 100% 60%;
     --accent-foreground: 0 0% 100%;
-    --accent-soft: 245 90% 96%;
+    --accent-soft: 230 100% 96%;
     --destructive: 352 69% 51%;
     --destructive-foreground: 0 0% 100%;
     --destructive-soft: 353 83% 96%;
@@ -73,60 +77,63 @@
     --positive-soft: 158 60% 94%;
     --warning: 32 88% 34%;
     --warning-soft: 40 92% 93%;
-    --border: 216 23% 91%;
-    --input: 216 23% 91%;
-    --ring: 244 74% 53%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 230 100% 60%;
     --radius: 0.7rem;
 
     --sport-nba: 18 76% 53%;
-    --sport-mlb: 217 69% 39%;
+    --sport-mlb: 196 88% 36%;
     --sport-pga: 156 71% 28%;
     --sport-nfl: 27 18% 36%;
-    --sport-cbb: 271 52% 51%;
+    --sport-cbb: 340 72% 45%;
     --sport-cfb: 24 88% 52%;
     --sport-nhl: 213 14% 40%;
 
-    --elevation-1: 0 1px 2px hsl(215 29% 8% / 0.05), 0 8px 24px -14px hsl(215 29% 8% / 0.2);
-    --elevation-2: 0 2px 4px hsl(215 29% 8% / 0.05), 0 20px 40px -22px hsl(215 29% 8% / 0.34);
+    --elevation-1: 0 1px 2px hsl(240 6% 8% / 0.05), 0 8px 24px -14px hsl(240 6% 8% / 0.2);
+    --elevation-2: 0 2px 4px hsl(240 6% 8% / 0.05), 0 20px 40px -22px hsl(240 6% 8% / 0.34);
   }
 
+  /* True black: the page is #000 and surfaces lift off it in neutral steps.
+     Shadows barely register on black, so borders carry the elevation here. */
   .dark {
-    --background: 215 28% 7%;
-    --foreground: 214 29% 93%;
-    --card: 215 23% 11%;
-    --card-foreground: 214 29% 93%;
-    --popover: 215 23% 12%;
-    --popover-foreground: 214 29% 93%;
-    --primary: 214 29% 93%;
-    --primary-foreground: 215 28% 7%;
-    --secondary: 215 25% 15%;
-    --secondary-foreground: 214 20% 84%;
-    --muted: 215 25% 15%;
-    --muted-foreground: 215 14% 60%;
-    --accent: 244 90% 74%;
-    --accent-foreground: 215 28% 7%;
-    --accent-soft: 244 38% 20%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 5%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 11%;
+    --secondary-foreground: 0 0% 85%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 64%;
+    /* #3557FF lifted to clear 4.5:1 on black */
+    --accent: 230 100% 68%;
+    --accent-foreground: 0 0% 0%;
+    --accent-soft: 230 44% 14%;
     --destructive: 352 100% 71%;
-    --destructive-foreground: 215 28% 7%;
-    --destructive-soft: 352 32% 20%;
+    --destructive-foreground: 0 0% 0%;
+    --destructive-soft: 352 40% 14%;
     --positive: 158 58% 50%;
-    --positive-soft: 158 30% 17%;
+    --positive-soft: 158 40% 12%;
     --warning: 38 95% 62%;
-    --warning-soft: 35 34% 18%;
-    --border: 217 21% 19%;
-    --input: 217 21% 19%;
-    --ring: 244 90% 74%;
+    --warning-soft: 35 44% 13%;
+    --border: 0 0% 17%;
+    --input: 0 0% 17%;
+    --ring: 230 100% 68%;
 
     --sport-nba: 22 86% 63%;
-    --sport-mlb: 217 68% 62%;
+    --sport-mlb: 195 85% 55%;
     --sport-pga: 157 53% 44%;
     --sport-nfl: 30 22% 55%;
-    --sport-cbb: 269 72% 69%;
+    --sport-cbb: 340 80% 66%;
     --sport-cfb: 27 93% 61%;
     --sport-nhl: 213 15% 59%;
 
-    --elevation-1: 0 1px 2px hsl(0 0% 0% / 0.4), 0 8px 24px -14px hsl(0 0% 0% / 0.7);
-    --elevation-2: 0 2px 4px hsl(0 0% 0% / 0.4), 0 20px 40px -22px hsl(0 0% 0% / 0.85);
+    --elevation-1: 0 1px 2px hsl(0 0% 0% / 0.6), 0 8px 24px -14px hsl(0 0% 0% / 0.9);
+    --elevation-2: 0 2px 4px hsl(0 0% 0% / 0.6), 0 20px 40px -22px hsl(0 0% 0% / 0.95);
   }
 }
 
@@ -137,13 +144,24 @@
   body {
     @apply bg-background text-foreground;
     font-variant-numeric: tabular-nums;
+    /* Lets Inter's opsz axis do the SF Pro Display/Text switch on its own */
+    font-optical-sizing: auto;
+    letter-spacing: -0.011em;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+  /* Tracking tightens as type grows, which is most of what reads as "Apple" */
   h1,
   h2,
   h3 {
     font-family: var(--font-display);
-    letter-spacing: -0.025em;
+    letter-spacing: -0.022em;
+  }
+  h1 {
+    letter-spacing: -0.032em;
+  }
+  h2 {
+    letter-spacing: -0.026em;
   }
   :focus-visible {
     outline: 2px solid hsl(var(--ring));

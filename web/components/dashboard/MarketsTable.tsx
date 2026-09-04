@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import type { Prediction } from "@/lib/data/types";
 import { isFiniteNumber } from "@/lib/data/json";
-import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
+import { formatAmericanPrice, formatDateTime, formatNumber, formatPct } from "@/lib/format";
 import {
   filterAndSortMarketRows,
   MARKET_TABLE_PAGE_SIZE,
@@ -73,11 +73,6 @@ function valuesFor(
   const values = predictions.map((prediction) => prediction[key]).filter(Boolean);
   if (selected !== "all") values.push(selected);
   return Array.from(new Set(values)).sort();
-}
-
-function americanPrice(value: number | null) {
-  if (!isFiniteNumber(value)) return "—";
-  return value > 0 ? `+${value}` : String(value);
 }
 
 function statusVariant(status: Prediction["marketStatus"]) {
@@ -270,7 +265,7 @@ export function MarketsTable({
                     <div className="font-medium text-foreground">{prediction.book}</div>
                     <div className="whitespace-nowrap text-xs text-muted-foreground">
                       {isFiniteNumber(prediction.line) ? `line ${formatNumber(prediction.line, 1)} · ` : ""}
-                      {americanPrice(prediction.price)}
+                      {formatAmericanPrice(prediction.price)}
                     </div>
                   </TableCell>
                   <TableCell>

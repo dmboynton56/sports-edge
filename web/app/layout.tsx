@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import { AppShell } from "@/components/dashboard/AppShell";
 import "./globals.css";
 
-const display = Bricolage_Grotesque({
+// One typeface for the whole product, the way SF Pro carries Apple's UI. The
+// `opsz` axis is what makes that work: it does automatically what SF Pro Display
+// vs. Text does by hand, refining the letterforms as type gets larger. Weight,
+// size and tracking carry the hierarchy instead of a second family.
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-bricolage",
-  display: "swap",
-});
-
-const sans = Plus_Jakarta_Sans({
-  subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-inter",
+  axes: ["opsz"],
   display: "swap",
 });
 
@@ -36,13 +35,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // The font variables must sit on <html>: Tailwind declares --font-sans on
+    // The font variable must sit on <html>: Tailwind declares --font-sans on
     // :root, and a var() there can only see custom properties on the same element.
-    <html
-      lang="en"
-      className={`${sans.variable} ${display.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       <head>
         {/* Must stay a raw inline script: next/script defers even
             beforeInteractive behind its runtime queue, which paints first. */}
