@@ -2,7 +2,9 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from src.utils.supabase_pg import fetch_injury_impacts_pg, upsert_games_pg
+import pytest
+
+from src.utils.supabase_pg import create_pg_connection, fetch_injury_impacts_pg, upsert_games_pg
 
 
 class FakeCursor:
@@ -286,3 +288,47 @@ def test_fetch_injury_impacts_pg_normalizes_rows_for_feature_join():
     assert impacts["game_date"].iloc[0] == pd.Timestamp("2026-09-10")
     assert impacts["team_delta"].iloc[0] == -0.117
     assert bool(impacts["available"].iloc[0]) is True
+
+
+def test_create_pg_connection_raises_clear_error_when_url_is_none(monkeypatch):
+    def boom(*args, **kwargs):
+        raise AssertionError("psycopg.connect should not run with a missing URL")
+
+    monkeypatch.setattr("src.utils.supabase_pg.psycopg.connect", boom)
+
+    with pytest.raises(ValueError, match="SUPABASE_URL"):
+        create_pg_connection(supabase_url=None, password="secret")
+
+
+def test_create_pg_connection_raises_clear_error_when_url_is_malformed(monkeypatch):
+    def boom(*args, **kwargs):
+        raise AssertionError("psycopg.connect should not run with a malformed URL")
+
+    monkeypatch.setattr("src.utils.supabase_pg.psycopg.connect", boom)
+
+    with pytest.raises(ValueError, match="Invalid SUPABASE_URL"):
+        create_pg_connection(supabase_url="not-a-url", password="secret")
+
+
+def test_create_pg_connection_uses_host_override_when_url_is_none(monkeypatch):
+    captured = {}
+
+    def fake_connect(conn_str, prepare_threshold=None):
+        captured["conn_str"] = conn_str
+        captured["prepare_threshold"] = prepare_threshold
+        return object()
+
+    monkeypatch.setattr("src.utils.supabase_pg.psycopg.connect", fake_connect)
+
+    create_pg_connection(
+        supabase_url=None,
+        password="secret",
+        host_override="db.example.supabase.co",
+        port="6543",
+        database="postgres",
+        user="postgres",
+    )
+
+    assert "host=db.example.supabase.co" in captured["conn_str"]
+    assert "port=6543" in captured["conn_str"]
+    assert captured["prepare_threshold"] is None

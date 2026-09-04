@@ -30,21 +30,51 @@ def _all_uuid_game_ids(game_ids: Optional[list[str]]) -> list[str] | None:
     return normalized
 
 
+def _missing_supabase_pg_config(creds: dict[str, Any]) -> str | None:
+    missing: list[str] = []
+    if not creds.get("url") and not creds.get("db_host"):
+        missing.append("SUPABASE_URL or SUPABASE_DB_HOST")
+    if not creds.get("db_password"):
+        missing.append("supabaseDBpass or SUPABASE_DB_PASSWORD")
+    if missing:
+        return ", ".join(missing)
+    return None
+
+
 def load_injury_impacts_from_supabase(
     league: str,
     *,
     game_ids: Optional[list[str]] = None,
 ) -> pd.DataFrame:
-    """Return player_impact_estimates rows for the given league."""
+    """Return player_impact_estimates rows for the given league.
+
+    Missing Supabase credentials skip the injury join so predictions still
+    publish without injury adjustments instead of crashing on a None URL.
+    """
     creds = load_supabase_credentials()
-    conn = create_pg_connection(
-        supabase_url=creds["url"],
-        password=creds["db_password"],
-        host_override=creds.get("db_host"),
-        port=creds["db_port"],
-        database=creds["db_name"],
-        user=creds["db_user"],
-    )
+    missing = _missing_supabase_pg_config(creds)
+    if missing:
+        print(
+            "WARNING: Skipping injury impacts; missing "
+            f"{missing}. Predictions will continue without injuries."
+        )
+        return pd.DataFrame()
+
+    try:
+        conn = create_pg_connection(
+            supabase_url=creds["url"],
+            password=creds["db_password"],
+            host_override=creds.get("db_host"),
+            port=creds["db_port"],
+            database=creds["db_name"],
+            user=creds["db_user"],
+        )
+    except ValueError as exc:
+        print(
+            "WARNING: Skipping injury impacts; "
+            f"{exc}. Predictions will continue without injuries."
+        )
+        return pd.DataFrame()
     try:
         with conn.cursor() as cur:
             uuid_game_ids = _all_uuid_game_ids(game_ids)
