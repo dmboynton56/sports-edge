@@ -20,7 +20,9 @@ export function FeatureDrivers({ features }: { features: FeatureDriver[] }) {
       impact: feature.impact,
       value: feature.value,
     }))
-    .toSorted((a, b) => Math.abs(b.impact) - Math.abs(a.impact));
+    // The .map() above already produced a fresh array, so sorting in place is safe
+    // here and keeps the chart rendering on browsers without Array#toSorted.
+    .sort((a, b) => Math.abs(b.impact) - Math.abs(a.impact));
 
   if (!chartData.length) {
     return <p className="text-sm text-muted-foreground">No feature drivers available.</p>;
