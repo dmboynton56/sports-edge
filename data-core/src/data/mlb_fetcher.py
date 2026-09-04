@@ -166,6 +166,84 @@ def fetch_mlb_schedule(
     return df
 
 
+GAMES_UPSERT_COLUMNS = (
+    "league",
+    "season",
+    "week",
+    "home_team",
+    "away_team",
+    "game_date",
+    "game_time_utc",
+    "book_spread",
+    "home_probable_pitcher",
+    "away_probable_pitcher",
+)
+
+
+def mlb_schedule_to_games_df(
+    schedule: pd.DataFrame,
+    *,
+    season: Optional[int] = None,
+) -> pd.DataFrame:
+    """Project an MLB Stats API / research slate onto the Supabase ``games`` shape.
+
+    Research odds and the readiness audit both join through ``games``. That table
+    is otherwise populated only by the later BigQuery → Supabase sync, so an
+    evening re-run after an earlier crash has no MLB rows and drops every odds
+    write. Persist officialDate as ``game_date`` so late-UTC kickoffs still land
+    on the Denver slate date.
+    """
+    empty = pd.DataFrame(columns=list(GAMES_UPSERT_COLUMNS))
+    if schedule is None or schedule.empty:
+        return empty
+
+    frame = schedule.copy()
+    if "home_team" not in frame.columns or "away_team" not in frame.columns:
+        return empty
+
+    game_date = pd.to_datetime(frame.get("game_date"), errors="coerce")
+    datetime_col = "game_datetime" if "game_datetime" in frame.columns else "game_time_utc"
+    fallback_time = pd.to_datetime(game_date, utc=True, errors="coerce")
+    if datetime_col in frame.columns:
+        game_time = pd.to_datetime(frame[datetime_col], utc=True, errors="coerce")
+        game_time = game_time.fillna(fallback_time)
+    else:
+        game_time = fallback_time
+
+    if "season" in frame.columns:
+        seasons = pd.to_numeric(frame["season"], errors="coerce")
+        if season is not None:
+            seasons = seasons.fillna(season)
+    elif season is not None:
+        seasons = season
+    else:
+        seasons = game_date.dt.year
+
+    pitchers = {
+        column: frame[column] if column in frame.columns else None
+        for column in ("home_probable_pitcher", "away_probable_pitcher")
+    }
+    out = pd.DataFrame(
+        {
+            "league": "MLB",
+            "season": seasons,
+            "week": None,
+            "home_team": frame["home_team"],
+            "away_team": frame["away_team"],
+            "game_date": game_date.dt.date,
+            "game_time_utc": game_time,
+            "book_spread": None,
+            "home_probable_pitcher": pitchers["home_probable_pitcher"],
+            "away_probable_pitcher": pitchers["away_probable_pitcher"],
+        }
+    )
+    out = out.dropna(subset=["home_team", "away_team", "game_date"])
+    return (
+        out.drop_duplicates(subset=["league", "season", "home_team", "away_team", "game_date"])
+        .reset_index(drop=True)
+    )
+
+
 def fetch_mlb_games_for_seasons(
     seasons: Iterable[int],
     *,
