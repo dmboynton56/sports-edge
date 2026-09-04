@@ -11,14 +11,14 @@ export default async function MlbRunLinePage() {
     <div>
       <PageHeader
         title="MLB Run Line (Research)"
-        description="Home -1.5 cover probabilities from the MLB run-line v1 research model. Model-only rows show when sportsbook prices are unavailable."
+        description="Run-line cover probabilities from the MLB v1 margin-residual research model. Model-only rows show when sportsbook prices are unavailable."
         meta={data.generatedAt ? `Generated ${data.generatedAt}` : data.slateDate}
       />
 
       <MlbResearchBoard
         data={data}
-        title="Run Line Board (Home -1.5)"
-        description="Research model probabilities for home -1.5 / away +1.5 run-line markets. This is a research board, not a production-validated Trusted market."
+        title="Run Line Board"
+        description="Research probabilities are translated to the currently posted home/away line using held-out margin residuals. This is not a production-validated Trusted market."
       />
     </div>
   );

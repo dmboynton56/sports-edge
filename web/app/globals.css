@@ -33,6 +33,7 @@
   --color-pga: hsl(var(--sport-pga));
   --color-nfl: hsl(var(--sport-nfl));
   --color-cbb: hsl(var(--sport-cbb));
+  --color-cfb: hsl(var(--sport-cfb));
   --color-nhl: hsl(var(--sport-nhl));
 
   --radius-sm: calc(var(--radius) - 4px);
@@ -82,6 +83,7 @@
     --sport-pga: 156 71% 28%;
     --sport-nfl: 27 18% 36%;
     --sport-cbb: 271 52% 51%;
+    --sport-cfb: 24 88% 52%;
     --sport-nhl: 213 14% 40%;
 
     --elevation-1: 0 1px 2px hsl(215 29% 8% / 0.05), 0 8px 24px -14px hsl(215 29% 8% / 0.2);
@@ -120,6 +122,7 @@
     --sport-pga: 157 53% 44%;
     --sport-nfl: 30 22% 55%;
     --sport-cbb: 269 72% 69%;
+    --sport-cfb: 27 93% 61%;
     --sport-nhl: 213 15% 59%;
 
     --elevation-1: 0 1px 2px hsl(0 0% 0% / 0.4), 0 8px 24px -14px hsl(0 0% 0% / 0.7);

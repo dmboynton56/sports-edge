@@ -427,8 +427,15 @@ def _daily_aggregates(frame: pd.DataFrame, player_col: str, prefix: str) -> pd.D
 
 
 def _merge_prior(rows: pd.DataFrame, prior: pd.DataFrame, *, row_id_col: str) -> pd.DataFrame:
-    left = rows.sort_values("game_date").copy()
-    right = prior.sort_values("statcast_date").copy()
+    left = rows.copy()
+    right = prior.copy()
+    # pandas 3 preserves NumPy datetime units more strictly than earlier
+    # releases. merge_asof requires identical units, so normalize both sides
+    # instead of relying on pd.to_datetime to coerce seconds/microseconds.
+    left["game_date"] = pd.to_datetime(left["game_date"], errors="coerce").astype("datetime64[ns]")
+    right["statcast_date"] = pd.to_datetime(right["statcast_date"], errors="coerce").astype("datetime64[ns]")
+    left = left.sort_values("game_date")
+    right = right.sort_values("statcast_date")
     merged_parts = []
     missing_rows = left[left[row_id_col].isna()].copy()
     if not missing_rows.empty:

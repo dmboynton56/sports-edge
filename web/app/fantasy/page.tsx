@@ -11,7 +11,7 @@ export default async function FantasyPage() {
     <div>
       <PageHeader
         title="Fantasy Football"
-        description="Public NFL player projections, configurable full-PPR scoring, a live snake-draft board, and a local weekly lineup planner."
+        description="Fresh NFL player projections, half-PPR draft recommendations, a local snake-draft session, and weekly lineup planning."
         meta={feed.generatedAt}
       />
       <FantasyBoard feed={boardFeed} />

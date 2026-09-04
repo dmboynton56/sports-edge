@@ -1,7 +1,7 @@
 # Fantasy Football Projection Surface
 
-Sports Edge's fantasy surface is a public full-PPR projection board with
-custom scoring, a local browser-only draft assistant, and a weekly lineup
+Sports Edge's fantasy surface is a public half-PPR-first projection board with
+custom scoring, a local browser-only snake-draft assistant, and a weekly lineup
 optimizer. It does not connect to private ESPN/Yahoo/Sleeper leagues or store
 user rosters in Supabase.
 
@@ -9,6 +9,9 @@ user rosters in Supabase.
 
 - Original component projections use nflverse player stats, player metadata,
   schedules, and current roster information.
+- Sleeper's public NFL player directory supplies daily roster status, team,
+  depth-chart, and injury context. The refresh makes one request per run and
+  attributes the source in the artifact.
 - FantasyPros is used only for the separately labeled ADP/market signal. The
   API key is read from `FANTASYPROS_API_KEY`, sent in the `x-api-key` header by
   the refresh job, and never shipped to the browser.

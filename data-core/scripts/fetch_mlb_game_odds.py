@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from psycopg.types.json import Jsonb
 import requests
 from dotenv import load_dotenv
 
@@ -100,36 +101,28 @@ def match_game(
         LOGGER.warning(f"Could not resolve teams: {away_raw} @ {home_raw}")
         return None, None, None
 
-    # Convert commence_time to date for matching
-    event_time = pd.to_datetime(event["commence_time"])
-    event_date = event_time.date()
+    event_time = pd.to_datetime(event["commence_time"], utc=True)
 
     # Ensure schedule game_date is date type for comparison
     schedule_dates = pd.to_datetime(schedule["game_date"]).dt.date
+    schedule_home = schedule["home_team"].map(canonical_mlb_abbr)
+    schedule_away = schedule["away_team"].map(canonical_mlb_abbr)
 
-    # Try exact date + team match
-    matches = schedule[
-        (schedule_dates == event_date)
-        & (schedule["home_team"] == home_abbr)
-        & (schedule["away_team"] == away_abbr)
-    ]
+    matches = schedule[(schedule_home == home_abbr) & (schedule_away == away_abbr)].copy()
+    if not matches.empty and "game_datetime" in matches:
+        kickoffs = pd.to_datetime(matches["game_datetime"], utc=True, errors="coerce")
+        differences = (kickoffs - event_time).abs()
+        if differences.notna().any():
+            best_index = differences.idxmin()
+            if differences.loc[best_index] <= pd.Timedelta(hours=6):
+                return int(matches.loc[best_index, "game_pk"]), home_abbr, away_abbr
 
-    if len(matches) == 1:
-        return int(matches.iloc[0]["game_pk"]), home_abbr, away_abbr
-
-    # Try +/- 1 day fuzzy match
-    for offset in [-1, 1]:
-        fuzzy_date = event_date + pd.Timedelta(days=offset)
-        matches = schedule[
-            (schedule_dates == fuzzy_date)
-            & (schedule["home_team"] == home_abbr)
-            & (schedule["away_team"] == away_abbr)
-        ]
-        if len(matches) == 1:
-            LOGGER.info(
-                f"Fuzzy matched {away_abbr}@{home_abbr} {event_date} -> game_pk={matches.iloc[0]['game_pk']}"
-            )
-            return int(matches.iloc[0]["game_pk"]), home_abbr, away_abbr
+    # Date-only fallback is used only when the schedule provider omitted a
+    # kickoff. It never crosses dates, which avoids repeated-series collisions.
+    event_date = event_time.date()
+    date_matches = matches[schedule_dates.loc[matches.index] == event_date]
+    if len(date_matches) == 1:
+        return int(date_matches.iloc[0]["game_pk"]), home_abbr, away_abbr
 
     LOGGER.warning(
         f"No schedule match for {away_abbr} @ {home_abbr} on {event_date} (event_id={event.get('id')})"
@@ -252,70 +245,97 @@ def sync_event_odds(
         result.error = "no_valid_bookmaker"
         return result
 
-    game_id = f"MLB_{game_pk}"
-    
     # Extract event-level team names for matching outcomes
     event_home_team = event.get("home_team", "")
     event_away_team = event.get("away_team", "")
+    commence_time = pd.Timestamp(event["commence_time"]).to_pydatetime()
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT id::text, home_team, away_team, game_time_utc
+            FROM games
+            WHERE league = 'MLB'
+              AND game_time_utc BETWEEN %s - INTERVAL '12 hours' AND %s + INTERVAL '12 hours'
+            """,
+            (commence_time, commence_time),
+            prepare=False,
+        )
+        candidates = [
+            row for row in cur.fetchall()
+            if canonical_mlb_abbr(row[1]) == home_abbr
+            and canonical_mlb_abbr(row[2]) == away_abbr
+        ]
+    if not candidates:
+        result.matched = False
+        result.error = "no_supabase_game_match"
+        return result
+    game_id = min(
+        candidates,
+        key=lambda row: abs((pd.Timestamp(row[3]) - pd.Timestamp(commence_time)).total_seconds()),
+    )[0]
 
     with conn.cursor() as cur:
         # Moneyline
         home_ml, away_ml, ml_book = extract_moneyline(best, event_home_team, event_away_team)
         if home_ml is not None and away_ml is not None:
-            cur.execute(
+            cur.executemany(
                 """
-                INSERT INTO odds_snapshots (game_id, book, market, line, price, snapshot_ts, metadata)
-                VALUES (%s, %s, 'moneyline', NULL, %s, %s, %s::jsonb)
+                INSERT INTO odds_snapshots (
+                  game_id, book, market, selection, line, price, snapshot_ts,
+                  provider_event_id, commence_time_utc, metadata
+                ) VALUES (%s,%s,'moneyline',%s,NULL,%s,%s,%s,%s,%s)
                 """,
-                (
-                    game_id,
-                    ml_book,
-                    home_ml,
-                    snapshot_ts,
-                    '{"side": "home", "away_price": ' + str(away_ml) + "}",
-                ),
+                [
+                    (game_id, ml_book, side, price, snapshot_ts, event.get("id"), commence_time,
+                     Jsonb({"game_pk": game_pk, "book_title": best.get("title")}))
+                    for side, price in (("home", home_ml), ("away", away_ml))
+                ],
             )
-            result.moneyline_synced = 1
+            result.moneyline_synced = 2
 
         # Run-line
         rl_line, rl_home_price, rl_away_price, rl_book = extract_runline(
             best, event_home_team, event_away_team
         )
         if rl_line is not None and rl_home_price is not None:
-            cur.execute(
+            cur.executemany(
                 """
-                INSERT INTO odds_snapshots (game_id, book, market, line, price, snapshot_ts, metadata)
-                VALUES (%s, %s, 'run_line', %s, %s, %s, %s::jsonb)
+                INSERT INTO odds_snapshots (
+                  game_id, book, market, selection, line, price, snapshot_ts,
+                  provider_event_id, commence_time_utc, metadata
+                ) VALUES (%s,%s,'spread',%s,%s,%s,%s,%s,%s,%s)
                 """,
-                (
-                    game_id,
-                    rl_book,
-                    rl_line,
-                    rl_home_price,
-                    snapshot_ts,
-                    '{"side": "home", "away_price": ' + str(rl_away_price) + "}",
-                ),
+                [
+                    (game_id, rl_book, side, line, price, snapshot_ts, event.get("id"), commence_time,
+                     Jsonb({"game_pk": game_pk, "book_title": best.get("title")}))
+                    for side, line, price in (
+                        ("home", rl_line, rl_home_price),
+                        ("away", -rl_line, rl_away_price),
+                    )
+                    if price is not None
+                ],
             )
-            result.runline_synced = 1
+            result.runline_synced = 2
 
         # Totals
         total_line, over_price, under_price, totals_book = extract_totals(best)
         if total_line is not None and over_price is not None:
-            cur.execute(
+            cur.executemany(
                 """
-                INSERT INTO odds_snapshots (game_id, book, market, line, price, snapshot_ts, metadata)
-                VALUES (%s, %s, 'total', %s, %s, %s, %s::jsonb)
+                INSERT INTO odds_snapshots (
+                  game_id, book, market, selection, line, price, snapshot_ts,
+                  provider_event_id, commence_time_utc, metadata
+                ) VALUES (%s,%s,'total',%s,%s,%s,%s,%s,%s,%s)
                 """,
-                (
-                    game_id,
-                    totals_book,
-                    total_line,
-                    over_price,
-                    snapshot_ts,
-                    '{"side": "over", "under_price": ' + str(under_price) + "}",
-                ),
+                [
+                    (game_id, totals_book, side, total_line, price, snapshot_ts, event.get("id"),
+                     commence_time, Jsonb({"game_pk": game_pk, "book_title": best.get("title")}))
+                    for side, price in (("over", over_price), ("under", under_price))
+                    if price is not None
+                ],
             )
-            result.totals_synced = 1
+            result.totals_synced = 2
 
     return result
 

@@ -471,8 +471,14 @@ def main() -> None:
         "categorical_columns": categorical_columns,
         "categorical_cardinalities": cardinalities,
         "category_mappings": category_mappings,
-        "imputer": imputer,
-        "scaler": scaler,
+        # Store numeric preprocessing state instead of sklearn objects so the
+        # production artifact is portable across compatible sklearn runtimes.
+        "continuous_preprocessing": {
+            "format": "median-standard-v1",
+            "imputer_statistics": imputer.statistics_.astype(float).tolist(),
+            "scaler_mean": scaler.mean_.astype(float).tolist(),
+            "scaler_scale": scaler.scale_.astype(float).tolist(),
+        },
         "metrics": metrics,
         "model_kwargs": {
             "embedding_dim": args.embedding_dim,

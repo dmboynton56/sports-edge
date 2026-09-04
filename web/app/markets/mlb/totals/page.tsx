@@ -17,8 +17,8 @@ export default async function MlbTotalsPage() {
 
       <MlbResearchBoard
         data={data}
-        title="Totals Board (O/U 8.5 & 9.5)"
-        description="Research model projections for total runs and over/under probabilities. This is a research board, not a production-validated Trusted market."
+        title="Totals Board"
+        description="Research model projections are translated to each sportsbook's currently posted total. This is a research board, not a production-validated Trusted market."
       />
     </div>
   );

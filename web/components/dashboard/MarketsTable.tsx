@@ -32,7 +32,7 @@ import {
 } from "@/components/ui/table";
 import type { Prediction } from "@/lib/data/types";
 import { isFiniteNumber } from "@/lib/data/json";
-import { formatDateTime, formatMaybePctMetric, formatNumber, formatPct } from "@/lib/format";
+import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 import { sportColor } from "@/lib/sports";
 import { cn } from "@/lib/utils";
 
@@ -86,24 +86,37 @@ function compare(a: Prediction, b: Prediction, key: SortKey, dir: "asc" | "desc"
 export function MarketsTable({
   initialPredictions,
   initialGaps,
+  defaultSortKey = "edge",
+  defaultSortDir = "desc",
+  fallbackToStatic = true,
+  emptyTitle = "Nothing on the board",
+  emptyDescription = "No predictions have been published for today's slate. Boards fill in once the models run against a posted schedule.",
+  initialRowLimit = null,
 }: {
   initialPredictions: Prediction[];
   initialGaps: string[];
+  defaultSortKey?: SortKey;
+  defaultSortDir?: "asc" | "desc";
+  fallbackToStatic?: boolean;
+  emptyTitle?: string;
+  emptyDescription?: string;
+  initialRowLimit?: number | null;
 }) {
   const [predictions, setPredictions] = useState(initialPredictions);
   const [gaps, setGaps] = useState(initialGaps);
-  const [loading, setLoading] = useState(initialPredictions.length === 0);
+  const [loading, setLoading] = useState(fallbackToStatic && initialPredictions.length === 0);
   const [error, setError] = useState<string | null>(null);
   const [sport, setSport] = useState("all");
   const [market, setMarket] = useState("all");
   const [book, setBook] = useState("all");
   const [confidence, setConfidence] = useState("all");
   const [modelVersion, setModelVersion] = useState("all");
-  const [sortKey, setSortKey] = useState<SortKey>("edge");
-  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [showAll, setShowAll] = useState(false);
+  const [sortKey, setSortKey] = useState<SortKey>(defaultSortKey);
+  const [sortDir, setSortDir] = useState<"asc" | "desc">(defaultSortDir);
 
   useEffect(() => {
-    if (initialPredictions.length > 0) {
+    if (!fallbackToStatic || initialPredictions.length > 0) {
       return;
     }
     let active = true;
@@ -129,7 +142,7 @@ export function MarketsTable({
     return () => {
       active = false;
     };
-  }, [initialPredictions.length]);
+  }, [fallbackToStatic, initialPredictions.length]);
 
   const filtered = useMemo(() => {
     return predictions
@@ -146,6 +159,9 @@ export function MarketsTable({
       })
       .sort((a, b) => compare(a, b, sortKey, sortDir));
   }, [book, confidence, market, modelVersion, predictions, sortDir, sortKey, sport]);
+  const visiblePredictions = showAll || initialRowLimit == null
+    ? filtered
+    : filtered.slice(0, initialRowLimit);
 
   // The feed repeats the same caveat once per contributing source; show it once.
   const uniqueGaps = useMemo(() => Array.from(new Set(gaps)), [gaps]);
@@ -259,30 +275,31 @@ export function MarketsTable({
 
       {filtered.length === 0 ? (
         <EmptyState
-          title={predictions.length ? "Nothing matches those filters" : "Nothing on the board"}
+          title={predictions.length ? "Nothing matches those filters" : emptyTitle}
           description={
             predictions.length
               ? "Widen a filter to bring rows back. Sport and market are the two that cut the most."
-              : "No predictions have been published for today's slate. Boards fill in once the models run against a posted schedule."
+              : emptyDescription
           }
         />
       ) : (
-        <Table className="table-fixed">
-          <TableHeader>
-            <TableRow>
-              {SORT_KEYS.map((key) => (
-                <TableHead key={key}>
-                  <Button variant="ghost" size="sm" className="h-7 px-1" onClick={() => toggleSort(key)}>
-                    {sortLabels[key]}
-                    <ArrowUpDown className="size-3" />
-                  </Button>
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filtered.map((prediction) => (
-              <TableRow key={prediction.id}>
+        <>
+          <Table className="min-w-[1040px] table-fixed">
+            <TableHeader>
+              <TableRow>
+                {SORT_KEYS.map((key) => (
+                  <TableHead key={key}>
+                    <Button variant="ghost" size="sm" className="h-7 px-1" onClick={() => toggleSort(key)}>
+                      {sortLabels[key]}
+                      <ArrowUpDown className="size-3" />
+                    </Button>
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {visiblePredictions.map((prediction) => (
+                <TableRow key={prediction.id}>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <span
@@ -300,8 +317,8 @@ export function MarketsTable({
                 <TableCell>{formatDateTime(prediction.eventTime)}</TableCell>
                 <TableCell>{prediction.market}</TableCell>
                 <TableCell>{prediction.book}</TableCell>
-                <TableCell>{formatMaybePctMetric(prediction.edge)}</TableCell>
-                <TableCell>{formatMaybePctMetric(prediction.ev)}</TableCell>
+                <TableCell>{formatPct(prediction.edge)}</TableCell>
+                <TableCell>{formatPct(prediction.ev)}</TableCell>
                 <TableCell>{formatPct(prediction.confidence)}</TableCell>
                 <TableCell>
                   <div>{prediction.modelVersion}</div>
@@ -312,10 +329,19 @@ export function MarketsTable({
                     line {formatNumber(prediction.line, 1)} · {formatNumber(prediction.price)}
                   </div>
                 </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {initialRowLimit != null && filtered.length > initialRowLimit ? (
+            <div className="flex flex-col gap-2 border-t border-border pt-4 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span>Showing {formatNumber(visiblePredictions.length)} of {formatNumber(filtered.length)} rows.</span>
+              <Button variant="outline" size="sm" onClick={() => setShowAll((value) => !value)}>
+                {showAll ? `Show top ${initialRowLimit}` : `Show all ${filtered.length}`}
+              </Button>
+            </div>
+          ) : null}
+        </>
       )}
     </div>
   );

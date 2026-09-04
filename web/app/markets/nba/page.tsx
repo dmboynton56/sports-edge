@@ -10,6 +10,7 @@ export default async function NbaMarketsPage() {
   const predictions = feed.predictions.filter(
     (prediction) => prediction.sport.toLowerCase() === "nba",
   );
+  const gaps = feed.gaps.filter((gap) => gap.toLowerCase().includes("nba"));
 
   return (
     <div>
@@ -19,7 +20,7 @@ export default async function NbaMarketsPage() {
         meta={feed.generatedAt}
       />
       {predictions.length > 0 ? (
-        <MarketsTable initialPredictions={predictions} initialGaps={feed.gaps} />
+        <MarketsTable initialPredictions={predictions} initialGaps={gaps} />
       ) : (
         <EmptyState
           title="No NBA board right now"

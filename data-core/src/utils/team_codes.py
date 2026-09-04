@@ -93,7 +93,9 @@ NFL_TEAM_NAME_TO_ABBR = {
 
 NFL_ALIAS_TO_ABBR = {
     "ARZ": "ARI",
+    "AZ": "ARI",
     "JAC": "JAX",
+    "LA": "LAR",
     "WSH": "WAS",
 }
 

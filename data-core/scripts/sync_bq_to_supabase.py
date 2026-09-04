@@ -205,6 +205,32 @@ def fetch_latest_predictions(
             r.home_probable_pitcher,
             r.away_probable_pitcher,
         """
+    elif league.upper() == "NFL":
+        raw_join = f"""
+        LEFT JOIN (
+            SELECT
+                r.game_id,
+                TIMESTAMP(
+                    DATETIME(
+                        r.game_date,
+                        COALESCE(
+                            SAFE.PARSE_TIME('%H:%M', JSON_VALUE(r.raw_record, '$.gametime')),
+                            TIME '00:00:00'
+                        )
+                    ),
+                    'America/New_York'
+                ) AS game_time_utc,
+                ROW_NUMBER() OVER (PARTITION BY r.game_id ORDER BY r.game_date DESC) AS rn
+            FROM `{project}.sports_edge_raw.raw_schedules` AS r
+            WHERE r.league = @league
+        ) AS r
+          ON p.game_id = r.game_id AND r.rn = 1
+        """
+        raw_select = """
+            r.game_time_utc,
+            CAST(NULL AS STRING) AS home_probable_pitcher,
+            CAST(NULL AS STRING) AS away_probable_pitcher,
+        """
 
     query = f"""
         WITH latest_preds AS (

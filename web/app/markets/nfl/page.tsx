@@ -10,20 +10,21 @@ export default async function NflMarketsPage() {
   const predictions = feed.predictions.filter(
     (prediction) => prediction.sport.toLowerCase() === "nfl",
   );
+  const gaps = feed.gaps.filter((gap) => gap.toLowerCase().includes("nfl"));
 
   return (
     <div>
       <PageHeader
         title="NFL Markets"
-        description="Seasonal NFL spread and winner probabilities from production models."
+        description="Week 1 moneyline, spread, total, and guarded anytime-touchdown markets. Team outputs remain preliminary; TD probabilities passed an out-of-time outcome holdout, with role and longshot filters applied before EV is shown."
         meta={feed.generatedAt}
       />
       {predictions.length > 0 ? (
-        <MarketsTable initialPredictions={predictions} initialGaps={feed.gaps} />
+        <MarketsTable initialPredictions={predictions} initialGaps={gaps} />
       ) : (
         <EmptyState
           title="No NFL board right now"
-          description="Spread and winner probabilities resume when the season starts. Note that NFL odds coverage sits at 19.6%, so the backtest is thinner than the other leagues."
+          description="NFL featured markets publish when a scheduled slate has both model predictions and sportsbook snapshots."
         />
       )}
     </div>

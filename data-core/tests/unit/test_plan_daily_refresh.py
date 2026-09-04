@@ -3,7 +3,8 @@ from datetime import date, datetime, timezone
 from scripts import plan_daily_refresh, predict_mlb_home_runs
 
 
-def test_build_plan_skips_nfl_during_june_without_scheduled_games():
+def test_build_plan_skips_nfl_during_june_without_scheduled_games(monkeypatch):
+    monkeypatch.setattr(plan_daily_refresh, "nfl_schedule_available", lambda _season: True)
     plan = plan_daily_refresh.build_plan(
         anchor=date(2026, 6, 8),
         lookback_days=1,
@@ -14,6 +15,7 @@ def test_build_plan_skips_nfl_during_june_without_scheduled_games():
     assert plan["run_mlb"] is True
     assert plan["run_nba"] is True
     assert plan["run_nfl"] is False
+    assert plan["run_cfb"] is False
     assert plan["run_world_cup"] is True
     assert plan["nfl_season"] == 2025
     assert "offseason" in plan["nfl_reason"]
@@ -22,8 +24,9 @@ def test_build_plan_skips_nfl_during_june_without_scheduled_games():
     assert plan["world_cup_end_date"] == "2026-07-19"
 
 
-def test_build_plan_waits_for_unsupported_nfl_season(monkeypatch):
+def test_build_plan_waits_for_unpublished_nfl_schedule(monkeypatch):
     monkeypatch.setattr(plan_daily_refresh, "nfl_provider_max_season", lambda: 2025)
+    monkeypatch.setattr(plan_daily_refresh, "nfl_schedule_available", lambda _season: False)
 
     plan = plan_daily_refresh.build_plan(
         anchor=date(2026, 8, 6),
@@ -34,13 +37,16 @@ def test_build_plan_waits_for_unsupported_nfl_season(monkeypatch):
 
     assert plan["nfl_season"] == 2026
     assert plan["nfl_provider_max_season"] == 2025
+    assert plan["nfl_schedule_available"] is False
     assert plan["run_nfl"] is False
+    assert plan["run_cfb"] is True
     assert plan["run_market_odds"] is False
-    assert "waiting for season 2026" in plan["nfl_reason"]
+    assert "schedule unavailable for season 2026" in plan["nfl_reason"]
 
 
-def test_build_plan_activates_nfl_when_provider_supports_season(monkeypatch):
-    monkeypatch.setattr(plan_daily_refresh, "nfl_provider_max_season", lambda: 2026)
+def test_build_plan_activates_nfl_when_upcoming_schedule_is_available(monkeypatch):
+    monkeypatch.setattr(plan_daily_refresh, "nfl_provider_max_season", lambda: 2025)
+    monkeypatch.setattr(plan_daily_refresh, "nfl_schedule_available", lambda _season: True)
 
     plan = plan_daily_refresh.build_plan(
         anchor=date(2026, 8, 6),
@@ -50,11 +56,15 @@ def test_build_plan_activates_nfl_when_provider_supports_season(monkeypatch):
     )
 
     assert plan["run_nfl"] is True
+    assert plan["run_cfb"] is True
     assert plan["run_market_odds"] is True
+    assert "schedule available" in plan["nfl_reason"]
+    assert "historical features only" in plan["nfl_reason"]
 
 
 def test_build_plan_force_full_rebuild_runs_supported_leagues(monkeypatch):
     monkeypatch.setattr(plan_daily_refresh, "nfl_provider_max_season", lambda: 2026)
+    monkeypatch.setattr(plan_daily_refresh, "nfl_schedule_available", lambda _season: True)
 
     plan = plan_daily_refresh.build_plan(
         anchor=date(2026, 7, 15),
@@ -66,6 +76,7 @@ def test_build_plan_force_full_rebuild_runs_supported_leagues(monkeypatch):
     assert plan["run_mlb"] is True
     assert plan["run_nba"] is True
     assert plan["run_nfl"] is True
+    assert plan["run_cfb"] is True
     assert plan["run_world_cup"] is True
     assert plan["run_market_odds"] is True
 
@@ -76,6 +87,7 @@ def test_build_plan_bigquery_games_activate_offseason_league(monkeypatch):
 
     monkeypatch.setattr(plan_daily_refresh, "count_bigquery_games", fake_count_games)
     monkeypatch.setattr(plan_daily_refresh, "nfl_provider_max_season", lambda: 2025)
+    monkeypatch.setattr(plan_daily_refresh, "nfl_schedule_available", lambda _season: False)
 
     plan = plan_daily_refresh.build_plan(
         anchor=date(2026, 6, 8),
@@ -90,7 +102,8 @@ def test_build_plan_bigquery_games_activate_offseason_league(monkeypatch):
     assert "scheduled games" in plan["nfl_reason"]
 
 
-def test_build_plan_skips_world_cup_outside_tournament_window():
+def test_build_plan_skips_world_cup_outside_tournament_window(monkeypatch):
+    monkeypatch.setattr(plan_daily_refresh, "nfl_schedule_available", lambda _season: True)
     plan = plan_daily_refresh.build_plan(
         anchor=date(2026, 8, 15),
         lookback_days=0,
@@ -99,6 +112,7 @@ def test_build_plan_skips_world_cup_outside_tournament_window():
     )
 
     assert plan["run_world_cup"] is False
+    assert plan["run_cfb"] is True
     assert plan["world_cup_season"] == 2026
     assert "offseason" in plan["world_cup_reason"]
 

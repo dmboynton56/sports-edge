@@ -187,6 +187,12 @@ def _requested_markets(args: argparse.Namespace) -> list[str] | None:
     return list(dict.fromkeys(value.strip() for value in values if value.strip())) or None
 
 
+def _should_skip_odds_api(already_used_today: bool, force_odds_api: bool) -> bool:
+    """Keep daily conservation by default while allowing an explicit recovery run."""
+
+    return already_used_today and not force_odds_api
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fetch current MLB home run prop odds.")
     parser.add_argument(
@@ -210,6 +216,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--audit-out", type=Path, default=DEFAULT_AUDIT_OUT)
     parser.add_argument("--sync-supabase", action="store_true")
     parser.add_argument("--allow-missing-key", action="store_true")
+    parser.add_argument(
+        "--force-odds-api",
+        action="store_true",
+        help="Explicitly bypass the once-daily credit guard for a manual recovery run.",
+    )
     return parser.parse_args()
 
 
@@ -277,7 +288,7 @@ def main() -> None:
     fallback_reason = ""
 
     # Skip Odds API if already used today (conserve credits)
-    if odds_used_today and odds_api_key:
+    if _should_skip_odds_api(odds_used_today, args.force_odds_api) and odds_api_key:
         should_fallback = True
         fallback_reason = f"The Odds API already used today for {denver_date} (conserving credits: at most one Odds API call per Denver day)"
         print(fallback_reason)

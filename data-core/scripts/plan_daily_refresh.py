@@ -24,7 +24,7 @@ except ImportError:  # pragma: no cover - local unit tests do not need BigQuery
     bigquery = None
 
 
-LEAGUES = ("MLB", "NBA", "NFL", "WORLD_CUP")
+LEAGUES = ("MLB", "NBA", "NFL", "CFB", "WORLD_CUP")
 SLATE_TIME_ZONE = "America/Denver"
 NFL_PROVIDER_FALLBACK_MAX_SEASON = 2025
 
@@ -45,6 +45,7 @@ SEASON_WINDOWS = {
     "MLB": SeasonWindow(3, 1, 11, 15),
     "NBA": SeasonWindow(10, 1, 6, 30),
     "NFL": SeasonWindow(8, 1, 2, 15),
+    "CFB": SeasonWindow(8, 1, 1, 31),
     "WORLD_CUP": SeasonWindow(6, 1, 7, 31),
 }
 
@@ -77,17 +78,19 @@ def season_year_for(league: str, anchor: date) -> int:
         return anchor.year if anchor.month >= 10 else anchor.year - 1
     if league == "NFL":
         return anchor.year if anchor.month >= 8 else anchor.year - 1
+    if league == "CFB":
+        return anchor.year if anchor.month >= 8 else anchor.year - 1
     if league == "WORLD_CUP":
         return anchor.year
     raise ValueError(f"Unsupported league: {league}")
 
 
 def nfl_provider_max_season() -> int:
-    """Return the newest NFL season the installed nflreadpy can load.
+    """Return the newest NFL season with in-season stats from nflreadpy.
 
-    nflreadpy exposes the same capability check used by its loaders. Keep a
-    conservative fallback so planning remains safe if the optional provider
-    import is unavailable in a local environment.
+    ``get_current_season`` is a regular-season clock, not a schedule capability
+    check.  Before kickoff it can trail the schedule feed by one season, so this
+    value must not be used by itself to disable an upcoming-season refresh.
     """
 
     try:
@@ -96,6 +99,22 @@ def nfl_provider_max_season() -> int:
         return int(nfl.get_current_season())
     except Exception:  # noqa: BLE001 - a capability probe must never break planning
         return NFL_PROVIDER_FALLBACK_MAX_SEASON
+
+
+def nfl_schedule_available(season: int) -> bool:
+    """Return whether nflverse already publishes a schedule for ``season``."""
+
+    try:
+        import nflreadpy as nfl  # noqa: WPS433
+
+        schedule = nfl.load_schedules([season])
+        if hasattr(schedule, "collect"):
+            schedule = schedule.collect()
+        if hasattr(schedule, "is_empty"):
+            return not bool(schedule.is_empty())
+        return len(schedule) > 0
+    except Exception:  # noqa: BLE001 - planner should degrade to BQ/calendar evidence
+        return False
 
 
 def world_cup_tournament_window_for(season: int) -> tuple[date, date]:
@@ -176,12 +195,15 @@ def build_plan(
         "force_full_rebuild": force_full_rebuild,
     }
     nfl_max_season = nfl_provider_max_season()
+    nfl_season = season_year_for("NFL", anchor)
+    nfl_schedule_ready = nfl_schedule_available(nfl_season)
     plan["nfl_provider_max_season"] = nfl_max_season
+    plan["nfl_schedule_available"] = nfl_schedule_ready
 
     for league in LEAGUES:
         bq_games = None
         bq_error = None
-        if project and league != "WORLD_CUP":
+        if project and league not in {"CFB", "WORLD_CUP"}:
             try:
                 bq_games = count_bigquery_games(project, league, start_date, end_date)
             except Exception as exc:  # noqa: BLE001
@@ -189,7 +211,11 @@ def build_plan(
 
         in_calendar = calendar_active(league, start_date, end_date, anchor)
         season_year = season_year_for(league, anchor)
-        provider_ready = league != "NFL" or season_year <= nfl_max_season
+        provider_ready = (
+            league != "NFL"
+            or nfl_schedule_ready
+            or bool(bq_games)
+        )
         run_league = (force_full_rebuild or in_calendar or bool(bq_games)) and provider_ready
 
         reasons = []
@@ -201,13 +227,19 @@ def build_plan(
             reasons.append("calendar season window")
         if bq_error:
             reasons.append(f"schedule query unavailable: {bq_error}")
-        if league == "NFL" and not provider_ready:
-            reasons.append(
-                f"nflreadpy supports through season {nfl_max_season}; waiting for season {season_year}"
-            )
-        if not reasons:
+        if not (force_full_rebuild or in_calendar or bool(bq_games)):
             reasons.append("offseason and no scheduled games in window")
-
+        if league == "NFL":
+            if nfl_schedule_ready:
+                reasons.append(f"nflverse schedule available for season {season_year}")
+            elif bq_games:
+                reasons.append("schedule already present in BigQuery")
+            else:
+                reasons.append(f"schedule unavailable for season {season_year}")
+            if season_year > nfl_max_season:
+                reasons.append(
+                    f"preseason mode: historical features only through {nfl_max_season}"
+                )
         key = league.lower()
         plan[f"run_{key}"] = run_league
         plan[f"{key}_season"] = season_year

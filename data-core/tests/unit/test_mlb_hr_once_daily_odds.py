@@ -16,7 +16,13 @@ ROOT = Path(__file__).resolve().parents[2]
 if str(ROOT / "scripts") not in sys.path:
     sys.path.insert(0, str(ROOT / "scripts"))
 
-from fetch_mlb_home_run_odds import _odds_already_used_today
+from fetch_mlb_home_run_odds import _odds_already_used_today, _should_skip_odds_api
+
+
+def test_force_odds_api_only_bypasses_the_once_daily_guard_when_explicit():
+    assert _should_skip_odds_api(True, False) is True
+    assert _should_skip_odds_api(True, True) is False
+    assert _should_skip_odds_api(False, False) is False
 
 
 def test_odds_already_used_today_returns_true_when_the_odds_api_used():

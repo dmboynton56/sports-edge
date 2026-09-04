@@ -2,6 +2,10 @@
 """
 Backfill BigQuery raw tables with NFL data from nflreadpy.
 
+The upcoming schedule is commonly published before current-season play-by-play
+and team-stat files.  Schedule ingestion therefore runs independently from the
+historical-stat availability clock.
+
 Example:
     python scripts/backfill_nfl_raw.py --project learned-pier-478122-p7 --seasons 2020 2021 2022 2023 2024 2025
 """
@@ -115,9 +119,17 @@ def _provider_max_season(nfl: Any) -> int | None:
 
 
 def _season_is_supported(season: int, provider_max_season: int | None) -> bool:
-    """Guard explicit requests as well as automatically selected seasons."""
+    """Return whether in-season PBP/team-stat files should exist."""
 
     return provider_max_season is None or season <= provider_max_season
+
+
+def _to_pandas(relation: Any) -> pd.DataFrame:
+    if hasattr(relation, "collect"):
+        relation = relation.collect()
+    if hasattr(relation, "to_pandas"):
+        return relation.to_pandas()
+    return pd.DataFrame(relation)
 
 
 PBP_COLUMNS = [
@@ -178,39 +190,59 @@ def main() -> None:
     requested_seasons = args.seasons or list(range(2020, (provider_max_season or 2025) + 1))
 
     for season in requested_seasons:
-        if not _season_is_supported(season, provider_max_season):
-            print(
-                f"Skipping season {season}; nflreadpy currently supports through "
-                f"season {provider_max_season}."
-            )
-            continue
+        stats_supported = _season_is_supported(season, provider_max_season)
         print(f"Processing season {season}")
-        pbp_rel = nfl.load_pbp(seasons=season)
-        schedules_rel = nfl.load_schedules(seasons=season)
-        team_stats_rel = nfl.load_team_stats(seasons=season, summary_level="week")
 
-        pbp_df = pbp_rel.to_pandas()
-        schedules_df = schedules_rel.to_pandas()
-        team_stats_df = team_stats_rel.to_pandas()
+        try:
+            schedules_df = _to_pandas(nfl.load_schedules(seasons=season))
+        except Exception as exc:  # noqa: BLE001 - report provider boundary clearly
+            if not stats_supported:
+                print(f"Skipping season {season}; schedule is not published yet: {exc}")
+                continue
+            raise
 
-        pbp_df = _ensure_game_date(pbp_df)
+        if schedules_df.empty:
+            print(f"Skipping season {season}; provider returned an empty schedule.")
+            continue
+
+        if stats_supported:
+            pbp_df = _to_pandas(nfl.load_pbp(seasons=season))
+            team_stats_df = _to_pandas(nfl.load_team_stats(seasons=season, summary_level="week"))
+        else:
+            print(
+                f"Season {season} schedule is available; current-season play-by-play and "
+                f"team stats are not published yet (history through {provider_max_season})."
+            )
+            pbp_df = pd.DataFrame()
+            team_stats_df = pd.DataFrame()
+
+        if not pbp_df.empty:
+            pbp_df = _ensure_game_date(pbp_df)
         schedules_df = _ensure_game_date(schedules_df)
 
-        pbp_df["ingested_at"] = utc_now
+        if not pbp_df.empty:
+            pbp_df["ingested_at"] = utc_now
         schedules_df["ingested_at"] = utc_now
-        team_stats_df["ingested_at"] = utc_now
+        if not team_stats_df.empty:
+            team_stats_df["ingested_at"] = utc_now
 
-        pbp_df["league"] = "NFL"
+        if not pbp_df.empty:
+            pbp_df["league"] = "NFL"
         schedules_df["league"] = "NFL"
-        team_stats_df["league"] = "NFL"
+        if not team_stats_df.empty:
+            team_stats_df["league"] = "NFL"
 
-        pbp_df = _ensure_columns(pbp_df, PBP_COLUMNS[:-1])
+        if not pbp_df.empty:
+            pbp_df = _ensure_columns(pbp_df, PBP_COLUMNS[:-1])
         schedules_df = _ensure_columns(schedules_df, SCHEDULE_COLUMNS[:-1])
-        team_stats_df = _ensure_columns(team_stats_df, TEAM_STATS_COLUMNS[:-1])
+        if not team_stats_df.empty:
+            team_stats_df = _ensure_columns(team_stats_df, TEAM_STATS_COLUMNS[:-1])
 
-        pbp_df_selected = pbp_df[PBP_COLUMNS[:-1]].copy()
-        pbp_df_selected["ingested_at"] = pbp_df["ingested_at"]
-        pbp_df_selected["raw_record"] = _build_raw_records(pbp_df, PBP_COLUMNS[:-1])
+        pbp_df_selected = pd.DataFrame()
+        if not pbp_df.empty:
+            pbp_df_selected = pbp_df[PBP_COLUMNS[:-1]].copy()
+            pbp_df_selected["ingested_at"] = pbp_df["ingested_at"]
+            pbp_df_selected["raw_record"] = _build_raw_records(pbp_df, PBP_COLUMNS[:-1])
 
         schedules_selected = schedules_df[SCHEDULE_COLUMNS[:-1]].copy()
         schedules_selected["ingested_at"] = schedules_df["ingested_at"]
@@ -218,18 +250,24 @@ def main() -> None:
             schedules_selected["result"] = schedules_selected["result"].astype(str)
         schedules_selected["raw_record"] = _build_raw_records(schedules_df, SCHEDULE_COLUMNS[:-1])
 
-        team_stats_selected = team_stats_df[TEAM_STATS_COLUMNS[:-1]].copy()
-        team_stats_selected["ingested_at"] = team_stats_df["ingested_at"]
-        team_stats_selected["raw_record"] = _build_raw_records(team_stats_df, TEAM_STATS_COLUMNS[:-1])
+        team_stats_selected = pd.DataFrame()
+        if not team_stats_df.empty:
+            team_stats_selected = team_stats_df[TEAM_STATS_COLUMNS[:-1]].copy()
+            team_stats_selected["ingested_at"] = team_stats_df["ingested_at"]
+            team_stats_selected["raw_record"] = _build_raw_records(team_stats_df, TEAM_STATS_COLUMNS[:-1])
 
         if args.replace:
-            _delete_season(client, f"{args.project}.sports_edge_raw.raw_pbp", season)
             _delete_season(client, f"{args.project}.sports_edge_raw.raw_schedules", season)
-            _delete_season(client, f"{args.project}.sports_edge_raw.raw_team_stats", season)
+            if not pbp_df_selected.empty:
+                _delete_season(client, f"{args.project}.sports_edge_raw.raw_pbp", season)
+            if not team_stats_selected.empty:
+                _delete_season(client, f"{args.project}.sports_edge_raw.raw_team_stats", season)
 
-        _load_dataframe(client, pbp_df_selected, f"{args.project}.sports_edge_raw.raw_pbp")
         _load_dataframe(client, schedules_selected, f"{args.project}.sports_edge_raw.raw_schedules")
-        _load_dataframe(client, team_stats_selected, f"{args.project}.sports_edge_raw.raw_team_stats")
+        if not pbp_df_selected.empty:
+            _load_dataframe(client, pbp_df_selected, f"{args.project}.sports_edge_raw.raw_pbp")
+        if not team_stats_selected.empty:
+            _load_dataframe(client, team_stats_selected, f"{args.project}.sports_edge_raw.raw_team_stats")
 
     print("Raw backfill complete.")
 

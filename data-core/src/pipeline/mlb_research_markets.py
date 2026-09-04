@@ -15,7 +15,7 @@ from __future__ import annotations
 import json
 import pickle
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Mapping, Optional
 
@@ -185,10 +185,12 @@ def score_mlb_runline_v1(
     feature_cols = artifact["feature_columns"]
     classifier = artifact["classifier"]
     p_home_cover_15 = classifier.predict_proba(features[feature_cols])[:, 1]
+    predicted_margin = artifact["margin_regressor"].predict(features[feature_cols])
 
     output = features[["game_pk", "game_date", "game_datetime", "home_team", "away_team"]].copy()
     output["p_home_cover_15"] = p_home_cover_15
     output["p_away_cover_plus_15"] = 1.0 - p_home_cover_15
+    output["predicted_margin"] = predicted_margin
     return output
 
 
@@ -232,7 +234,25 @@ def score_research_markets_for_date(
     
     # Totals v1 and run-line v1 use v2 features (need boxscores + venue_meta)
     try:
-        boxscores = fetch_mlb_boxscores(season, start_date=season_start, end_date=game_date)
+        boxscore_start = game_date - timedelta(days=42)
+        completed_recent = schedule[
+            (pd.to_datetime(schedule["game_date"]).dt.date >= boxscore_start)
+            & (pd.to_datetime(schedule["game_date"]).dt.date < game_date)
+            & schedule["home_score"].notna()
+            & schedule["away_score"].notna()
+        ]
+        cache_path = Path(__file__).parents[2] / "notebooks/cache/mlb_research_recent_boxscores.parquet"
+        cached = pd.read_parquet(cache_path) if cache_path.exists() else pd.DataFrame()
+        required = set(completed_recent["game_pk"].astype(int).tolist())
+        cached_ids = set(cached["game_pk"].astype(int).tolist()) if not cached.empty else set()
+        pending = sorted(required - cached_ids)
+        fetched = fetch_mlb_boxscores(pending, sleep_seconds=0.01) if pending else pd.DataFrame()
+        if not fetched.empty:
+            cached = pd.concat([cached, fetched], ignore_index=True) if not cached.empty else fetched
+            cached = cached.drop_duplicates(subset=["game_pk"], keep="last")
+            cache_path.parent.mkdir(parents=True, exist_ok=True)
+            cached.to_parquet(cache_path, index=False)
+        boxscores = cached[cached["game_pk"].astype(int).isin(required)].copy() if not cached.empty else cached
     except Exception as e:
         print(f"WARNING: Could not fetch boxscores for v2 features: {e}")
         boxscores = pd.DataFrame()

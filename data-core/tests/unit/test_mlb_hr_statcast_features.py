@@ -2,15 +2,43 @@ from __future__ import annotations
 
 from datetime import date
 
+import numpy as np
 import pandas as pd
 import pytest
 import requests
 
 from src.models.mlb_hr_statcast_features import (
     _fetch_statcast_chunk,
+    enrich_statcast,
     fetch_statcast,
     preload_statcast_cache,
 )
+
+
+def test_enrich_statcast_normalizes_datetime_units_for_asof_merge():
+    candidates = pd.DataFrame(
+        {
+            "game_date": np.array(["2026-09-03"], dtype="datetime64[s]"),
+            "player_id": [10],
+            "opposing_starter_id": [20],
+        }
+    )
+    raw = pd.DataFrame(
+        {
+            "game_date": np.array(["2026-09-02"], dtype="datetime64[us]"),
+            "batter": [10],
+            "pitcher": [20],
+            "launch_speed": [101.0],
+            "launch_angle": [28.0],
+            "pitch_type": ["FF"],
+            "bb_type": ["fly_ball"],
+            "events": ["home_run"],
+        }
+    )
+
+    enriched = enrich_statcast(candidates, raw, min_batter_bbe=1, min_pitcher_bbe=1)
+
+    assert enriched.loc[0, "statcast_feature_ready"] == 1.0
 
 
 class _Response:

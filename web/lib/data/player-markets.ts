@@ -2,6 +2,9 @@ import { promises as fs } from "fs";
 import path from "path";
 
 import type { Prediction } from "@/lib/data/types";
+import { getCfbMarketFeed } from "@/lib/data/cfb-markets";
+import { getNflAnytimeTdFeed } from "@/lib/data/nfl-anytime-td";
+import { getTeamMarketPredictions } from "@/lib/data/team-markets";
 import { isJsonString, parseJson, type JsonObject } from "@/lib/data/json";
 import {
   getMlbHomeRunModelLabel,
@@ -520,6 +523,9 @@ export function deriveMlbHrBoardSnapshot(
   const predictions = rows.map(mapBoardRow);
   const priced = predictions.filter((row) => row.oddsStatus === "ok" || row.oddsStatus === "raw_implied");
   const missingOdds = predictions.filter((row) => row.oddsStatus === "missing_odds").length;
+  const currentRunGaps = boardStatus.gaps.filter(
+    (gap) => !gap.includes("candidates do not have a fresh valid sportsbook price"),
+  );
   return {
     slateDate,
     status: boardStatus.status,
@@ -536,7 +542,7 @@ export function deriveMlbHrBoardSnapshot(
     },
     rows: predictions,
     gaps: uniqueGaps([
-      ...boardStatus.gaps,
+      ...currentRunGaps,
       predictions.length < sourceRows.filter((row) => row.model_version.startsWith(MLB_HR_V1_MODEL)).length
         ? "Rows for games that have started or begin within five minutes are hidden."
         : null,
@@ -1088,18 +1094,39 @@ export async function getProductionPredictionFeed(): Promise<{
   predictions: Prediction[];
   gaps: string[];
 }> {
-  const [mlb, pgaBoard] = await Promise.all([getMlbHomeRunFeed(), getPgaBoardData()]);
+  const [mlb, pgaBoard, nfl, nflAnytimeTd, nba, cfb] = await Promise.all([
+    getMlbHomeRunFeed(),
+    getPgaBoardData(),
+    getTeamMarketPredictions("NFL", { lookaheadDays: 14 }),
+    getNflAnytimeTdFeed(),
+    getTeamMarketPredictions("NBA", { lookaheadDays: 2 }),
+    getCfbMarketFeed(),
+  ]);
   const pga = pgaBoard.dataSource === "supabase_predictions" ? pgaBoard.normalizedMarkets ?? [] : [];
   const mlbPredictions = mlb.dataSource === "supabase_edges" || mlb.dataSource === "supabase_predictions"
     ? mlb.predictions
     : [];
   return {
-    generatedAt: mlb.generatedAt,
-    predictions: [...mlbPredictions, ...pga],
-    gaps: [
+    generatedAt: [mlb.generatedAt, pgaBoard.generatedAt, nfl.generatedAt, nflAnytimeTd.generatedAt, nba.generatedAt, cfb.generatedAt]
+      .filter((value): value is string => Boolean(value))
+      .sort()
+      .at(-1) ?? null,
+    predictions: [
+      ...mlbPredictions,
+      ...pga,
+      ...nfl.predictions,
+      ...nflAnytimeTd.predictions,
+      ...nba.predictions,
+      ...cfb.predictions,
+    ],
+    gaps: uniqueGaps([
       ...mlb.gaps,
       ...(mlbPredictions.length ? [] : ["No current Supabase MLB HR rows; static artifacts are not a production fallback."]),
       ...(pgaBoard.gaps ?? []),
-    ],
+      ...nfl.gaps,
+      ...nflAnytimeTd.gaps,
+      ...nba.gaps,
+      ...cfb.gaps,
+    ]),
   };
 }

@@ -21,6 +21,11 @@ function formatPrice(price: number | null | undefined): string {
   return price > 0 ? `+${price}` : `${price}`;
 }
 
+function formatSide(side: string | null | undefined): string {
+  if (!side) return "";
+  return side.charAt(0).toUpperCase() + side.slice(1);
+}
+
 function MoneylineRow({ prediction }: { prediction: MlbResearchPrediction }) {
   const hasPrices = prediction.oddsStatus === "ok";
   
@@ -47,7 +52,7 @@ function MoneylineRow({ prediction }: { prediction: MlbResearchPrediction }) {
       <div className="col-span-2 text-sm">
         {hasPrices && prediction.edge != null ? (
           <Badge variant={prediction.edge > 0.03 ? "default" : "outline"}>
-            Edge: {(prediction.edge * 100).toFixed(1)}%
+            {prediction.recommendedSide ? `${formatSide(prediction.recommendedSide)} ` : ""}Edge: {(prediction.edge * 100).toFixed(1)}%
           </Badge>
         ) : (
           <span className="text-muted-foreground">—</span>
@@ -59,6 +64,8 @@ function MoneylineRow({ prediction }: { prediction: MlbResearchPrediction }) {
 
 function RunLineRow({ prediction }: { prediction: MlbResearchPrediction }) {
   const hasPrices = prediction.oddsStatus === "ok";
+  const homeLine = prediction.homeRunlineLine ?? -1.5;
+  const awayLine = -homeLine;
   
   return (
     <div className="grid grid-cols-12 gap-3 py-3 border-b last:border-0">
@@ -67,14 +74,20 @@ function RunLineRow({ prediction }: { prediction: MlbResearchPrediction }) {
         {prediction.venue && <div className="text-xs text-muted-foreground">{prediction.venue}</div>}
       </div>
       <div className="col-span-3 space-y-1 text-sm">
-        <div>Home -1.5: {formatProbability(prediction.pHomeCover15)}</div>
-        <div>Away +1.5: {formatProbability(prediction.pAwayCoverPlus15)}</div>
+        <div>Projected margin: {prediction.predictedMargin?.toFixed(1) ?? "—"}</div>
+        <div>
+          {hasPrices && prediction.recommendedSide
+            ? `${formatSide(prediction.recommendedSide)} cover`
+            : "Home -1.5 cover"}: {formatProbability(
+              hasPrices ? prediction.recommendedProbability : prediction.pHomeCover15,
+            )}
+        </div>
       </div>
       <div className="col-span-3 space-y-1 text-sm">
         {hasPrices ? (
           <>
-            <div>Home -1.5: {formatPrice(prediction.homeRunlinePrice)}</div>
-            <div>Away +1.5: {formatPrice(prediction.awayRunlinePrice)}</div>
+            <div>Home {homeLine > 0 ? "+" : ""}{homeLine}: {formatPrice(prediction.homeRunlinePrice)}</div>
+            <div>Away {awayLine > 0 ? "+" : ""}{awayLine}: {formatPrice(prediction.awayRunlinePrice)}</div>
           </>
         ) : (
           <div className="text-muted-foreground italic">Model only</div>
@@ -83,7 +96,7 @@ function RunLineRow({ prediction }: { prediction: MlbResearchPrediction }) {
       <div className="col-span-2 text-sm">
         {hasPrices && prediction.edge != null ? (
           <Badge variant={prediction.edge > 0.03 ? "default" : "outline"}>
-            Edge: {(prediction.edge * 100).toFixed(1)}%
+            {prediction.recommendedSide ? `${formatSide(prediction.recommendedSide)} ` : ""}Edge: {(prediction.edge * 100).toFixed(1)}%
           </Badge>
         ) : (
           <span className="text-muted-foreground">—</span>
@@ -105,7 +118,7 @@ function TotalsRow({ prediction }: { prediction: MlbResearchPrediction }) {
       </div>
       <div className="col-span-3 space-y-1 text-sm">
         <div>Projected: {prediction.predictedTotal?.toFixed(1) ?? "—"}</div>
-        <div>O{displayLine}: {formatProbability(displayLine === 8.5 ? prediction.pOver85 : prediction.pOver95)}</div>
+        <div>{prediction.recommendedSide ? `${formatSide(prediction.recommendedSide)} ${displayLine}` : `Over ${displayLine}`}: {formatProbability(prediction.recommendedProbability)}</div>
       </div>
       <div className="col-span-3 space-y-1 text-sm">
         {hasPrices ? (
@@ -120,7 +133,7 @@ function TotalsRow({ prediction }: { prediction: MlbResearchPrediction }) {
       <div className="col-span-2 text-sm">
         {hasPrices && prediction.edge != null ? (
           <Badge variant={prediction.edge > 0.03 ? "default" : "outline"}>
-            Edge: {(prediction.edge * 100).toFixed(1)}%
+            {prediction.recommendedSide ? `${formatSide(prediction.recommendedSide)} ` : ""}Edge: {(prediction.edge * 100).toFixed(1)}%
           </Badge>
         ) : (
           <span className="text-muted-foreground">—</span>

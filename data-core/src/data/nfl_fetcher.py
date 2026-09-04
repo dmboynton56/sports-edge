@@ -8,7 +8,17 @@ from datetime import datetime
 from typing import Optional, List, Dict
 import os
 
-import nfl_data_py as nfl
+
+def _load_nfl_data_py():
+    """Load the legacy provider only for code paths that actually need it."""
+
+    try:
+        import nfl_data_py as nfl  # noqa: WPS433
+    except ImportError as exc:
+        raise RuntimeError(
+            "nfl-data-py is unavailable; use nflreadpy/BigQuery or install the legacy fallback"
+        ) from exc
+    return nfl
 
 
 def fetch_nfl_schedule(season: int, week: Optional[int] = None) -> pd.DataFrame:
@@ -22,6 +32,7 @@ def fetch_nfl_schedule(season: int, week: Optional[int] = None) -> pd.DataFrame:
     Returns:
         DataFrame with columns: game_id, season, week, game_date, home_team, away_team, etc.
     """
+    nfl = _load_nfl_data_py()
     schedule = nfl.import_schedules([season])
     
     if week is not None:
@@ -41,6 +52,7 @@ def fetch_nfl_team_stats(season: int, week: Optional[int] = None) -> pd.DataFram
     Returns:
         DataFrame with team statistics
     """
+    nfl = _load_nfl_data_py()
     pbp = nfl.import_pbp_data([season])
     if week is not None:
         pbp = pbp[pbp['week'] == week]
@@ -101,7 +113,7 @@ def fetch_nfl_weekly_data(seasons: List[int]) -> pd.DataFrame:
     except ImportError:
         pass
         
-    return nfl.import_weekly_data(seasons)
+    return _load_nfl_data_py().import_weekly_data(seasons)
 
 
 def cache_nfl_data(data: pd.DataFrame, league: str, date: str, data_type: str):

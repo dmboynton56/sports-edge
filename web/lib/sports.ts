@@ -13,6 +13,7 @@ const SPORT_CLASSES = {
   nfl: { fill: "bg-nfl", text: "text-nfl" },
   nhl: { fill: "bg-nhl", text: "text-nhl" },
   cbb: { fill: "bg-cbb", text: "text-cbb" },
+  cfb: { fill: "bg-cfb", text: "text-cfb" },
 } satisfies Record<SportSlug, { fill: string; text: string }>;
 
 const FALLBACK = { fill: "bg-muted-foreground", text: "text-muted-foreground" };

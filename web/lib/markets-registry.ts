@@ -9,7 +9,7 @@ export type MarketEntry = {
 };
 
 export type SportEntry = {
-  slug: "nba" | "mlb" | "pga" | "nfl" | "nhl" | "cbb";
+  slug: "nba" | "mlb" | "pga" | "nfl" | "nhl" | "cfb" | "cbb";
   label: string;
   emphasis: "primary" | "scaffold" | "seasonal";
   description: string;
@@ -61,7 +61,7 @@ export const SPORTS: SportEntry[] = [
         short: "run line",
         href: "/markets/mlb/run-line",
         status: "live",
-        description: "Home -1.5 research model (v1). Model-only when sportsbook prices are unavailable.",
+        description: "Run-line margin-residual research model (v1). Model-only when sportsbook prices are unavailable.",
       },
       {
         slug: "totals",
@@ -100,16 +100,32 @@ export const SPORTS: SportEntry[] = [
   {
     slug: "nfl",
     label: "NFL",
-    emphasis: "scaffold",
-    description: "Seasonal team football markets.",
+    emphasis: "primary",
+    description: "Team markets and anytime-touchdown probabilities.",
     markets: [
       {
         slug: "spread-winner",
-        label: "Spread & winner board",
-        short: "spread",
+        label: "Week 1 team & TD board",
+        short: "Week 1",
         href: "/markets/nfl",
-        status: "scaffold",
-        description: "Models resume when the NFL season is active.",
+        status: "live",
+        description: "Moneyline, spread, total, and guarded anytime-touchdown research signals.",
+      },
+    ],
+  },
+  {
+    slug: "cfb",
+    label: "CFB",
+    emphasis: "primary",
+    description: "Daily college-football team markets.",
+    markets: [
+      {
+        slug: "team-markets",
+        label: "Points, winner & lines",
+        short: "team markets",
+        href: "/markets/cfb",
+        status: "live",
+        description: "Projected scores, win chances, moneylines, spreads, and totals.",
       },
     ],
   },

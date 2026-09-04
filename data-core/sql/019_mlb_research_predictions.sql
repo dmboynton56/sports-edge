@@ -38,6 +38,7 @@ CREATE TABLE IF NOT EXISTS mlb_research_predictions (
     -- Run-line fields (home -1.5)
     p_home_cover_15 DOUBLE PRECISION,
     p_away_cover_plus_15 DOUBLE PRECISION,
+    predicted_margin DOUBLE PRECISION,
     
     -- Totals fields
     predicted_total DOUBLE PRECISION,
@@ -56,6 +57,7 @@ CREATE TABLE IF NOT EXISTS mlb_research_predictions (
     -- Run-line odds
     home_runline_price DOUBLE PRECISION,  -- home -1.5 price
     away_runline_price DOUBLE PRECISION,  -- away +1.5 price
+    home_runline_line DOUBLE PRECISION,
     
     -- Totals odds
     total_line DOUBLE PRECISION,  -- e.g., 8.5, 9.5
@@ -68,6 +70,8 @@ CREATE TABLE IF NOT EXISTS mlb_research_predictions (
     edge DOUBLE PRECISION,
     ev DOUBLE PRECISION,
     kelly DOUBLE PRECISION,
+    recommended_side TEXT,
+    recommended_probability DOUBLE PRECISION,
     
     -- Metadata
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -78,6 +82,12 @@ CREATE TABLE IF NOT EXISTS mlb_research_predictions (
     CONSTRAINT chk_model_status CHECK (model_status IN ('research', 'trusted')),
     CONSTRAINT chk_odds_status CHECK (odds_status IN ('ok', 'missing_odds', 'stale'))
 );
+
+ALTER TABLE mlb_research_predictions
+    ADD COLUMN IF NOT EXISTS recommended_side TEXT,
+    ADD COLUMN IF NOT EXISTS recommended_probability DOUBLE PRECISION,
+    ADD COLUMN IF NOT EXISTS predicted_margin DOUBLE PRECISION,
+    ADD COLUMN IF NOT EXISTS home_runline_line DOUBLE PRECISION;
 
 -- Indexes for serving queries
 CREATE INDEX IF NOT EXISTS idx_mlb_research_predictions_game_date_market 
@@ -129,7 +139,11 @@ SELECT DISTINCT ON (game_pk, market)
     ev,
     kelly,
     created_at,
-    updated_at
+    updated_at,
+    recommended_side,
+    recommended_probability,
+    predicted_margin,
+    home_runline_line
 FROM mlb_research_predictions
 ORDER BY game_pk, market, as_of_ts DESC;
 

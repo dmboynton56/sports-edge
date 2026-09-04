@@ -35,6 +35,7 @@ type SupabaseResearchRow = {
   // Run-line
   p_home_cover_15: number | null;
   p_away_cover_plus_15: number | null;
+  predicted_margin: number | null;
   
   // Totals
   predicted_total: number | null;
@@ -49,6 +50,7 @@ type SupabaseResearchRow = {
   away_price: number | null;
   home_runline_price: number | null;
   away_runline_price: number | null;
+  home_runline_line: number | null;
   total_line: number | null;
   over_price: number | null;
   under_price: number | null;
@@ -59,6 +61,8 @@ type SupabaseResearchRow = {
   edge: number | null;
   ev: number | null;
   kelly: number | null;
+  recommended_side: string | null;
+  recommended_probability: number | null;
 };
 
 export type MlbResearchPrediction = {
@@ -68,6 +72,7 @@ export type MlbResearchPrediction = {
   gameId: string;
   gamePk: number;
   gameDate: string;
+  eventTime: string | null;
   homeTeam: string;
   awayTeam: string;
   venue: string | null;
@@ -79,6 +84,7 @@ export type MlbResearchPrediction = {
   // Run-line
   pHomeCover15?: number | null;
   pAwayCoverPlus15?: number | null;
+  predictedMargin?: number | null;
   
   // Totals
   predictedTotal?: number | null;
@@ -92,6 +98,7 @@ export type MlbResearchPrediction = {
   awayPrice?: number | null;
   homeRunlinePrice?: number | null;
   awayRunlinePrice?: number | null;
+  homeRunlineLine?: number | null;
   totalLine?: number | null;
   overPrice?: number | null;
   underPrice?: number | null;
@@ -100,6 +107,8 @@ export type MlbResearchPrediction = {
   edge?: number | null;
   ev?: number | null;
   kelly?: number | null;
+  recommendedSide?: string | null;
+  recommendedProbability?: number | null;
   
   asOfTs: string;
 };
@@ -151,6 +160,7 @@ function mapResearchRow(row: SupabaseResearchRow): MlbResearchPrediction {
     gameId: row.game_id,
     gamePk: row.game_pk,
     gameDate: row.game_date,
+    eventTime: row.game_datetime,
     homeTeam: row.home_team,
     awayTeam: row.away_team,
     venue: row.venue,
@@ -159,6 +169,8 @@ function mapResearchRow(row: SupabaseResearchRow): MlbResearchPrediction {
     edge: row.edge,
     ev: row.ev,
     kelly: row.kelly,
+    recommendedSide: row.recommended_side,
+    recommendedProbability: row.recommended_probability,
     asOfTs: row.as_of_ts,
   };
 
@@ -177,8 +189,10 @@ function mapResearchRow(row: SupabaseResearchRow): MlbResearchPrediction {
       ...base,
       pHomeCover15: row.p_home_cover_15,
       pAwayCoverPlus15: row.p_away_cover_plus_15,
+      predictedMargin: row.predicted_margin,
       homeRunlinePrice: row.home_runline_price,
       awayRunlinePrice: row.away_runline_price,
+      homeRunlineLine: row.home_runline_line,
     };
   }
 

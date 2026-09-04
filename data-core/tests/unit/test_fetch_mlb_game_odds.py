@@ -96,13 +96,14 @@ def test_match_game_with_athletics():
     assert away_abbr == "TEX"
 
 
-def test_match_game_fuzzy_date():
-    """Test fuzzy date matching (+/- 1 day)."""
+def test_match_game_uses_utc_kickoff_across_date_boundary():
+    """A Denver slate game can begin on the next UTC date."""
     schedule = pd.DataFrame(
         [
             {
                 "game_pk": 12345,
                 "game_date": pd.to_datetime("2026-08-27").date(),
+                "game_datetime": "2026-08-27T00:30:00Z",
                 "home_team": "NYY",
                 "away_team": "BOS",
             }
@@ -114,7 +115,7 @@ def test_match_game_fuzzy_date():
         "id": "test_event_1",
         "home_team": "New York Yankees",
         "away_team": "Boston Red Sox",
-        "commence_time": "2026-08-26T23:30:00Z",  # Late night, might be next day locally
+        "commence_time": "2026-08-27T00:30:00Z",
     }
 
     game_pk, home_abbr, away_abbr = odds_fetcher.match_game(event, schedule)
@@ -279,4 +280,3 @@ def test_extract_moneyline_returns_none_when_missing():
     assert home_price is None
     assert away_price is None
     assert book_key == "draftkings"  # Still returns book key
-

@@ -1,6 +1,8 @@
 name: Daily Sports-Edge Refresh
 
 on:
+  schedule:
+    - cron: "5 13 * * *"  # 7:05 AM MDT / 6:05 AM MST; MLB HR has a separate afternoon run.
   workflow_dispatch:
     inputs:
       dry_run:
@@ -59,6 +61,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt google-cloud-bigquery nflreadpy supabase
 
+      - name: Restore recent MLB research boxscores
+        uses: actions/cache@v4
+        with:
+          path: data-core/notebooks/cache/mlb_research_recent_boxscores.parquet
+          key: mlb-research-boxscores-${{ github.run_id }}
+          restore-keys: |
+            mlb-research-boxscores-
+
       - name: Configure GCP credentials
         shell: bash
         run: |
@@ -74,7 +84,7 @@ jobs:
             --project "$PROJECT_ID" \
             --force-full-rebuild "$FORCE_FULL_REBUILD" \
             --lookback-days 1 \
-            --lookahead-days 10 \
+            --lookahead-days 14 \
             --github-output | tee /tmp/sports_edge_refresh_plan.json
           echo "### Sports Edge Refresh Plan" >> "$GITHUB_STEP_SUMMARY"
           echo "\`\`\`json" >> "$GITHUB_STEP_SUMMARY"
@@ -130,7 +140,7 @@ jobs:
               --seasons "$SEASON" \
               --date "$ANCHOR_DATE" \
               --lookback-days 0 \
-              --lookahead-days 10
+              --lookahead-days 14
           fi
 
       - name: Apply dashboard serving migrations
@@ -147,7 +157,9 @@ jobs:
         run: |
           python scripts/apply_supabase_sql_files.py \
             sql/013_injury_availability_tables.sql \
-            sql/018_game_explanations.sql
+            sql/018_game_explanations.sql \
+            sql/021_nfl_anytime_td_markets.sql \
+            sql/022_cfb_team_markets.sql
 
       - name: Sync injury impact estimates
         if: ${{ env.DRY_RUN != 'true' && (steps.plan.outputs.run_nba == 'true' || steps.plan.outputs.run_nfl == 'true') }}
@@ -167,6 +179,29 @@ jobs:
           else
             echo "No injury input file at data/injury/latest_impacts.json; skipping injury sync."
           fi
+
+      - name: Refresh NFL roster and availability context
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/refresh_nfl_availability.py \
+            --project "$PROJECT_ID" \
+            --season "${{ steps.plan.outputs.nfl_season }}" \
+            --start-date "${{ steps.plan.outputs.anchor_date }}" \
+            --lookahead-days 14
+
+      - name: Use NBA/NFL model artifact runtime
+        if: ${{ steps.plan.outputs.run_nba == 'true' || steps.plan.outputs.run_nfl == 'true' }}
+        shell: bash
+        run: python -m pip install --no-deps --force-reinstall scikit-learn==1.7.2
 
       - name: Generate NBA Predictions
         if: ${{ steps.plan.outputs.run_nba == 'true' }}
@@ -188,6 +223,8 @@ jobs:
           python -m src.pipeline.refresh_nfl \
             --project "$PROJECT_ID" \
             --model-version v1 \
+            --start-date "${{ steps.plan.outputs.anchor_date }}" \
+            --window-days 14 \
             --season "${{ steps.plan.outputs.nfl_season }}" \
             --injury-aware \
             --include-explanations
@@ -196,6 +233,8 @@ jobs:
         if: ${{ steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
         run: |
+          # MLB v3/v4 artifacts were serialized with sklearn 1.6.1.
+          python -m pip install --no-deps --force-reinstall scikit-learn==1.6.1
           python -m src.pipeline.refresh_mlb \
             --project "$PROJECT_ID" \
             --model-version v3 \
@@ -206,7 +245,6 @@ jobs:
 
       - name: Generate MLB Research Markets
         if: ${{ steps.plan.outputs.run_mlb == 'true' }}
-        continue-on-error: true
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -221,6 +259,7 @@ jobs:
           python scripts/apply_supabase_sql_files.py sql/019_mlb_research_predictions.sql
           python scripts/fetch_mlb_game_odds.py --date "${{ steps.plan.outputs.anchor_date }}" || echo "Warning: MLB odds fetch failed; predictions will be model-only"
           python scripts/sync_mlb_research_predictions.py --date "${{ steps.plan.outputs.anchor_date }}" --season "${{ steps.plan.outputs.mlb_season }}"
+          python scripts/audit_mlb_research_readiness.py --date "${{ steps.plan.outputs.anchor_date }}" --json
 
       - name: Refresh Statcast cache for MLB HR blend
         if: ${{ env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
@@ -337,7 +376,13 @@ jobs:
             python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NBA --append
           fi
           if [ "$RUN_NFL" = "true" ]; then
-            python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league NFL --append
+            python scripts/sync_bq_to_supabase.py \
+              --project "$PROJECT_ID" \
+              --league NFL \
+              --season "${{ steps.plan.outputs.nfl_season }}" \
+              --model-version v1 \
+              --start-date "${{ steps.plan.outputs.anchor_date }}" \
+              --window-days 14
           fi
           if [ "$RUN_MLB" = "true" ]; then
             python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --window-days 0
@@ -380,6 +425,7 @@ jobs:
           RUN_NBA: ${{ steps.plan.outputs.run_nba }}
           RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
         run: |
+          python scripts/apply_supabase_sql_files.py sql/020_team_market_odds.sql
           run_sync_odds() {
             status=0
             if [ "$RUN_NBA" = "true" ]; then
@@ -410,6 +456,39 @@ jobs:
             sleep "$sleep_seconds"
             attempt=$((attempt + 1))
           done
+
+      - name: Refresh NFL anytime touchdown markets
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          python scripts/refresh_nfl_anytime_td.py \
+            --season "${{ steps.plan.outputs.nfl_season }}"
+
+      - name: Refresh college football team markets
+        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_cfb == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          python scripts/refresh_cfb_markets.py \
+            --date "${{ steps.plan.outputs.anchor_date }}" \
+            --lookahead-days 3
 
       - name: Repair Missing Book Spreads
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
@@ -488,7 +567,17 @@ jobs:
             python scripts/audit_season_readiness.py --league NBA --json | tee /tmp/sports_edge_nba_audit.json || true
           fi
           if [ "${{ steps.plan.outputs.run_nfl }}" = "true" ]; then
-            python scripts/audit_season_readiness.py --league NFL --json | tee /tmp/sports_edge_nfl_audit.json || true
+            python scripts/audit_season_readiness.py \
+              --league NFL \
+              --date "${{ steps.plan.outputs.anchor_date }}" \
+              --lookahead-days 14 \
+              --json | tee /tmp/sports_edge_nfl_audit.json || true
+          fi
+          if [ "${{ steps.plan.outputs.run_cfb }}" = "true" ]; then
+            python scripts/audit_cfb_readiness.py \
+              --date "${{ steps.plan.outputs.anchor_date }}" \
+              --lookahead-days 3 \
+              --json | tee /tmp/sports_edge_cfb_audit.json
           fi
           echo "### Sports Edge Sync Validation" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY

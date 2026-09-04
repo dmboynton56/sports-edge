@@ -344,9 +344,22 @@ def _prepare_nfl_team_epa_lookup(play_by_play: pd.DataFrame, windows: list[int])
     if play_by_play.empty or not required.issubset(play_by_play.columns):
         return pd.DataFrame()
 
-    pbp = play_by_play.copy()
+    available_columns = [
+        col
+        for col in ('game_id', 'game_date', 'posteam', 'defteam', 'epa')
+        if col in play_by_play.columns
+    ]
+    # raw_pbp also stores a large raw_record JSON payload. It is irrelevant to
+    # EPA form and can turn a small filter into multi-gigabyte Arrow copies.
+    pbp = play_by_play[available_columns].copy()
     pbp['game_date'] = pd.to_datetime(pbp['game_date'], errors='coerce').dt.normalize()
     pbp['epa'] = pd.to_numeric(pbp['epa'], errors='coerce')
+    # BigQuery returns nullable StringDtype columns. Pandas 3 can take minutes
+    # to group these keys even for ~150k plays, while equivalent object keys
+    # complete in well under a second. Normalize only the grouping columns.
+    for key_col in ('game_id', 'posteam', 'defteam'):
+        if key_col in pbp.columns:
+            pbp[key_col] = pbp[key_col].astype(object)
 
     side_frames = []
     for side, team_col in [('off', 'posteam'), ('def', 'defteam')]:

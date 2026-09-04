@@ -17,10 +17,14 @@ def load_torch_hr_artifact(path: Path) -> dict[str, Any]:
     artifact = torch.load(path, map_location="cpu", weights_only=False)
     if not isinstance(artifact, dict) or "state_dict" not in artifact:
         raise ValueError(f"Invalid PyTorch MLB HR artifact: {path}")
-    required = {"continuous_columns", "categorical_columns", "category_mappings", "imputer", "scaler"}
+    required = {"continuous_columns", "categorical_columns", "category_mappings"}
     missing = required - set(artifact)
     if missing:
         raise ValueError(f"PyTorch MLB HR artifact missing keys: {sorted(missing)}")
+    has_portable_preprocessing = isinstance(artifact.get("continuous_preprocessing"), dict)
+    has_legacy_preprocessing = "imputer" in artifact and "scaler" in artifact
+    if not has_portable_preprocessing and not has_legacy_preprocessing:
+        raise ValueError("PyTorch MLB HR artifact is missing continuous preprocessing state")
     return artifact
 
 
@@ -37,6 +41,21 @@ def encode_categoricals(frame: pd.DataFrame, artifact: dict[str, Any]) -> np.nda
 
 def prepare_continuous(frame: pd.DataFrame, artifact: dict[str, Any]) -> np.ndarray:
     continuous_columns = artifact["continuous_columns"]
+    portable = artifact.get("continuous_preprocessing")
+    if isinstance(portable, dict):
+        values = frame[continuous_columns].to_numpy(dtype=np.float64, copy=True)
+        statistics = np.asarray(portable["imputer_statistics"], dtype=np.float64)
+        mean = np.asarray(portable["scaler_mean"], dtype=np.float64)
+        scale = np.asarray(portable["scaler_scale"], dtype=np.float64)
+        if not (values.shape[1] == statistics.size == mean.size == scale.size):
+            raise ValueError("Portable MLB HR preprocessing dimensions do not match continuous columns")
+        missing = ~np.isfinite(values)
+        if missing.any():
+            values[missing] = np.take(statistics, np.nonzero(missing)[1])
+        safe_scale = np.where(scale == 0.0, 1.0, scale)
+        return ((values - mean) / safe_scale).astype(np.float32)
+
+    # Backward compatibility for artifacts created before portable preprocessing.
     imputer = artifact["imputer"]
     scaler = artifact["scaler"]
     imputed = imputer.transform(frame[continuous_columns])

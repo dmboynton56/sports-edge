@@ -24,6 +24,7 @@ export default async function MlbMarketsPage() {
       prediction.sport.toLowerCase() === "mlb" &&
       WINNER_MARKETS.has(prediction.market.toLowerCase()),
   );
+  const gaps = feed.gaps.filter((gap) => gap.toLowerCase().includes("mlb"));
 
   return (
     <div>
@@ -70,7 +71,7 @@ export default async function MlbMarketsPage() {
       <SectionHeading title="Winner board" note="Pre-live team moneyline probabilities" />
       <Card className="overflow-hidden p-5">
         {predictions.length > 0 ? (
-          <MarketsTable initialPredictions={predictions} initialGaps={feed.gaps} />
+          <MarketsTable initialPredictions={predictions} initialGaps={gaps} />
         ) : (
           <EmptyState
             className="border-0 bg-transparent"

@@ -2,9 +2,11 @@ import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 
 import { PageHeader, SectionHeading } from "@/components/dashboard/PageHeader";
+import { MarketsTable } from "@/components/dashboard/MarketsTable";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getMlbHomeRunBoardSnapshot } from "@/lib/data/player-markets";
+import { getUnifiedResearchMarketFeed } from "@/lib/data/unified-markets";
 import { SPORTS, type MarketEntry, type SportEntry } from "@/lib/markets-registry";
 import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 
@@ -36,7 +38,25 @@ function MarketCard({ sport, market, status }: { sport: SportEntry; market: Mark
 }
 
 export default async function MarketsPage() {
-  const snapshot = await getMlbHomeRunBoardSnapshot();
+  const [snapshot, research] = await Promise.all([
+    getMlbHomeRunBoardSnapshot(),
+    getUnifiedResearchMarketFeed(),
+  ]);
+  const trustedMlbAvailable = snapshot.status === "healthy" || snapshot.status === "partial";
+  const pricedEdges = snapshot.rows
+    .filter((prediction) => (
+      trustedMlbAvailable
+      && prediction.ev != null
+      && prediction.ev > 0
+    ))
+    .sort((a, b) => (b.ev ?? Number.NEGATIVE_INFINITY) - (a.ev ?? Number.NEGATIVE_INFINITY));
+  const supportableGaps = [
+    !trustedMlbAvailable
+      ? `Trusted MLB HR board is ${snapshot.status}; supportable EV rows are withheld until a current serving run completes.`
+      : null,
+    ...snapshot.gaps,
+    "NFL and CFB signals remain research-only until sportsbook-return backtests support EV claims.",
+  ].filter((gap): gap is string => Boolean(gap));
   const mlb = SPORTS.find((sport) => sport.slug === "mlb");
   const trustedMarket = mlb?.markets.find((market) => market.slug === "home-runs");
   const otherMarkets = SPORTS.flatMap((sport) => sport.markets
@@ -47,9 +67,40 @@ export default async function MarketsPage() {
     <div>
       <PageHeader
         title="Markets"
-        description="One trusted MLB HR path is live end to end. Other markets are clearly labeled until their serving and grading contracts are complete."
+        description="A single cross-sport view of priced model opportunities, followed by every market-specific board and its evidence status."
         meta={`MLB HR ${snapshot.status} · refreshed ${formatDateTime(snapshot.completedAt)}`}
       />
+
+      <SectionHeading
+        title="Highest supportable expected value"
+        note="Future, positive-EV rows with outcome and sportsbook supportability evidence"
+      />
+      <Card className="overflow-hidden p-5">
+        <MarketsTable
+          initialPredictions={pricedEdges}
+          initialGaps={supportableGaps}
+          defaultSortKey="ev"
+          fallbackToStatic={false}
+          emptyTitle="No current supported opportunities"
+          emptyDescription="The trusted board has no future positive-EV rows right now. Started events and rows without validated sportsbook support remain hidden."
+        />
+      </Card>
+
+      <SectionHeading
+        title="Highest research EV across sports"
+        note="All current positive-EV model signals, clearly separated from betting-validated rows"
+      />
+      <Card className="overflow-hidden p-5">
+        <MarketsTable
+          initialPredictions={research.predictions}
+          initialGaps={research.gaps}
+          defaultSortKey="ev"
+          fallbackToStatic={false}
+          emptyTitle="No current research signals"
+          emptyDescription="There are no future positive-EV research rows in the current serving window. Check the individual boards for schedule and coverage details."
+          initialRowLimit={25}
+        />
+      </Card>
 
       {trustedMarket && mlb ? (
         <Link href={trustedMarket.href} className="group block">

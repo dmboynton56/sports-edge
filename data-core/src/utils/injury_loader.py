@@ -3,10 +3,31 @@
 from __future__ import annotations
 
 from typing import Any, Optional
+from uuid import UUID
 
 import pandas as pd
 
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
+
+
+def _all_uuid_game_ids(game_ids: Optional[list[str]]) -> list[str] | None:
+    """Return normalized UUIDs only when every supplied id is a UUID.
+
+    BigQuery schedule keys (for example ``2026_01_NE_SEA``) are intentionally
+    different from the UUID primary keys in Supabase. In that case callers must
+    fall back to the existing date/team matching path instead of casting the
+    warehouse key to ``uuid`` in Postgres.
+    """
+
+    if not game_ids:
+        return None
+    normalized: list[str] = []
+    for game_id in game_ids:
+        try:
+            normalized.append(str(UUID(str(game_id))))
+        except (TypeError, ValueError, AttributeError):
+            return None
+    return normalized
 
 
 def load_injury_impacts_from_supabase(
@@ -26,7 +47,8 @@ def load_injury_impacts_from_supabase(
     )
     try:
         with conn.cursor() as cur:
-            if game_ids:
+            uuid_game_ids = _all_uuid_game_ids(game_ids)
+            if uuid_game_ids:
                 cur.execute(
                     """
                     SELECT
@@ -44,7 +66,7 @@ def load_injury_impacts_from_supabase(
                     FROM player_impact_estimates
                     WHERE league = %s AND game_id = ANY(%s)
                     """,
-                    (league.upper(), game_ids),
+                    (league.upper(), uuid_game_ids),
                 )
             else:
                 cur.execute(

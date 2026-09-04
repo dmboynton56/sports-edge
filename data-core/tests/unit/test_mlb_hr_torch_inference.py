@@ -11,6 +11,7 @@ from src.models.mlb_hr_torch_inference import (
     blend_weights,
     encode_categoricals,
     load_torch_hr_artifact,
+    prepare_continuous,
 )
 
 
@@ -46,6 +47,19 @@ def test_unknown_categorical_maps_to_zero() -> None:
     encoded = encode_categoricals(frame, artifact)
     assert encoded.shape == (1, len(categorical_columns))
     assert np.all(encoded == 0)
+
+
+def test_artifact_uses_portable_continuous_preprocessing() -> None:
+    artifact = load_torch_hr_artifact(ARTIFACT)
+    assert "continuous_preprocessing" in artifact
+    assert "imputer" not in artifact
+    assert "scaler" not in artifact
+
+    columns = artifact["continuous_columns"]
+    frame = pd.DataFrame([{column: np.nan for column in columns}])
+    prepared = prepare_continuous(frame, artifact)
+    assert prepared.shape == (1, len(columns))
+    assert np.isfinite(prepared).all()
 
 
 def test_served_blend_version_constant() -> None:

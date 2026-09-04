@@ -201,8 +201,10 @@ class GamePredictor:
                 pbp = play_by_play.copy()
                 if 'game_date' in pbp.columns:
                     pbp['game_date'] = self._normalize_datetime(pbp['game_date'])
-                for window in [3, 5, 10]:
-                    df = form_metrics.add_form_features_nfl(df, pbp, window=window)
+                # Build the team/game EPA lookup once. Calling the helper once
+                # per window repeats the same 100k+ row groupby three times for
+                # every matchup in a batch.
+                df = form_metrics.add_form_features_nfl(df, pbp, windows=[3, 5, 10])
             elif self.league == 'NBA' and game_logs is not None:
                 logs = game_logs.copy()
                 if 'game_date' in logs.columns:
@@ -655,6 +657,27 @@ class GamePredictor:
         Returns:
             DataFrame with predictions
         """
+        if games_df.empty:
+            return pd.DataFrame()
+
+        # Every feature helper and both committed estimators accept multiple
+        # rows. Building the full slate together avoids copying and grouping a
+        # multi-season PBP frame once per game (16 times for an NFL week).
+        try:
+            batch_predictions = self.predict(
+                games_df,
+                historical_games,
+                play_by_play,
+                game_logs,
+                injury_impacts=injury_impacts,
+                include_explanations=include_explanations,
+            )
+            if isinstance(batch_predictions, list):
+                return pd.DataFrame(batch_predictions)
+            return pd.DataFrame([batch_predictions])
+        except Exception as batch_error:
+            print(f"Batch prediction failed; retrying games individually: {batch_error}")
+
         results = []
         for idx, game in games_df.iterrows():
             try:

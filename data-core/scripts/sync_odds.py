@@ -9,8 +9,9 @@ from __future__ import annotations
 import argparse
 import logging
 import os
-from dataclasses import dataclass
-from datetime import datetime, timezone, timedelta
+from dataclasses import dataclass, field
+from datetime import date, datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from typing import Dict, List, Optional, Any, Tuple
 
 import pandas as pd
@@ -29,13 +30,14 @@ if str(ROOT) not in sys.path:
 
 from src.utils.supabase_pg import (
     create_pg_connection,
-    game_map_key,
     load_supabase_credentials,
 )
 from src.utils.team_codes import canonical_team_abbr
 
 LOGGER = logging.getLogger("sync_odds")
 PREFERRED_BOOKMAKERS = ["draftkings", "betmgm", "fanduel"]
+ODDS_WINDOW_DAYS = {"NFL": 14, "NBA": 10}
+SERVING_TIMEZONE = ZoneInfo("America/Denver")
 
 
 @dataclass(frozen=True)
@@ -44,6 +46,53 @@ class OddsSyncResult:
     supabase_games: int
     supabase_dates: set[str]
     odds_dates: set[str]
+    market_counts: dict[str, int] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class FeaturedMarketOutcome:
+    market: str
+    selection: str
+    line: Optional[float]
+    price: int
+    book: str
+
+
+def odds_window_days(league: str) -> int:
+    return ODDS_WINDOW_DAYS.get(league.upper(), 10)
+
+
+def odds_event_schedule_date(event: Dict[str, Any]) -> Optional[date]:
+    """Return the event's local schedule date used by the serving database."""
+    commence_time = event.get("commence_time")
+    if not commence_time:
+        return None
+    try:
+        event_time = datetime.fromisoformat(str(commence_time).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        return None
+    if event_time.tzinfo is None:
+        event_time = event_time.replace(tzinfo=timezone.utc)
+    return event_time.astimezone(SERVING_TIMEZONE).date()
+
+
+def _database_schedule_date(game_date: object, game_time: object) -> Optional[date]:
+    """Prefer the explicit schedule date; fall back to the localized timestamp."""
+    if game_date is not None:
+        if isinstance(game_date, datetime):
+            return game_date.date()
+        if isinstance(game_date, date):
+            return game_date
+        try:
+            return date.fromisoformat(str(game_date).split("T")[0].split(" ")[0])
+        except ValueError:
+            pass
+
+    if isinstance(game_time, datetime):
+        if game_time.tzinfo is None:
+            game_time = game_time.replace(tzinfo=timezone.utc)
+        return game_time.astimezone(SERVING_TIMEZONE).date()
+    return None
 
 # Team Mappings
 NFL_MAPPING = {
@@ -169,6 +218,72 @@ def pick_home_spread_from_event(
             )
     return None
 
+
+def pick_featured_market_outcomes(
+    event: Dict[str, Any],
+    home_code: str,
+    away_code: str,
+    mapping: Dict[str, List[str]],
+) -> list[FeaturedMarketOutcome]:
+    """Select one complete preferred-book pair for each featured market."""
+    selected: list[FeaturedMarketOutcome] = []
+    market_specs = (
+        ("h2h", "moneyline", ("home", "away")),
+        ("spreads", "spread", ("home", "away")),
+        ("totals", "total", ("over", "under")),
+    )
+    for provider_market, canonical_market, selections in market_specs:
+        for bookmaker in ordered_bookmakers(event.get("bookmakers", [])):
+            market = next(
+                (m for m in bookmaker.get("markets", []) if m.get("key") == provider_market),
+                None,
+            )
+            if not market:
+                continue
+
+            outcomes = market.get("outcomes", [])
+            if canonical_market == "total":
+                first = next((o for o in outcomes if str(o.get("name", "")).lower() == "over"), None)
+                second = next((o for o in outcomes if str(o.get("name", "")).lower() == "under"), None)
+            else:
+                first = next(
+                    (o for o in outcomes if get_team_code(o.get("name", ""), mapping) == home_code),
+                    None,
+                )
+                second = next(
+                    (o for o in outcomes if get_team_code(o.get("name", ""), mapping) == away_code),
+                    None,
+                )
+
+            if not first or not second or first.get("price") is None or second.get("price") is None:
+                continue
+            if canonical_market in {"spread", "total"} and (
+                first.get("point") is None or second.get("point") is None
+            ):
+                continue
+
+            book = bookmaker.get("key") or "unknown"
+            selected.extend(
+                [
+                    FeaturedMarketOutcome(
+                        market=canonical_market,
+                        selection=selections[0],
+                        line=float(first["point"]) if first.get("point") is not None else None,
+                        price=int(first["price"]),
+                        book=book,
+                    ),
+                    FeaturedMarketOutcome(
+                        market=canonical_market,
+                        selection=selections[1],
+                        line=float(second["point"]) if second.get("point") is not None else None,
+                        price=int(second["price"]),
+                        book=book,
+                    ),
+                ]
+            )
+            break
+    return selected
+
 def fetch_odds_data(api_key: str, league: str) -> List[Dict[str, Any]]:
     """Fetch odds from The Odds API for a given league."""
     sport_key = 'americanfootball_nfl' if league == 'NFL' else 'basketball_nba'
@@ -176,7 +291,7 @@ def fetch_odds_data(api_key: str, league: str) -> List[Dict[str, Any]]:
     params = {
         'apiKey': api_key,
         'regions': 'us',
-        'markets': 'spreads',
+        'markets': 'h2h,spreads,totals',
         'oddsFormat': 'american',
         'dateFormat': 'iso',
         'bookmakers': 'draftkings,betmgm,fanduel'
@@ -191,7 +306,7 @@ def count_expected_games(conn, league: str) -> int:
     """Count games in the serving window where odds should be attempted."""
     now = datetime.now(timezone.utc)
     start_window = now.isoformat()
-    end_window = (now + timedelta(days=10)).isoformat()
+    end_window = (now + timedelta(days=odds_window_days(league))).isoformat()
     with conn.cursor() as cur:
         cur.execute(
             """
@@ -230,35 +345,50 @@ def ensure_bq_column(client: bigquery.Client, project: str, table_id: str, colum
     table.schema = new_schema
     client.update_table(table, ["schema"])
 
-def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) -> OddsSyncResult:
+def sync_odds_to_supabase(
+    conn,
+    league: str,
+    odds_data: List[Dict[str, Any]],
+    *,
+    now_utc: Optional[datetime] = None,
+) -> OddsSyncResult:
     """Update Supabase games table with book spreads."""
     mapping = NFL_MAPPING if league == 'NFL' else NBA_MAPPING
-    updates = []
+    updates_by_game: dict[object, tuple[float, Optional[int], str]] = {}
+    snapshots_by_key: dict[
+        tuple[object, str, str],
+        tuple[object, str, str, Optional[float], int, str, str, datetime],
+    ] = {}
+    matched_game_ids: set[object] = set()
+    games_by_market: dict[str, set[object]] = {"moneyline": set(), "spread": set(), "total": set()}
     
-    # Define date window: today +/- 1 day for matching
-    now = datetime.now(timezone.utc)
+    # Match the serving slate only. The API may return an entire season.
+    now = now_utc or datetime.now(timezone.utc)
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=timezone.utc)
     start_window = (now - timedelta(days=2)).isoformat()
-    end_window = (now + timedelta(days=10)).isoformat()
+    end_window = (now + timedelta(days=odds_window_days(league))).isoformat()
+    local_start_date = (now - timedelta(days=2)).astimezone(SERVING_TIMEZONE).date()
+    local_end_date = (now + timedelta(days=odds_window_days(league))).astimezone(SERVING_TIMEZONE).date()
     
     # Fetch recent games from Supabase to match
     with conn.cursor() as cur:
         cur.execute(
-            "SELECT id, home_team, away_team, game_time_utc FROM games WHERE league = %s AND game_time_utc >= %s AND game_time_utc <= %s",
+            "SELECT id, home_team, away_team, game_time_utc, game_date FROM games WHERE league = %s AND game_time_utc >= %s AND game_time_utc <= %s",
             (league, start_window, end_window)
         )
         games = cur.fetchall()
         
-    game_map = {} # key -> supabase_id
-    for gid, home, away, gtime in games:
-        key = game_map_key(home, away, gtime)
-        game_map[key] = gid
+    game_map: dict[tuple[date, str, str], object] = {}
+    for gid, home, away, gtime, game_date in games:
         canonical_home = canonical_team_code(home, league)
         canonical_away = canonical_team_code(away, league)
-        if canonical_home and canonical_away:
-            game_map[game_map_key(canonical_home, canonical_away, gtime)] = gid
+        schedule_date = _database_schedule_date(game_date, gtime)
+        if canonical_home and canonical_away and schedule_date:
+            game_map[(schedule_date, canonical_home, canonical_away)] = gid
         
     if games:
-        sample_keys = list(game_map.keys())[:12]
+        sample_keys = [f"{d}_{away}_{home}" for d, home, away in list(game_map.keys())[:12]]
         LOGGER.info(
             "%s: %d Supabase games in matching window; sample keys: %s",
             league,
@@ -266,13 +396,21 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) ->
             sample_keys,
         )
 
-    supabase_dates = {
-        game_time.strftime("%Y-%m-%d") if hasattr(game_time, "strftime") else str(game_time).split(" ")[0]
-        for _gid, _home, _away, game_time in games
-    }
+    supabase_dates = {schedule_date.isoformat() for schedule_date, _home, _away in game_map}
     odds_dates: set[str] = set()
-    matched_count = 0
+    skipped_outside_slate = 0
     for event in odds_data:
+        schedule_date = odds_event_schedule_date(event)
+        if schedule_date is None:
+            LOGGER.warning("%s: Odds API event has an invalid commence_time: %r", league, event.get("commence_time"))
+            continue
+        if not local_start_date <= schedule_date <= local_end_date:
+            continue
+        odds_dates.add(schedule_date.isoformat())
+        if schedule_date.isoformat() not in supabase_dates:
+            skipped_outside_slate += 1
+            continue
+
         home_raw = event.get("home_team") or ""
         away_raw = event.get("away_team") or ""
         home_code = get_team_code(home_raw, mapping)
@@ -288,46 +426,36 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) ->
             )
             continue
 
-        game_time = datetime.fromisoformat(event["commence_time"].replace("Z", "+00:00"))
-        odds_dates.add(game_time.date().isoformat())
-        key = game_map_key(home_code, away_code, game_time)
-
+        key = (schedule_date, home_code, away_code)
         gid = game_map.get(key)
-        if not gid:
-            day_key_prefix = key.split("_")[0]
-            fuzzy_key = next(
-                (
-                    k
-                    for k in game_map.keys()
-                    if k.startswith(day_key_prefix) and home_code in k and away_code in k
-                ),
-                None,
-            )
-            if fuzzy_key:
-                gid = game_map[fuzzy_key]
-
-        if not gid:
-            fallback_key = next(
-                (
-                    k
-                    for k in game_map.keys()
-                    if home_code in k and away_code in k
-                ),
-                None,
-            )
-            if fallback_key:
-                gid = game_map[fallback_key]
 
         if gid:
-            spread = pick_home_spread_from_event(event, home_code, mapping)
-            if spread:
-                line, price, book = spread
-                updates.append((line, price, book, gid))
-                matched_count += 1
+            outcomes = pick_featured_market_outcomes(event, home_code, away_code, mapping)
+            if outcomes:
+                matched_game_ids.add(gid)
+                commence_time = datetime.fromisoformat(str(event["commence_time"]).replace("Z", "+00:00"))
+                provider_event_id = str(event.get("id") or "")
+                for outcome in outcomes:
+                    snapshots_by_key.setdefault(
+                        (gid, outcome.market, outcome.selection),
+                        (
+                            gid,
+                            outcome.book,
+                            outcome.market,
+                            outcome.line,
+                            outcome.price,
+                            outcome.selection,
+                            provider_event_id,
+                            commence_time,
+                        ),
+                    )
+                    games_by_market[outcome.market].add(gid)
+                    if outcome.market == "spread" and outcome.selection == "home" and outcome.line is not None:
+                        updates_by_game.setdefault(gid, (outcome.line, outcome.price, outcome.book))
             else:
                 book_keys = [b.get("key") for b in event.get("bookmakers", [])]
                 LOGGER.warning(
-                    "%s: Supabase id=%s matched but no spreads line for home %s; "
+                    "%s: Supabase id=%s matched but no complete featured market for home %s; "
                     "commence=%s; bookmakers=%s",
                     league,
                     gid,
@@ -342,31 +470,52 @@ def sync_odds_to_supabase(conn, league: str, odds_data: List[Dict[str, Any]]) ->
                 away_code,
                 home_code,
                 event.get("commence_time"),
-                key,
+                f"{schedule_date}_{away_code}_{home_code}",
             )
-                        
-    if updates:
+
+    if skipped_outside_slate:
+        LOGGER.info(
+            "%s: ignored %d in-window Odds API events outside the loaded serving dates",
+            league,
+            skipped_outside_slate,
+        )
+
+    updates = [(*values, gid) for gid, values in updates_by_game.items()]
+    snapshots = list(snapshots_by_key.values())
+    if updates or snapshots:
         with conn.cursor() as cur:
-            cur.executemany(
-                "UPDATE games SET book_spread = %s WHERE id = %s",
-                [(spread, gid) for spread, _price, _book, gid in updates],
-            )
-            cur.executemany(
-                """
-                INSERT INTO odds_snapshots (game_id, book, market, line, price, snapshot_ts)
-                VALUES (%s, %s, 'spread', %s, %s, NOW())
-                """,
-                [(gid, book, spread, price) for spread, price, book, gid in updates],
-            )
+            if updates:
+                cur.executemany(
+                    "UPDATE games SET book_spread = %s WHERE id = %s",
+                    [(spread, gid) for spread, _price, _book, gid in updates],
+                )
+            if snapshots:
+                cur.executemany(
+                    """
+                    INSERT INTO odds_snapshots (
+                        game_id, book, market, line, price, snapshot_ts,
+                        selection, provider_event_id, commence_time_utc
+                    )
+                    VALUES (%s, %s, %s, %s, %s, NOW(), %s, %s, %s)
+                    """,
+                    snapshots,
+                )
         conn.commit()
-        LOGGER.info(f"Updated {len(updates)} games in Supabase with book spreads for {league}")
+        LOGGER.info(
+            "%s: synced %d unique games and %d paired market outcomes; coverage=%s",
+            league,
+            len(matched_game_ids),
+            len(snapshots),
+            {market: len(game_ids) for market, game_ids in games_by_market.items()},
+        )
     else:
         LOGGER.warning(f"No odds matches found for {league} in Supabase window")
     return OddsSyncResult(
-        matched_count=matched_count,
+        matched_count=len(matched_game_ids),
         supabase_games=len(games),
         supabase_dates=supabase_dates,
         odds_dates=odds_dates,
+        market_counts={market: len(game_ids) for market, game_ids in games_by_market.items()},
     )
 
 def sync_odds_to_bq(client: bigquery.Client, project: str, league: str, odds_data: List[Dict[str, Any]]):

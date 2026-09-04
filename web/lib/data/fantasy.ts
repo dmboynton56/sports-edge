@@ -71,6 +71,12 @@ export type FantasyProjection = {
   adp_source?: string | null;
   confidence: "high" | "medium" | "low";
   availability: string;
+  roster_status?: string | null;
+  injury_status?: string | null;
+  injury_body_part?: string | null;
+  practice_participation?: string | null;
+  depth_chart_order?: number | null;
+  availability_updated_at?: string | null;
   explanation: string[];
   model_version: string;
   updated_at: string;
@@ -78,6 +84,7 @@ export type FantasyProjection = {
 
 export type FantasyFeed = {
   generatedAt: string | null;
+  contextUpdatedAt?: string | null;
   season: number;
   modelVersion: string;
   productionStatus: "candidate" | "approved" | "blocked";
@@ -180,6 +187,12 @@ export function normalizeProjection(row: SupabaseFantasyRow): FantasyProjection 
     adp_source: row.adp_source ?? null,
     confidence: row.confidence ?? "low",
     availability: row.availability ?? "expected",
+    roster_status: row.roster_status ?? null,
+    injury_status: row.injury_status ?? null,
+    injury_body_part: row.injury_body_part ?? null,
+    practice_participation: row.practice_participation ?? null,
+    depth_chart_order: row.depth_chart_order == null ? null : Number(row.depth_chart_order),
+    availability_updated_at: row.availability_updated_at ?? null,
     explanation: row.explanation ?? [],
     model_version: row.model_version ?? "unknown",
     updated_at: row.updated_at ?? new Date().toISOString(),
@@ -192,6 +205,7 @@ export function fromStatic(payload: Partial<FantasyFeed>, fallbackGaps: string[]
   const preseasonById = new Map(preseason.map((row) => [row.player_id, row]));
   return {
     generatedAt: payload.generatedAt ?? null,
+    contextUpdatedAt: payload.contextUpdatedAt ?? null,
     season: Number(payload.season ?? new Date().getUTCFullYear()),
     modelVersion: payload.modelVersion ?? "fantasy-unavailable",
     productionStatus: payload.productionStatus ?? "candidate",

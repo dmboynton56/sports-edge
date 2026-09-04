@@ -1,7 +1,35 @@
 # Data and Model Status
 
-Generated: 2026-05-22. Service inventory spot-checked from the terminal on
-2026-05-23.
+Current readiness verified: 2026-09-03. The detailed service inventory below
+was generated 2026-05-22 and spot-checked 2026-05-23; retain it as historical
+evidence rather than a description of the current serving surface.
+
+## September 3, 2026 Readiness Update
+
+The production dashboard now separates betting-supportable rows from research
+signals. Only the MLB home-run outcome model can currently enter the
+supportable cross-sport table. NFL, CFB, and MLB team markets can appear in the
+unified research-EV table, but are not represented as validated bankroll
+recommendations. NBA uses the same generic team-market serving contract and is
+activated by the daily calendar gate when its season resumes.
+
+| Area | Current evidence | Serving decision |
+| --- | --- | --- |
+| MLB daily slate | Latest September 3 audit found 9 scheduled games and 9 predictions for each of moneyline, run line, and total. Both games still price-eligible at audit time had fresh prices, with no duplicate, invalid, or mislabeled rows. | Live on research boards; winner evidence is still weak (2026 holdout AUC 0.5431, Brier 0.2478), so sportsbook EV is not supportable. |
+| MLB home runs | Verified immutable serving run contained 120 candidates, 61 priced rows, 80% top-25 pricing coverage, full Statcast feature readiness, and no invalid priced rows. | Trusted slice. Only future positive-EV rows from a healthy or partial immutable run are eligible for the supportable table. |
+| NFL Week 1 | Strict audit found all 16 games scheduled and predicted, fresh moneyline/spread/total coverage for all 16, 149 guardrail-qualified anytime-TD rows across all 16 games, 302 availability rows, no missing high-impact adjustments, and no duplicates. | Preliminary/research. Team and player outcome probabilities are published with explicit evidence caveats; EV remains research-only until sportsbook-return validation exists. |
+| CFB daily slate | Latest September 3-6 audit found 76 still-current scheduled and predicted games, 76 fresh spreads, 76 fresh totals, 58 fresh moneylines, 121 guardrail-qualified recommendations, and no stale rows or guardrail violations. | Research. Outcome calibration is promising (2025 holdout AUC 0.8043, Brier 0.1696, ECE 0.0344), but no sportsbook-return or closing-line backtest supports betting claims yet. |
+| Fantasy football | Current NFL roster, injury, transaction, and weekly-history context is served to the local half-PPR draft assistant. The last verified refresh matched 1,080 players, including 949 official-roster matches and 503 active players. | Local draft support: configurable team count and slot, user/opponent pick recording, roster-aware next-pick recommendations, undo/reset, and browser persistence. |
+| NBA | The shared moneyline/spread/total schema, sync path, dashboard mapping, and calendar activation are in place. | Offseason-ready; no current rows are manufactured while the league is out of season. |
+
+Daily automation runs schedule, roster/availability, model, odds, serving-sync,
+and strict readiness checks for every in-season league. MLB home-run odds use a
+once-daily conservation policy unless an operator explicitly forces a refresh.
+The canonical live evidence commands are `scripts/audit_season_readiness.py`,
+`scripts/audit_cfb_readiness.py`, and
+`scripts/audit_mlb_research_readiness.py`.
+
+## Historical May 2026 Inventory
 
 This inventory is read-only except for the PGA ESPN supplement refresh noted below. BigQuery project: `learned-pier-478122-p7`.
 

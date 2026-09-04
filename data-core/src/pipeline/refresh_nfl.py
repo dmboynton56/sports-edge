@@ -121,7 +121,7 @@ def _query_historical_games(client: bigquery.Client, project: str, seasons: List
 
 def _query_pbp(client: bigquery.Client, project: str, seasons: List[int]) -> pd.DataFrame:
     query = f"""
-        SELECT *
+        SELECT game_id, game_date, posteam, defteam, epa
         FROM `{project}.sports_edge_raw.raw_pbp`
         WHERE season IN UNNEST(@seasons)
           AND league = 'NFL'
@@ -134,16 +134,28 @@ def _query_pbp(client: bigquery.Client, project: str, seasons: List[int]) -> pd.
     return df
 
 
-def _delete_existing_predictions(client: bigquery.Client, project: str, game_ids: List[str]) -> None:
+def _delete_existing_predictions(
+    client: bigquery.Client,
+    project: str,
+    game_ids: List[str],
+    model_version: str,
+) -> None:
     if not game_ids:
         return
     table_id = f"{project}.sports_edge_curated.model_predictions"
-    query = f"DELETE FROM `{table_id}` WHERE game_id IN UNNEST(@game_ids)"
+    query = f"""
+        DELETE FROM `{table_id}`
+        WHERE game_id IN UNNEST(@game_ids)
+          AND model_version = @model_version
+    """
     job_config = bigquery.QueryJobConfig(
-        query_parameters=[bigquery.ArrayQueryParameter("game_ids", "STRING", game_ids)]
+        query_parameters=[
+            bigquery.ArrayQueryParameter("game_ids", "STRING", game_ids),
+            bigquery.ScalarQueryParameter("model_version", "STRING", model_version),
+        ]
     )
     client.query(query, job_config=job_config).result()
-    print(f"Removed existing predictions for {len(game_ids)} games.")
+    print(f"Removed existing {model_version} predictions for {len(game_ids)} games.")
 
 
 def _log_model_run(
@@ -280,7 +292,12 @@ def main() -> None:
     run_id = f"nfl_{datetime.now(tz=timezone.utc).strftime('%Y%m%dT%H%M%S')}"
     started_at = datetime.now(tz=timezone.utc)
     try:
-        _delete_existing_predictions(client, args.project, predictions["game_id"].dropna().tolist())
+        _delete_existing_predictions(
+            client,
+            args.project,
+            predictions["game_id"].dropna().tolist(),
+            args.model_version,
+        )
         table_id = f"{args.project}.sports_edge_curated.model_predictions"
         load_job = client.load_table_from_dataframe(
             predictions,

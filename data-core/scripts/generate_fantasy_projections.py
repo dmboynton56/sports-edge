@@ -29,6 +29,7 @@ if str(ROOT / "data-core") not in sys.path:
 from src.fantasy.fantasypros import FantasyProsClient, FantasyProsError, normalize_consensus_rows  # noqa: E402
 from src.fantasy.projection_model import build_preseason_projections, load_nflverse_weekly  # noqa: E402
 from src.fantasy.scoring import FULL_PPR_SCORING  # noqa: E402
+from src.fantasy.sleeper import load_nflverse_rosters, load_sleeper_players, merge_sleeper_context  # noqa: E402
 
 
 DEFAULT_OUTPUT = ROOT / "web" / "public" / "data" / "fantasy_projections.json"
@@ -156,9 +157,20 @@ def main() -> None:
     else:
         gaps.append("FantasyPros ADP disabled for this run.")
 
+    sleeper_summary: dict[str, int] = {}
+    try:
+        sleeper_summary = merge_sleeper_context(
+            projections,
+            load_sleeper_players(),
+            load_nflverse_rosters(args.season),
+        )
+    except Exception as exc:  # noqa: BLE001
+        gaps.append(f"Sleeper roster/injury context unavailable: {exc}")
+
     _rank(projections)
     payload = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "contextUpdatedAt": datetime.now(timezone.utc).isoformat() if sleeper_summary else None,
         "season": args.season,
         "modelVersion": model.model_version,
         "productionStatus": "candidate",
@@ -167,10 +179,12 @@ def main() -> None:
         "weekly": {} if args.skip_weekly else _weekly_rows(projections, args.season),
         "adp": adp_rows,
         "metrics": model.metrics,
+        "context": {"sleeper": sleeper_summary},
         "gaps": gaps,
         "sources": [
             "nflverse player stats, players, schedules, and rosters",
             "FantasyPros ADP (market signal only)" if adp_rows else "FantasyPros ADP not loaded",
+            "Sleeper public NFL player directory (daily roster and injury context)" if sleeper_summary else "Sleeper roster/injury context not loaded",
         ],
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)

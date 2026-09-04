@@ -16,6 +16,13 @@ import {
   type FantasyScoring,
   rescoreProjection,
 } from "@/lib/data/fantasy";
+import {
+  nextPickForSlot,
+  recommendDraftPicks,
+  snakeDraftTurn,
+  totalRosterSlots,
+  type DraftPick,
+} from "@/lib/data/fantasy-draft";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,22 +57,6 @@ type DisplayProjection = FantasyProjection & { displayPoints: number; displayFlo
 
 function positionValue(position: FantasyPosition) {
   return position === "QB" ? 0 : position === "RB" ? 1 : position === "WR" ? 2 : position === "TE" ? 3 : position === "K" ? 4 : 5;
-}
-
-function replacementRank(position: FantasyPosition, roster: FantasyRoster) {
-  const demand = position === "QB" ? roster.quarterback : position === "RB" ? roster.running_back + roster.flex : position === "WR" ? roster.wide_receiver + roster.flex : position === "TE" ? roster.tight_end + roster.flex : position === "K" ? roster.kicker : roster.defense;
-  return Math.max(1, roster.teams * demand + 1);
-}
-
-function draftRecommendation(rows: DisplayProjection[], drafted: Set<string>, roster: FantasyRoster) {
-  const available = rows.filter((row) => !drafted.has(row.player_id));
-  const best = available
-    .map((row) => ({
-      row,
-      value: row.displayPoints - (rows.filter((candidate) => candidate.position === row.position).sort((a, b) => b.displayPoints - a.displayPoints)[replacementRank(row.position, roster) - 1]?.displayPoints ?? 0),
-    }))
-    .sort((a, b) => b.value - a.value || a.row.displayPoints - b.row.displayPoints)[0];
-  return best?.row ?? null;
 }
 
 function slotEligible(position: FantasyPosition, slot: string) {
@@ -105,7 +96,14 @@ function readPlannerState() {
   try {
     const raw = window.localStorage.getItem("sports-edge-fantasy-planner-v1");
     // SAFETY: This localStorage record is written by this component and malformed values fall back to an empty planner state.
-    return raw ? JSON.parse(raw) as { scoring?: FantasyScoring; roster?: FantasyRoster; drafted?: string[]; mine?: string[] } : {};
+    return raw ? JSON.parse(raw) as {
+      scoring?: FantasyScoring;
+      roster?: FantasyRoster;
+      draftPosition?: number;
+      draftHistory?: DraftPick[];
+      drafted?: string[];
+      mine?: string[];
+    } : {};
   } catch {
     return {};
   }
@@ -119,10 +117,10 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("points");
   const [ascending, setAscending] = useState(false);
-  const [scoring, setScoring] = useState<FantasyScoring>(DEFAULT_FANTASY_SCORING);
+  const [scoring, setScoring] = useState<FantasyScoring>(HALF_PPR_SCORING);
   const [roster, setRoster] = useState<FantasyRoster>(DEFAULT_FANTASY_ROSTER);
-  const [drafted, setDrafted] = useState<Set<string>>(new Set());
-  const [mine, setMine] = useState<Set<string>>(new Set());
+  const [draftPosition, setDraftPosition] = useState(1);
+  const [draftHistory, setDraftHistory] = useState<DraftPick[]>([]);
   const [showSettings, setShowSettings] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [weeklyLoading, setWeeklyLoading] = useState(false);
@@ -131,10 +129,15 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
       const state = readPlannerState();
-      if (state.scoring) setScoring({ ...DEFAULT_FANTASY_SCORING, ...state.scoring });
+      if (state.scoring) setScoring({ ...HALF_PPR_SCORING, ...state.scoring });
       if (state.roster) setRoster({ ...DEFAULT_FANTASY_ROSTER, ...state.roster });
-      if (state.drafted) setDrafted(new Set(state.drafted));
-      if (state.mine) setMine(new Set(state.mine));
+      if (state.draftPosition) setDraftPosition(Math.max(1, state.draftPosition));
+      if (state.draftHistory?.length) {
+        setDraftHistory(state.draftHistory.filter((pick) => pick?.playerId && ["mine", "other"].includes(pick.owner)));
+      } else if (state.drafted?.length) {
+        const mine = new Set(state.mine ?? []);
+        setDraftHistory(state.drafted.map((playerId) => ({ playerId, owner: mine.has(playerId) ? "mine" : "other" })));
+      }
       setHydrated(true);
     });
     return () => window.cancelAnimationFrame(frame);
@@ -142,8 +145,8 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem("sports-edge-fantasy-planner-v1", JSON.stringify({ scoring, roster, drafted: [...drafted], mine: [...mine] }));
-  }, [drafted, hydrated, mine, roster, scoring]);
+    window.localStorage.setItem("sports-edge-fantasy-planner-v1", JSON.stringify({ scoring, roster, draftPosition, draftHistory }));
+  }, [draftHistory, draftPosition, hydrated, roster, scoring]);
 
   useEffect(() => {
     if (view !== "weekly" && view !== "lineup") return;
@@ -201,12 +204,28 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
     const scored = rescoreProjection(row, scoring);
     return { ...row, displayPoints: scored.median, displayFloor: scored.floor, displayCeiling: scored.ceiling };
   }), [scoring, sourceRows]);
-  const filtered = useMemo(() => rows.filter((row) => (position === "ALL" || row.position === position) && row.player_name.toLowerCase().includes(search.toLowerCase())).sort((a, b) => {
+  const drafted = useMemo(() => new Set(draftHistory.map((pick) => pick.playerId)), [draftHistory]);
+  const mine = useMemo(() => new Set(draftHistory.filter((pick) => pick.owner === "mine").map((pick) => pick.playerId)), [draftHistory]);
+  const currentPick = draftHistory.length + 1;
+  const currentTurn = snakeDraftTurn(currentPick, roster.teams);
+  const safeDraftPosition = Math.min(Math.max(1, draftPosition), Math.max(1, roster.teams));
+  const myNextPick = nextPickForSlot(currentPick, roster.teams, safeDraftPosition);
+  const isMyTurn = currentTurn.slot === safeDraftPosition;
+  const recommendations = useMemo(
+    () => recommendDraftPicks(rows, drafted, mine, roster, currentPick, safeDraftPosition, 3),
+    [currentPick, drafted, mine, roster, rows, safeDraftPosition],
+  );
+  const recommendation = recommendations[0];
+  const playersById = useMemo(() => new Map(rows.map((row) => [row.player_id, row])), [rows]);
+  const filtered = useMemo(() => rows.filter((row) => (
+    (position === "ALL" || row.position === position)
+      && row.player_name.toLowerCase().includes(search.toLowerCase())
+      && (view !== "draft" || !drafted.has(row.player_id))
+  )).sort((a, b) => {
     const aValue = sortKey === "ppg" ? a.displayPoints / Math.max(1, a.projected_games) : sortKey === "floor" ? a.displayFloor : sortKey === "adp" ? (a.adp ?? Infinity) : sortKey === "position" ? positionValue(a.position) : a.displayPoints;
     const bValue = sortKey === "ppg" ? b.displayPoints / Math.max(1, b.projected_games) : sortKey === "floor" ? b.displayFloor : sortKey === "adp" ? (b.adp ?? Infinity) : sortKey === "position" ? positionValue(b.position) : b.displayPoints;
     return (ascending ? 1 : -1) * (aValue - bValue) || a.player_name.localeCompare(b.player_name);
-  }), [position, rows, search, sortKey, ascending]);
-  const recommendation = useMemo(() => draftRecommendation(rows, drafted, roster), [drafted, roster, rows]);
+  }), [ascending, drafted, position, rows, search, sortKey, view]);
   const lineup = useMemo(() => optimizeLineup(rows, mine, roster), [mine, roster, rows]);
   const topByPosition = useMemo(() => POSITIONS.slice(1).map((item) => ({ position: item, row: rows.filter((row) => row.position === item).sort((a, b) => b.displayPoints - a.displayPoints)[0] })).filter((item) => item.row), [rows]);
   const validation = useMemo(() => {
@@ -227,24 +246,24 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
     setScoring({ ...next });
   }
 
-  function toggleDraft(row: DisplayProjection, own: boolean) {
-    setDrafted((current) => {
-      const next = new Set(current);
-      if (next.has(row.player_id) && (!own || mine.has(row.player_id))) next.delete(row.player_id); else next.add(row.player_id);
-      return next;
-    });
-    if (own) setMine((current) => {
-      const next = new Set(current);
-      if (next.has(row.player_id)) next.delete(row.player_id); else next.add(row.player_id);
-      return next;
-    });
+  function recordPick(row: DisplayProjection, owner: DraftPick["owner"]) {
+    if (drafted.has(row.player_id)) return;
+    setDraftHistory((current) => [...current, { playerId: row.player_id, owner }]);
+  }
+
+  function removePick(playerId: string) {
+    setDraftHistory((current) => current.filter((pick) => pick.playerId !== playerId));
+  }
+
+  function undoLastPick() {
+    setDraftHistory((current) => current.slice(0, -1));
   }
 
   function resetPlanner() {
-    setScoring(DEFAULT_FANTASY_SCORING);
+    setScoring(HALF_PPR_SCORING);
     setRoster(DEFAULT_FANTASY_ROSTER);
-    setDrafted(new Set());
-    setMine(new Set());
+    setDraftPosition(1);
+    setDraftHistory([]);
     window.localStorage.removeItem("sports-edge-fantasy-planner-v1");
   }
 
@@ -311,7 +330,35 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
       ) : null}
 
       {view === "draft" ? (
-        <Card className="border-accent/30"><CardHeader><CardTitle>Live snake draft assistant</CardTitle><p className="mt-1 text-sm text-muted-foreground">Mark players as drafted. “Mine” adds a player to your local roster and removes them from the available pool.</p></CardHeader><CardContent><div className="grid gap-3 md:grid-cols-3"><div className="rounded-lg border border-border p-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">Drafted</p><p className="mt-1 text-2xl font-semibold">{drafted.size}</p></div><div className="rounded-lg border border-border p-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">My roster</p><p className="mt-1 text-2xl font-semibold">{mine.size}</p></div><div className="rounded-lg border border-accent/30 bg-accent/5 p-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">Best value available</p><p className="mt-1 truncate text-lg font-semibold text-accent">{recommendation?.player_name ?? "Draft board empty"}</p>{recommendation ? <p className="text-xs text-muted-foreground">{recommendation.position} · {recommendation.displayPoints.toFixed(1)} projected PPR points · {recommendation.adp ? `ADP ${recommendation.adp.toFixed(1)}` : "no ADP"}</p> : null}</div></div></CardContent></Card>
+        <Card className="border-accent/30">
+          <CardHeader>
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <CardTitle>Live snake draft assistant</CardTitle>
+                <p className="mt-1 text-sm text-muted-foreground">Enter the league size and your slot, then record every pick in order. The recommendation recalculates from half-PPR value, roster needs, availability, and who may survive the turn.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3 sm:w-[320px]">
+                <label className="space-y-1 text-xs text-muted-foreground">Teams<input aria-label="Number of teams" className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground" type="number" min={2} max={20} value={roster.teams} onChange={(event) => { const teams = Math.min(20, Math.max(2, Number(event.target.value))); setRoster((current) => ({ ...current, teams })); setDraftPosition((current) => Math.min(current, teams)); }} /></label>
+                <label className="space-y-1 text-xs text-muted-foreground">My draft position<input aria-label="My draft position" className="h-9 w-full rounded-lg border border-input bg-card px-3 text-sm text-foreground" type="number" min={1} max={roster.teams} value={safeDraftPosition} onChange={(event) => setDraftPosition(Math.min(roster.teams, Math.max(1, Number(event.target.value))))} /></label>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-lg border border-border p-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">Current pick</p><p className="mt-1 text-2xl font-semibold">#{currentPick}</p><p className="text-xs text-muted-foreground">Round {currentTurn.round} · slot {currentTurn.slot}</p></div>
+              <div className={cn("rounded-lg border p-3", isMyTurn ? "border-accent/40 bg-accent/10" : "border-border")}><p className="text-xs uppercase tracking-wide text-muted-foreground">On the clock</p><p className={cn("mt-1 text-2xl font-semibold", isMyTurn && "text-accent")}>{isMyTurn ? "You" : `Slot ${currentTurn.slot}`}</p><p className="text-xs text-muted-foreground">Your next pick: #{myNextPick}</p></div>
+              <div className="rounded-lg border border-border p-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">Drafted</p><p className="mt-1 text-2xl font-semibold">{drafted.size}</p><p className="text-xs text-muted-foreground">{mine.size}/{totalRosterSlots(roster)} on my roster</p></div>
+              <div className="rounded-lg border border-accent/30 bg-accent/5 p-3"><p className="text-xs uppercase tracking-wide text-muted-foreground">Best next pick</p><p className="mt-1 truncate text-lg font-semibold text-accent">{recommendation?.row.player_name ?? "Draft board empty"}</p>{recommendation ? <p className="text-xs text-muted-foreground">{recommendation.row.position} · {recommendation.row.displayPoints.toFixed(1)} half-PPR pts · +{Math.max(0, recommendation.valueOverReplacement).toFixed(1)} vs replacement</p> : null}</div>
+            </div>
+
+            {recommendations.length ? <div className="grid gap-2 lg:grid-cols-3">{recommendations.map((item, index) => <div key={item.row.player_id} className="rounded-lg border border-border bg-background/50 p-3"><div className="flex items-center justify-between gap-2"><div><p className="text-xs text-muted-foreground">#{index + 1} recommendation</p><p className="font-semibold">{item.row.player_name}</p></div><Badge variant={index === 0 ? "accent" : "outline"}>{item.row.position}</Badge></div><p className="mt-2 text-xs text-muted-foreground">{item.reason}</p>{item.row.availability !== "expected" ? <p className="mt-1 text-xs font-medium text-amber-500">{item.row.availability}{item.row.injury_body_part ? ` · ${item.row.injury_body_part}` : ""}</p> : null}</div>)}</div> : null}
+
+            <div className="flex flex-col gap-3 rounded-lg border border-border p-3 lg:flex-row lg:items-center lg:justify-between">
+              <div><p className="text-sm font-medium">Recent picks</p><div className="mt-1 flex flex-wrap gap-1.5">{draftHistory.slice(-8).map((pick, index) => { const player = playersById.get(pick.playerId); return <Badge key={`${pick.playerId}-${index}`} variant={pick.owner === "mine" ? "accent" : "outline"}>{player?.player_name ?? pick.playerId}{pick.owner === "mine" ? " · mine" : ""}</Badge>; })}{!draftHistory.length ? <span className="text-xs text-muted-foreground">No picks recorded yet.</span> : null}</div></div>
+              <Button variant="outline" size="sm" disabled={!draftHistory.length} onClick={undoLastPick}><RotateCcw /> Undo last pick</Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : null}
 
       <Card>
@@ -319,7 +366,7 @@ export function FantasyBoard({ feed: initialFeed }: { feed: FantasyFeed }) {
         <CardContent>
           {weeklyLoading ? <p className="mb-3 text-sm text-muted-foreground">Loading week {week} projections…</p> : null}
           {weeklyError ? <p className="mb-3 text-sm text-destructive">{weeklyError}</p> : null}
-          <Table className="min-w-[920px]"><TableHeader><TableRow><TableHead className="w-10">#</TableHead><TableHead>Player</TableHead><TableHead>Pos</TableHead><TableHead><button onClick={() => { setSortKey("points"); setAscending(!ascending); }}>Points {sortKey === "points" ? ascending ? <ChevronUp className="inline size-3" /> : <ChevronDown className="inline size-3" /> : null}</button></TableHead><TableHead>Range</TableHead><TableHead>PPG</TableHead><TableHead>Model rank</TableHead><TableHead>ADP</TableHead><TableHead>Action</TableHead></TableRow></TableHeader><TableBody>{filtered.slice(0, 250).map((row, index) => <TableRow key={row.player_id} className={cn(drafted.has(row.player_id) && "opacity-45")}><TableCell className="text-muted-foreground">{index + 1}</TableCell><TableCell><div className="font-medium">{row.player_name}</div><div className="text-xs text-muted-foreground">{row.team ?? "FA"} · {row.confidence} confidence</div></TableCell><TableCell><Badge variant="outline">{row.position}</Badge></TableCell><TableCell className="font-semibold text-accent">{row.displayPoints.toFixed(1)}</TableCell><TableCell className="text-xs text-muted-foreground">{row.displayFloor.toFixed(1)}–{row.displayCeiling.toFixed(1)}</TableCell><TableCell>{(row.displayPoints / Math.max(1, row.projected_games)).toFixed(1)}</TableCell><TableCell>{row.position_rank ? `${row.position}${row.position_rank}` : "—"}</TableCell><TableCell>{row.adp ? <span title="FantasyPros market ADP">{row.adp.toFixed(1)}</span> : <span className="text-muted-foreground">—</span>}</TableCell><TableCell>{view === "draft" ? <div className="flex gap-1"><Button size="sm" variant="outline" disabled={drafted.has(row.player_id)} onClick={() => toggleDraft(row, false)}>{drafted.has(row.player_id) ? "Drafted" : "Other"}</Button><Button size="sm" variant={mine.has(row.player_id) ? "secondary" : "default"} onClick={() => toggleDraft(row, true)}>{mine.has(row.player_id) ? "Mine" : "Draft me"}</Button></div> : view === "lineup" ? <Button size="sm" variant={mine.has(row.player_id) ? "secondary" : "outline"} onClick={() => toggleDraft(row, true)}>{mine.has(row.player_id) ? "Remove" : "Add to roster"}</Button> : <Button size="sm" variant="ghost" onClick={() => setView("lineup")}>Plan</Button>}</TableCell></TableRow>)}</TableBody></Table>
+          <Table className="min-w-[920px]"><TableHeader><TableRow><TableHead className="w-10">#</TableHead><TableHead>Player</TableHead><TableHead>Pos</TableHead><TableHead><button onClick={() => { setSortKey("points"); setAscending(!ascending); }}>Points {sortKey === "points" ? ascending ? <ChevronUp className="inline size-3" /> : <ChevronDown className="inline size-3" /> : null}</button></TableHead><TableHead>Range</TableHead><TableHead>PPG</TableHead><TableHead>Model rank</TableHead><TableHead>ADP</TableHead><TableHead>Action</TableHead></TableRow></TableHeader><TableBody>{filtered.slice(0, 250).map((row, index) => <TableRow key={row.player_id} className={cn(drafted.has(row.player_id) && "opacity-45")}><TableCell className="text-muted-foreground">{index + 1}</TableCell><TableCell><div className="flex flex-wrap items-center gap-2"><span className="font-medium">{row.player_name}</span>{row.availability !== "expected" ? <Badge variant={row.availability === "questionable" ? "outline" : "missing"}>{row.availability}</Badge> : null}</div><div className="text-xs text-muted-foreground">{row.team ?? "FA"} · {row.confidence} confidence{row.injury_body_part ? ` · ${row.injury_body_part}` : ""}</div></TableCell><TableCell><Badge variant="outline">{row.position}</Badge></TableCell><TableCell className="font-semibold text-accent">{row.displayPoints.toFixed(1)}</TableCell><TableCell className="text-xs text-muted-foreground">{row.displayFloor.toFixed(1)}–{row.displayCeiling.toFixed(1)}</TableCell><TableCell>{(row.displayPoints / Math.max(1, row.projected_games)).toFixed(1)}</TableCell><TableCell>{row.position_rank ? `${row.position}${row.position_rank}` : "—"}</TableCell><TableCell>{row.adp ? <span title="FantasyPros market ADP">{row.adp.toFixed(1)}</span> : <span className="text-muted-foreground">—</span>}</TableCell><TableCell>{view === "draft" ? <div className="flex gap-1"><Button size="sm" variant="outline" onClick={() => recordPick(row, "other")}>Other picked</Button><Button size="sm" variant="default" onClick={() => recordPick(row, "mine")}>I picked</Button></div> : view === "lineup" ? <Button size="sm" variant={mine.has(row.player_id) ? "secondary" : "outline"} onClick={() => mine.has(row.player_id) ? removePick(row.player_id) : recordPick(row, "mine")}>{mine.has(row.player_id) ? "Remove" : "Add to roster"}</Button> : <Button size="sm" variant="ghost" onClick={() => setView("lineup")}>Plan</Button>}</TableCell></TableRow>)}</TableBody></Table>
           {filtered.length > 250 ? <p className="mt-3 text-xs text-muted-foreground">Showing the first 250 matches. Narrow the position or search filters to inspect the full board.</p> : null}
         </CardContent>
       </Card>
