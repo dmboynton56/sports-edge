@@ -6,7 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -132,6 +132,34 @@ def _clean(value: Any) -> Any:
     except (TypeError, ValueError):
         pass
     return value
+
+
+def _as_bq_date(value: Any) -> date | None:
+    """Coerce JSON/pandas date-like values into a BigQuery DATE.
+
+    Public MLB HR artifacts currently serialize midnight timestamps as
+    ``2026-09-04T00:00:00``. BigQuery DATE query parameters reject that form.
+    """
+    cleaned = _clean(value)
+    if cleaned is None:
+        return None
+    if isinstance(cleaned, datetime):
+        return cleaned.date()
+    if isinstance(cleaned, date):
+        return cleaned
+    parsed = pd.to_datetime(cleaned, errors="coerce")
+    if pd.isna(parsed):
+        raise ValueError(f"Invalid DATE value for BigQuery: {value!r}")
+    return parsed.date()
+
+
+def tables_to_ensure(*, skip_pga: bool, skip_mlb: bool) -> list[str]:
+    names: list[str] = []
+    if not skip_pga:
+        names.extend(["pga_tournaments", "pga_player_predictions"])
+    if not skip_mlb:
+        names.append("mlb_home_run_predictions")
+    return names
 
 
 def _player_id(pred: dict[str, Any]) -> str:
@@ -358,7 +386,7 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
                 rows.append(
                     {
                         "game_id": pred.get("gameId"),
-                        "game_date": pred.get("gameDate") or pred.get("eventTime", "")[:10],
+                        "game_date": _as_bq_date(pred.get("gameDate") or pred.get("eventTime")),
                         "event_time": pred.get("eventTime"),
                         "player_id": _player_id(pred),
                         "player_name": pred.get("player"),
@@ -373,7 +401,7 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
                         "rank": pred.get("rank"),
                         **_comparison_fields(pred, comparison, model_version),
                         "games_since_last_hr": pred.get("gamesSinceLastHr"),
-                        "last_hr_date": pred.get("lastHrDate"),
+                        "last_hr_date": _as_bq_date(pred.get("lastHrDate")),
                         "confidence": pred.get("confidence"),
                         "model_version": model_version,
                         "prediction_ts": pred.get("updatedAt") or payload.get("generatedAt"),
@@ -399,7 +427,7 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
         rows.append(
             {
                 "game_id": pred.get("gameId"),
-                "game_date": pred.get("gameDate") or pred.get("eventTime", "")[:10],
+                "game_date": _as_bq_date(pred.get("gameDate") or pred.get("eventTime")),
                 "event_time": pred.get("eventTime"),
                 "player_id": _player_id(pred),
                 "player_name": pred.get("player"),
@@ -414,7 +442,7 @@ def build_mlb_rows(path: Path) -> list[tuple[list[dict[str, Any]], str, str]]:
                 "rank": pred.get("rank"),
                 **_comparison_fields(pred, pred, model_version or ""),
                 "games_since_last_hr": pred.get("gamesSinceLastHr"),
-                "last_hr_date": pred.get("lastHrDate"),
+                "last_hr_date": _as_bq_date(pred.get("lastHrDate")),
                 "confidence": pred.get("confidence"),
                 "model_version": model_version,
                 "prediction_ts": pred.get("updatedAt") or payload.get("generatedAt"),
@@ -454,9 +482,10 @@ def main() -> None:
     dataset_id = f"{args.project}.{args.dataset}"
     client.create_dataset(bigquery.Dataset(dataset_id), exists_ok=True)
 
+    selected = tables_to_ensure(skip_pga=args.skip_pga, skip_mlb=args.skip_mlb)
     table_ids = {name: f"{dataset_id}.{name}" for name in TABLES}
-    for name, table_id in table_ids.items():
-        _ensure_table(client, table_id, TABLES[name])
+    for name in selected:
+        _ensure_table(client, table_ids[name], TABLES[name])
 
     if not args.skip_pga and args.pga_json.exists():
         tournament_rows, prediction_rows, event_key, model_version = build_pga_rows(args.pga_json)
@@ -488,7 +517,7 @@ def main() -> None:
                 table_ids["mlb_home_run_predictions"],
                 f"delete from `{table_ids['mlb_home_run_predictions']}` where game_date = @game_date and model_version = @model_version",
                 [
-                    bigquery.ScalarQueryParameter("game_date", "DATE", game_date),
+                    bigquery.ScalarQueryParameter("game_date", "DATE", _as_bq_date(game_date)),
                     bigquery.ScalarQueryParameter("model_version", "STRING", model_version),
                 ],
             )

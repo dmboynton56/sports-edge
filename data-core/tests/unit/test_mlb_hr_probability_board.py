@@ -157,6 +157,26 @@ def test_prediction_rows_include_probability_board_fields() -> None:
     assert row["statcastAvailable"] is True
     assert row["modelAgreement"] == "Consensus"
     assert "consensusScore" in row
+    assert row["gameDate"] == "2026-06-26"
+
+
+def test_prediction_rows_emit_yyyy_mm_dd_game_date_from_timestamps() -> None:
+    v1 = _prediction_frame(
+        [
+            {
+                "player_id": 1,
+                "hr_probability": 0.25,
+                "rank": 1,
+                "game_date": pd.Timestamp("2026-09-04T00:00:00"),
+                "last_hr_date": pd.Timestamp("2026-08-30T00:00:00"),
+            }
+        ]
+    )
+
+    row = _predictions_to_rows(v1)[0]
+
+    assert row["gameDate"] == "2026-09-04"
+    assert row["lastHrDate"] == "2026-08-30"
 
 
 def test_statcast_blend_fills_missing_enriched_candidates(monkeypatch) -> None:
