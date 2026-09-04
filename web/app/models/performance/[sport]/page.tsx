@@ -359,7 +359,7 @@ export default async function SportPerformancePage({
         {WINDOWS.map((item) => (
           <Link
             key={item}
-            href={`/performance/${sport.slug}?window=${item}`}
+            href={`/models/performance/${sport.slug}?window=${item}`}
             aria-current={window === item ? "page" : undefined}
             className={cn(buttonVariants({ variant: window === item ? "default" : "outline", size: "sm" }))}
           >

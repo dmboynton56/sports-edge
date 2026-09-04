@@ -1023,7 +1023,7 @@ export default function PGAPage() {
                               <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                                 {[
                                   ['Win', pctDisplay(r.winPct), pctDisplay(r.preWinPct)],
-                                  ...(isNoCutEvent ? [] : [['Make Cut', pctDisplay(r.makeCutPct), pctDisplay(r.preMakeCutPct)] as [string, string, string]]),
+                                  ...(isNoCutEvent ? [] : [['Make Cut', pctDisplay(r.makeCutPct), pctDisplay(r.preMakeCutPct)]]),
                                   ['Top 10', pctDisplay(r.top10Pct), pctDisplay(r.preTop10Pct)],
                                   ['Top 20', pctDisplay(r.top20Pct), pctDisplay(r.preTop20Pct)],
                                   ['SG/R', strokesDisplay(r.updatedSg), strokesDisplay(r.preSg)],

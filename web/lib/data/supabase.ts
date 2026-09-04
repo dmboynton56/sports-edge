@@ -1,3 +1,5 @@
+import type { JsonValue } from "@/lib/data/json";
+
 export type SupabaseRuntimeConfig = {
   url?: string;
   anonKey?: string;
@@ -25,7 +27,8 @@ export function getSupabaseMissingEnv() {
   return missing.filter((value): value is string => Boolean(value));
 }
 
-export function asRestRows<T>(payload: unknown): T[] | null {
+export function asRestRows<T>(payload: JsonValue): T[] | null {
+  // SAFETY: Callers supply the row contract for a matching Supabase select and this boundary verifies the response is an array.
   return Array.isArray(payload) ? (payload as T[]) : null;
 }
 

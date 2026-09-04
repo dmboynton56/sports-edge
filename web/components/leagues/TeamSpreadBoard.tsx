@@ -69,7 +69,7 @@ export function TeamSpreadBoard({
   detailBasePath,
 }: {
   feed: TeamSlateFeed;
-  detailBasePath: "/nba" | "/nfl";
+  detailBasePath: "/markets/nba" | "/markets/nfl";
 }) {
   const cardPicks = feed.games.map(toEnrichedPick).filter((pick): pick is EnrichedPick => pick !== null);
 

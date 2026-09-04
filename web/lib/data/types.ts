@@ -21,6 +21,8 @@ export type Prediction = {
   kelly: NullableNumber;
   confidence: NullableNumber;
   modelVersion: string;
+  marketStatus: "supported" | "research" | "model_only";
+  detailHref?: string;
   source?: string;
   updatedAt?: string | null;
 };

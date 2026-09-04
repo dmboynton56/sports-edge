@@ -1,135 +1,78 @@
+import { ChannelCard } from "@/components/dashboard/ChannelCard";
 import { PageHeader } from "@/components/dashboard/PageHeader";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { deriveDataQuality } from "@/lib/data/data-quality";
 import { getEvaluationsBundle } from "@/lib/data/evaluations";
-import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
+import { getPerformanceHistory } from "@/lib/data/performance";
+import { getMlbHomeRunBoardSnapshot } from "@/lib/data/player-markets";
+import { getResultsData } from "@/lib/data/results";
+import { formatNumber } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default async function ModelsPage() {
-  const bundle = await getEvaluationsBundle();
+export default async function ModelsOverviewPage() {
+  const [registry, performance, results, mlbHealth] = await Promise.all([
+    getEvaluationsBundle(),
+    getPerformanceHistory(),
+    getResultsData(),
+    getMlbHomeRunBoardSnapshot(),
+  ]);
+  const quality = deriveDataQuality(performance);
+  const productionModels = registry.registry.filter((entry) => entry.status === "production").length;
+  const performanceRows = performance.records.reduce((total, row) => total + (row.sampleSize ?? 0), 0);
+  const resultRows = results.gameRows.length + results.mlbHrRows.length + results.pgaRows.length;
+  const qualityIssues = quality.filter((row) => row.status !== "ok").length
+    + (mlbHealth.status === "healthy" ? 0 : 1);
 
   return (
     <div>
       <PageHeader
-        title="Model Registry"
-        description="Production model versions, evaluation evidence, and strategy backtests."
-        meta={bundle.generatedAt}
+        title="Models"
+        description="Accountability for what is running, how it performed, what was graded, and whether its inputs are healthy."
+        meta={`${formatNumber(registry.registry.length)} registered models`}
       />
 
-      {bundle.gaps.length ? (
-        <div className="mb-4 flex flex-wrap gap-2">
-          {bundle.gaps.map((gap) => (
-            <Badge key={gap} variant="missing">
-              {gap}
-            </Badge>
-          ))}
-        </div>
-      ) : null}
-
-      <Card className="mb-4">
-        <CardHeader>
-          <CardTitle>Active Registry</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>League</TableHead>
-                <TableHead>Version</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Notes</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {bundle.registry.map((entry) => (
-                <TableRow key={`${entry.league}-${entry.modelVersion}`}>
-                  <TableCell>{entry.league}</TableCell>
-                  <TableCell>{entry.modelVersion}</TableCell>
-                  <TableCell>
-                    <Badge variant={entry.status === "production" ? "accent" : "outline"}>
-                      {entry.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{entry.notes}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Evaluation Runs</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>League</TableHead>
-                  <TableHead>Model</TableHead>
-                  <TableHead>Eval</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bundle.evaluations.slice(0, 12).map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.league}</TableCell>
-                    <TableCell>
-                      {row.modelName} {row.modelVersion}
-                    </TableCell>
-                    <TableCell>{row.evaluationName}</TableCell>
-                    <TableCell>{row.status}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Strategy Backtests</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>League</TableHead>
-                  <TableHead>Strategy</TableHead>
-                  <TableHead>Sample</TableHead>
-                  <TableHead>ROI</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {bundle.strategies.slice(0, 12).map((row) => (
-                  <TableRow key={row.id}>
-                    <TableCell>{row.league}</TableCell>
-                    <TableCell>{row.strategyId}</TableCell>
-                    <TableCell>{formatNumber(row.sampleSize)}</TableCell>
-                    <TableCell>{formatPct(row.roi)}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+      <div className="grid gap-3 md:grid-cols-2">
+        <ChannelCard
+          href="/models/registry"
+          title="Registry"
+          description="Active model versions, evaluation runs, and strategy evidence."
+          figures={[
+            { value: formatNumber(registry.registry.length), label: "Registered" },
+            { value: formatNumber(productionModels), label: "Production" },
+          ]}
+          cta="Inspect the registry"
+        />
+        <ChannelCard
+          href="/models/performance"
+          title="Performance"
+          description="Backtests, live windows, ROI evidence, and production gates by sport."
+          figures={[
+            { value: formatNumber(performance.records.length), label: "Records" },
+            { value: formatNumber(performanceRows), label: "Backtest rows" },
+          ]}
+          cta="Review performance"
+        />
+        <ChannelCard
+          href="/models/results"
+          title="Results"
+          description="Official outcomes graded against immutable pregame snapshots."
+          figures={[
+            { value: formatNumber(results.summaries.length), label: "Summaries" },
+            { value: formatNumber(resultRows), label: "Recent grades" },
+          ]}
+          cta="Open graded results"
+        />
+        <ChannelCard
+          href="/models/data-quality"
+          title="Data quality"
+          description="Freshness, coverage, environment readiness, and blocking feed gaps."
+          figures={[
+            { value: formatNumber(qualityIssues), label: "Need attention", tone: qualityIssues ? "down" : "up" },
+            { value: formatNumber(quality.length + 1), label: "Sources" },
+          ]}
+          cta="Check data health"
+        />
       </div>
-
-      <p className="mt-4 text-xs text-muted-foreground">
-        Updated {formatDateTime(bundle.generatedAt)}
-      </p>
     </div>
   );
 }

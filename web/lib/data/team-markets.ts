@@ -75,10 +75,10 @@ type TeamMarketFeed = {
 // Held-out residual scales used only to translate a point projection into a
 // research cover probability. They are deliberately surfaced as approximate,
 // not as a promoted betting model.
-const SPREAD_RESIDUAL_SIGMA: Record<"NBA" | "NFL", number> = {
+const SPREAD_RESIDUAL_SIGMA = {
   NFL: 13.957504133352113,
   NBA: 15.191160518903473,
-};
+} satisfies Record<"NBA" | "NFL", number>;
 
 async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
@@ -335,6 +335,8 @@ export function buildTeamMarketPredictions(
           kelly: quarterKelly(modelProbability, row.price),
           confidence: modelProbability == null ? null : Math.abs(modelProbability - 0.5) * 2,
           modelVersion,
+          marketStatus: modelProbability == null ? "model_only" : "research",
+          detailHref: `/markets/${league.toLowerCase()}/${game.id}`,
           source: "Supabase team model + The Odds API snapshot",
           updatedAt: prediction?.asof_ts ?? row.snapshot_ts,
         };

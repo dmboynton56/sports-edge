@@ -43,7 +43,7 @@ function groupGaps(gaps: string[]) {
   return [...groups.entries()];
 }
 
-export default async function DataQualityPage() {
+export default async function ModelDataQualityPage() {
   const [history, mlbHr] = await Promise.all([
     getPerformanceHistory(),
     getMlbHomeRunBoardSnapshot(),

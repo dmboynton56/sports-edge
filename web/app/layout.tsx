@@ -44,6 +44,8 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
+        {/* Must stay a raw inline script: next/script defers even
+            beforeInteractive behind its runtime queue, which paints first. */}
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body

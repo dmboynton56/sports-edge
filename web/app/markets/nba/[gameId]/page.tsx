@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getGameExplanation } from "@/lib/data/explanations";
 import { getTeamSlateGame } from "@/lib/data/team-markets";
-import { formatPct } from "@/lib/format";
+import { formatDateTime, formatPct } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -16,11 +16,11 @@ function formatSpread(line: number | null) {
   return line > 0 ? `+${line.toFixed(1)}` : line.toFixed(1);
 }
 
-export default async function NflGamePage({ params }: { params: Promise<{ gameId: string }> }) {
+export default async function NbaGamePage({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = await params;
   const [game, explanation] = await Promise.all([
-    getTeamSlateGame("NFL", gameId),
-    getGameExplanation(gameId, "NFL"),
+    getTeamSlateGame("NBA", gameId),
+    getGameExplanation(gameId, "NBA"),
   ]);
 
   if (!game) notFound();
@@ -29,13 +29,13 @@ export default async function NflGamePage({ params }: { params: Promise<{ gameId
     <div>
       <PageHeader
         title={`${game.awayTeam} @ ${game.homeTeam}`}
-        description="NFL game detail with model spread, win probability, and feature drivers."
+        description="NBA game detail with model spread, win probability, and feature drivers."
         meta={game.predictionTs ?? game.gameTimeUtc}
       />
 
       <div className="mb-4">
-        <Link href="/nfl" className="text-sm text-muted-foreground hover:underline">
-          ← Back to NFL slate
+        <Link href="/markets/nba" className="text-sm text-muted-foreground hover:underline">
+          ← Back to NBA slate
         </Link>
       </div>
 
@@ -45,12 +45,6 @@ export default async function NflGamePage({ params }: { params: Promise<{ gameId
             <CardTitle>Prediction</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
-            {game.week != null ? (
-              <div className="flex justify-between">
-                <span>Week</span>
-                <span>{game.week}</span>
-              </div>
-            ) : null}
             <div className="flex justify-between">
               <span>Book spread</span>
               <span className="font-mono">{formatSpread(game.bookSpread)}</span>
@@ -67,7 +61,15 @@ export default async function NflGamePage({ params }: { params: Promise<{ gameId
               <span>Home win prob</span>
               <span>{formatPct(game.homeWinProb)}</span>
             </div>
-            <div className="flex flex-wrap gap-2 pt-2">
+            <div className="flex justify-between">
+              <span>Model</span>
+              <span>{game.modelVersion ?? "n/a"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Updated</span>
+              <span>{formatDateTime(game.predictionTs)}</span>
+            </div>
+            <div className="flex gap-2 pt-2">
               <Badge variant={game.freshnessStatus === "fresh" ? "accent" : "missing"}>
                 {game.freshnessStatus}
               </Badge>
@@ -85,11 +87,11 @@ export default async function NflGamePage({ params }: { params: Promise<{ gameId
             {explanation ? (
               <>
                 <div className="flex justify-between">
-                  <span>Home EPA delta</span>
+                  <span>Home injury delta</span>
                   <span>{explanation.homeInjuryDelta?.toFixed(2) ?? "0.00"}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Away EPA delta</span>
+                  <span>Away injury delta</span>
                   <span>{explanation.awayInjuryDelta?.toFixed(2) ?? "0.00"}</span>
                 </div>
               </>

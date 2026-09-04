@@ -69,6 +69,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
     next: { revalidate: 60 },
   });
   if (!response.ok) return null;
+  // SAFETY: This helper is called only with the typed Supabase view selected by each CFB feed query.
   return (await response.json()) as T[];
 }
 
@@ -111,6 +112,8 @@ function mapMarket(row: SupabaseCfbMarket): Prediction {
     kelly: row.odds_status === "priced" ? row.quarter_kelly : null,
     confidence: row.confidence,
     modelVersion: row.model_version,
+    marketStatus: row.odds_status === "priced" ? "research" : "model_only",
+    detailHref: "/markets/cfb",
     source: "Supabase cfb_market_edges_latest",
     updatedAt: row.odds_snapshot_ts,
   };

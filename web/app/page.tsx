@@ -87,49 +87,30 @@ export default async function Home() {
 
       <SectionHeading title="Where to go" note="Trusted product surfaces" />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-3 md:grid-cols-3">
         <ChannelCard
-          className="lg:col-span-3"
           href="/markets"
           title="Markets"
-          description="Open the trusted MLB HR board with all candidates, sportsbook coverage, and explicit model-only rows."
+          description="Scan every current model prediction, price, edge, and evidence status in one board."
           chips={marketChips}
           cta="Open the board"
         />
         <ChannelCard
-          className="lg:col-span-3"
-          href="/results"
-          title="Results"
-          description="Official outcomes graded against the immutable pregame publication snapshot."
-          figures={[{ value: formatNumber(backtestRows), label: "Backtest rows" }, { value: String(history.records.length), label: "Models" }]}
-          cta="See the grades"
+          href="/models"
+          title="Models"
+          description="Audit registry, performance, results, insights, and data health in one accountable section."
+          figures={[{ value: formatNumber(backtestRows), label: "Backtest rows" }, { value: String(unhealthySources), label: "Need attention", tone: unhealthySources ? "down" : "up" }]}
+          cta="Review the evidence"
         />
         <ChannelCard
-          className="lg:col-span-2"
-          href="/performance"
-          title="Performance"
-          description="Persisted backtest evidence by sport and market, kept separate from live board health."
-          cta="See the record"
-        />
-        <ChannelCard
-          className="lg:col-span-2"
-          href="/insights"
-          title="Insights"
-          description="Write-ups on what changed and what the models got wrong."
-          figures={[{ value: "2", label: "Posts" }]}
-          cta="Read the notes"
-        />
-        <ChannelCard
-          className="lg:col-span-2"
-          href="/data-quality"
-          title="Data quality"
-          description="Current board status, pricing coverage, and freshness for every upstream source."
-          figures={[{ value: String(unhealthySources), label: "Need work", tone: unhealthySources ? "down" : "up" }, { value: String(quality.length + 1), label: "Sources" }]}
-          cta="Check the sources"
+          href="/fantasy"
+          title="Fantasy"
+          description="Build lineups from projections, draft value, and configurable roster settings."
+          cta="Open fantasy tools"
         />
       </div>
 
-      <SectionHeading title="Backtest record" note="Season to date" action={{ label: "All performance", href: "/performance" }} />
+      <SectionHeading title="Backtest record" note="Season to date" action={{ label: "All performance", href: "/models/performance" }} />
 
       <Card className="overflow-hidden">
         <Table>
