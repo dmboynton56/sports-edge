@@ -30,8 +30,9 @@ from src.pipeline.mlb_research_markets import (
     load_mlb_totals_v1,
     score_research_markets_for_date,
 )
+from src.data.mlb_fetcher import mlb_schedule_to_games_df
 from src.models.mlb_runline_model import cover_probability_from_residuals
-from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
+from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials, upsert_games_pg
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MONEYLINE_MODEL = ROOT / "models" / "mlb_winner_model_v3.pkl"
@@ -356,6 +357,12 @@ def main() -> None:
     )
     
     try:
+        slate = result.moneyline if not result.moneyline.empty else result.totals
+        if slate.empty:
+            slate = result.run_line
+        games_df = mlb_schedule_to_games_df(slate, season=season)
+        game_ids = upsert_games_pg(pg_conn, games_df)
+        print(f"Upserted {len(game_ids)} MLB slate games into serving table.")
         print("Fetching latest odds from Supabase...")
         odds_map = _fetch_latest_odds(pg_conn)
         print(f"Fetched odds for {len(odds_map)} (game_pk, market) pairs")

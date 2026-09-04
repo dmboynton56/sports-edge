@@ -26,7 +26,8 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
+from src.data.mlb_fetcher import mlb_schedule_to_games_df  # noqa: E402
+from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials, upsert_games_pg  # noqa: E402
 from src.utils.team_codes import canonical_mlb_abbr  # noqa: E402
 
 LOGGER = logging.getLogger(__name__)
@@ -269,6 +270,13 @@ def sync_event_odds(
     if not candidates:
         result.matched = False
         result.error = "no_supabase_game_match"
+        LOGGER.warning(
+            "No Supabase games row for %s @ %s game_pk=%s commence=%s",
+            away_abbr,
+            home_abbr,
+            game_pk,
+            commence_time,
+        )
         return result
     game_id = min(
         candidates,
@@ -425,6 +433,9 @@ def main() -> None:
 
     try:
         snapshot_ts = datetime.now(timezone.utc)
+        games_df = mlb_schedule_to_games_df(schedule, season=season)
+        game_ids = upsert_games_pg(conn, games_df)
+        LOGGER.info("Upserted %s MLB slate games into serving table", len(game_ids))
         results = sync_mlb_odds(conn, odds_events, schedule, snapshot_ts)
 
         matched = sum(1 for r in results if r.matched)
