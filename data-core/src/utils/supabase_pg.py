@@ -7,7 +7,20 @@ import pandas as pd
 def create_pg_connection(supabase_url: str, password: str, host_override: Optional[str] = None, 
                          port: str = "5432", database: str = "postgres", user: str = "postgres"):
     """Create a PostgreSQL connection to Supabase."""
-    host = host_override or supabase_url.split("//")[1].split(".")[0] + ".supabase.co"
+    if host_override:
+        host = host_override
+    else:
+        if not supabase_url:
+            raise ValueError(
+                "Missing Supabase Postgres host: set SUPABASE_DB_HOST or SUPABASE_URL "
+                "(expected https://<project-ref>.supabase.co)."
+            )
+        try:
+            host = supabase_url.split("//")[1].split(".")[0] + ".supabase.co"
+        except (AttributeError, IndexError) as exc:
+            raise ValueError(
+                f"Invalid SUPABASE_URL {supabase_url!r}; expected https://<project-ref>.supabase.co"
+            ) from exc
     conn_str = f"host={host} port={port} dbname={database} user={user} password={password} sslmode=require"
     return psycopg.connect(conn_str, prepare_threshold=None)
 
