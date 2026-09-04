@@ -146,6 +146,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
       next: { revalidate: 60 },
     });
     if (!response.ok) return null;
+    // SAFETY: This internal REST helper is called only with the typed projection matching each selected Supabase view.
     return (await response.json()) as T[];
   } catch {
     return null;
@@ -153,6 +154,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
 }
 
 function mapResearchRow(row: SupabaseResearchRow): MlbResearchPrediction {
+  // SAFETY: The serving view constrains market to the three research markets requested by getMlbResearchBoard.
   const base = {
     id: row.prediction_id,
     market: row.market as "moneyline" | "run_line" | "total",
@@ -164,6 +166,7 @@ function mapResearchRow(row: SupabaseResearchRow): MlbResearchPrediction {
     homeTeam: row.home_team,
     awayTeam: row.away_team,
     venue: row.venue,
+    // SAFETY: The serving view constrains odds_status to these three publication states.
     oddsStatus: row.odds_status as "ok" | "missing_odds" | "stale",
     bestBook: row.best_book,
     edge: row.edge,

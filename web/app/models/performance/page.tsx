@@ -30,7 +30,7 @@ function sportCardFor(sport: (typeof SPORTS)[number], records: Performance[]) {
     <ChannelCard
       key={sport.slug}
       sport={sport.slug}
-      href={`/performance/${sport.slug}`}
+      href={`/models/performance/${sport.slug}`}
       title={sport.label}
       description={sport.description}
       figures={[
@@ -158,7 +158,7 @@ export default async function PerformancePage() {
         />
       </div>
 
-      <div className="mt-3 grid gap-3 xl:grid-cols-[0.8fr_1.2fr]">
+      <div className="mt-3 grid gap-3 [&>*]:min-w-0 xl:grid-cols-[0.8fr_1.2fr]">
         <Card>
           <CardHeader>
             <CardTitle>ROI by league</CardTitle>
@@ -177,7 +177,7 @@ export default async function PerformancePage() {
         </Card>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-4 grid gap-4 [&>*]:min-w-0 lg:grid-cols-2">
         <LeagueSection title="NBA Performance" records={nbaRecords} />
         <LeagueSection title="NFL Performance" records={nflRecords} />
       </div>

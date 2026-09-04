@@ -22,7 +22,14 @@ export type DraftRecommendation<T extends FantasyProjection = FantasyProjection>
 };
 
 const POSITIONS: FantasyPosition[] = ["QB", "RB", "WR", "TE", "K", "DST"];
-const FLEX_WEIGHTS: Partial<Record<FantasyPosition, number>> = { RB: 0.4, WR: 0.5, TE: 0.1 };
+const FLEX_WEIGHTS = {
+  QB: 0,
+  RB: 0.4,
+  WR: 0.5,
+  TE: 0.1,
+  K: 0,
+  DST: 0,
+} satisfies Record<FantasyPosition, number>;
 
 export function totalRosterSlots(roster: FantasyRoster) {
   return roster.quarterback + roster.running_back + roster.wide_receiver + roster.tight_end
@@ -70,6 +77,7 @@ export function recommendDraftPicks<T extends FantasyProjection & { displayPoint
       .map((row, index) => [row.player_id, index + 1]),
   );
 
+  // SAFETY: POSITIONS contains every FantasyPosition exactly once, so Object.fromEntries produces a complete record.
   const baselines = Object.fromEntries(POSITIONS.map((position) => {
     const positional = rows
       .filter((row) => row.position === position)
@@ -106,27 +114,27 @@ export function recommendDraftPicks<T extends FantasyProjection & { displayPoint
 }
 
 function replacementRank(position: FantasyPosition, roster: FantasyRoster) {
-  const starters: Record<FantasyPosition, number> = {
+  const starters = {
     QB: roster.quarterback,
     RB: roster.running_back,
     WR: roster.wide_receiver,
     TE: roster.tight_end,
     K: roster.kicker,
     DST: roster.defense,
-  };
+  } satisfies Record<FantasyPosition, number>;
   const flexShare = (FLEX_WEIGHTS[position] ?? 0) * roster.flex;
   return Math.max(1, Math.ceil(roster.teams * (starters[position] + flexShare)) + 1);
 }
 
 function starterNeed(position: FantasyPosition, counts: Record<FantasyPosition, number>, roster: FantasyRoster) {
-  const baseNeeds: Record<FantasyPosition, number> = {
+  const baseNeeds = {
     QB: roster.quarterback,
     RB: roster.running_back,
     WR: roster.wide_receiver,
     TE: roster.tight_end,
     K: roster.kicker,
     DST: roster.defense,
-  };
+  } satisfies Record<FantasyPosition, number>;
   if (counts[position] < baseNeeds[position]) return true;
   if (!["RB", "WR", "TE"].includes(position)) return false;
   const flexUsed = Math.max(0, counts.RB - roster.running_back)
@@ -136,6 +144,7 @@ function starterNeed(position: FantasyPosition, counts: Record<FantasyPosition, 
 }
 
 function positionCounts(rows: FantasyProjection[]) {
+  // SAFETY: POSITIONS contains every FantasyPosition exactly once, initialized to zero.
   const counts = Object.fromEntries(POSITIONS.map((position) => [position, 0])) as Record<FantasyPosition, number>;
   for (const row of rows) counts[row.position] += 1;
   return counts;

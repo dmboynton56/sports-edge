@@ -173,10 +173,10 @@ export default async function GradingRoundupInsightPage() {
           <CardTitle>Where to look next</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-x-6 gap-y-3 text-sm">
-          <Link className="font-medium text-accent hover:underline" href="/performance">
+          <Link className="font-medium text-accent hover:underline" href="/models/performance">
             Performance hub
           </Link>
-          <Link className="font-medium text-accent hover:underline" href="/results">
+          <Link className="font-medium text-accent hover:underline" href="/models/results">
             Graded results
           </Link>
           <Link className="font-medium text-accent hover:underline" href="/markets">

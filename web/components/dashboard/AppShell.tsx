@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -20,15 +21,9 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/", label: "Overview" },
-  { href: "/nba", label: "NBA" },
-  { href: "/nfl", label: "NFL" },
   { href: "/markets", label: "Markets" },
   { href: "/models", label: "Models" },
   { href: "/fantasy", label: "Fantasy" },
-  { href: "/performance", label: "Performance" },
-  { href: "/results", label: "Results" },
-  { href: "/insights", label: "Insights" },
-  { href: "/data-quality", label: "Data quality" },
 ];
 
 function useActive() {
@@ -172,6 +167,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <BrandMark />
                       Sports Edge
                     </SheetTitle>
+                    <SheetDescription className="sr-only">
+                      Primary Sports Edge navigation
+                    </SheetDescription>
                   </SheetHeader>
                   <div className="mt-8">
                     <MobileNav onNavigate={() => setOpen(false)} />

@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 
 import type { MlbResearchPrediction } from "@/lib/data/mlb-research";
-import { filterCurrentPositiveEv, mapMlbResearchPrediction } from "@/lib/data/unified-markets";
+import {
+  deduplicateWarnings,
+  mapMlbResearchPrediction,
+  prepareUnifiedMarketRows,
+} from "@/lib/data/unified-markets";
 import type { Prediction } from "@/lib/data/types";
 
 const researchRow: MlbResearchPrediction = {
@@ -10,7 +14,7 @@ const researchRow: MlbResearchPrediction = {
   modelVersion: "mlb-runline-v1",
   gameId: "MLB_1",
   gamePk: 1,
-  gameDate: "2026-09-03",
+  gameDate: "2026-09-04",
   eventTime: "2026-09-04T02:00:00Z",
   homeTeam: "COL",
   awayTeam: "SD",
@@ -47,30 +51,66 @@ function prediction(overrides: Partial<Prediction> = {}): Prediction {
     kelly: 0.01,
     confidence: 0.6,
     modelVersion: "v1",
+    marketStatus: "research",
     ...overrides,
   };
 }
 
-describe("unified research markets", () => {
-  it("maps the recommended MLB side, price, line, and implied probability", () => {
-    const mapped = mapMlbResearchPrediction(researchRow);
+describe("unified markets", () => {
+  it("maps priced and unpriced MLB research rows to the right statuses", () => {
+    const priced = mapMlbResearchPrediction(researchRow);
+    const modelOnly = mapMlbResearchPrediction({
+      ...researchRow,
+      oddsStatus: "missing_odds",
+      recommendedProbability: undefined,
+      recommendedSide: undefined,
+      pHomeCover15: 0.44,
+      pAwayCoverPlus15: 0.56,
+    });
 
-    expect(mapped.subject).toBe("SD +1.5 run line");
-    expect(mapped.line).toBe(1.5);
-    expect(mapped.price).toBe(-115);
-    expect(mapped.impliedProbability).toBeCloseTo(0.54);
+    expect(priced).toMatchObject({
+      subject: "SD +1.5 run line",
+      line: 1.5,
+      price: -115,
+      marketStatus: "research",
+    });
+    expect(priced.impliedProbability).toBeCloseTo(0.54);
+    expect(modelOnly).toMatchObject({
+      subject: "SD +1.5 run line",
+      price: null,
+      modelProbability: 0.56,
+      marketStatus: "model_only",
+    });
   });
 
-  it("keeps only future positive-EV rows and sorts highest first", () => {
+  it("includes positive, zero, negative-EV, and model-only rows with null EV last", () => {
     const now = new Date("2026-09-04T00:00:00Z").getTime();
-    const rows = filterCurrentPositiveEv([
-      prediction({ id: "low", ev: 0.03 }),
-      prediction({ id: "high", ev: 0.12 }),
-      prediction({ id: "started", eventTime: "2026-09-03T23:00:00Z", ev: 0.5 }),
+    const result = prepareUnifiedMarketRows([
       prediction({ id: "negative", ev: -0.01 }),
-      prediction({ id: "unpriced", ev: null }),
+      prediction({ id: "positive", ev: 0.12 }),
+      prediction({ id: "zero", ev: 0 }),
+      prediction({ id: "model", book: "model", price: null, ev: null, marketStatus: "research" }),
     ], now);
 
-    expect(rows.map((row) => row.id)).toEqual(["high", "low"]);
+    expect(result.predictions.map((row) => row.id)).toEqual(["positive", "zero", "negative", "model"]);
+    expect(result.predictions.at(-1)?.marketStatus).toBe("model_only");
+  });
+
+  it("deduplicates rows, filters started events, and withholds sportsbook rows without a model probability", () => {
+    const now = new Date("2026-09-04T00:00:00Z").getTime();
+    const result = prepareUnifiedMarketRows([
+      prediction({ id: "kept" }),
+      prediction({ id: "kept", subject: "duplicate" }),
+      prediction({ id: "started", eventTime: "2026-09-03T23:00:00Z" }),
+      prediction({ id: "unmodeled", modelProbability: null }),
+    ], now);
+
+    expect(result.predictions.map((row) => row.id)).toEqual(["kept"]);
+    expect(result.hiddenStartedOrInvalid).toBe(1);
+    expect(result.missingModelProbability).toBe(1);
+  });
+
+  it("deduplicates non-empty warnings", () => {
+    expect(deduplicateWarnings(["gap", "gap", "", null, "other"])).toEqual(["gap", "other"]);
   });
 });

@@ -7,7 +7,7 @@ import Link from "next/link";
 export function GapsBanner({
   count,
   summary,
-  href = "/data-quality",
+  href = "/models/data-quality",
 }: {
   count: number;
   summary: string;

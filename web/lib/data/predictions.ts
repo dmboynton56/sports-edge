@@ -56,6 +56,8 @@ function normalizePrediction(raw: RawPrediction, index: number): Prediction {
     kelly: isFiniteNumber(raw.kelly) ? raw.kelly : null,
     confidence: isFiniteNumber(raw.confidence) ? raw.confidence : null,
     modelVersion: raw.modelVersion ?? raw.model_version ?? "n/a",
+    marketStatus: raw.marketStatus ?? (isFiniteNumber(raw.price) ? "research" : "model_only"),
+    detailHref: raw.detailHref,
     source: raw.source,
     updatedAt: raw.updatedAt ?? null,
   };

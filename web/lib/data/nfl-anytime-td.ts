@@ -90,6 +90,8 @@ export function mapAnytimeTdRow(row: NflAnytimeTdRow): Prediction {
     kelly: row.quarter_kelly,
     confidence: Math.min(0.9, 0.55 + 0.35 * historyConfidence),
     modelVersion: row.model_version,
+    marketStatus: "research",
+    detailHref: `/markets/nfl/${row.game_id}`,
     source: "Calibrated nflverse player model + The Odds API best price",
     updatedAt: row.odds_snapshot_ts ?? row.prediction_ts,
   };

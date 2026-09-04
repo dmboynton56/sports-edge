@@ -33,7 +33,7 @@ function modelLabel(model: ExperimentMetricSet | null) {
   return `${model.modelVersion ?? "unknown"} / ${model.estimator ?? "unknown"}`;
 }
 
-export default async function MlbHrPytorchInsightPage() {
+export default async function MlbHrExperimentInsightPage() {
   const summary = await getMlbHrExperimentSummary();
   const baseline = summary.baseline;
   const pytorch = summary.pytorch;

@@ -65,7 +65,7 @@ export function PerformanceTables({ records }: { records: Performance[] }) {
 
   return (
     <Tabs defaultValue="roi" className="w-full">
-      <TabsList>
+      <TabsList className="flex w-full justify-start overflow-x-auto">
         <TabsTrigger value="roi">ROI</TabsTrigger>
         <TabsTrigger value="metrics">Metrics</TabsTrigger>
         <TabsTrigger value="gates">Gates</TabsTrigger>

@@ -3,13 +3,13 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 
 const posts = [
   {
-    href: "/insights/grading-roundup-2026",
+    href: "/models/insights/grading-roundup-2026",
     title: "2026 Grading & Backtest Roundup",
     description:
       "Live graded results, persisted backtest evidence, calibration coverage, and production readiness by sport.",
   },
   {
-    href: "/insights/mlb-hr-pytorch",
+    href: "/models/insights/mlb-hr-pytorch",
     title: "MLB HR PyTorch Experiment",
     description:
       "Baseline random-forest home-run metrics, the GPU training plan, and the before/after comparison slot.",
