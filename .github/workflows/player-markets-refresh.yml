@@ -300,16 +300,6 @@ jobs:
               --allow-empty
           fi
 
-      - name: Sync player markets to BigQuery
-        if: ${{ env.SYNC_BIGQUERY == 'true' }}
-        shell: bash
-        run: |
-          SYNC_ARGS=(--project "$PROJECT_ID")
-          if [ "$RUN_PGA" != "true" ]; then
-            SYNC_ARGS+=(--skip-pga)
-          fi
-          python scripts/sync_player_markets_to_bigquery.py "${SYNC_ARGS[@]}"
-
       - name: Sync player markets to Supabase
         id: sync_player_markets
         if: ${{ env.SYNC_SUPABASE == 'true' }}
@@ -409,3 +399,15 @@ jobs:
           curl -sf -X POST -H "Content-Type: application/json" \
             -d "{\"content\":\"MLB HR board ${GITHUB_WORKFLOW} ${GITHUB_RUN_ID}: ${STATUS}, top-25 coverage ${COVERAGE}.\"}" \
             "$DISCORD_WEBHOOK_URL"
+
+      # Warehouse sync is after live-board publish so a BigQuery failure cannot
+      # skip Supabase sync / grade / publish (run #121 left 2026-09-04 Unavailable).
+      - name: Sync player markets to BigQuery
+        if: ${{ env.SYNC_BIGQUERY == 'true' }}
+        shell: bash
+        run: |
+          SYNC_ARGS=(--project "$PROJECT_ID")
+          if [ "$RUN_PGA" != "true" ]; then
+            SYNC_ARGS+=(--skip-pga)
+          fi
+          python scripts/sync_player_markets_to_bigquery.py "${SYNC_ARGS[@]}"

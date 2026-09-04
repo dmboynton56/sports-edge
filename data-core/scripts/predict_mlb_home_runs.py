@@ -894,6 +894,22 @@ def _filter_to_candidate_set(predictions: pd.DataFrame, candidate_set: pd.DataFr
     return predictions.loc[mask].copy()
 
 
+def _date_only(value: Any) -> str | None:
+    """Serialize calendar dates as YYYY-MM-DD, not midnight timestamps."""
+    if value is None:
+        return None
+    try:
+        if pd.isna(value):
+            return None
+    except (TypeError, ValueError):
+        pass
+    parsed = pd.to_datetime(value, errors="coerce")
+    if pd.isna(parsed):
+        text = str(value).strip()
+        return text[:10] if text else None
+    return parsed.date().isoformat()
+
+
 def _predictions_to_rows(predictions: pd.DataFrame) -> list[dict[str, Any]]:
     rows = []
     for _, row in predictions.iterrows():
@@ -902,7 +918,7 @@ def _predictions_to_rows(predictions: pd.DataFrame) -> list[dict[str, Any]]:
                 "sport": "MLB",
                 "league": "MLB",
                 "gameId": row["game_id"],
-                "gameDate": row["game_date"],
+                "gameDate": _date_only(row["game_date"]),
                 "eventTime": row["event_time"],
                 "subject": f"{row['player_name']} HR",
                 "playerId": str(row["player_id"]),
@@ -931,7 +947,7 @@ def _predictions_to_rows(predictions: pd.DataFrame) -> list[dict[str, Any]]:
                 "gamesSinceLastHr": None
                 if row.get("games_since_last_hr") is None or (isinstance(row.get("games_since_last_hr"), float) and pd.isna(row.get("games_since_last_hr")))
                 else int(row["games_since_last_hr"]),
-                "lastHrDate": row.get("last_hr_date"),
+                "lastHrDate": _date_only(row.get("last_hr_date")),
                 "qualityFlags": json.loads(row["quality_flags"]),
                 "topFeatures": json.loads(row["top_features"]),
             }

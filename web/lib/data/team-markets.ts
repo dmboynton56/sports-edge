@@ -1,4 +1,4 @@
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, getSupabaseRuntimeConfig, asRestRows } from "@/lib/data/supabase";
 import type { Prediction } from "@/lib/data/types";
 
 export type FreshnessStatus = "fresh" | "stale" | "no_prediction" | "no_odds";
@@ -83,17 +83,21 @@ const SPREAD_RESIDUAL_SIGMA: Record<"NBA" | "NFL", number> = {
 async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
   if (!config.url || !config.anonKey) return null;
-  const base = config.url.replace(/\/$/, "");
-  const response = await fetch(`${base}/rest/v1/${resource}`, {
-    headers: {
-      apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-    },
-    next: { revalidate: 60 },
-  });
-  if (!response.ok) return null;
-  // SAFETY: Each caller supplies a typed Supabase select contract, and the REST endpoint returns an array for that query.
-  return (await response.json()) as T[];
+  try {
+    const base = config.url.replace(/\/$/, "");
+    const response = await fetch(`${base}/rest/v1/${resource}`, {
+      headers: {
+        apikey: config.anonKey,
+        Authorization: `Bearer ${config.anonKey}`,
+      },
+      next: { revalidate: 60 },
+    });
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return asRestRows<T>(payload);
+  } catch {
+    return null;
+  }
 }
 
 function todayInTimeZone(timeZone: string): string {
@@ -379,7 +383,7 @@ export async function getTeamSlateFeed(
   const windowEnd = addDays(today, lookahead);
 
   const games = await fetchGamesInWindow(league, windowStart, windowEnd);
-  if (!games) {
+  if (!Array.isArray(games)) {
     return {
       league,
       generatedAt: new Date().toISOString(),
@@ -426,52 +430,56 @@ export async function getTeamMarketPredictions(
   const today = todayInTimeZone(SLATE_TIME_ZONE);
   const lookaheadDays = options?.lookaheadDays ?? (league === "NFL" ? 14 : 2);
   const end = addDays(today, lookaheadDays);
-  const games = await fetchGamesInWindow(league, today, end);
-  if (!games) {
+  try {
+    const games = await fetchGamesInWindow(league, today, end);
+    if (!Array.isArray(games) || games.length === 0) {
+      return {
+        generatedAt: null,
+        predictions: [],
+        gaps: Array.isArray(games)
+          ? [`No ${league} games in window ${today} to ${end}.`]
+          : [...supabaseConfigGaps(), `Supabase ${league} game query failed.`],
+      };
+    }
+
+    const gameIds = games.map((game) => game.id);
+    const [predictionMap, oddsRows] = await Promise.all([
+      fetchLatestPredictions(gameIds),
+      fetchLatestFeaturedOdds(gameIds),
+    ]);
+    const predictionRows = Array.from(predictionMap.values());
+    const normalized = buildTeamMarketPredictions(league, games, predictionRows, oddsRows);
+    const gaps: string[] = [];
+    if (predictionRows.length < games.length) {
+      gaps.push(`${games.length - predictionRows.length} ${league} games lack a current team prediction.`);
+    }
+    if (oddsRows.length < games.length * 6) {
+      gaps.push(`${league} featured-market outcome coverage is incomplete (${oddsRows.length}/${games.length * 6}).`);
+    }
+    if (normalized.some((row) => row.market === "total")) {
+      gaps.push(`${league} totals prices are live, but a validated totals model head is not yet available; edge and EV stay blank.`);
+    }
+    if (league === "NFL") {
+      gaps.push("NFL Week 1 moneyline/spread outputs are preliminary: the 2025 holdout was weak and injury inputs are not complete.");
+    }
+
+    const timestamps = [
+      ...predictionRows.map((row) => row.asof_ts),
+      ...oddsRows.map((row) => row.snapshot_ts),
+    ].filter(Boolean).sort();
+    return {
+      generatedAt: timestamps.at(-1) ?? null,
+      predictions: normalized,
+      gaps,
+    };
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "unknown error";
     return {
       generatedAt: null,
       predictions: [],
-      gaps: [...supabaseConfigGaps(), `Supabase ${league} game query failed.`],
+      gaps: [...supabaseConfigGaps(), `Supabase ${league} game query failed: ${detail}`],
     };
   }
-  if (!games.length) {
-    return {
-      generatedAt: null,
-      predictions: [],
-      gaps: [`No ${league} games in window ${today} to ${end}.`],
-    };
-  }
-
-  const gameIds = games.map((game) => game.id);
-  const [predictionMap, oddsRows] = await Promise.all([
-    fetchLatestPredictions(gameIds),
-    fetchLatestFeaturedOdds(gameIds),
-  ]);
-  const predictionRows = Array.from(predictionMap.values());
-  const normalized = buildTeamMarketPredictions(league, games, predictionRows, oddsRows);
-  const gaps: string[] = [];
-  if (predictionRows.length < games.length) {
-    gaps.push(`${games.length - predictionRows.length} ${league} games lack a current team prediction.`);
-  }
-  if (oddsRows.length < games.length * 6) {
-    gaps.push(`${league} featured-market outcome coverage is incomplete (${oddsRows.length}/${games.length * 6}).`);
-  }
-  if (normalized.some((row) => row.market === "total")) {
-    gaps.push(`${league} totals prices are live, but a validated totals model head is not yet available; edge and EV stay blank.`);
-  }
-  if (league === "NFL") {
-    gaps.push("NFL Week 1 moneyline/spread outputs are preliminary: the 2025 holdout was weak and injury inputs are not complete.");
-  }
-
-  const timestamps = [
-    ...predictionRows.map((row) => row.asof_ts),
-    ...oddsRows.map((row) => row.snapshot_ts),
-  ].filter(Boolean).sort();
-  return {
-    generatedAt: timestamps.at(-1) ?? null,
-    predictions: normalized,
-    gaps,
-  };
 }
 
 export async function getTeamSlateGame(

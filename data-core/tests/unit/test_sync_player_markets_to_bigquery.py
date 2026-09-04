@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+from datetime import date, datetime
+
 import pytest
 from google.cloud import bigquery
 
 import json
 
-from scripts.sync_player_markets_to_bigquery import TABLES, _ensure_table, _load, build_mlb_rows
+from scripts.sync_player_markets_to_bigquery import (
+    TABLES,
+    _as_bq_date,
+    _ensure_table,
+    _load,
+    build_mlb_rows,
+    tables_to_ensure,
+)
 
 
 class FakeTableClient:
@@ -206,3 +215,68 @@ def test_build_mlb_rows_preserves_probability_board_comparison_fields(tmp_path) 
     assert all(row["statcast_available"] is True for row in rows)
     assert all(row["model_agreement"] == "Statcast boost" for row in rows)
     assert all(row["consensus_score"] == 124 for row in rows)
+    assert all(row["game_date"] == date(2026, 6, 30) for row in rows)
+
+
+def test_as_bq_date_accepts_midnight_iso_timestamps() -> None:
+    assert _as_bq_date("2026-09-04T00:00:00") == date(2026, 9, 4)
+    assert _as_bq_date("2026-09-04") == date(2026, 9, 4)
+    assert _as_bq_date(datetime(2026, 9, 4, 0, 0, 0)) == date(2026, 9, 4)
+    assert _as_bq_date(date(2026, 9, 4)) == date(2026, 9, 4)
+    assert _as_bq_date(None) is None
+
+
+def test_build_mlb_rows_coerces_datetime_game_date_for_bq_delete(tmp_path) -> None:
+    payload = {
+        "generatedAt": "2026-09-04T13:00:00+00:00",
+        "predictions": [
+            {
+                "gameId": "MLB_1",
+                "gameDate": "2026-09-04T00:00:00",
+                "eventTime": "2026-09-04T23:15:00+00:00",
+                "playerId": "123",
+                "player": "Test Bat",
+                "modelProbability": 0.21,
+                "modelVersion": "mlb-hr-v1",
+            }
+        ],
+        "models": {
+            "mlb-hr-v1": {
+                "modelVersion": "mlb-hr-v1",
+                "predictions": [
+                    {
+                        "gameId": "MLB_1",
+                        "gameDate": "2026-09-04T00:00:00",
+                        "eventTime": "2026-09-04T23:15:00+00:00",
+                        "playerId": "123",
+                        "player": "Test Bat",
+                        "modelProbability": 0.21,
+                        "modelVersion": "mlb-hr-v1",
+                        "rank": 1,
+                        "qualityFlags": [],
+                    }
+                ],
+            }
+        },
+    }
+    path = tmp_path / "mlb_home_runs.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    batches = build_mlb_rows(path)
+
+    assert len(batches) == 1
+    rows, game_date, model_version = batches[0]
+    assert game_date == date(2026, 9, 4)
+    assert rows[0]["game_date"] == date(2026, 9, 4)
+    param = bigquery.ScalarQueryParameter("game_date", "DATE", _as_bq_date(game_date))
+    assert param.value == date(2026, 9, 4)
+    assert model_version == "mlb-hr-v1"
+
+
+def test_tables_to_ensure_skips_pga_tables_when_requested() -> None:
+    assert tables_to_ensure(skip_pga=True, skip_mlb=False) == ["mlb_home_run_predictions"]
+    assert tables_to_ensure(skip_pga=False, skip_mlb=True) == [
+        "pga_tournaments",
+        "pga_player_predictions",
+    ]
+    assert tables_to_ensure(skip_pga=True, skip_mlb=True) == []
