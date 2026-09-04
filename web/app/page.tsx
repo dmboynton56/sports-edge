@@ -1,9 +1,11 @@
-import { ChannelCard, type ChannelChip } from "@/components/dashboard/ChannelCard";
+import Link from "next/link";
+
 import { GapsBanner } from "@/components/dashboard/GapsBanner";
+import { HowItWorks } from "@/components/dashboard/HowItWorks";
+import { LiveBoardPanel } from "@/components/dashboard/LiveBoardPanel";
 import { SectionHeading } from "@/components/dashboard/PageHeader";
 import { SportSwatch } from "@/components/dashboard/SportChip";
-import { StatTile } from "@/components/dashboard/StatTile";
-import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -12,13 +14,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deriveDataQuality } from "@/lib/data/data-quality";
-import { getMlbHomeRunBoardSnapshot } from "@/lib/data/player-markets";
-import { getPerformanceHistory } from "@/lib/data/performance";
 import { isFiniteNumber } from "@/lib/data/json";
-import { formatDateTime, formatNumber, formatPct, formatPctFromWhole } from "@/lib/format";
+import { getPerformanceHistory } from "@/lib/data/performance";
+import { getUnifiedMarketFeed } from "@/lib/data/unified-markets";
+import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
+
+const BOARD_ROWS = 6;
 
 function listSentence(items: string[]) {
   if (items.length <= 1) return items[0] ?? "";
@@ -26,97 +29,110 @@ function listSentence(items: string[]) {
 }
 
 export default async function Home() {
-  const [history, mlbHr] = await Promise.all([
+  const [history, feed] = await Promise.all([
     getPerformanceHistory(),
-    getMlbHomeRunBoardSnapshot(),
+    getUnifiedMarketFeed(),
   ]);
-  const quality = deriveDataQuality(history);
-  const unhealthySources = quality.filter((row) => row.status !== "ok").length + (mlbHr.status === "healthy" ? 0 : 1);
-  const backtestRows = history.records.reduce((sum, row) => sum + (row.sampleSize ?? 0), 0);
-  const noRoi = history.records
-    .filter((row) => !isFiniteNumber(row.roi))
-    .map((row) => row.sport);
-  const lowestCoverage = quality
-    .filter((row) => isFiniteNumber(row.coveragePct))
-    .toSorted((a, b) => (a.coveragePct ?? 0) - (b.coveragePct ?? 0))[0];
+
+  // The board is the hero, so it comes off the unified feed rather than any one
+  // league's snapshot — a single cold source can no longer empty the page.
+  const board = feed.predictions.slice(0, BOARD_ROWS);
+  const live = board.length > 0;
+
+  const rawStamp = feed.generatedAt ? formatDateTime(feed.generatedAt) : "n/a";
+  const feedStamp = rawStamp === "n/a" ? null : rawStamp;
+
+  const gradedRows = history.records.reduce((sum, row) => sum + (row.sampleSize ?? 0), 0);
+  const season = history.records.find((row) => row.season)?.season;
+  const noRoi = history.records.filter((row) => !isFiniteNumber(row.roi)).map((row) => row.sport);
+
   const gapSummary = [
     noRoi.length
-      ? `${listSentence(noRoi)} ${noRoi.length > 1 ? "have" : "has"} no sportsbook odds history, so ROI is not reported on this page.`
+      ? `${listSentence(noRoi)} ${noRoi.length > 1 ? "have" : "has"} no sportsbook odds history, so ROI is not reported.`
       : null,
-    lowestCoverage
-      ? `Lowest upstream coverage is ${lowestCoverage.sport ?? lowestCoverage.source} at ${formatPctFromWhole(lowestCoverage.coveragePct)}.`
-      : null,
-    mlbHr.counts.candidates > 0 && mlbHr.counts.priced === 0
-      ? `MLB HR board: ${mlbHr.counts.candidates} model-only candidates (no upstream sportsbook prices available).`
-      : mlbHr.gaps.length
-        ? `MLB HR board: ${mlbHr.gaps[0]}`
-        : null,
+    feed.warnings[0] ?? null,
   ].filter(Boolean).join(" ");
-  const marketChips: ChannelChip[] = [{
-    sport: "mlb",
-    label: `MLB HR · ${mlbHr.status}`,
-    muted: mlbHr.status !== "healthy" && mlbHr.status !== "partial",
-  }];
 
   return (
-    <div>
-      <section className="grid items-end gap-10 pb-2 pt-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
-        <div>
+    <div className="flex flex-col gap-16 pb-4">
+      <section className="grid items-start gap-9 pt-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-12">
+        <div className="lg:pt-4">
           <span className="inline-flex items-center gap-2.5 rounded-full border border-border bg-card px-3.5 py-1.5 text-[13px] font-semibold text-secondary-foreground shadow-soft">
-            <span className={`anim-live-pulse size-[7px] rounded-full ${mlbHr.status === "healthy" || mlbHr.status === "partial" ? "bg-positive" : "bg-warning"}`} />
-            {formatNumber(mlbHr.counts.candidates)} MLB HR candidates · {mlbHr.status} · refreshed {formatDateTime(mlbHr.completedAt)}
+            <span
+              className={`anim-live-pulse size-[7px] rounded-full ${live ? "bg-positive" : "bg-warning"}`}
+            />
+            {live
+              ? `${formatNumber(feed.predictions.length)} markets open${feedStamp ? ` · updated ${feedStamp}` : ""}`
+              : "No games open for betting right now"}
           </span>
 
-          <h1 className="mt-6 font-display text-[clamp(2.4rem,5.5vw,3.9rem)] font-bold leading-[1.02] tracking-[-0.028em]">
+          <h1 className="mt-6 text-[clamp(2.4rem,5.5vw,3.9rem)] font-bold leading-[1.02] tracking-[-0.038em]">
             Every pick,
             <span className="block text-accent">graded in public.</span>
           </h1>
 
-          <p className="mt-5 max-w-[54ch] text-base leading-relaxed text-muted-foreground">
-            A trusted vertical slice from model probability to sportsbook price and next-day grade. Start with today&apos;s board, then inspect the durable results history.
+          <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-muted-foreground">
+            Model probabilities go up before the game starts, get compared against
+            the sportsbook&apos;s number, and are settled the next day against what
+            actually happened. Wins and losses both stay on the record.
           </p>
+
+          <div className="mt-7 flex flex-wrap items-center gap-3">
+            <Button asChild size="lg">
+              <Link href="/markets">See today&apos;s board</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg">
+              <Link href="/models/performance">How it has done</Link>
+            </Button>
+          </div>
         </div>
 
-        <dl className="grid grid-cols-2 gap-2.5 lg:w-[300px]">
-          <StatTile label="Current candidates" value={formatNumber(mlbHr.counts.candidates)} />
-          <StatTile label="Priced candidates" value={formatNumber(mlbHr.counts.priced)} />
-          <StatTile label="Top-25 coverage" value={formatPct(mlbHr.counts.top25Coverage)} />
-          <StatTile label="Last refresh" value={formatDateTime(mlbHr.completedAt)} />
-        </dl>
+        <LiveBoardPanel
+          predictions={board}
+          generatedAt={feed.generatedAt}
+          records={history.records}
+        />
       </section>
 
-      <SectionHeading title="Where to go" note="Trusted product surfaces" />
+      {/* Hairline band, not tiles: the figures support the board, they don't compete with it. */}
+      <section className="grid gap-6 border-y border-border py-7 sm:grid-cols-[repeat(3,auto)_minmax(0,1fr)] sm:items-center sm:gap-10">
+        <div>
+          <div className="figure text-[26px] leading-none">{formatNumber(gradedRows)}</div>
+          <div className="mt-1.5 text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+            Rows graded
+          </div>
+        </div>
+        <div>
+          <div className="figure text-[26px] leading-none">{history.records.length}</div>
+          <div className="mt-1.5 text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+            Leagues
+          </div>
+        </div>
+        <div>
+          <div className="figure text-[26px] leading-none">{season ?? "n/a"}</div>
+          <div className="mt-1.5 text-[11px] font-semibold tracking-[0.06em] uppercase text-muted-foreground">
+            Season
+          </div>
+        </div>
+        <p className="max-w-[46ch] text-sm leading-relaxed text-muted-foreground">
+          Nothing is removed after the fact. Where a model is losing money, the
+          number below says so.
+        </p>
+      </section>
 
-      <div className="grid gap-3 md:grid-cols-3">
-        <ChannelCard
-          href="/markets"
-          title="Markets"
-          description="Scan every current model prediction, price, edge, and evidence status in one board."
-          chips={marketChips}
-          cta="Open the board"
+      {/* When the board has nothing to show it falls back to this same record,
+          so rendering both would just repeat the table twice. */}
+      {live ? (
+      <section>
+        <SectionHeading
+          title="Track record"
+          note="Season to date"
+          action={{ label: "All performance", href: "/models/performance" }}
         />
-        <ChannelCard
-          href="/models"
-          title="Models"
-          description="Audit registry, performance, results, insights, and data health in one accountable section."
-          figures={[{ value: formatNumber(backtestRows), label: "Backtest rows" }, { value: String(unhealthySources), label: "Need attention", tone: unhealthySources ? "down" : "up" }]}
-          cta="Review the evidence"
-        />
-        <ChannelCard
-          href="/fantasy"
-          title="Fantasy"
-          description="Build lineups from projections, draft value, and configurable roster settings."
-          cta="Open fantasy tools"
-        />
-      </div>
-
-      <SectionHeading title="Backtest record" note="Season to date" action={{ label: "All performance", href: "/models/performance" }} />
-
-      <Card className="overflow-hidden">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Sport</TableHead>
+              <TableHead>League</TableHead>
               <TableHead className="hidden sm:table-cell">Model</TableHead>
               <TableHead>Market</TableHead>
               <TableHead className="text-right">Sample</TableHead>
@@ -124,25 +140,37 @@ export default async function Home() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {history.records.map((record) => {
-              const roi = record.roi;
-              return (
-                <TableRow key={`${record.sport}-${record.modelVersion}`}>
-                  <TableCell><SportSwatch sport={record.sport} label={record.sport} /></TableCell>
-                  <TableCell className="hidden sm:table-cell">{record.modelVersion}</TableCell>
-                  <TableCell>{record.market}</TableCell>
-                  <TableCell className="text-right">{formatNumber(record.sampleSize)}</TableCell>
-                  <TableCell className={isFiniteNumber(roi) ? `figure text-right text-[17px] ${roi < 0 ? "text-destructive" : "text-positive"}` : "text-right text-sm"}>
-                    {isFiniteNumber(roi) ? formatPct(roi) : "No odds history"}
-                  </TableCell>
-                </TableRow>
-              );
-            })}
+            {history.records.map((record) => (
+              <TableRow key={`${record.sport}-${record.modelVersion}`}>
+                <TableCell><SportSwatch sport={record.sport} label={record.sport} /></TableCell>
+                <TableCell className="hidden sm:table-cell">{record.modelVersion}</TableCell>
+                <TableCell>{record.market}</TableCell>
+                <TableCell className="text-right">{formatNumber(record.sampleSize)}</TableCell>
+                <TableCell
+                  className={
+                    isFiniteNumber(record.roi)
+                      ? `figure text-right text-[17px] ${record.roi < 0 ? "text-destructive" : "text-positive"}`
+                      : "text-right text-sm text-muted-foreground"
+                  }
+                >
+                  {isFiniteNumber(record.roi) ? formatPct(record.roi) : "No odds history"}
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
-      </Card>
+      </section>
+      ) : null}
 
-      <GapsBanner count={history.gaps.length + mlbHr.gaps.length} summary={gapSummary || "All tracked sources are reporting."} />
+      <section>
+        <SectionHeading title="How it works" note="Probability, price, grade" />
+        <HowItWorks />
+      </section>
+
+      <GapsBanner
+        count={history.gaps.length + feed.warnings.length}
+        summary={gapSummary || "All tracked sources are reporting."}
+      />
     </div>
   );
 }

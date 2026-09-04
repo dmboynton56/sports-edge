@@ -23,6 +23,12 @@ export function formatMaybePctMetric(value: number | null | undefined, digits = 
   return Math.abs(value) <= 1 ? formatPct(value, digits) : formatNumber(value, digits);
 }
 
+/** American odds always carry their sign, so +150 reads differently from 150. */
+export function formatAmericanPrice(value: number | null | undefined) {
+  if (!isFiniteNumber(value)) return "—";
+  return value > 0 ? `+${value}` : String(value);
+}
+
 export function formatDateTime(value: string | null | undefined) {
   if (!value) return "n/a";
   const date = new Date(value);

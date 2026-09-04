@@ -1,8 +1,9 @@
 import Link from "next/link";
 
 /**
- * Known gaps stay visible but stop shouting: one line of plain language,
- * with the full list one click away.
+ * Known gaps stay visible but stop shouting: a footnote rule rather than a
+ * filled banner, so the board panel keeps the page's only real elevation. The
+ * colour lives in a single dot and the link, not a full-bleed tint.
  */
 export function GapsBanner({
   count,
@@ -13,28 +14,19 @@ export function GapsBanner({
   summary: string;
   href?: string;
 }) {
-  if (count === 0) {
-    return (
-      <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-positive/25 bg-positive-soft px-5 py-4">
-        <span className="text-xs font-bold text-positive">No open gaps</span>
-        <span className="flex-1 text-sm text-positive">
-          Every tracked source is reporting full coverage.
-        </span>
-      </div>
-    );
-  }
+  const clean = count === 0;
 
   return (
-    <div className="mt-4 flex flex-wrap items-center gap-4 rounded-xl border border-destructive/20 bg-destructive-soft px-5 py-4">
-      <span className="whitespace-nowrap text-xs font-bold text-destructive">
-        {count} open {count === 1 ? "gap" : "gaps"}
+    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-2 border-t border-border pt-5 text-sm">
+      <span className="inline-flex items-center gap-2 whitespace-nowrap font-semibold">
+        <span className={`size-1.5 shrink-0 rounded-full ${clean ? "bg-positive" : "bg-warning"}`} />
+        {clean ? "No open gaps" : `${count} open ${count === 1 ? "gap" : "gaps"}`}
       </span>
-      <span className="min-w-[15rem] flex-1 text-sm text-destructive/90">{summary}</span>
-      <Link
-        href={href}
-        className="text-[13px] font-semibold text-destructive hover:underline"
-      >
-        See what&apos;s missing →
+      <span className="min-w-[15rem] flex-1 leading-relaxed text-muted-foreground">
+        {clean ? "Every tracked source is reporting full coverage." : summary}
+      </span>
+      <Link href={href} className="font-semibold text-accent hover:underline">
+        {clean ? "Source health" : "See what's missing"} →
       </Link>
     </div>
   );
