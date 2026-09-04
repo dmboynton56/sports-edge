@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useState, useSyncExternalStore } from "react";
 import { Menu, Moon, Sun } from "lucide-react";
 
+import { BrandMark } from "@/components/dashboard/BrandMark";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -30,19 +30,6 @@ function useActive() {
   const pathname = usePathname();
   return (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
-}
-
-function BrandMark() {
-  return (
-    <Image
-      src="/sports-edge-mark.png"
-      alt=""
-      width={64}
-      height={64}
-      sizes="28px"
-      className="size-7 rounded-lg object-cover"
-    />
-  );
 }
 
 /** Desktop nav: pills riding in a sunken track. */
