@@ -140,7 +140,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               href="/"
               aria-label="Sports Edge home"
-              className="flex min-w-fit items-center gap-2.5 font-display text-lg font-extrabold tracking-tight"
+              className="flex min-w-fit items-center gap-2.5 font-display text-lg font-semibold tracking-[-0.03em]"
             >
               <BrandMark />
               <span>Sports Edge</span>
@@ -163,7 +163,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-72">
                   <SheetHeader>
-                    <SheetTitle className="flex items-center gap-2.5 font-display text-lg font-extrabold tracking-tight">
+                    <SheetTitle className="flex items-center gap-2.5 font-display text-lg font-semibold tracking-[-0.03em]">
                       <BrandMark />
                       Sports Edge
                     </SheetTitle>
