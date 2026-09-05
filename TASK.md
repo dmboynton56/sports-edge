@@ -19,3 +19,8 @@ Make `web/` the canonical public dashboard on Vercel with NBA/NFL slates, game e
 | Date | Tool | Model | Task | Notes |
 |------|------|-------|------|-------|
 | 2026-07-12 | Cursor | Composer | M0–M5 full implementation | Dashboard v2 plan execution |
+
+## September maintenance follow-up
+- Repository audit and five site/pipeline improvements are implemented on `codex/repo-performance-audit`; not merged or deployed.
+- Verification and remaining work: [site hardening report](docs/SITE_HARDENING_2026-09-04.md).
+- Current production evidence: [Data and Model Status](data-core/docs/DATA_AND_MODEL_STATUS.md). The June production roadmap retains historical milestone statuses.

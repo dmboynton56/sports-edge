@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -172,6 +173,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <BrandMark />
                       Sports Edge
                     </SheetTitle>
+                    <SheetDescription className="sr-only">Browse sports, markets, results, and model performance.</SheetDescription>
                   </SheetHeader>
                   <div className="mt-8">
                     <MobileNav onNavigate={() => setOpen(false)} />

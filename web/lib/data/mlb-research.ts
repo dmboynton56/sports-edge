@@ -8,7 +8,7 @@
 // All markets are fail-closed: when sportsbook prices are missing, rows show
 // model probabilities only with no edge/EV calculations.
 
-import { getSupabaseRuntimeConfig, getSupabaseMissingEnv } from "@/lib/data/supabase";
+import { supabaseRest, getSupabaseMissingEnv } from "@/lib/data/supabase";
 
 const MLB_SLATE_TIME_ZONE = "America/Denver";
 
@@ -133,25 +133,6 @@ function todayInTimeZone(timeZone: string): string {
   return `${values.year}-${values.month}-${values.day}`;
 }
 
-async function supabaseRest<T>(resource: string): Promise<T[] | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-  const base = config.url.replace(/\/$/, "");
-  try {
-    const response = await fetch(`${base}/rest/v1/${resource}`, {
-      headers: {
-        apikey: config.anonKey,
-        Authorization: `Bearer ${config.anonKey}`,
-      },
-      next: { revalidate: 60 },
-    });
-    if (!response.ok) return null;
-    return (await response.json()) as T[];
-  } catch {
-    return null;
-  }
-}
-
 function mapResearchRow(row: SupabaseResearchRow): MlbResearchPrediction {
   const base = {
     id: row.prediction_id,
@@ -220,7 +201,8 @@ export async function getMlbResearchBoard(
 ): Promise<MlbResearchBoardData> {
   const slateDate = todayInTimeZone(MLB_SLATE_TIME_ZONE);
   const rows = await supabaseRest<SupabaseResearchRow>(
-    `mlb_research_predictions_latest?select=*&game_date=eq.${slateDate}&market=eq.${market}&order=game_pk.asc&limit=500`
+    `mlb_research_predictions_latest?select=*&game_date=eq.${slateDate}&market=eq.${market}&order=game_pk.asc&limit=500`,
+    60,
   );
 
   if (!rows || rows.length === 0) {

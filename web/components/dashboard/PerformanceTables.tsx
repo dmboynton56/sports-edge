@@ -74,7 +74,7 @@ export function PerformanceTables({ records }: { records: Performance[] }) {
       </TabsList>
 
       <TabsContent value="roi">
-        <Table className="table-fixed">
+        <Table className="min-w-[640px] table-auto">
           <TableHeader>
             <TableRow>
               <TableHead>Sport</TableHead>
@@ -109,7 +109,7 @@ export function PerformanceTables({ records }: { records: Performance[] }) {
       </TabsContent>
 
       <TabsContent value="metrics">
-        <Table className="table-fixed">
+        <Table className="min-w-[640px] table-auto">
           <TableHeader>
             <TableRow>
               <TableHead>Sport</TableHead>
@@ -140,7 +140,7 @@ export function PerformanceTables({ records }: { records: Performance[] }) {
       </TabsContent>
 
       <TabsContent value="gates">
-        <Table className="table-fixed">
+        <Table className="min-w-[640px] table-auto">
           <TableHeader>
             <TableRow>
               <TableHead>Sport</TableHead>
@@ -178,7 +178,7 @@ export function PerformanceTables({ records }: { records: Performance[] }) {
 
       <TabsContent value="thresholds">
         {thresholds.length ? (
-          <Table className="table-fixed">
+          <Table className="min-w-[640px] table-auto">
             <TableHeader>
               <TableRow>
                 <TableHead>Sport</TableHead>

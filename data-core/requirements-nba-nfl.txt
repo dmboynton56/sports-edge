@@ -1,0 +1,3 @@
+# Install inside .venv-nba-nfl with --system-site-packages after requirements.txt.
+# NBA/NFL serialized artifacts require this version; MLB retains 1.6.1.
+scikit-learn==1.7.2

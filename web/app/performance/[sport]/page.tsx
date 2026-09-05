@@ -82,7 +82,7 @@ function NoRows({ children }: { children: React.ReactNode }) {
 function ResultsSummaryTable({ rows }: { rows: ResultsSummary[] }) {
   if (!rows.length) return <NoRows>No graded results are available in this window.</NoRows>;
   return (
-    <Table className="table-fixed">
+    <Table className="min-w-[640px] table-auto">
       <TableHeader>
         <TableRow>
           <TableHead>Model</TableHead>
@@ -208,7 +208,7 @@ function PgaCard({ sport, rows }: { sport: SportEntry; rows: PgaResultRow[] }) {
       <CardHeader><MarketHeader market={sport.markets[0]} /></CardHeader>
       <CardContent>
         {summaries.length ? (
-          <Table className="table-fixed">
+          <Table className="min-w-[640px] table-auto">
             <TableHeader><TableRow>
               <TableHead>Event</TableHead><TableHead>Model</TableHead><TableHead>Players</TableHead>
               <TableHead>Top 10</TableHead><TableHead>Top 20</TableHead><TableHead>Winner actual / expected</TableHead>
@@ -274,7 +274,7 @@ function Backtests({ runs, history, gaps }: { runs: EvaluationRow[]; history: Ev
         <CardHeader><CardTitle>Evaluation runs</CardTitle></CardHeader>
         <CardContent>
           {runs.length ? (
-            <Table className="table-fixed">
+            <Table className="min-w-[640px] table-auto">
               <TableHeader><TableRow>
                 <TableHead>Evaluation</TableHead><TableHead>Model</TableHead><TableHead>Test range</TableHead>
                 <TableHead>Accuracy</TableHead><TableHead>AUC</TableHead><TableHead>Brier / log loss</TableHead><TableHead>ROI</TableHead><TableHead>Status</TableHead>

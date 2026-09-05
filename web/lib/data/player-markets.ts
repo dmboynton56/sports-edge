@@ -17,7 +17,7 @@ import {
   type MlbHomeRunStatcastHealth,
   type MlbHrBoardSnapshot,
 } from "@/lib/data/mlb-hr-board";
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 
 export {
   getMlbHomeRunModelLabel,
@@ -40,26 +40,6 @@ const PGA_TOURNAMENT_PATH = path.join(
   "current.json",
 );
 const PGA_SLATE_TIME_ZONE = "America/Denver";
-
-async function supabaseRest<T>(resource: string): Promise<T[] | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-  const base = config.url.replace(/\/$/, "");
-  try {
-    const response = await fetch(`${base}/rest/v1/${resource}`, {
-      headers: {
-        apikey: config.anonKey,
-        Authorization: `Bearer ${config.anonKey}`,
-      },
-      next: { revalidate: 60 },
-    });
-    if (!response.ok) return null;
-    // SAFETY: Each caller supplies a typed Supabase select contract, and the REST endpoint returns an array for that query.
-    return (await response.json()) as T[];
-  } catch {
-    return null;
-  }
-}
 
 function uniqueGaps(gaps: (string | null | undefined)[]): string[] {
   return Array.from(new Set(gaps.filter((gap): gap is string => Boolean(gap))));
@@ -174,19 +154,6 @@ type SupabaseMlbHrBoardRunRow = {
 type SupabaseMlbHrBoardRow = {
   board_row_id: string;
   run_id: string;
-  run_key: string;
-  run_slate_date: string;
-  run_window: "morning" | "afternoon" | "manual";
-  run_status: "healthy" | "partial";
-  run_completed_at: string | null;
-  run_prediction_ts: string | null;
-  run_odds_ts: string | null;
-  run_gaps: string[] | null;
-  run_total_candidates: number;
-  run_priced_candidates: number;
-  run_top25_denominator: number;
-  run_top25_priced_count: number;
-  run_top25_coverage: number | null;
   slate_date: string;
   game_id: string;
   player_id: string;
@@ -379,7 +346,7 @@ function mapBoardRow(row: SupabaseMlbHrBoardRow): MlbHomeRunPrediction {
     kelly: priced ? row.quarter_kelly : null,
     confidence: null,
     modelVersion: row.model_version,
-    source: "Supabase mlb_home_run_board_latest",
+    source: "Supabase immutable MLB HR publication",
     updatedAt: row.prediction_ts,
     team: row.team,
     opponent: row.opponent,
@@ -490,6 +457,11 @@ export function deriveMlbHrBoardSnapshot(
 ): MlbHrBoardSnapshot {
   const slateDate = getMlbHrSlateDate(now);
   const boardStatus = boardStatusForRun(run, now);
+  // The two independently cached latest-view reads can straddle a publication.
+  if (run && sourceRows.some((row) => row.run_id !== run.run_id)) {
+    boardStatus.status = "unavailable";
+    boardStatus.gaps.push("Published board rows do not match the selected run. Retry after the next refresh.");
+  }
   if (!run || boardStatus.status === "stale" || boardStatus.status === "unavailable") {
     return {
       slateDate,
@@ -577,6 +549,7 @@ export async function getMlbHomeRunBoardSnapshot(now = new Date()): Promise<MlbH
 
   const runs = await supabaseRest<SupabaseMlbHrBoardRunRow>(
     `mlb_home_run_board_run_health?select=*&slate_date=eq.${slateDate}&limit=1`,
+    60,
   );
   if (!runs) {
     const unavailable = deriveMlbHrBoardSnapshot(null, [], now);
@@ -587,14 +560,19 @@ export async function getMlbHomeRunBoardSnapshot(now = new Date()): Promise<MlbH
     const unavailable = deriveMlbHrBoardSnapshot(null, [], now);
     return { ...unavailable, gaps: uniqueGaps([...unavailable.gaps, ...supabaseConfigGaps()]) };
   }
+  const status = boardStatusForRun(run, now).status;
+  if (status !== "healthy" && status !== "partial") {
+    return deriveMlbHrBoardSnapshot(run, [], now);
+  }
   const rows = await supabaseRest<SupabaseMlbHrBoardRow>(
-    `mlb_home_run_board_latest?select=*&run_slate_date=eq.${slateDate}&order=rank.asc&limit=500`,
+    `mlb_home_run_board_rows?select=*&run_id=eq.${encodeURIComponent(run.run_id)}&order=rank.asc&limit=500`,
+    60,
   );
-  if (!rows) {
+  if (!rows || rows.length !== run.total_candidates) {
     return {
       ...deriveMlbHrBoardSnapshot(run, [], now),
       status: "unavailable",
-      gaps: uniqueGaps([...(stringList(run.gaps)), "Published MLB HR board rows are unavailable."]),
+      gaps: uniqueGaps([...(stringList(run.gaps)), "Published MLB HR board rows are unavailable or incomplete."]),
       dataSource: "unavailable",
     };
   }
@@ -796,6 +774,7 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
   const versionQuery = modelVersionFilter(targetModel);
   const edgeRows = await supabaseRest<SupabaseMlbHrEdgeRow>(
     `mlb_home_run_edges_latest?select=*&game_date=eq.${slateDate}${versionQuery}&order=rank.asc&limit=120`,
+    60,
   );
   if (edgeRows && edgeRows.length) {
     const missingOdds = edgeRows.filter((row) => row.odds_status === "missing_odds").length;
@@ -815,11 +794,13 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
 
   const latestRows = await supabaseRest<SupabaseMlbHrRow>(
     `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}${versionQuery}&order=rank.asc&limit=120`,
+    60,
   );
   const rows = latestRows?.length
     ? latestRows
     : await supabaseRest<SupabaseMlbHrRow>(
         `mlb_home_run_predictions?select=*&game_date=eq.${slateDate}${versionQuery}&order=rank.asc&limit=120`,
+        60,
       );
   if (rows && rows.length) {
     return {
@@ -873,6 +854,7 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
   const slateDate = todayInTimeZone(MLB_SLATE_TIME_ZONE);
   const edgeRows = await supabaseRest<SupabaseMlbHrEdgeRow>(
     `mlb_home_run_edges_latest?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
+    60,
   );
   if (edgeRows && edgeRows.length) {
     return buildBoardFromSupabaseRows(
@@ -884,11 +866,13 @@ export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
 
   const latestRows = await supabaseRest<SupabaseMlbHrRow>(
     `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
+    60,
   );
   const rows = latestRows?.length
     ? latestRows
     : await supabaseRest<SupabaseMlbHrRow>(
         `mlb_home_run_predictions?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
+        60,
       );
   if (rows && rows.length) {
     return buildBoardFromSupabaseRows(
@@ -1026,10 +1010,12 @@ async function getCurrentPgaTournament(): Promise<SupabasePgaTournamentRow | nul
   const today = todayInTimeZone(PGA_SLATE_TIME_ZONE);
   const activeRows = await supabaseRest<SupabasePgaTournamentRow>(
     `pga_tournaments?select=*&start_date=lte.${today}&end_date=gte.${today}&order=updated_at.desc&limit=1`,
+    60,
   );
   if (activeRows?.length) return activeRows[0];
   const latestRows = await supabaseRest<SupabasePgaTournamentRow>(
     "pga_tournaments?select=*&order=start_date.desc&limit=1",
+    60,
   );
   return latestRows?.[0] ?? null;
 }
@@ -1043,11 +1029,13 @@ export async function getPgaBoardData(): Promise<PgaBoardData> {
 
   const latestRows = await supabaseRest<SupabasePgaPredictionRow>(
     `pga_player_predictions_latest?select=*&event_key=eq.${encodeURIComponent(tournament.event_key)}&order=win_prob.desc.nullslast&limit=250`,
+    60,
   );
   const rows = latestRows?.length
     ? latestRows
     : await supabaseRest<SupabasePgaPredictionRow>(
         `pga_player_predictions?select=*&event_key=eq.${encodeURIComponent(tournament.event_key)}&order=win_prob.desc.nullslast&limit=250`,
+        60,
       );
   if (!rows?.length) {
     return staticPayload;

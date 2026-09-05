@@ -56,7 +56,9 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-          cache-dependency-path: data-core/requirements.txt
+          cache-dependency-path: |
+            data-core/requirements.txt
+            data-core/requirements-nba-nfl.txt
 
       - name: Install dependencies
         run: pip install -r requirements.txt google-cloud-bigquery nflreadpy supabase
@@ -198,16 +200,22 @@ jobs:
             --start-date "${{ steps.plan.outputs.anchor_date }}" \
             --lookahead-days 14
 
-      - name: Use NBA/NFL model artifact runtime
+      - name: Prepare isolated NBA/NFL model artifact runtime
         if: ${{ steps.plan.outputs.run_nba == 'true' || steps.plan.outputs.run_nfl == 'true' }}
         shell: bash
-        run: python -m pip install --no-deps --force-reinstall scikit-learn==1.7.2
+        run: |
+          # Reuse shared dependencies, but keep artifact-specific sklearn out of
+          # the base MLB runtime. Never activate this venv for subsequent steps.
+          python -m venv --system-site-packages .venv-nba-nfl
+          .venv-nba-nfl/bin/python -m pip install -r requirements-nba-nfl.txt
+          .venv-nba-nfl/bin/python -c "import sklearn; assert sklearn.__version__ == '1.7.2', sklearn.__version__"
+          python -c "import sklearn; assert sklearn.__version__ == '1.6.1', sklearn.__version__"
 
       - name: Generate NBA Predictions
         if: ${{ steps.plan.outputs.run_nba == 'true' }}
         shell: bash
         run: |
-          python -m src.pipeline.refresh_nba \
+          .venv-nba-nfl/bin/python -m src.pipeline.refresh_nba \
             --project "$PROJECT_ID" \
             --model-version v3 \
             --date "${{ steps.plan.outputs.anchor_date }}" \
@@ -220,7 +228,7 @@ jobs:
         shell: bash
         run: |
           # NFL weekly refresh logic can stay here, or run daily to catch line movements
-          python -m src.pipeline.refresh_nfl \
+          .venv-nba-nfl/bin/python -m src.pipeline.refresh_nfl \
             --project "$PROJECT_ID" \
             --model-version v1 \
             --start-date "${{ steps.plan.outputs.anchor_date }}" \
@@ -234,7 +242,7 @@ jobs:
         shell: bash
         run: |
           # MLB v3/v4 artifacts were serialized with sklearn 1.6.1.
-          python -m pip install --no-deps --force-reinstall scikit-learn==1.6.1
+          python -c "import sklearn; assert sklearn.__version__ == '1.6.1', sklearn.__version__"
           python -m src.pipeline.refresh_mlb \
             --project "$PROJECT_ID" \
             --model-version v3 \

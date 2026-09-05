@@ -241,6 +241,8 @@ class GamePredictor:
         df['home_team_point_diff'] = np.nan
         df['away_team_point_diff'] = np.nan
         
+        hist_dates = self._normalize_datetime(historical_games['game_date']) if not df.empty else None
+
         for idx, row in df.iterrows():
             game_date = self._normalize_datetime(row['game_date'])
                 
@@ -250,7 +252,6 @@ class GamePredictor:
             
             # Only use current season games (completed games only)
             # Use TZ-aware check then normalize
-            hist_dates = self._normalize_datetime(historical_games['game_date'])
                 
             season_games = historical_games[
                 (hist_dates < game_date) &
@@ -273,21 +274,18 @@ class GamePredictor:
                 (season_games['home_team'] == home_team) | (season_games['away_team'] == home_team)
             ]
             if len(home_games) > 0:
-                home_wins = sum(1 for _, g in home_games.iterrows()
-                              if (g['home_team'] == home_team and g.get('home_score', 0) > g.get('away_score', 0)) or
-                                 (g['away_team'] == home_team and g.get('away_score', 0) > g.get('home_score', 0)))
-                
+                is_home = home_games['home_team'] == home_team
+                score_diff = home_games.get('home_score', 0) - home_games.get('away_score', 0)
+                home_point_diff = np.where(is_home, score_diff, -score_diff)
+                home_wins = np.count_nonzero(home_point_diff > 0)
                 home_at_home = home_games[home_games['home_team'] == home_team]
-                home_wins_at_home = sum(1 for _, g in home_at_home.iterrows() if g.get('home_score', 0) > g.get('away_score', 0))
-                
-                home_point_diff = [
-                    g.get('home_score', 0) - g.get('away_score', 0) if g['home_team'] == home_team
-                    else g.get('away_score', 0) - g.get('home_score', 0)
-                    for _, g in home_games.iterrows()
-                ]
+                home_wins_at_home = np.count_nonzero(
+                    home_at_home.get('home_score', 0) > home_at_home.get('away_score', 0)
+                )
+
                 df.loc[idx, 'home_team_win_pct'] = home_wins / len(home_games)
                 df.loc[idx, 'home_team_win_pct_at_home'] = home_wins_at_home / len(home_at_home) if len(home_at_home) > 0 else 0.5
-                df.loc[idx, 'home_team_point_diff'] = np.mean(home_point_diff) if home_point_diff else 0
+                df.loc[idx, 'home_team_point_diff'] = np.mean(home_point_diff)
                 df.loc[idx, 'home_team_point_diff_std'] = np.std(home_point_diff) if len(home_point_diff) > 1 else 10
             
             # Away team stats
@@ -295,21 +293,18 @@ class GamePredictor:
                 (season_games['home_team'] == away_team) | (season_games['away_team'] == away_team)
             ]
             if len(away_games) > 0:
-                away_wins = sum(1 for _, g in away_games.iterrows()
-                              if (g['home_team'] == away_team and g.get('home_score', 0) > g.get('away_score', 0)) or
-                                 (g['away_team'] == away_team and g.get('away_score', 0) > g.get('home_score', 0)))
-                
+                is_home = away_games['home_team'] == away_team
+                score_diff = away_games.get('home_score', 0) - away_games.get('away_score', 0)
+                away_point_diff = np.where(is_home, score_diff, -score_diff)
+                away_wins = np.count_nonzero(away_point_diff > 0)
                 away_on_road = away_games[away_games['away_team'] == away_team]
-                away_wins_on_road = sum(1 for _, g in away_on_road.iterrows() if g.get('away_score', 0) > g.get('home_score', 0))
-                
-                away_point_diff = [
-                    g.get('home_score', 0) - g.get('away_score', 0) if g['home_team'] == away_team
-                    else g.get('away_score', 0) - g.get('home_score', 0)
-                    for _, g in away_games.iterrows()
-                ]
+                away_wins_on_road = np.count_nonzero(
+                    away_on_road.get('away_score', 0) > away_on_road.get('home_score', 0)
+                )
+
                 df.loc[idx, 'away_team_win_pct'] = away_wins / len(away_games)
                 df.loc[idx, 'away_team_win_pct_on_road'] = away_wins_on_road / len(away_on_road) if len(away_on_road) > 0 else 0.4
-                df.loc[idx, 'away_team_point_diff'] = np.mean(away_point_diff) if away_point_diff else 0
+                df.loc[idx, 'away_team_point_diff'] = np.mean(away_point_diff)
                 df.loc[idx, 'away_team_point_diff_std'] = np.std(away_point_diff) if len(away_point_diff) > 1 else 10
         
         return df

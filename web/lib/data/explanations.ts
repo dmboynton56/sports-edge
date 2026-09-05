@@ -1,4 +1,4 @@
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 import type { JsonObject } from "@/lib/data/json";
 
 export type FeatureDriver = {
@@ -31,22 +31,6 @@ type SupabaseExplanationRow = {
   away_injury_delta: number | null;
   base_vs_adjusted: JsonObject | null;
 };
-
-async function supabaseRest<T>(resource: string): Promise<T[] | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-  const base = config.url.replace(/\/$/, "");
-  const response = await fetch(`${base}/rest/v1/${resource}`, {
-    headers: {
-      apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-    },
-    next: { revalidate: 60 },
-  });
-  if (!response.ok) return null;
-  // SAFETY: The query selects the SupabaseExplanationRow columns and this endpoint returns an array.
-  return (await response.json()) as T[];
-}
 
 function parseTopFeatures(raw: FeatureDriver[] | string): FeatureDriver[] {
   if (Array.isArray(raw)) return raw;
@@ -83,7 +67,7 @@ export async function getGameExplanation(
   const resource =
     `game_explanations?game_id=eq.${gameId}&league=eq.${league}` +
     `&order=prediction_ts.desc&limit=1`;
-  const rows = await supabaseRest<SupabaseExplanationRow>(resource);
+  const rows = await supabaseRest<SupabaseExplanationRow>(resource, 60);
   const row = rows?.[0];
   return row ? mapRow(row) : null;
 }

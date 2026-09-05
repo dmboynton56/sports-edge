@@ -45,7 +45,7 @@ export default async function ResultsPage() {
               description="Grades land here once the live results feed is connected. Until then, backtested performance is on the performance page."
             />
           ) : (
-          <Table className="table-fixed">
+          <Table className="min-w-[960px] table-auto">
             <TableHeader>
               <TableRow>
                 <TableHead>League</TableHead>
@@ -96,7 +96,7 @@ export default async function ResultsPage() {
                 description="Spread and winner outcomes appear here the morning after each slate."
               />
             ) : (
-            <Table className="table-fixed">
+            <Table className="min-w-[640px] table-auto">
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
@@ -147,7 +147,7 @@ export default async function ResultsPage() {
                 description="Home-run and placement outcomes appear here once each event finishes."
               />
             ) : (
-            <Table className="table-fixed">
+            <Table className="min-w-[640px] table-auto">
               <TableHeader>
                 <TableRow>
                   <TableHead>Date/Event</TableHead>

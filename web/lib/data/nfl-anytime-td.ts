@@ -1,5 +1,5 @@
 import type { Prediction } from "@/lib/data/types";
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 
 export type NflAnytimeTdRow = {
   id: string;
@@ -45,21 +45,6 @@ const BLOCKING_QUALITY_FLAGS = new Set([
 ]);
 const MAX_RECOMMENDATION_PRICE = 1000;
 
-async function supabaseRest<T>(resource: string): Promise<T[] | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-  const response = await fetch(`${config.url.replace(/\/$/, "")}/rest/v1/${resource}`, {
-    headers: {
-      apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-    },
-    next: { revalidate: 60 },
-  });
-  if (!response.ok) return null;
-  // SAFETY: The query selects the typed view contract above.
-  return (await response.json()) as T[];
-}
-
 export function isQualifiedAnytimeTdRow(row: NflAnytimeTdRow) {
   const flags = Array.isArray(row.quality_flags) ? row.quality_flags : [];
   return row.odds_status === "priced"
@@ -98,6 +83,7 @@ export function mapAnytimeTdRow(row: NflAnytimeTdRow): Prediction {
 export async function getNflAnytimeTdFeed(): Promise<NflAnytimeTdFeed> {
   const rows = await supabaseRest<NflAnytimeTdRow>(
     "nfl_anytime_td_edges_latest?select=*&order=ev.desc.nullslast&limit=500",
+    60,
   );
   if (!rows) {
     const missing = getSupabaseMissingEnv();

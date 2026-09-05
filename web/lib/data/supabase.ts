@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 export type SupabaseRuntimeConfig = {
   url?: string;
   anonKey?: string;
@@ -25,7 +27,9 @@ export function getSupabaseMissingEnv() {
   return missing.filter((value): value is string => Boolean(value));
 }
 
-export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
+// Abort signals disable Next.js fetch memoization. React cache restores request-scoped
+// deduplication within server renders; results are not retained between renders.
+export const supabaseRest = cache(async function supabaseRest<T>(resource: string, revalidate = 300): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
   if (!config.url || !config.anonKey) return null;
 
@@ -36,12 +40,14 @@ export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
         apikey: config.anonKey,
         Authorization: `Bearer ${config.anonKey}`,
       },
-      next: { revalidate: 300 },
+      next: { revalidate },
+      signal: AbortSignal.timeout(8_000),
     });
     if (!response.ok) return null;
-    // SAFETY: Each caller supplies a typed Supabase select contract, and the REST endpoint returns an array for that query.
-    return (await response.json()) as T[];
+    const rows: unknown = await response.json();
+    // SAFETY: Callers supply the selected row contract; reject non-array error payloads.
+    return Array.isArray(rows) ? rows as T[] : null;
   } catch {
     return null;
   }
-}
+});

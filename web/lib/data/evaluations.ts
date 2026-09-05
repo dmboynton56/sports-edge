@@ -101,7 +101,6 @@ export function getEvaluationHistory(league?: string) {
 
 import type { Performance } from "@/lib/data/types";
 import { getPerformanceHistory } from "@/lib/data/performance";
-import { getSupabaseRuntimeConfig } from "@/lib/data/supabase";
 
 export type ModelEvaluation = {
   id: string;
@@ -172,22 +171,6 @@ type SupabaseStrategyRow = {
   metrics: EvaluationMetricMap;
 };
 
-async function evaluationSupabaseRest<T>(resource: string): Promise<T[] | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-  const base = config.url.replace(/\/$/, "");
-  const response = await fetch(`${base}/rest/v1/${resource}`, {
-    headers: {
-      apikey: config.anonKey,
-      Authorization: `Bearer ${config.anonKey}`,
-    },
-    next: { revalidate: 300 },
-  });
-  if (!response.ok) return null;
-  // SAFETY: Each caller supplies a typed Supabase select contract, and the REST endpoint returns an array for that query.
-  return (await response.json()) as T[];
-}
-
 function mapEval(row: SupabaseEvalRow): ModelEvaluation {
   return {
     id: row.id,
@@ -254,7 +237,7 @@ function performanceToStrategy(record: Performance): StrategyBacktest | null {
 }
 
 export async function getModelEvaluations(): Promise<ModelEvaluation[]> {
-  const rows = await evaluationSupabaseRest<SupabaseEvalRow>(
+  const rows = await supabaseRest<SupabaseEvalRow>(
     "model_evaluation_runs?order=generated_at.desc&limit=100",
   );
   if (rows?.length) return rows.map(mapEval);
@@ -264,7 +247,7 @@ export async function getModelEvaluations(): Promise<ModelEvaluation[]> {
 }
 
 export async function getStrategyBacktests(): Promise<StrategyBacktest[]> {
-  const rows = await evaluationSupabaseRest<SupabaseStrategyRow>(
+  const rows = await supabaseRest<SupabaseStrategyRow>(
     "strategy_backtest_results?order=created_at.desc&limit=100",
   );
   if (rows?.length) return rows.map(mapStrategy);
