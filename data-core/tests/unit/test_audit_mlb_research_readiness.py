@@ -44,3 +44,21 @@ def test_readiness_rejects_missing_stale_or_invalid_rows():
     assert "1 price-eligible games missing fresh paired total odds." in issues
     assert "1 priced total rows violate the serving contract." in issues
     assert "1 rows are not labeled research." in issues
+
+
+def test_readiness_lists_games_missing_prices():
+    report = _healthy_report()
+    report["market_coverage"]["moneyline"]["fresh_priced_games"] = 0
+    report["missing_prices"] = {
+        "moneyline": [
+            {"away_team": "Boston Red Sox", "home_team": "Baltimore Orioles"},
+            {"away_team": "San Francisco Giants", "home_team": "New York Mets"},
+        ]
+    }
+
+    issues = readiness_issues(report)
+
+    assert issues == [
+        "2 price-eligible games missing fresh paired moneyline odds: "
+        "Boston Red Sox @ Baltimore Orioles, San Francisco Giants @ New York Mets."
+    ]

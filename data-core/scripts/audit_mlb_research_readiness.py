@@ -25,6 +25,25 @@ from src.utils.supabase_pg import create_pg_connection, load_supabase_credential
 
 REQUIRED_MARKETS = ("moneyline", "run_line", "total")
 
+# Pregame plus a short first-pitch grace. The previous 3-hour window kept
+# already-final East/Central games "price-eligible" on evening re-runs after
+# books had dropped h2h. Morning refresh still requires the full unplayed slate.
+PRICE_ELIGIBLE_SQL = "game_datetime >= NOW() - INTERVAL '30 minutes'"
+PRICE_ELIGIBLE_RULE = "not_started_or_first_pitch_30m"
+
+
+def _matchup_label(row: dict[str, Any]) -> str:
+    away = str(row.get("away_team") or "?").strip() or "?"
+    home = str(row.get("home_team") or "?").strip() or "?"
+    return f"{away} @ {home}"
+
+
+def _missing_price_suffix(report: dict[str, Any], market: str) -> str:
+    rows = (report.get("missing_prices") or {}).get(market) or []
+    if not rows:
+        return ""
+    return ": " + ", ".join(_matchup_label(row) for row in rows)
+
 
 def readiness_issues(report: dict[str, Any]) -> list[str]:
     """Return hard failures in the operational research-feed contract."""
@@ -47,7 +66,10 @@ def readiness_issues(report: dict[str, Any]) -> list[str]:
         if fresh_predictions < scheduled:
             issues.append(f"{scheduled - fresh_predictions} {market} predictions are stale or missing.")
         if priced < price_eligible:
-            issues.append(f"{price_eligible - priced} price-eligible games missing fresh paired {market} odds.")
+            issues.append(
+                f"{price_eligible - priced} price-eligible games missing fresh paired {market} odds"
+                f"{_missing_price_suffix(report, market)}."
+            )
         if invalid:
             issues.append(f"{invalid} priced {market} rows violate the serving contract.")
 
@@ -65,6 +87,7 @@ def audit(conn, game_date: date) -> dict[str, Any]:
         "date": game_date.isoformat(),
         "research_only": True,
         "supportable_for_betting": False,
+        "price_eligible_rule": PRICE_ELIGIBLE_RULE,
     }
     with conn.cursor() as cur:
         cur.execute(
@@ -80,7 +103,7 @@ def audit(conn, game_date: date) -> dict[str, Any]:
         report["scheduled_games"] = int(cur.fetchone()[0])
 
         cur.execute(
-            """
+            f"""
             WITH latest AS (
               SELECT DISTINCT ON (game_pk, market) *
               FROM mlb_research_predictions
@@ -94,10 +117,10 @@ def audit(conn, game_date: date) -> dict[str, Any]:
                 WHERE as_of_ts >= NOW() - INTERVAL '24 hours'
               ) AS fresh_prediction_games,
               COUNT(DISTINCT game_pk) FILTER (
-                WHERE game_datetime >= NOW() - INTERVAL '3 hours'
+                WHERE {PRICE_ELIGIBLE_SQL}
               ) AS price_eligible_games,
               COUNT(DISTINCT game_pk) FILTER (
-                WHERE game_datetime >= NOW() - INTERVAL '3 hours'
+                WHERE {PRICE_ELIGIBLE_SQL}
                   AND odds_status = 'ok'
                   AND odds_snapshot_ts >= NOW() - INTERVAL '24 hours'
               ) AS fresh_priced_games,
@@ -138,6 +161,41 @@ def audit(conn, game_date: date) -> dict[str, Any]:
                 "latest_odds_ts": row[7].isoformat() if row[7] else None,
             }
         report["market_coverage"] = coverage
+
+        cur.execute(
+            f"""
+            WITH latest AS (
+              SELECT DISTINCT ON (game_pk, market) *
+              FROM mlb_research_predictions
+              WHERE game_date = %s
+              ORDER BY game_pk, market, as_of_ts DESC
+            )
+            SELECT market, game_pk, home_team, away_team, odds_status, game_datetime
+            FROM latest
+            WHERE {PRICE_ELIGIBLE_SQL}
+              AND NOT (
+                odds_status = 'ok'
+                AND odds_snapshot_ts >= NOW() - INTERVAL '24 hours'
+              )
+            ORDER BY market, game_datetime, game_pk
+            """,
+            (game_date,),
+            prepare=False,
+        )
+        missing_prices: dict[str, list[dict[str, Any]]] = {market: [] for market in REQUIRED_MARKETS}
+        for market, game_pk, home_team, away_team, odds_status, game_datetime in cur.fetchall():
+            if market not in missing_prices:
+                missing_prices[market] = []
+            missing_prices[market].append(
+                {
+                    "game_pk": int(game_pk) if game_pk is not None else None,
+                    "home_team": home_team,
+                    "away_team": away_team,
+                    "odds_status": odds_status,
+                    "game_datetime": game_datetime.isoformat() if game_datetime else None,
+                }
+            )
+        report["missing_prices"] = missing_prices
 
         cur.execute(
             """
