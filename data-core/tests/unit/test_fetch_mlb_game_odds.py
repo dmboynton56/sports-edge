@@ -280,3 +280,109 @@ def test_extract_moneyline_returns_none_when_missing():
     assert home_price is None
     assert away_price is None
     assert book_key == "draftkings"  # Still returns book key
+
+
+def _book(key: str, title: str, markets: list[dict]) -> dict:
+    return {"key": key, "title": title, "markets": markets}
+
+
+def test_first_paired_moneyline_falls_back_when_preferred_book_dropped_h2h():
+    """Evening slates often keep DK totals after that book has already dropped ML."""
+    bookmakers = [
+        _book(
+            "draftkings",
+            "DraftKings",
+            [
+                {
+                    "key": "totals",
+                    "outcomes": [
+                        {"name": "Over", "point": 8.5, "price": -110},
+                        {"name": "Under", "point": 8.5, "price": -110},
+                    ],
+                }
+            ],
+        ),
+        _book(
+            "fanduel",
+            "FanDuel",
+            [
+                {
+                    "key": "h2h",
+                    "outcomes": [
+                        {"name": "New York Yankees", "price": -145},
+                        {"name": "Boston Red Sox", "price": 125},
+                    ],
+                }
+            ],
+        ),
+    ]
+
+    home_price, away_price, book_key = odds_fetcher.first_paired_moneyline(
+        bookmakers, "New York Yankees", "Boston Red Sox"
+    )
+    assert home_price == -145
+    assert away_price == 125
+    assert book_key == "fanduel"
+
+
+def test_first_paired_runline_requires_both_sides():
+    bookmakers = [
+        _book(
+            "draftkings",
+            "DraftKings",
+            [
+                {
+                    "key": "spreads",
+                    "outcomes": [
+                        {"name": "New York Yankees", "point": -1.5, "price": -115},
+                    ],
+                }
+            ],
+        ),
+        _book(
+            "betmgm",
+            "BetMGM",
+            [
+                {
+                    "key": "spreads",
+                    "outcomes": [
+                        {"name": "New York Yankees", "point": -1.5, "price": -120},
+                        {"name": "Boston Red Sox", "point": 1.5, "price": 100},
+                    ],
+                }
+            ],
+        ),
+    ]
+
+    home_line, home_price, away_price, book_key = odds_fetcher.first_paired_runline(
+        bookmakers, "New York Yankees", "Boston Red Sox"
+    )
+    assert home_line == -1.5
+    assert home_price == -120
+    assert away_price == 100
+    assert book_key == "betmgm"
+
+
+def test_first_paired_moneyline_returns_none_when_no_book_has_pair():
+    bookmakers = [
+        _book(
+            "draftkings",
+            "DraftKings",
+            [
+                {
+                    "key": "totals",
+                    "outcomes": [
+                        {"name": "Over", "point": 8.5, "price": -110},
+                        {"name": "Under", "point": 8.5, "price": -110},
+                    ],
+                }
+            ],
+        )
+    ]
+
+    home_price, away_price, book_key = odds_fetcher.first_paired_moneyline(
+        bookmakers, "New York Yankees", "Boston Red Sox"
+    )
+    assert home_price is None
+    assert away_price is None
+    assert book_key is None
