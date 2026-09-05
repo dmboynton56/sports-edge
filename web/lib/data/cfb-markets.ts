@@ -91,6 +91,16 @@ function mapGame(row: SupabaseCfbPrediction): CfbSlateGame {
   };
 }
 
+export function formatCfbMarketSubject(
+  subject: string,
+  market: SupabaseCfbMarket["market"],
+  awayTeam: string,
+  homeTeam: string,
+): string {
+  if (market !== "total") return subject;
+  return `${subject} · ${awayTeam} @ ${homeTeam}`;
+}
+
 function mapMarket(row: SupabaseCfbMarket): Prediction {
   return {
     id: `${row.event_id}-${row.market}-${row.selection}`,
@@ -98,7 +108,7 @@ function mapMarket(row: SupabaseCfbMarket): Prediction {
     league: "CFB",
     gameId: row.event_id,
     eventTime: row.game_time_utc,
-    subject: row.subject,
+    subject: formatCfbMarketSubject(row.subject, row.market, row.away_team, row.home_team),
     homeTeam: row.home_team,
     awayTeam: row.away_team,
     market: row.market,

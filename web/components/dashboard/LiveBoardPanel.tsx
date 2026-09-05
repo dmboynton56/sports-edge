@@ -28,18 +28,20 @@ function Shell({
     // The one lifted surface on the page. Everything else sits on the ground,
     // so the eye lands here first.
     <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-lift">
-      <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-border px-5 py-4">
-        <h2 className="text-[13px] font-semibold tracking-[0.06em] uppercase">{eyebrow}</h2>
-        <p className="text-[13px] text-muted-foreground">{note}</p>
-        {action ? (
-          <Link
-            href={action.href}
-            className="ml-auto inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:underline"
-          >
-            {action.label}
-            <ArrowRight className="size-3.5" />
-          </Link>
-        ) : null}
+      <div className="border-b border-border px-5 py-4">
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 className="text-[13px] font-semibold tracking-[0.06em] uppercase">{eyebrow}</h2>
+          {action ? (
+            <Link
+              href={action.href}
+              className="inline-flex shrink-0 items-center gap-1.5 text-[13px] font-semibold text-accent hover:underline"
+            >
+              {action.label}
+              <ArrowRight className="size-3.5" />
+            </Link>
+          ) : null}
+        </div>
+        <p className="mt-1 text-[13px] text-muted-foreground">{note}</p>
       </div>
       {children}
     </section>
@@ -57,7 +59,7 @@ function BoardRow({ prediction }: { prediction: Prediction }) {
   const row = (
     <>
       <SportChip sport={prediction.sport.toLowerCase()} label={prediction.sport} className="shrink-0" />
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="truncate text-[15px] font-medium">{prediction.subject}</div>
         <div className="truncate text-xs text-muted-foreground">
           {detail} · {STATUS_LABEL[prediction.marketStatus]}

@@ -67,8 +67,9 @@ export default async function Home() {
           </span>
 
           <h1 className="mt-6 text-[clamp(2.4rem,5.5vw,3.9rem)] font-bold leading-[1.02] tracking-[-0.038em]">
-            Every pick,
-            <span className="block text-accent">graded in public.</span>
+            Model predictions.
+            <span className="block">Sportsbook odds.</span>
+            <span className="block text-accent">You see the edge.</span>
           </h1>
 
           <p className="mt-5 max-w-[52ch] text-base leading-relaxed text-muted-foreground">
