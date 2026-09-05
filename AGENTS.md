@@ -1,42 +1,56 @@
-# Agent Role Routing — Sports Edge Dashboard v2
+# Sports Edge — agent notes
 
-Use this file when delegating work across Cursor, Claude Code, and Codex.
+Useful sports-analytics app (predictions, boards, freshness, research). **Not** a profitable betting strategy. Do not invent edges, trading loops, or LLM eval harnesses (no Langfuse / Promptfoo).
 
-## Roles
+## Repo
 
-| Role | Tool | Model tier | Owns |
-|------|------|------------|------|
-| Planner / architect | `claude -p` | Sonnet | Spec review, injury pipeline design, gate definitions |
-| Grinder | `codex exec` | gpt-5.6-sol | SQL migrations, Python scripts, pytest, mechanical review |
-| UI + integration | Cursor Composer | Composer | Next.js pages, components, Vercel wiring |
-| Deep review | `claude -p` | Sonnet | Pre-merge review against `PRODUCTION_ROADMAP.md` |
+| Path | Owns |
+| --- | --- |
+| `data-core/` | Python pipeline, SQL, scripts, pytest |
+| `web/` | Next.js dashboard — canonical public surface (Vercel root `web/`) |
+| `.github/workflows/` | Daily Refresh, Player Market Refresh, other crons |
 
-## Per-milestone loop
+Do not edit `.cursor/plans/*.plan.md`. Do not revert landed work: UI makeover, Odds-once-per-day, BQ isolation, MLB research audit.
 
-```bash
-# 1. Plan (Claude)
-claude -p "Read TASK.md + data-core/docs/DASHBOARD_V2_SPEC.md. Steps for M{N}. No edits." < /dev/null
+## Secrets
 
-# 2. Backend (Codex)
-codex exec -C data-core -s workspace-write -c approval_policy=on-request "..." < /dev/null
+- Local scripts: `data-core/.env` only. Never commit it; never put secrets elsewhere.
+- CI: GitHub Actions secrets (`ODDS_API_KEY`, `PROPLINE_API_KEY`, `SUPABASE_*`, `GCP_SERVICE_ACCOUNT_KEY`, `GCP_PROJECT_ID`, `DISCORD_WEBHOOK_URL`).
+- Dashboard: Vercel `NEXT_PUBLIC_SUPABASE_*`.
+- GCP key JSON is gitignored (`learned-pier-*.json`). `.github/workflows/verify-key-hygiene.yml` enforces that.
 
-# 3. UI (Cursor) — multi-file edits in IDE
+## Refresh ownership
 
-# 4. Review
-codex exec review --uncommitted < /dev/null
-```
+| Workflow | Owns | When |
+| --- | --- | --- |
+| Daily Refresh (`.github/workflows/daily-refresh.yml`) | League slates, **research MLB** (ML / run line / totals + `audit_mlb_research_readiness`) | Morning cron ~7:05 AM MT |
+| Player Market Refresh (`.github/workflows/player-markets-refresh.yml`) | **MLB HR odds** + HR board / player markets | Afternoon cron **after 2pm MT** (`15 20 * * *` ≈ 2:15 PM MT) |
 
-## Git isolation
-- Branch per milestone: `dashboard/m1-serving`, `dashboard/m2-explanations`, etc.
-- Update `TASK.md` handoff after each milestone merge.
+HR odds = PMR. Research MLB = Daily. `run_mlb_hr` on Daily is a deprecated escape hatch — do not make it canonical again.
 
-## Repo boundaries
-- `data-core/` — Python pipeline, SQL, scripts, tests
-- `web/` — Next.js dashboard (canonical public surface)
-- Do not edit `.cursor/plans/*.plan.md`
+Odds API is **once per Denver day**. Missing / empty / quota → PropLine (`PROPLINE_API_KEY`). Fail closed if both fail: no invented prices, no fake EV.
 
-## Key docs
-- `data-core/docs/DASHBOARD_V2_SPEC.md`
-- `data-core/docs/PRODUCTION_ROADMAP.md`
-- `data-core/docs/NFL_WEEK_1_READINESS_PLAN.md`
-- `data-core/docs/DATA_AND_MODEL_STATUS.md`
+Ops detail: `.cursor/skills/sports-edge-ops/SKILL.md`.
+
+## Fail-closed
+
+Missing books or prices → model-only rows, no edge/EV. Missing slate/source → `failed` / `no_slate`. Do not paper over gaps.
+
+## How to work
+
+Default implementation model: **grok-4.6**. Do not prescribe Sonnet or Composer as defaults.
+
+| Role | Tool | Use |
+| --- | --- | --- |
+| Implement / UI | Cursor | Default path. Multi-file edits, Next.js, Vercel, wiring. |
+| Grind | Codex (`codex exec`) | Optional: SQL migrations, pytest, mechanical packets. |
+| Harsh review | Cursor slash skills | Before merge — slash-only, not auto. |
+
+Do not dump review rubrics into always-on rules. Skills load name + description until activated.
+
+## Before merge
+
+Run both thermos **explicitly** (`disable-model-invocation`; they will not auto-fire):
+
+- `/thermo-nuclear-review`
+- `/thermo-nuclear-code-quality-review`
