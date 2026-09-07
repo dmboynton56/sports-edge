@@ -43,6 +43,7 @@ data/curated/
 
 # Local / large (regenerate via pipeline — see data-core/docs/PGA_REFRESH_PIPELINE.md)
 data-core/data/
+data-core/artifacts/experiments/
 data-core/web/
 data-core/notebooks/cache/pga_feature_store_event_level.csv
 data-core/notebooks/cache/mlb_home_run_boxscores_*.jsonl

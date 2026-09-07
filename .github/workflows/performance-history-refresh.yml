@@ -53,6 +53,16 @@ jobs:
           pip install -r data-core/requirements.txt
           npm ci --prefix web
 
+      - name: Grade NFL v2 live rollout
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: python data-core/scripts/grade_nfl_v2_live.py
+
       - name: Export performance history
         run: |
           python data-core/scripts/export_performance_history.py
@@ -79,7 +89,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data-core/notebooks/cache/performance_history.json data-core/docs/PERFORMANCE_HISTORY.md web/public/data/performance_history.json
+          git add data-core/notebooks/cache/nfl_v2_live_performance.json data-core/notebooks/cache/performance_history.json data-core/docs/PERFORMANCE_HISTORY.md web/public/data/performance_history.json
           git status --short
           if git diff --cached --quiet; then
             echo "No performance artifact changes to publish."

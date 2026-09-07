@@ -68,20 +68,52 @@ def _metrics(predictions: pd.DataFrame) -> dict[str, Any]:
     y_pred = (y_prob >= 0.5).astype(int)
     actual_margin = predictions["actual_margin"].astype(float).to_numpy()
     predicted_margin = predictions["predicted_margin"].astype(float).to_numpy()
+    empirical_home_rate = float(np.mean(y_true))
+    constant_half = np.full(len(y_true), 0.5, dtype=float)
+    constant_home_rate = np.full(len(y_true), empirical_home_rate, dtype=float)
+    model_brier = float(brier_score_loss(y_true, y_prob))
 
     out = {
         "games": int(len(predictions)),
         "accuracy": float(accuracy_score(y_true, y_pred)),
-        "brier": float(brier_score_loss(y_true, y_prob)),
+        "brier": model_brier,
         "log_loss": float(log_loss(y_true, np.clip(y_prob, 1e-6, 1 - 1e-6))),
         "ece_10": expected_calibration_error(y_true, y_prob, n_bins=10),
         "avg_pred_home_win": float(np.mean(y_prob)),
-        "actual_home_win_rate": float(np.mean(y_true)),
+        "actual_home_win_rate": empirical_home_rate,
+        "home_probability_bias": float(np.mean(y_prob) - empirical_home_rate),
+        "constant_50_brier": float(brier_score_loss(y_true, constant_half)),
+        "empirical_home_rate_brier": float(brier_score_loss(y_true, constant_home_rate)),
+        "brier_skill_vs_50": float(1.0 - (model_brier / brier_score_loss(y_true, constant_half))),
         "spread_mae": float(mean_absolute_error(actual_margin, predicted_margin)),
         "spread_rmse": float(mean_squared_error(actual_margin, predicted_margin) ** 0.5),
+        "avg_predicted_margin": float(np.mean(predicted_margin)),
+        "avg_actual_margin": float(np.mean(actual_margin)),
+        "home_margin_bias": float(np.mean(predicted_margin - actual_margin)),
+        "predicted_home_favorite_rate": float(np.mean(predicted_margin > 0)),
     }
     if len(np.unique(y_true)) == 2:
         out["roc_auc"] = float(roc_auc_score(y_true, y_prob))
+
+    component_columns = {
+        "direct_model": "home_win_prob_from_model",
+        "spread_link": "win_prob_from_spread",
+    }
+    components = {}
+    for name, column in component_columns.items():
+        if column not in predictions.columns:
+            continue
+        component_prob = predictions[column].astype(float).clip(1e-6, 1 - 1e-6).to_numpy()
+        components[name] = {
+            "avg_pred_home_win": float(np.mean(component_prob)),
+            "home_probability_bias": float(np.mean(component_prob) - empirical_home_rate),
+            "brier": float(brier_score_loss(y_true, component_prob)),
+            "log_loss": float(log_loss(y_true, component_prob)),
+            "ece_10": expected_calibration_error(y_true, component_prob, n_bins=10),
+            "roc_auc": float(roc_auc_score(y_true, component_prob)),
+        }
+    if components:
+        out["components"] = components
     return out
 
 
@@ -129,6 +161,8 @@ def main() -> None:
                 "home_win_probability",
                 "confidence",
                 "model_disagreement",
+                "home_win_prob_from_model",
+                "win_prob_from_spread",
             ]
         ],
         on=["game_date", "home_team", "away_team"],

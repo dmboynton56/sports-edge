@@ -1,0 +1,110 @@
+experiment_version: nfl-v2-experiment-1
+hypothesis: Symmetric point-in-time football features reduce NFL home-probability bias while preserving discrimination.
+change_family: initial_point_in_time_football_context
+experiment_state:
+  locked_test_consumed: true
+  consumed_by_run: 20260906T213902Z_c975f402_88c44042
+  next_untouched_window: graded_2026_shadow_predictions
+
+live_selection:
+  model_version: nfl-v2-live-20260906
+  probability_candidate: hgb_small
+  margin_candidate: ridge_a50
+  calibration_method: isotonic
+  trained_through: 2025
+  activation_reason: explicit_live_monitoring_override_after_2025_test_review
+
+feature_columns:
+  - home_field
+  - rest_diff
+  - travel_advantage_km
+  - games_before_diff
+  - qb_stability_diff
+  - qb_prior_epa_diff
+  - playoff_strength_diff
+  - adj_off_epa_diff_3
+  - adj_def_epa_diff_3
+  - off_success_diff_3
+  - def_success_diff_3
+  - off_explosive_diff_3
+  - def_explosive_diff_3
+  - win_diff_3
+  - margin_diff_3
+  - points_for_diff_3
+  - points_against_diff_3
+  - adj_off_epa_diff_5
+  - adj_def_epa_diff_5
+  - off_success_diff_5
+  - def_success_diff_5
+  - off_explosive_diff_5
+  - def_explosive_diff_5
+  - win_diff_5
+  - margin_diff_5
+  - points_for_diff_5
+  - points_against_diff_5
+  - adj_off_epa_diff_10
+  - adj_def_epa_diff_10
+  - off_success_diff_10
+  - def_success_diff_10
+  - off_explosive_diff_10
+  - def_explosive_diff_10
+  - win_diff_10
+  - margin_diff_10
+  - points_for_diff_10
+  - points_against_diff_10
+
+ablation_feature_columns:
+  - home_field
+
+windows:
+  selection:
+    - train_through: 2021
+      test_season: 2022
+    - train_through: 2022
+      test_season: 2023
+  calibration: 2024
+  locked_test: 2025
+
+calibration_methods:
+  - none
+  - sigmoid
+  - isotonic
+
+candidates:
+  probability:
+    - {name: logistic_c025, kind: logistic, C: 0.25}
+    - {name: logistic_c100, kind: logistic, C: 1.0}
+    - {name: hgb_small, kind: hist_gradient_boosting, learning_rate: 0.04, max_leaf_nodes: 7, l2_regularization: 2.0}
+    - {name: hgb_medium, kind: hist_gradient_boosting, learning_rate: 0.04, max_leaf_nodes: 15, l2_regularization: 4.0}
+    - {name: lgbm_small, kind: lightgbm, n_estimators: 150, learning_rate: 0.03, num_leaves: 7, min_child_samples: 40, reg_lambda: 3.0}
+  margin:
+    - {name: ridge_a10, kind: ridge, alpha: 10.0}
+    - {name: ridge_a50, kind: ridge, alpha: 50.0}
+    - {name: lgbm_margin, kind: lightgbm, n_estimators: 150, learning_rate: 0.03, num_leaves: 7, min_child_samples: 40, reg_lambda: 3.0}
+
+market_track:
+  timestamp_safe: false
+  minimum_coverage: 0.90
+  note: nflverse aggregate closing lines are benchmark-only and cannot train this track.
+
+baselines:
+  nfl_v1_predictions: data-core/notebooks/cache/nfl_backtest_2025_v1.csv
+
+promotion_gates:
+  bootstrap_samples: 2000
+  bootstrap_seed: 20260906
+  bootstrap_probability: 0.80
+  max_ece: 0.05
+  max_home_probability_bias: 0.03
+  home_bias_segment_min_rows: 40
+  max_segment_home_bias: 0.08
+  max_auc_gap: 0.01
+  max_home_margin_bias: 0.75
+
+iteration_policy:
+  one_hypothesis_and_change_per_run: true
+  require_ablation: true
+  locked_test_may_be_opened_once: true
+  record_negative_results: true
+  tuning_metric: mean_rolling_origin_brier
+  threshold_tuning_on_locked_test: prohibited

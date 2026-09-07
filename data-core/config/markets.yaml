@@ -186,12 +186,12 @@
   sides: [home, away]
   result_source: nflverse
   model_name: nfl_winner_model
-  model_version: v1
-  live_enabled: false
+  model_version: nfl-v2-live-20260906
+  live_enabled: true
   backtest_enabled: true
   min_books: 2
   max_price_age_minutes: 20
-  status: "Scaffold until NFL Week 1 (2026-09-09); model exists but needs re-evaluation"
+  status: "Live with weekly probability calibration and home-bias monitoring"
 
 - sport: NFL
   provider_sport_key: americanfootball_nfl
@@ -202,12 +202,12 @@
   sides: [home, away]
   result_source: nflverse
   model_name: nfl_spread_model
-  model_version: v1
-  live_enabled: false
+  model_version: nfl-v2-live-20260906
+  live_enabled: true
   backtest_enabled: true
   min_books: 2
   max_price_age_minutes: 20
-  status: "Scaffold until NFL Week 1 (2026-09-09); model exists but needs re-evaluation"
+  status: "Live margin head; monitored independently from win probability"
 
 - sport: NFL
   provider_sport_key: americanfootball_nfl

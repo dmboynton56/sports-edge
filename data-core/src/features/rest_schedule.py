@@ -187,9 +187,11 @@ def add_rest_features(games_df: pd.DataFrame, historical_games: pd.DataFrame) ->
         hist['game_date'] = hist['game_date'].dt.tz_localize(None)
     
     # 1. Melt history to get all games per team
-    h_games = hist[['game_date', 'season', 'home_team']].rename(columns={'home_team': 'team'})
-    a_games = hist[['game_date', 'season', 'away_team']].rename(columns={'away_team': 'team'})
-    team_games = pd.concat([h_games, a_games]).sort_values(['team', 'game_date'])
+    if 'game_id' not in hist.columns or 'game_id' not in df.columns:
+        raise ValueError("Rest features require game_id to preserve one-row-per-game grain.")
+    h_games = hist[['game_id', 'game_date', 'season', 'home_team']].rename(columns={'home_team': 'team'})
+    a_games = hist[['game_id', 'game_date', 'season', 'away_team']].rename(columns={'away_team': 'team'})
+    team_games = pd.concat([h_games, a_games]).sort_values(['team', 'game_date', 'game_id'])
     
     # 2. Compute rest days
     team_games['prev_game_date'] = team_games.groupby(['team', 'season'])['game_date'].shift(1)
@@ -207,7 +209,7 @@ def add_rest_features(games_df: pd.DataFrame, historical_games: pd.DataFrame) ->
     # 4. Merge back to games_df
     # We want the rest/fatigue status AT THE TIME OF THE GAME
     # The team_games table already has this for each game
-    lookup = team_games[['team', 'game_date', 'rest_days', 'is_b2b', 'is_3in4']]
+    lookup = team_games[['team', 'game_id', 'rest_days', 'is_b2b', 'is_3in4']]
     
     # Home team
     df = pd.merge(df, lookup.rename(columns={
@@ -215,7 +217,7 @@ def add_rest_features(games_df: pd.DataFrame, historical_games: pd.DataFrame) ->
         'rest_days': 'rest_home', 
         'is_b2b': 'b2b_home', 
         'is_3in4': 'is_3in4_home'
-    }), on=['home_team', 'game_date'], how='left')
+    }), on=['home_team', 'game_id'], how='left', validate='one_to_one')
     
     # Away team
     df = pd.merge(df, lookup.rename(columns={
@@ -223,7 +225,7 @@ def add_rest_features(games_df: pd.DataFrame, historical_games: pd.DataFrame) ->
         'rest_days': 'rest_away', 
         'is_b2b': 'b2b_away', 
         'is_3in4': 'is_3in4_away'
-    }), on=['away_team', 'game_date'], how='left')
+    }), on=['away_team', 'game_id'], how='left', validate='one_to_one')
     
     # Fill NAs (first game of season)
     df['rest_home'] = df['rest_home'].fillna(7) # Assume full rest for first game

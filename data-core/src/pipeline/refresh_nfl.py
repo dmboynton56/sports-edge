@@ -17,6 +17,8 @@ import pandas as pd
 from dotenv import load_dotenv
 from google.cloud import bigquery
 
+from src.models.nfl_live import LIVE_MODEL_VERSION, predict_live_games
+from src.models.nfl_v2 import PBP_AGGREGATE_SQL
 from src.models.predictor import GamePredictor
 from src.utils.injury_loader import load_injury_impacts_from_supabase
 from src.utils.explanation_export import build_explanation_rows, write_explanation_cache
@@ -31,8 +33,8 @@ def _parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--model-version",
-        default="v1",
-        help="Model version tag for GamePredictor (default: v1).",
+        default=LIVE_MODEL_VERSION,
+        help=f"Model version to publish (default: {LIVE_MODEL_VERSION}). Use v1 only for rollback research.",
     )
     parser.add_argument(
         "--start-date",
@@ -91,6 +93,15 @@ def _query_games(client: bigquery.Client, project: str, start_date: datetime.dat
         WHERE game_date BETWEEN @start_date AND @end_date
           AND game_date IS NOT NULL
           AND league = 'NFL'
+          AND home_score IS NULL
+          AND away_score IS NULL
+          AND TIMESTAMP(
+                DATETIME(
+                  game_date,
+                  SAFE.PARSE_TIME('%H:%M', JSON_VALUE(raw_record, '$.gametime'))
+                ),
+                'America/New_York'
+              ) > CURRENT_TIMESTAMP()
         ORDER BY game_date
     """
     job_config = bigquery.QueryJobConfig(
@@ -119,18 +130,26 @@ def _query_historical_games(client: bigquery.Client, project: str, seasons: List
     return df
 
 
-def _query_pbp(client: bigquery.Client, project: str, seasons: List[int]) -> pd.DataFrame:
-    query = f"""
+def _query_pbp(client: bigquery.Client, project: str, seasons: List[int], *, aggregate: bool = False) -> pd.DataFrame:
+    query = PBP_AGGREGATE_SQL.format(project=project) if aggregate else f"""
         SELECT game_id, game_date, posteam, defteam, epa
         FROM `{project}.sports_edge_raw.raw_pbp`
         WHERE season IN UNNEST(@seasons)
           AND league = 'NFL'
     """
     job_config = bigquery.QueryJobConfig(
-        query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
+        query_parameters=(
+            [
+                bigquery.ScalarQueryParameter("start_season", "INT64", min(seasons)),
+                bigquery.ScalarQueryParameter("end_season", "INT64", max(seasons)),
+            ]
+            if aggregate
+            else [bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
+        )
     )
     df = client.query(query, job_config=job_config).to_dataframe()
-    df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
+    if "game_date" in df:
+        df["game_date"] = pd.to_datetime(df["game_date"], errors="coerce")
     return df
 
 
@@ -202,41 +221,46 @@ def main() -> None:
         print("No NFL games scheduled in the requested window. Exiting.")
         return
 
-    hist_seasons = list(range(season - 3, season + 1))
+    hist_seasons = list(range(2020 if args.model_version == LIVE_MODEL_VERSION else season - 3, season + 1))
     historical_games = _query_historical_games(client, args.project, hist_seasons)
-    pbp = _query_pbp(client, args.project, hist_seasons)
-    historical_data = {"historical_games": historical_games, "play_by_play": pbp}
-
-    predictor = GamePredictor("NFL", model_version=args.model_version)
-
-    injury_impacts = None
-    if args.injury_aware:
-        game_ids = [str(gid) for gid in games_df["game_id"].dropna().tolist()]
-        injury_impacts = load_injury_impacts_from_supabase("NFL", game_ids=game_ids)
-        print(f"Loaded {len(injury_impacts)} injury impact rows for NFL refresh.")
-
-    predictions = predictor.predict_batch(
-        games_df,
-        historical_games,
-        pbp,
-        injury_impacts=injury_impacts,
-        include_explanations=args.include_explanations,
-    )
+    if args.model_version == LIVE_MODEL_VERSION:
+        pbp = _query_pbp(client, args.project, hist_seasons, aggregate=True)
+        predictions = predict_live_games(
+            historical_games,
+            pbp,
+            [str(game_id) for game_id in games_df["game_id"].dropna()],
+        )
+        if args.injury_aware:
+            print("NFL v2 excludes injuries until historical point-in-time coverage passes its gate.")
+    else:
+        pbp = _query_pbp(client, args.project, hist_seasons)
+        predictor = GamePredictor("NFL", model_version=args.model_version)
+        injury_impacts = None
+        if args.injury_aware:
+            game_ids = [str(gid) for gid in games_df["game_id"].dropna().tolist()]
+            injury_impacts = load_injury_impacts_from_supabase("NFL", game_ids=game_ids)
+            print(f"Loaded {len(injury_impacts)} injury impact rows for NFL refresh.")
+        predictions = predictor.predict_batch(
+            games_df,
+            historical_games,
+            pbp,
+            injury_impacts=injury_impacts,
+            include_explanations=args.include_explanations,
+        )
     if predictions.empty:
         print("No predictions were generated.")
         return
 
-    # Merge with games_df to get game_id
-    # Normalize dates to midnight to ensure merge matches even if times differ
-    predictions["game_date"] = pd.to_datetime(predictions["game_date"]).dt.normalize()
-    games_df_normalized = games_df[["game_id", "home_team", "away_team", "game_date"]].copy()
-    games_df_normalized["game_date"] = pd.to_datetime(games_df_normalized["game_date"]).dt.normalize()
-
-    predictions = predictions.merge(
-        games_df_normalized,
-        on=["home_team", "away_team", "game_date"],
-        how="left",
-    )
+    if args.model_version != LIVE_MODEL_VERSION:
+        # Legacy predictions do not carry game_id and require a schedule join.
+        predictions["game_date"] = pd.to_datetime(predictions["game_date"]).dt.normalize()
+        games_df_normalized = games_df[["game_id", "home_team", "away_team", "game_date"]].copy()
+        games_df_normalized["game_date"] = pd.to_datetime(games_df_normalized["game_date"]).dt.normalize()
+        predictions = predictions.merge(
+            games_df_normalized,
+            on=["home_team", "away_team", "game_date"],
+            how="left",
+        )
 
     # Drop any predictions where game_id could not be matched
     if predictions["game_id"].isna().any():

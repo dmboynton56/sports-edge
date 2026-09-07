@@ -35,6 +35,10 @@ export type TeamSlateFeed = {
 
 const SLATE_TIME_ZONE = "America/Denver";
 const FRESH_HOURS = 24;
+const PREFERRED_MODEL_VERSION = {
+  NFL: "nfl-v2-live-20260906",
+  NBA: "v3",
+} satisfies Record<"NBA" | "NFL", string>;
 
 type SupabaseGameRow = {
   id: string;
@@ -151,11 +155,12 @@ async function fetchGamesInWindow(league: string, start: string, end: string) {
   return supabaseRest<SupabaseGameRow>(resource);
 }
 
-async function fetchLatestPredictions(gameIds: string[]) {
+async function fetchLatestPredictions(gameIds: string[], modelVersion?: string) {
   if (!gameIds.length) return new Map<string, SupabasePredictionRow>();
   const inList = gameIds.map((id) => `"${id}"`).join(",");
   const resource =
     `model_predictions?game_id=in.(${inList})` +
+    (modelVersion ? `&model_version=eq.${modelVersion}` : "") +
     `&order=asof_ts.desc` +
     `&select=game_id,my_spread,my_home_win_prob,model_version,asof_ts`;
   const rows = (await supabaseRest<SupabasePredictionRow>(resource)) ?? [];
@@ -398,7 +403,7 @@ export async function getTeamSlateFeed(
 
   const gameIds = games.map((g) => g.id);
   const [predictions, oddsRows] = await Promise.all([
-    fetchLatestPredictions(gameIds),
+    fetchLatestPredictions(gameIds, PREFERRED_MODEL_VERSION[league]),
     fetchLatestOdds(gameIds),
   ]);
 
@@ -446,7 +451,7 @@ export async function getTeamMarketPredictions(
 
     const gameIds = games.map((game) => game.id);
     const [predictionMap, oddsRows] = await Promise.all([
-      fetchLatestPredictions(gameIds),
+      fetchLatestPredictions(gameIds, PREFERRED_MODEL_VERSION[league]),
       fetchLatestFeaturedOdds(gameIds),
     ]);
     const predictionRows = Array.from(predictionMap.values());
@@ -462,7 +467,7 @@ export async function getTeamMarketPredictions(
       gaps.push(`${league} totals prices are live, but a validated totals model head is not yet available; edge and EV stay blank.`);
     }
     if (league === "NFL") {
-      gaps.push("NFL Week 1 moneyline/spread outputs are preliminary: the 2025 holdout was weak and injury inputs are not complete.");
+      gaps.push("NFL v2 is live under monitored rollout; it improved on v1 but did not clear every formal promotion gate, and injuries remain excluded pending point-in-time coverage.");
     }
 
     const timestamps = [
@@ -499,7 +504,7 @@ export async function getTeamSlateGame(
   if (!game) return null;
 
   const [predictions, oddsRows] = await Promise.all([
-    fetchLatestPredictions([game.id]),
+    fetchLatestPredictions([game.id], PREFERRED_MODEL_VERSION[league]),
     fetchLatestOdds([game.id]),
   ]);
 

@@ -39,6 +39,7 @@ def build_history(cache_dir: Path) -> dict[str, Any]:
     nfl_oddspapi_audit = _load_json(cache_dir / "nfl_oddspapi_spreads_2025_audit.json")
     nba_bq = _load_json(cache_dir / "nba_backtest_2025_v3_metrics.json")
     nfl_bq = _load_json(cache_dir / "nfl_backtest_2025_v1_metrics.json")
+    nfl_v2_live = _load_json(cache_dir / "nfl_v2_live_performance.json")
     nba_ats = _load_json(cache_dir / "nba_supabase_ats_summary_2025.json")
     nfl_ats = _load_json(cache_dir / "nfl_supabase_ats_summary_2025.json")
     nba_default = nba_bq.get("default_strategy", {})
@@ -107,17 +108,27 @@ def build_history(cache_dir: Path) -> dict[str, Any]:
             },
             {
                 "sport": "NFL",
-                "model_version": "v1",
-                "season": "2025",
-                "market": "spread",
-                "data_source": "Supabase ATS",
+                "model_version": nfl_v2_live.get("model_version", "nfl-v2-live-20260906"),
+                "season": "2026 live",
+                "market": "win probability + margin",
+                "data_source": "Timestamp-safe Supabase live predictions; 2025 v1 retained as comparison",
                 "sample": {
+                    "live_graded_games": int(nfl_v2_live.get("graded_games", 0)),
+                    "live_graded_weeks": int(nfl_v2_live.get("graded_weeks", 0)),
                     "supabase_graded_games": int(nfl_ats.get("graded_games", 56)),
                     "odds_joined_games": int(nfl_ats.get("graded_games", 56)),
                     "bigquery_scored_games": int(nfl_bq.get("scored_games", 285)),
                     "oddspapi_spread_rows": int(nfl_oddspapi_audit.get("matched_rows", 0)),
                 },
                 "metrics": {
+                    "live_status": nfl_v2_live.get("status", "awaiting_graded_games"),
+                    "live_brier": nfl_v2_live.get("metrics", {}).get("probability", {}).get("brier"),
+                    "live_log_loss": nfl_v2_live.get("metrics", {}).get("probability", {}).get("log_loss"),
+                    "live_auc": nfl_v2_live.get("metrics", {}).get("probability", {}).get("auc"),
+                    "live_ece_10": nfl_v2_live.get("metrics", {}).get("probability", {}).get("ece_10"),
+                    "live_home_probability_bias": nfl_v2_live.get("metrics", {}).get("probability", {}).get("home_probability_bias"),
+                    "live_margin_mae": nfl_v2_live.get("metrics", {}).get("margin", {}).get("mae"),
+                    "live_home_margin_bias": nfl_v2_live.get("metrics", {}).get("margin", {}).get("home_margin_bias"),
                     "bigquery_accuracy": nfl_bq.get("metrics", {}).get("accuracy"),
                     "bigquery_brier": nfl_bq.get("metrics", {}).get("brier"),
                     "bigquery_log_loss": nfl_bq.get("metrics", {}).get("log_loss"),
@@ -138,11 +149,12 @@ def build_history(cache_dir: Path) -> dict[str, Any]:
                     "notebooks/cache/nfl_oddspapi_spreads_2025.csv",
                     "scripts/backfill_oddspapi_nfl_spreads.py",
                     "scripts/export_nfl_backtest_history.py",
+                    "scripts/grade_nfl_v2_live.py",
+                    "notebooks/cache/nfl_v2_live_performance.json",
                 ],
-                "gaps": [
+                "gaps": nfl_v2_live.get("gaps", []) + [
                     "OddsPapi historical NFL coverage is recent-fixture limited on this key tier",
-                    "Supabase has stale v1/v2/v3 version mix",
-                    "Available ATS sample is not full season",
+                    "Injuries are excluded until historical point-in-time coverage passes its gate",
                 ],
             },
             {
@@ -272,12 +284,14 @@ def write_markdown(history: dict[str, Any], path: Path) -> None:
             primary = f"ATS ROI {_pct(metrics['supabase_ats_roi'])}; BQ default ROI {_pct(metrics['bigquery_default_roi'])}"
             sample_text = f"{sample['completed_games']} completed; {sample['odds_joined_games']} BQ odds; {sample['supabase_graded_games']} Supabase graded"
         elif sport["sport"] == "NFL":
-            primary = (
-                f"ATS ROI {_pct(metrics['supabase_ats_roi'])}; "
-                f"BQ AUC {metrics.get('bigquery_auc', 0):.4f}; "
-                f"spread MAE {metrics.get('bigquery_spread_mae', 0):.2f}"
-            )
-            sample_text = f"{sample['bigquery_scored_games']} BQ scored; {sample['supabase_graded_games']} Supabase graded"
+            if metrics.get("live_brier") is None:
+                primary = f"{metrics.get('live_status', 'awaiting_graded_games')}"
+            else:
+                primary = (
+                    f"Brier {metrics['live_brier']:.4f}; ECE {metrics['live_ece_10']:.4f}; "
+                    f"home bias {_pct(metrics['live_home_probability_bias'])}; margin MAE {metrics['live_margin_mae']:.2f}"
+                )
+            sample_text = f"{sample['live_graded_games']} live graded across {sample['live_graded_weeks']} weeks"
         elif sport["sport"] == "MLB":
             primary = (
                 f"Brier {metrics.get('brier', 0):.4f}; log loss {metrics.get('log_loss', 0):.4f}; "

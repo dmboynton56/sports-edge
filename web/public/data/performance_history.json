@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-31T20:16:22.223206+00:00",
+  "generatedAt": "2026-09-06T22:16:04.510802+00:00",
   "source": "data-core/notebooks/cache/performance_history.json",
   "oddspapi": {
     "api_version": "v4",
@@ -187,31 +187,41 @@
     },
     {
       "sport": "NFL",
-      "modelVersion": "v1",
-      "season": "2025",
-      "market": "spread",
-      "dataSource": "Supabase ATS",
+      "modelVersion": "nfl-v2-live-20260906",
+      "season": "2026 live",
+      "market": "win probability + margin",
+      "dataSource": "Timestamp-safe Supabase live predictions; 2025 v1 retained as comparison",
       "sampleSize": 285,
       "sample": {
         "bigquery_scored_games": 285,
+        "live_graded_games": 0,
+        "live_graded_weeks": 0,
         "odds_joined_games": 56,
         "oddspapi_spread_rows": 0,
         "supabase_graded_games": 56
       },
       "metrics": {
-        "bigquery_accuracy": 0.5368421052631579,
-        "bigquery_auc": 0.5789721013058964,
-        "bigquery_brier": 0.26484671177938107,
-        "bigquery_log_loss": 0.7315039688544586,
+        "bigquery_accuracy": 0.5333333333333333,
+        "bigquery_auc": 0.596532449544915,
+        "bigquery_brier": 0.26675504905752667,
+        "bigquery_log_loss": 0.7439216892468532,
         "bigquery_spread_mae": 11.148356792670684,
+        "live_auc": null,
+        "live_brier": null,
+        "live_ece_10": null,
+        "live_home_margin_bias": null,
+        "live_home_probability_bias": null,
+        "live_log_loss": null,
+        "live_margin_mae": null,
+        "live_status": "awaiting_graded_games",
         "supabase_ats_losses": 29,
         "supabase_ats_pushes": 0,
         "supabase_ats_roi": -0.07954545454545459,
         "supabase_ats_wins": 27,
-        "accuracy": 0.5368421052631579,
-        "auc": 0.5789721013058964,
-        "brier": 0.26484671177938107,
-        "logLoss": 0.7315039688544586,
+        "accuracy": 0.5333333333333333,
+        "auc": 0.596532449544915,
+        "brier": 0.26675504905752667,
+        "logLoss": 0.7439216892468532,
         "mae": 11.148356792670684,
         "roi": -0.07954545454545459
       },
@@ -230,12 +240,14 @@
         "notebooks/cache/nfl_backtest_2025_v1_metrics.json",
         "notebooks/cache/nfl_oddspapi_spreads_2025.csv",
         "scripts/backfill_oddspapi_nfl_spreads.py",
-        "scripts/export_nfl_backtest_history.py"
+        "scripts/export_nfl_backtest_history.py",
+        "scripts/grade_nfl_v2_live.py",
+        "notebooks/cache/nfl_v2_live_performance.json"
       ],
       "gaps": [
+        "No completed games with a timestamp-safe v2 prediction are available yet.",
         "OddsPapi historical NFL coverage is recent-fixture limited on this key tier",
-        "Supabase has stale v1/v2/v3 version mix",
-        "Available ATS sample is not full season"
+        "Injuries are excluded until historical point-in-time coverage passes its gate"
       ],
       "productionGates": [
         {
@@ -572,9 +584,9 @@
   "gaps": [
     "NBA: raw_nba_odds stale before OddsPapi tail patch for Feb-May 2026",
     "NBA: Supabase season still has historical rows missing book_spread",
+    "NFL: No completed games with a timestamp-safe v2 prediction are available yet.",
     "NFL: OddsPapi historical NFL coverage is recent-fixture limited on this key tier",
-    "NFL: Supabase has stale v1/v2/v3 version mix",
-    "NFL: Available ATS sample is not full season",
+    "NFL: Injuries are excluded until historical point-in-time coverage passes its gate",
     "MLB: Free historical moneylines are consensus/comparison sources, not sharp-book closing lines",
     "MLB: MLB strategy remains negative ROI on broader free-history backtests",
     "PGA: No historical event-by-event sportsbook odds ROI history",

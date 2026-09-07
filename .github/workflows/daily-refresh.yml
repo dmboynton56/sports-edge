@@ -235,10 +235,11 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          # NFL weekly refresh logic can stay here, or run daily to catch line movements
+          # NFL v2 artifacts were serialized with sklearn 1.6.1.
+          python -m pip install --no-deps --force-reinstall scikit-learn==1.6.1
           python -m src.pipeline.refresh_nfl \
             --project "$PROJECT_ID" \
-            --model-version v1 \
+            --model-version nfl-v2-live-20260906 \
             --start-date "${{ steps.plan.outputs.anchor_date }}" \
             --window-days 14 \
             --season "${{ steps.plan.outputs.nfl_season }}" \
@@ -396,7 +397,7 @@ jobs:
               --project "$PROJECT_ID" \
               --league NFL \
               --season "${{ steps.plan.outputs.nfl_season }}" \
-              --model-version v1 \
+              --model-version nfl-v2-live-20260906 \
               --start-date "${{ steps.plan.outputs.anchor_date }}" \
               --window-days 14
           fi

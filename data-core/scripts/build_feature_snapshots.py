@@ -129,6 +129,11 @@ def _parse_args() -> argparse.Namespace:
         help="Delete existing rows for the provided seasons before inserting.",
     )
     parser.add_argument(
+        "--destination-table",
+        default=None,
+        help="Fully qualified output table. Defaults to sports_edge_curated.feature_snapshots.",
+    )
+    parser.add_argument(
         "--date",
         type=lambda value: datetime.strptime(value, "%Y-%m-%d").date(),
         default=None,
@@ -181,15 +186,30 @@ def _resolve_date_window(args: argparse.Namespace) -> Optional[tuple[date, date]
     return anchor - timedelta(days=lookback_days), anchor + timedelta(days=lookahead_days)
 
 
-def _fetch_table(client: bigquery.Client, project: str, dataset: str, table: str, seasons: List[int]) -> pd.DataFrame:
+def _fetch_table(
+    client: bigquery.Client,
+    project: str,
+    dataset: str,
+    table: str,
+    seasons: List[int],
+    *,
+    league: Optional[str] = None,
+) -> pd.DataFrame:
+    league_clause = ""
+    query_parameters: list[bigquery.ScalarQueryParameter | bigquery.ArrayQueryParameter] = [
+        bigquery.ArrayQueryParameter("seasons", "INT64", seasons)
+    ]
+    if league is not None:
+        league_clause = "AND league = @league"
+        query_parameters.append(bigquery.ScalarQueryParameter("league", "STRING", league))
+
     query = f"""
         SELECT *
         FROM `{project}.{dataset}.{table}`
         WHERE season IN UNNEST(@seasons)
+          {league_clause}
     """
-    job_config = bigquery.QueryJobConfig(
-        query_parameters=[bigquery.ArrayQueryParameter("seasons", "INT64", seasons)]
-    )
+    job_config = bigquery.QueryJobConfig(query_parameters=query_parameters)
     
     max_retries = 3
     for attempt in range(max_retries):
@@ -202,6 +222,44 @@ def _fetch_table(client: bigquery.Client, project: str, dataset: str, table: str
                 time.sleep(sleep_time)
             else:
                 raise
+
+
+def _assert_schedule_league(schedules: pd.DataFrame, expected_league: str) -> None:
+    """Fail closed when a feature build contains another league's games."""
+    if schedules.empty:
+        return
+    if "league" not in schedules.columns:
+        raise ValueError("Schedule rows are missing the required league column.")
+
+    normalized = schedules["league"].astype("string").str.upper()
+    unexpected = sorted(normalized.dropna().loc[normalized != expected_league.upper()].unique().tolist())
+    missing_count = int(normalized.isna().sum())
+    if unexpected or missing_count:
+        raise ValueError(
+            "Schedule league isolation failed: "
+            f"expected={expected_league.upper()}, unexpected={unexpected}, missing={missing_count}."
+        )
+
+
+def _assert_feature_grain(feature_rows: pd.DataFrame, target_schedules: pd.DataFrame) -> None:
+    """Require exactly one feature row for every requested game."""
+    if "game_id" not in feature_rows.columns or "game_id" not in target_schedules.columns:
+        raise ValueError("Feature grain validation requires game_id on schedules and features.")
+
+    expected_ids = set(target_schedules["game_id"].dropna().astype(str))
+    actual_ids = feature_rows["game_id"].dropna().astype(str)
+    duplicate_ids = sorted(actual_ids.loc[actual_ids.duplicated(keep=False)].unique().tolist())
+    actual_id_set = set(actual_ids)
+    missing_ids = sorted(expected_ids - actual_id_set)
+    unexpected_ids = sorted(actual_id_set - expected_ids)
+    null_ids = int(feature_rows["game_id"].isna().sum())
+
+    if duplicate_ids or missing_ids or unexpected_ids or null_ids:
+        raise ValueError(
+            "Feature grain validation failed: expected one row per requested game; "
+            f"duplicates={duplicate_ids[:10]}, missing={missing_ids[:10]}, "
+            f"unexpected={unexpected_ids[:10]}, null_ids={null_ids}."
+        )
 
 
 def _delete_existing_features(client: bigquery.Client, table_id: str, seasons: List[int], league: str) -> None:
@@ -250,6 +308,22 @@ def _load_features(client: bigquery.Client, df: pd.DataFrame, table_id: str) -> 
     print(f"Wrote {len(df):,} feature rows to {table_id}")
 
 
+def _ensure_staging_schema(
+    client: bigquery.Client,
+    *,
+    destination_table: Optional[str],
+    canonical_table: str,
+) -> None:
+    """Create custom destinations with the canonical schema, never inferred types."""
+    if not destination_table or destination_table == canonical_table:
+        return
+    try:
+        client.get_table(destination_table)
+    except exceptions.NotFound:
+        client.query(f"CREATE TABLE `{destination_table}` LIKE `{canonical_table}`").result()
+        print(f"Created staging table {destination_table} with canonical schema.")
+
+
 def _filter_schedules_for_window(
     schedules: pd.DataFrame,
     date_window: Optional[tuple[date, date]],
@@ -293,6 +367,7 @@ def _ensure_nba_window_games(
 
         print(f"Found {len(api_games)} NBA games on API for {target_str}. Adding to processing queue.")
         api_games["game_date"] = pd.to_datetime(api_games["game_date"], utc=True).dt.tz_localize(None)
+        api_games["league"] = "NBA"
         fetched_frames.append(api_games)
 
     if fetched_frames:
@@ -313,7 +388,15 @@ def main() -> None:
     print(f"Processing {args.league} for seasons: {args.seasons}")
     if date_window is not None:
         print(f"Incremental feature window: {date_window[0]} to {date_window[1]}")
-    schedules = _fetch_table(client, args.project, "sports_edge_raw", "raw_schedules", args.seasons)
+    schedules = _fetch_table(
+        client,
+        args.project,
+        "sports_edge_raw",
+        "raw_schedules",
+        args.seasons,
+        league=args.league,
+    )
+    _assert_schedule_league(schedules, args.league)
     
     # 1. Aggressive deduplication of schedules to avoid row explosion
     if not schedules.empty:
@@ -328,6 +411,7 @@ def main() -> None:
     
     if args.league == "NBA":
         schedules = _ensure_nba_window_games(schedules, date_window)
+        _assert_schedule_league(schedules, args.league)
     
     historical_data: Dict[str, pd.DataFrame] = {
         "historical_games": schedules,
@@ -335,7 +419,14 @@ def main() -> None:
 
     if args.league == "NFL":
         print(f"Loading raw play-by-play for NFL...")
-        pbp = _fetch_table(client, args.project, "sports_edge_raw", "raw_pbp", args.seasons)
+        pbp = _fetch_table(
+            client,
+            args.project,
+            "sports_edge_raw",
+            "raw_pbp",
+            args.seasons,
+            league="NFL",
+        )
         if not pbp.empty:
             pbp["game_date"] = pd.to_datetime(pbp["game_date"], errors="coerce", utc=True).dt.tz_localize(None)
         historical_data["play_by_play"] = pbp
@@ -365,6 +456,7 @@ def main() -> None:
 
     print(f"Building {args.league} features for {len(target_schedules):,} target games.")
     feature_rows = build_features(target_schedules, args.league, historical_data)
+    _assert_feature_grain(feature_rows, target_schedules)
     
     # Ensure no duplicates in feature_rows index labels
     feature_rows = feature_rows.reset_index(drop=True)
@@ -381,8 +473,8 @@ def main() -> None:
     feature_rows["as_of_ts"] = datetime.now(tz=timezone.utc)
     feature_rows["feature_version"] = args.feature_version
 
-    # Ensure deterministic ordering and remove duplicates.
-    feature_rows = feature_rows.sort_values(["season", "game_date", "game_id"]).drop_duplicates("game_id", keep="last")
+    # Ensure deterministic ordering. Grain validation above rejects duplicates.
+    feature_rows = feature_rows.sort_values(["season", "game_date", "game_id"])
 
     for column in FEATURE_COLUMNS:
         if column not in feature_rows.columns:
@@ -416,7 +508,13 @@ def main() -> None:
     # Select and order columns
     feature_rows = feature_rows[FEATURE_COLUMNS]
 
-    table_id = f"{args.project}.sports_edge_curated.feature_snapshots"
+    canonical_table = f"{args.project}.sports_edge_curated.feature_snapshots"
+    table_id = args.destination_table or canonical_table
+    _ensure_staging_schema(
+        client,
+        destination_table=args.destination_table,
+        canonical_table=canonical_table,
+    )
     if date_window is not None:
         _delete_existing_feature_window(
             client,
