@@ -1,4 +1,4 @@
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig, asRestRows } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, getSupabaseRuntimeConfig, asRestRows, supabaseFetch } from "@/lib/data/supabase";
 import type { Prediction } from "@/lib/data/types";
 
 export type FreshnessStatus = "fresh" | "stale" | "no_prediction" | "no_odds";
@@ -89,7 +89,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   if (!config.url || !config.anonKey) return null;
   try {
     const base = config.url.replace(/\/$/, "");
-    const response = await fetch(`${base}/rest/v1/${resource}`, {
+    const response = await supabaseFetch(`${base}/rest/v1/${resource}`, {
       headers: {
         apikey: config.anonKey,
         Authorization: `Bearer ${config.anonKey}`,

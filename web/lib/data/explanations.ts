@@ -1,4 +1,4 @@
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, getSupabaseRuntimeConfig, supabaseFetch } from "@/lib/data/supabase";
 import type { JsonObject } from "@/lib/data/json";
 
 export type FeatureDriver = {
@@ -36,7 +36,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
   if (!config.url || !config.anonKey) return null;
   const base = config.url.replace(/\/$/, "");
-  const response = await fetch(`${base}/rest/v1/${resource}`, {
+    const response = await supabaseFetch(`${base}/rest/v1/${resource}`, {
     headers: {
       apikey: config.anonKey,
       Authorization: `Bearer ${config.anonKey}`,

@@ -101,7 +101,7 @@ export function getEvaluationHistory(league?: string) {
 
 import type { Performance } from "@/lib/data/types";
 import { getPerformanceHistory } from "@/lib/data/performance";
-import { getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseRuntimeConfig, supabaseFetch } from "@/lib/data/supabase";
 
 export type ModelEvaluation = {
   id: string;
@@ -176,7 +176,7 @@ async function evaluationSupabaseRest<T>(resource: string): Promise<T[] | null> 
   const config = getSupabaseRuntimeConfig();
   if (!config.url || !config.anonKey) return null;
   const base = config.url.replace(/\/$/, "");
-  const response = await fetch(`${base}/rest/v1/${resource}`, {
+  const response = await supabaseFetch(`${base}/rest/v1/${resource}`, {
     headers: {
       apikey: config.anonKey,
       Authorization: `Bearer ${config.anonKey}`,

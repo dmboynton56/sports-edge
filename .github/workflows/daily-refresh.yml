@@ -545,6 +545,17 @@ jobs:
         run: |
           python scripts/sync_final_scores.py --project "$PROJECT_ID" --lookback-days 10 --lookahead-days 1
 
+      - name: Prune historical Supabase serving snapshots
+        if: ${{ env.DRY_RUN != 'true' }}
+        continue-on-error: true
+        env:
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: python scripts/prune_supabase_serving_cache.py --apply
+
       - name: Grade MLB HR Outcomes
         if: ${{ env.DRY_RUN != 'true' && env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
