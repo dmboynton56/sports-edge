@@ -556,6 +556,17 @@ jobs:
           SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
         run: python scripts/prune_supabase_serving_cache.py --apply
 
+      - name: Prune historical NBA and NFL serving predictions
+        if: ${{ env.DRY_RUN != 'true' }}
+        continue-on-error: true
+        env:
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: python scripts/prune_supabase_historical_predictions.py --project "$PROJECT_ID" --apply
+
       - name: Grade MLB HR Outcomes
         if: ${{ env.DRY_RUN != 'true' && env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
