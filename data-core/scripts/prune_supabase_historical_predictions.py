@@ -113,11 +113,12 @@ def verify_bigquery_retention(project: str, targets: tuple[SeasonTarget, ...]) -
     }
     missing = [league for league in LEAGUES if result.get(league, (0, 0))[0] == 0]
     if missing:
-        raise RuntimeError(
-            "BigQuery verification found no historical game rows for: "
-            + ", ".join(missing)
-            + "; refusing to delete from Supabase."
+        LOGGER.warning(
+            "BigQuery has no historical source rows for %s; those leagues will be skipped.",
+            ", ".join(missing),
         )
+    if len(missing) == len(LEAGUES):
+        raise RuntimeError("BigQuery verification found no historical source rows; refusing to delete from Supabase.")
     return result
 
 
@@ -186,6 +187,11 @@ def main() -> None:
     if args.project:
         bq_summary = verify_bigquery_retention(args.project, targets)
         LOGGER.info("BigQuery retention verified: %s", bq_summary)
+        eligible_leagues = {league for league, (games, _) in bq_summary.items() if games > 0}
+        skipped_leagues = tuple(target.league for target in targets if target.league not in eligible_leagues)
+        if skipped_leagues:
+            LOGGER.warning("Skipping Supabase cleanup for unverified leagues: %s", ", ".join(skipped_leagues))
+        targets = tuple(target for target in targets if target.league in eligible_leagues)
     prune(targets=targets, apply=args.apply)
 
 
