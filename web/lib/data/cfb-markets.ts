@@ -1,4 +1,4 @@
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, getSupabaseRuntimeConfig, supabaseFetch } from "@/lib/data/supabase";
 import type { Prediction } from "@/lib/data/types";
 
 type SupabaseCfbPrediction = {
@@ -64,7 +64,7 @@ export type CfbMarketFeed = {
 async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
   if (!config.url || !config.anonKey) return null;
-  const response = await fetch(`${config.url.replace(/\/$/, "")}/rest/v1/${resource}`, {
+  const response = await supabaseFetch(`${config.url.replace(/\/$/, "")}/rest/v1/${resource}`, {
     headers: { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}` },
     next: { revalidate: 60 },
   });

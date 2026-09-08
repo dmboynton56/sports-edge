@@ -482,6 +482,34 @@ def sync_odds_to_supabase(
 
     updates = [(*values, gid) for gid, values in updates_by_game.items()]
     snapshots = list(snapshots_by_key.values())
+
+    # The odds provider often returns the same featured prices on every poll.
+    # Keep BigQuery as the full history, but only append a Supabase snapshot
+    # when the serving value actually changed.
+    if snapshots:
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT DISTINCT ON (game_id, market, selection)
+                    game_id, market, selection, book, line, price, provider_event_id
+                FROM odds_snapshots
+                WHERE game_id = ANY(%s)
+                ORDER BY game_id, market, selection, snapshot_ts DESC
+                """,
+                (list(matched_game_ids),),
+            )
+            latest_by_key = {
+                (game_id, market, selection): (book, line, price, provider_event_id)
+                for game_id, market, selection, book, line, price, provider_event_id in cur.fetchall()
+            }
+
+        snapshots = [
+            snapshot
+            for snapshot in snapshots
+            if latest_by_key.get((snapshot[0], snapshot[2], snapshot[5]))
+            != (snapshot[1], snapshot[3], snapshot[4], snapshot[6])
+        ]
+
     if updates or snapshots:
         with conn.cursor() as cur:
             if updates:

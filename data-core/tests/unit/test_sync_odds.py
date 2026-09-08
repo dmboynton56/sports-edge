@@ -30,12 +30,17 @@ class FakeCursor:
         if "SELECT id, home_team, away_team, game_time_utc, game_date" in sql:
             self.conn.select_params = params
             return
+        if "SELECT DISTINCT ON (game_id, market, selection)" in sql:
+            self.conn.latest_select_params = params
+            return
         raise AssertionError(f"Unexpected SQL: {sql}")
 
     def executemany(self, sql, params=None):
         self.conn.bulk_updates.append((sql, params))
 
     def fetchall(self):
+        if self.conn.latest_select_params is not None:
+            return self.conn.latest_snapshots
         return self.conn.games
 
 
@@ -44,6 +49,8 @@ class FakeConnection:
         self.games = games
         self.bulk_updates = []
         self.select_params = None
+        self.latest_select_params = None
+        self.latest_snapshots = []
         self.commits = 0
 
     def cursor(self):

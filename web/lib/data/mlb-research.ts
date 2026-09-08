@@ -8,7 +8,7 @@
 // All markets are fail-closed: when sportsbook prices are missing, rows show
 // model probabilities only with no edge/EV calculations.
 
-import { getSupabaseRuntimeConfig, getSupabaseMissingEnv } from "@/lib/data/supabase";
+import { getSupabaseRuntimeConfig, getSupabaseMissingEnv, supabaseFetch } from "@/lib/data/supabase";
 
 const MLB_SLATE_TIME_ZONE = "America/Denver";
 
@@ -138,7 +138,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   if (!config.url || !config.anonKey) return null;
   const base = config.url.replace(/\/$/, "");
   try {
-    const response = await fetch(`${base}/rest/v1/${resource}`, {
+    const response = await supabaseFetch(`${base}/rest/v1/${resource}`, {
       headers: {
         apikey: config.anonKey,
         Authorization: `Bearer ${config.anonKey}`,

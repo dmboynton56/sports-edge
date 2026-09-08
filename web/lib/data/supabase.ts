@@ -32,13 +32,35 @@ export function asRestRows<T>(payload: JsonValue): T[] | null {
   return Array.isArray(payload) ? (payload as T[]) : null;
 }
 
+const SUPABASE_FETCH_TIMEOUT_MS = Number(
+  process.env.SUPABASE_FETCH_TIMEOUT_MS ?? 8000,
+);
+
+export async function supabaseFetch(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeout = setTimeout(
+    () => controller.abort(),
+    Number.isFinite(SUPABASE_FETCH_TIMEOUT_MS) && SUPABASE_FETCH_TIMEOUT_MS > 0
+      ? SUPABASE_FETCH_TIMEOUT_MS
+      : 8000,
+  );
+  try {
+    return await fetch(input, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
   if (!config.url || !config.anonKey) return null;
 
   try {
     const base = config.url.replace(/\/$/, "");
-    const response = await fetch(`${base}/rest/v1/${resource}`, {
+    const response = await supabaseFetch(`${base}/rest/v1/${resource}`, {
       headers: {
         apikey: config.anonKey,
         Authorization: `Bearer ${config.anonKey}`,

@@ -17,7 +17,7 @@ import {
   type MlbHomeRunStatcastHealth,
   type MlbHrBoardSnapshot,
 } from "@/lib/data/mlb-hr-board";
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, getSupabaseRuntimeConfig, supabaseFetch } from "@/lib/data/supabase";
 
 export {
   getMlbHomeRunModelLabel,
@@ -46,7 +46,7 @@ async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   if (!config.url || !config.anonKey) return null;
   const base = config.url.replace(/\/$/, "");
   try {
-    const response = await fetch(`${base}/rest/v1/${resource}`, {
+    const response = await supabaseFetch(`${base}/rest/v1/${resource}`, {
       headers: {
         apikey: config.anonKey,
         Authorization: `Bearer ${config.anonKey}`,
