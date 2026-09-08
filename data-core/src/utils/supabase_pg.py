@@ -21,7 +21,10 @@ def create_pg_connection(supabase_url: str, password: str, host_override: Option
             raise ValueError(
                 f"Invalid SUPABASE_URL {supabase_url!r}; expected https://<project-ref>.supabase.co"
             ) from exc
-    conn_str = f"host={host} port={port} dbname={database} user={user} password={password} sslmode=require"
+    # Supabase's pooler can take longer than libpq's 15-second default during
+    # a brief startup or connection surge.  Keep the timeout explicit so CI
+    # does not fail before the caller's retry policy gets a chance to recover.
+    conn_str = f"host={host} port={port} dbname={database} user={user} password={password} sslmode=require connect_timeout=30"
     return psycopg.connect(conn_str, prepare_threshold=None)
 
 def load_supabase_credentials() -> Dict[str, str]:
