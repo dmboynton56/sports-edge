@@ -1,14 +1,21 @@
+import json
 from datetime import datetime, timezone
+from unittest.mock import patch
+
+import pytest
+import requests
 
 from scripts.sync_odds import (
     NFL_MAPPING,
     OddsSyncResult,
     canonical_team_code,
+    fetch_odds_data,
     odds_window_days,
     pick_featured_market_outcomes,
     should_fail_zero_odds_match,
     sync_odds_to_supabase,
 )
+from src.data.odds_api_errors import OddsApiQuotaExhausted
 
 
 def test_nfl_odds_window_covers_the_full_weekly_slate():
@@ -254,3 +261,59 @@ def test_featured_market_extraction_preserves_both_sides_and_uses_market_fallbac
         ("total", "over", "betmgm"),
         ("total", "under", "betmgm"),
     ]
+
+
+class _ApiResponse:
+    def __init__(self, status_code, payload, headers=None):
+        self.status_code = status_code
+        self.headers = headers or {}
+        self._payload = payload
+        self.text = payload if isinstance(payload, str) else json.dumps(payload)
+
+    def json(self):
+        if isinstance(self._payload, str):
+            return json.loads(self._payload)
+        return self._payload
+
+
+def test_fetch_odds_data_soft_fails_out_of_usage_credits():
+    body = {
+        "message": "Usage quota has been reached. See usage plans at https://the-odds-api.com",
+        "error_code": "OUT_OF_USAGE_CREDITS",
+    }
+    with patch("scripts.sync_odds.requests.get", return_value=_ApiResponse(401, body)):
+        with pytest.raises(OddsApiQuotaExhausted):
+            fetch_odds_data("key", "NFL")
+
+
+def test_fetch_odds_data_soft_fails_rate_limit():
+    with patch("scripts.sync_odds.requests.get", return_value=_ApiResponse(429, "too many requests")):
+        with pytest.raises(OddsApiQuotaExhausted):
+            fetch_odds_data("key", "NFL")
+
+
+def test_fetch_odds_data_hard_fails_invalid_api_key():
+    body = {"message": "API key is invalid", "error_code": "INVALID_API_KEY"}
+    with patch("scripts.sync_odds.requests.get", return_value=_ApiResponse(401, body)):
+        with pytest.raises(RuntimeError, match="401") as caught:
+            fetch_odds_data("key", "NFL")
+    assert not isinstance(caught.value, OddsApiQuotaExhausted)
+
+
+def test_fetch_odds_data_hard_fails_on_server_error():
+    with patch("scripts.sync_odds.requests.get", return_value=_ApiResponse(502, "bad gateway")):
+        with pytest.raises(RuntimeError, match="502") as caught:
+            fetch_odds_data("key", "NFL")
+    assert not isinstance(caught.value, OddsApiQuotaExhausted)
+
+
+def test_fetch_odds_data_hard_fails_on_timeout():
+    with patch("scripts.sync_odds.requests.get", side_effect=requests.Timeout("timed out")):
+        with pytest.raises(requests.Timeout):
+            fetch_odds_data("key", "NFL")
+
+
+def test_fetch_odds_data_returns_events_on_success():
+    payload = [{"id": "evt-1", "home_team": "Seattle Seahawks"}]
+    with patch("scripts.sync_odds.requests.get", return_value=_ApiResponse(200, payload)):
+        assert fetch_odds_data("key", "NFL") == payload

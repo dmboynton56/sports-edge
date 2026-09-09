@@ -29,6 +29,7 @@ from src.models.cfb_market import (  # noqa: E402
     build_feature_frames,
     normal_probability_above,
 )
+from src.data.odds_api_errors import OddsApiQuotaExhausted, check_odds_api_response  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
 
@@ -78,7 +79,7 @@ def fetch_odds(api_key: str) -> tuple[list[dict[str, Any]], datetime, int | None
         },
         timeout=30,
     )
-    response.raise_for_status()
+    check_odds_api_response(response, context="CFB team-market odds")
     remaining = response.headers.get("x-requests-remaining")
     return response.json(), datetime.now(timezone.utc), int(remaining) if remaining else None
 
@@ -392,11 +393,20 @@ def main() -> None:
         api_key = os.getenv("ODDS_API_KEY")
         if not api_key:
             raise RuntimeError("ODDS_API_KEY is required unless --skip-odds is used.")
-        odds_events, odds_ts, remaining = fetch_odds(api_key)
-        for game in future:
-            event = match_odds_event(game, odds_events)
-            if event:
-                odds_rows.extend(parse_odds_rows(game, event, odds_ts))
+        try:
+            odds_events, odds_ts, remaining = fetch_odds(api_key)
+            for game in future:
+                event = match_odds_event(game, odds_events)
+                if event:
+                    odds_rows.extend(parse_odds_rows(game, event, odds_ts))
+        except OddsApiQuotaExhausted as exc:
+            print(
+                f"WARNING: Skipping CFB odds sync: {exc}. "
+                "Not writing sportsbook lines. Predictions still publish."
+            )
+            odds_events = []
+            odds_rows = []
+            remaining = None
     recommendations = build_recommendations(scored, odds_rows, model, prediction_ts)
     coverage = {
         market: len({row["event_id"] for row in odds_rows if row["market"] == market})

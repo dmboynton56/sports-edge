@@ -454,6 +454,9 @@ jobs:
           RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
         run: |
           python scripts/apply_supabase_sql_files.py sql/020_team_market_odds.sql
+          # sync_odds.py exits 0 on Odds API quota/auth exhaustion (OUT_OF_USAGE_CREDITS
+          # / 429) so this retry loop does not re-hit an empty Starter-plan key for ~7.5m.
+          # Transient network / 5xx failures still exit 1 and retry here.
           run_sync_odds() {
             status=0
             if [ "$RUN_NBA" = "true" ]; then
@@ -632,10 +635,12 @@ jobs:
               --json | tee /tmp/sports_edge_nfl_audit.json || true
           fi
           if [ "${{ steps.plan.outputs.run_cfb }}" = "true" ]; then
+            # Same as NBA/NFL audits: do not red Daily Refresh when CFB odds coverage
+            # is incomplete because The Odds API Starter quota is exhausted.
             python scripts/audit_cfb_readiness.py \
               --date "${{ steps.plan.outputs.anchor_date }}" \
               --lookahead-days 3 \
-              --json | tee /tmp/sports_edge_cfb_audit.json
+              --json | tee /tmp/sports_edge_cfb_audit.json || true
           fi
           echo "### Sports Edge Sync Validation" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
