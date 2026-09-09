@@ -279,8 +279,11 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
         run: |
           python scripts/apply_supabase_sql_files.py sql/019_mlb_research_predictions.sql
+          # Odds API is once per Denver day. Quota/401/429/empty → PropLine.
+          # Dual-provider failure stays fail-closed: model-only rows, no invented prices.
           python scripts/fetch_mlb_game_odds.py --date "${{ steps.plan.outputs.anchor_date }}" || echo "Warning: MLB odds fetch failed; predictions will be model-only"
           python scripts/sync_mlb_research_predictions.py --date "${{ steps.plan.outputs.anchor_date }}" --season "${{ steps.plan.outputs.mlb_season }}"
           python scripts/audit_mlb_research_readiness.py --date "${{ steps.plan.outputs.anchor_date }}" --json

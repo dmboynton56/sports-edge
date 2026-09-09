@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """
-Fetch MLB game market odds from The Odds API.
+Fetch MLB game market odds for research markets.
 
-Fetches moneyline (h2h), run-line (spreads), and totals for MLB games.
-Writes results to Supabase odds_snapshots table for join in research predictions.
+Tries The Odds API first (at most once per Denver day). On quota/auth/empty,
+falls back to PropLine (`PROPLINE_API_KEY`). Writes moneyline (h2h), run-line
+(spreads), and totals into Supabase `odds_snapshots` for research predictions.
 """
 
 from __future__ import annotations
@@ -27,6 +28,12 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.data.mlb_fetcher import mlb_schedule_to_games_df  # noqa: E402
+from src.data.propline_client import (  # noqa: E402
+    PropLineClient,
+    PropLineError,
+    fetch_propline_mlb_game_odds,
+    get_propline_api_key,
+)
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials, upsert_games_pg  # noqa: E402
 from src.utils.team_codes import canonical_mlb_abbr  # noqa: E402
 
@@ -34,6 +41,7 @@ LOGGER = logging.getLogger(__name__)
 
 SPORT_KEY = "baseball_mlb"
 PREFERRED_BOOKMAKERS = ["draftkings", "fanduel", "betmgm"]
+FULL_GAME_PERIODS = {None, "", "full"}
 
 
 @dataclass
@@ -56,6 +64,159 @@ def normalize_team(team_name: str) -> str:
     import re
 
     return re.sub(r"[^a-z0-9]", "", team_name.lower())
+
+
+def odds_api_error_should_fallback(exc: BaseException) -> bool:
+    """401/429/quota errors are recoverable via PropLine; other failures are not."""
+    text = str(exc).lower()
+    return (
+        "401" in text
+        or "429" in text
+        or "quota" in text
+        or "out_of_usage_credits" in text
+        or "out of usage credits" in text
+    )
+
+
+def should_skip_odds_api(already_used_today: bool, force_odds_api: bool) -> bool:
+    """Keep daily conservation by default while allowing an explicit recovery run."""
+    return already_used_today and not force_odds_api
+
+
+def _odds_already_used_today(denver_date: str) -> tuple[bool, str | None]:
+    """True when The Odds API already produced HR snapshots for this Denver date.
+
+    Research game lines share the same Odds API quota as Player Market Refresh.
+    Checking HR snapshots avoids a second paid call after PMR has already
+    exhausted the day; PropLine remains the fallback when that happens.
+    """
+    try:
+        creds = load_supabase_credentials()
+        if not creds.get("url") or not creds.get("db_password"):
+            return False, None
+        conn = create_pg_connection(
+            supabase_url=creds["url"],
+            password=creds["db_password"],
+            host_override=creds.get("db_host"),
+            port=creds["db_port"],
+            database=creds["db_name"],
+            user=creds["db_user"],
+        )
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    select distinct provider
+                    from mlb_home_run_odds_snapshots
+                    where game_date = %s
+                      and provider = 'the_odds_api'
+                    limit 1
+                    """,
+                    (denver_date,),
+                    prepare=False,
+                )
+                result = cur.fetchone()
+                if result:
+                    return True, result[0]
+                return False, None
+        finally:
+            conn.close()
+    except Exception as exc:  # noqa: BLE001
+        LOGGER.warning("Could not check Odds API usage for %s: %s", denver_date, exc)
+        return False, None
+
+
+def load_odds_provider_keys() -> tuple[str | None, str | None]:
+    odds_api_key = os.getenv("ODDS_API_KEY") or None
+    try:
+        propline_api_key = get_propline_api_key()
+    except ValueError:
+        propline_api_key = None
+    return odds_api_key, propline_api_key
+
+
+def fetch_mlb_game_odds_events(
+    *,
+    markets: list[str],
+    odds_api_key: str | None,
+    propline_api_key: str | None,
+    already_used_today: bool = False,
+    force_odds_api: bool = False,
+    fetch_odds_api=None,
+    fetch_propline=None,
+) -> tuple[list[dict[str, Any]], str, str | None]:
+    """Fetch game-line events from Odds API, then PropLine on quota/empty/skip.
+
+    Returns ``(events, provider, fallback_reason)``. Does not invent prices.
+    """
+    fetch_odds_api = fetch_odds_api or fetch_mlb_odds
+    fetch_propline = fetch_propline or (
+        lambda markets: fetch_propline_mlb_game_odds(PropLineClient(api_key=propline_api_key or ""), markets=markets)
+    )
+    should_fallback = False
+    fallback_reason = ""
+    events: list[dict[str, Any]] = []
+    provider = "none"
+
+    if not odds_api_key and not propline_api_key:
+        raise RuntimeError("Neither ODDS_API_KEY nor PROPLINE_API_KEY found in environment")
+
+    if odds_api_key and should_skip_odds_api(already_used_today, force_odds_api):
+        should_fallback = True
+        fallback_reason = (
+            "The Odds API already used today (conserving credits: at most one Odds API call per Denver day)"
+        )
+        LOGGER.warning(fallback_reason)
+    elif odds_api_key:
+        try:
+            events = fetch_odds_api(odds_api_key, markets)
+            provider = "the_odds_api"
+            if not events:
+                should_fallback = True
+                fallback_reason = "The Odds API returned 0 events"
+        except Exception as exc:  # noqa: BLE001
+            if odds_api_error_should_fallback(exc):
+                should_fallback = True
+                fallback_reason = str(exc)
+                LOGGER.warning("Odds API failed; will try PropLine: %s", fallback_reason)
+            else:
+                raise
+    else:
+        should_fallback = True
+        fallback_reason = "ODDS_API_KEY not set, using PropLine"
+
+    if not should_fallback:
+        return events, provider, None
+
+    if not propline_api_key:
+        if events:
+            LOGGER.warning("Would fallback to PropLine but PROPLINE_API_KEY not set: %s", fallback_reason)
+            return events, provider, fallback_reason
+        raise RuntimeError(f"Odds fetch failed and PROPLINE_API_KEY is not set: {fallback_reason}")
+
+    LOGGER.info("Falling back to PropLine: %s", fallback_reason)
+    try:
+        events = fetch_propline(markets)
+    except PropLineError as exc:
+        raise RuntimeError(f"PropLine fallback failed after '{fallback_reason}': {exc}") from exc
+    if not events:
+        raise RuntimeError(f"PropLine returned 0 MLB game-line events after fallback: {fallback_reason}")
+    return events, "propline", fallback_reason
+
+
+def _is_full_game_market(market: dict[str, Any]) -> bool:
+    """Skip PropLine team-totals and inning/period slices."""
+    if market.get("team"):
+        return False
+    return market.get("period") in FULL_GAME_PERIODS
+
+
+def _markets_for(bookmaker: dict[str, Any], key: str) -> list[dict[str, Any]]:
+    return [
+        market
+        for market in bookmaker.get("markets", [])
+        if market.get("key") == key and _is_full_game_market(market)
+    ]
 
 
 def fetch_mlb_odds(api_key: str, markets: list[str] | None = None) -> list[dict[str, Any]]:
@@ -197,7 +358,7 @@ def extract_moneyline(
         home_team: Home team name from event (e.g., "New York Yankees")
         away_team: Away team name from event
     """
-    market = next((m for m in bookmaker.get("markets", []) if m["key"] == "h2h"), None)
+    market = next(iter(_markets_for(bookmaker, "h2h")), None)
     if not market or len(market.get("outcomes", [])) < 2:
         return None, None, None
 
@@ -222,7 +383,7 @@ def extract_runline(
         home_team: Home team name from event (e.g., "New York Yankees")
         away_team: Away team name from event
     """
-    market = next((m for m in bookmaker.get("markets", []) if m["key"] == "spreads"), None)
+    market = next(iter(_markets_for(bookmaker, "spreads")), None)
     if not market or len(market.get("outcomes", [])) < 2:
         return None, None, None, None
 
@@ -245,7 +406,7 @@ def extract_totals(
     bookmaker: dict[str, Any],
 ) -> tuple[float | None, int | None, int | None, str | None]:
     """Extract totals line and over/under prices."""
-    market = next((m for m in bookmaker.get("markets", []) if m["key"] == "totals"), None)
+    market = next(iter(_markets_for(bookmaker, "totals")), None)
     if not market or len(market.get("outcomes", [])) < 2:
         return None, None, None, None
 
@@ -271,6 +432,7 @@ def sync_event_odds(
     home_abbr: str,
     away_abbr: str,
     snapshot_ts: datetime,
+    provider: str = "the_odds_api",
 ) -> OddsResult:
     """Sync odds for a single event to Supabase."""
     result = OddsResult(
@@ -340,7 +502,7 @@ def sync_event_odds(
                 """,
                 [
                     (game_id, ml_book, side, price, snapshot_ts, event.get("id"), commence_time,
-                     Jsonb({"game_pk": game_pk, "book_title": ml_title}))
+                     Jsonb({"game_pk": game_pk, "book_title": ml_title, "provider": provider}))
                     for side, price in (("home", home_ml), ("away", away_ml))
                 ],
             )
@@ -361,7 +523,7 @@ def sync_event_odds(
                 """,
                 [
                     (game_id, rl_book, side, line, price, snapshot_ts, event.get("id"), commence_time,
-                     Jsonb({"game_pk": game_pk, "book_title": rl_title}))
+                     Jsonb({"game_pk": game_pk, "book_title": rl_title, "provider": provider}))
                     for side, line, price in (
                         ("home", rl_line, rl_home_price),
                         ("away", -rl_line, rl_away_price),
@@ -383,7 +545,7 @@ def sync_event_odds(
                 """,
                 [
                     (game_id, totals_book, side, total_line, price, snapshot_ts, event.get("id"),
-                     commence_time, Jsonb({"game_pk": game_pk, "book_title": totals_title}))
+                     commence_time, Jsonb({"game_pk": game_pk, "book_title": totals_title, "provider": provider}))
                     for side, price in (("over", over_price), ("under", under_price))
                 ],
             )
@@ -425,6 +587,7 @@ def sync_mlb_odds(
     odds_events: list[dict[str, Any]],
     schedule: pd.DataFrame,
     snapshot_ts: datetime,
+    provider: str = "the_odds_api",
 ) -> list[OddsResult]:
     """Sync all MLB odds events to Supabase."""
     results = []
@@ -444,7 +607,9 @@ def sync_mlb_odds(
             )
             continue
 
-        result = sync_event_odds(conn, event, game_pk, home_abbr, away_abbr, snapshot_ts)
+        result = sync_event_odds(
+            conn, event, game_pk, home_abbr, away_abbr, snapshot_ts, provider=provider
+        )
         results.append(result)
 
     conn.commit()
@@ -461,16 +626,28 @@ def main() -> None:
     parser.add_argument("--season", type=int, help="Season year; defaults to date year.")
     parser.add_argument("--markets", default="h2h,spreads,totals", help="Comma-separated markets.")
     parser.add_argument("--dry-run", action="store_true", help="Fetch but do not write to DB.")
+    parser.add_argument(
+        "--force-odds-api",
+        action="store_true",
+        help="Explicitly bypass the once-daily credit guard for a manual recovery run.",
+    )
     args = parser.parse_args()
 
     load_dotenv()
 
-    api_key = os.getenv("ODDS_API_KEY")
-    if not api_key:
-        raise SystemExit("ODDS_API_KEY not found in environment")
+    odds_api_key, propline_api_key = load_odds_provider_keys()
+    if not odds_api_key and not propline_api_key:
+        raise SystemExit("Neither ODDS_API_KEY nor PROPLINE_API_KEY found in environment")
 
     game_date = pd.to_datetime(args.date).date() if args.date else pd.Timestamp.now().date()
     season = args.season or game_date.year
+    already_used_today, prior_provider = _odds_already_used_today(game_date.isoformat())
+    if already_used_today:
+        LOGGER.info(
+            "The Odds API already used today for %s (prior_provider=%s)",
+            game_date,
+            prior_provider,
+        )
 
     # Fetch schedule
     from src.data.mlb_fetcher import fetch_mlb_schedule
@@ -484,9 +661,20 @@ def main() -> None:
 
     LOGGER.info(f"Found {len(schedule)} games in schedule for {game_date}")
 
-    # Fetch odds
-    markets = [m.strip() for m in args.markets.split(",")]
-    odds_events = fetch_mlb_odds(api_key, markets)
+    markets = [m.strip() for m in args.markets.split(",") if m.strip()]
+    odds_events, provider, fallback_reason = fetch_mlb_game_odds_events(
+        markets=markets,
+        odds_api_key=odds_api_key,
+        propline_api_key=propline_api_key,
+        already_used_today=already_used_today,
+        force_odds_api=args.force_odds_api,
+    )
+    LOGGER.info(
+        "Fetched %s MLB events from %s%s",
+        len(odds_events),
+        provider,
+        f" ({fallback_reason})" if fallback_reason else "",
+    )
 
     if args.dry_run:
         LOGGER.info(f"Dry-run mode: fetched {len(odds_events)} events, skipping DB write")
@@ -508,7 +696,7 @@ def main() -> None:
         games_df = mlb_schedule_to_games_df(schedule, season=season)
         game_ids = upsert_games_pg(conn, games_df)
         LOGGER.info("Upserted %s MLB slate games into serving table", len(game_ids))
-        results = sync_mlb_odds(conn, odds_events, schedule, snapshot_ts)
+        results = sync_mlb_odds(conn, odds_events, schedule, snapshot_ts, provider=provider)
 
         matched = [r for r in results if r.matched]
         ml_synced = sum(r.moneyline_synced for r in results)
@@ -516,7 +704,7 @@ def main() -> None:
         tot_synced = sum(r.totals_synced for r in results)
 
         LOGGER.info(
-            f"Synced odds for {len(matched)}/{len(odds_events)} events: "
+            f"Synced odds for {len(matched)}/{len(odds_events)} events via {provider}: "
             f"{ml_synced} moneyline, {rl_synced} run-line, {tot_synced} totals"
         )
         for market, attr in (

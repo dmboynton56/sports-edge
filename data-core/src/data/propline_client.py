@@ -1,6 +1,7 @@
-"""PropLine API client for MLB player prop odds.
+"""PropLine API client for MLB odds.
 
-PropLine provides MLB player prop market odds including home runs.
+PropLine returns The Odds API-shaped payloads for both game lines
+(h2h / spreads / totals) and player props (including home runs).
 API docs: https://prop-line.com/llms-full.txt
 """
 
@@ -144,3 +145,29 @@ def fetch_propline_event_odds(
         {"markets": markets_str},
     )
     return payload if isinstance(payload, dict) else {}
+
+
+def fetch_propline_mlb_game_odds(
+    client: PropLineClient,
+    *,
+    markets: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """Fetch bulk MLB game-line odds from PropLine.
+
+    Response shape matches The Odds API ``/v4/sports/baseball_mlb/odds`` so
+    research-market sync can reuse the same book/event matchers.
+    """
+    if markets is None:
+        markets = ["h2h", "spreads", "totals"]
+    payload = client.get(
+        f"/sports/{PROPLINE_SPORT_KEY}/odds",
+        {"markets": ",".join(markets)},
+    )
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        for key in ("data", "events", "odds"):
+            value = payload.get(key)
+            if isinstance(value, list):
+                return value
+    return []

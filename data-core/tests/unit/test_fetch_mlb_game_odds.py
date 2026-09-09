@@ -386,3 +386,158 @@ def test_first_paired_moneyline_returns_none_when_no_book_has_pair():
     assert home_price is None
     assert away_price is None
     assert book_key is None
+
+
+def test_extract_totals_skips_team_and_period_markets():
+    """PropLine can mix game totals with team totals and F5 slices on the same key."""
+    bookmaker = {
+        "key": "draftkings",
+        "markets": [
+            {
+                "key": "totals",
+                "team": "New York Yankees",
+                "outcomes": [
+                    {"name": "Over", "point": 4.5, "price": -110},
+                    {"name": "Under", "point": 4.5, "price": -110},
+                ],
+            },
+            {
+                "key": "totals",
+                "period": "f5",
+                "outcomes": [
+                    {"name": "Over", "point": 5.5, "price": -105},
+                    {"name": "Under", "point": 5.5, "price": -105},
+                ],
+            },
+            {
+                "key": "totals",
+                "outcomes": [
+                    {"name": "Over", "point": 8.5, "price": -115},
+                    {"name": "Under", "point": 8.5, "price": -105},
+                ],
+            },
+        ],
+    }
+
+    total_line, over_price, under_price, book_key = odds_fetcher.extract_totals(bookmaker)
+    assert total_line == 8.5
+    assert over_price == -115
+    assert under_price == -105
+    assert book_key == "draftkings"
+
+
+def test_odds_api_quota_falls_back_to_propline():
+    """Daily #299: Odds API 401 OUT_OF_USAGE_CREDITS must use PropLine, not model-only."""
+
+    def boom(_key, _markets):
+        raise RuntimeError(
+            'Odds API error 401: {"message":"Usage quota has been reached.",'
+            '"error_code":"OUT_OF_USAGE_CREDITS"}'
+        )
+
+    propline_events = [{"id": "pl1", "home_team": "New York Yankees", "away_team": "Boston Red Sox"}]
+    events, provider, reason = odds_fetcher.fetch_mlb_game_odds_events(
+        markets=["h2h", "spreads", "totals"],
+        odds_api_key="odds-key",
+        propline_api_key="pl-key",
+        fetch_odds_api=boom,
+        fetch_propline=lambda _markets: propline_events,
+    )
+
+    assert events == propline_events
+    assert provider == "propline"
+    assert "401" in reason
+    assert "OUT_OF_USAGE_CREDITS" in reason
+
+
+def test_empty_odds_api_board_falls_back_to_propline():
+    events, provider, reason = odds_fetcher.fetch_mlb_game_odds_events(
+        markets=["h2h"],
+        odds_api_key="odds-key",
+        propline_api_key="pl-key",
+        fetch_odds_api=lambda _key, _markets: [],
+        fetch_propline=lambda _markets: [{"id": "pl1"}],
+    )
+    assert events == [{"id": "pl1"}]
+    assert provider == "propline"
+    assert "0 events" in reason
+
+
+def test_skip_odds_api_when_already_used_today():
+    called = {"odds": 0}
+
+    def odds_api(_key, _markets):
+        called["odds"] += 1
+        return [{"id": "odds"}]
+
+    events, provider, reason = odds_fetcher.fetch_mlb_game_odds_events(
+        markets=["h2h"],
+        odds_api_key="odds-key",
+        propline_api_key="pl-key",
+        already_used_today=True,
+        force_odds_api=False,
+        fetch_odds_api=odds_api,
+        fetch_propline=lambda _markets: [{"id": "pl1"}],
+    )
+
+    assert called["odds"] == 0
+    assert events == [{"id": "pl1"}]
+    assert provider == "propline"
+    assert "already used today" in reason
+
+
+def test_force_odds_api_bypasses_once_daily_skip():
+    events, provider, reason = odds_fetcher.fetch_mlb_game_odds_events(
+        markets=["h2h"],
+        odds_api_key="odds-key",
+        propline_api_key="pl-key",
+        already_used_today=True,
+        force_odds_api=True,
+        fetch_odds_api=lambda _key, _markets: [{"id": "odds"}],
+        fetch_propline=lambda _markets: [{"id": "pl1"}],
+    )
+    assert events == [{"id": "odds"}]
+    assert provider == "the_odds_api"
+    assert reason is None
+
+
+def test_non_quota_odds_error_does_not_fallback():
+    def boom(_key, _markets):
+        raise RuntimeError("Odds API error 500: upstream exploded")
+
+    with pytest.raises(RuntimeError, match="500"):
+        odds_fetcher.fetch_mlb_game_odds_events(
+            markets=["h2h"],
+            odds_api_key="odds-key",
+            propline_api_key="pl-key",
+            fetch_odds_api=boom,
+            fetch_propline=lambda _markets: [{"id": "pl1"}],
+        )
+
+
+def test_quota_without_propline_fails_closed():
+    def boom(_key, _markets):
+        raise RuntimeError("Odds API error 401: OUT_OF_USAGE_CREDITS")
+
+    with pytest.raises(RuntimeError, match="PROPLINE_API_KEY is not set"):
+        odds_fetcher.fetch_mlb_game_odds_events(
+            markets=["h2h"],
+            odds_api_key="odds-key",
+            propline_api_key=None,
+            fetch_odds_api=boom,
+        )
+
+
+def test_fetch_propline_mlb_game_odds_uses_bulk_game_line_endpoint():
+    from unittest.mock import MagicMock
+
+    from src.data.propline_client import fetch_propline_mlb_game_odds
+
+    client = MagicMock()
+    client.get.return_value = [{"id": "e1"}]
+    events = fetch_propline_mlb_game_odds(client, markets=["h2h", "spreads", "totals"])
+    assert events == [{"id": "e1"}]
+    client.get.assert_called_once_with(
+        "/sports/baseball_mlb/odds",
+        {"markets": "h2h,spreads,totals"},
+    )

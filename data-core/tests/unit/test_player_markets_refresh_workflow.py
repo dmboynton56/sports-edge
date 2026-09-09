@@ -27,3 +27,15 @@ def test_daily_refresh_runs_mlb_hr_bigquery_after_supabase() -> None:
     names = _step_names(DAILY_WORKFLOW_PATH, "refresh")
 
     assert names.index("Sync MLB HR Markets to Supabase") < names.index("Sync MLB HR Markets to BigQuery")
+
+
+def test_daily_research_step_wires_propline_fallback_secret() -> None:
+    workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    step = next(
+        item
+        for item in workflow["jobs"]["refresh"]["steps"]
+        if item.get("name") == "Generate MLB Research Markets"
+    )
+    assert "PROPLINE_API_KEY" in step["env"]
+    assert "ODDS_API_KEY" in step["env"]
+    assert "fetch_mlb_game_odds.py" in step["run"]
