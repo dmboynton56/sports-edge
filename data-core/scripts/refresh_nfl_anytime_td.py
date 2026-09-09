@@ -33,6 +33,7 @@ from src.models.nfl_anytime_td import (  # noqa: E402
     TARGET_POSITIONS,
     build_feature_frame,
 )
+from src.data.odds_api_errors import OddsApiQuotaExhausted, check_odds_api_response  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 from src.utils.team_codes import canonical_nfl_abbr  # noqa: E402
 
@@ -371,7 +372,7 @@ def fetch_odds_rows(
         params={"apiKey": api_key, "dateFormat": "iso"},
         timeout=30,
     )
-    response.raise_for_status()
+    check_odds_api_response(response, context="NFL anytime TD events")
     events = response.json()
     rows: list[dict[str, Any]] = []
     refreshed_games = 0
@@ -403,7 +404,7 @@ def fetch_odds_rows(
             },
             timeout=30,
         )
-        odds_response.raise_for_status()
+        check_odds_api_response(odds_response, context="NFL anytime TD odds")
         remaining = odds_response.headers.get("x-requests-remaining", remaining)
         refreshed_games += 1
         payload = odds_response.json()
@@ -520,13 +521,21 @@ def main() -> None:
             api_key = os.getenv("ODDS_API_KEY")
             if not api_key:
                 raise SystemExit("ODDS_API_KEY is required unless --skip-odds is used")
-            odds_rows, odds_summary = fetch_odds_rows(
-                games,
-                api_key=api_key,
-                now=now,
-                near_kickoff_hours=args.near_kickoff_hours,
-                minimum_refresh_hours=args.minimum_refresh_hours,
-            )
+            try:
+                odds_rows, odds_summary = fetch_odds_rows(
+                    games,
+                    api_key=api_key,
+                    now=now,
+                    near_kickoff_hours=args.near_kickoff_hours,
+                    minimum_refresh_hours=args.minimum_refresh_hours,
+                )
+            except OddsApiQuotaExhausted as exc:
+                print(
+                    f"WARNING: Skipping NFL anytime-TD odds sync: {exc}. "
+                    "Not writing sportsbook TD prices. Predictions still publish."
+                )
+                odds_rows = []
+                odds_summary = {"skipped": True, "reason": "odds_api_quota_exhausted"}
 
         if not args.dry_run:
             game_ids = [str(game["game_id"]) for game in games]

@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from src.data.odds_api_errors import check_odds_api_response, is_odds_api_quota_error
 from src.utils.supabase_pg import (
     create_pg_connection,
     load_supabase_credentials,
@@ -298,8 +299,7 @@ def fetch_odds_data(api_key: str, league: str) -> List[Dict[str, Any]]:
     }
     
     resp = requests.get(url, params=params, timeout=30)
-    if resp.status_code != 200:
-        raise RuntimeError(f"Error fetching {league} odds from API: {resp.status_code} {resp.text}")
+    check_odds_api_response(resp, context=f"{league} odds")
     return resp.json()
 
 def count_expected_games(conn, league: str) -> int:
@@ -675,7 +675,19 @@ def main():
         for league in leagues:
             LOGGER.info(f"Starting sync for {league}...")
             expected_games = count_expected_games(pg_conn, league)
-            odds_data = fetch_odds_data(api_key, league)
+            try:
+                odds_data = fetch_odds_data(api_key, league)
+            except RuntimeError as exc:
+                if not is_odds_api_quota_error(exc):
+                    raise
+                LOGGER.warning(
+                    "Skipping %s market-odds sync: The Odds API quota/auth/rate-limit "
+                    "is exhausted (%s). Not writing book spreads. Remaining Daily "
+                    "Refresh steps can continue.",
+                    league,
+                    exc,
+                )
+                break
             if not odds_data:
                 message = f"No odds events returned for {league}"
                 if expected_games > 0:

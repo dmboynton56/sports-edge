@@ -29,6 +29,31 @@ def test_daily_refresh_runs_mlb_hr_bigquery_after_supabase() -> None:
     assert names.index("Sync MLB HR Markets to Supabase") < names.index("Sync MLB HR Markets to BigQuery")
 
 
+def test_sync_market_odds_retries_transient_failures_without_continue_on_error() -> None:
+    workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    step = next(
+        item
+        for item in workflow["jobs"]["refresh"]["steps"]
+        if item.get("name") == "Sync Market Odds"
+    )
+    assert "continue-on-error" not in step
+    assert "sync_odds.py" in step["run"]
+    assert "max_attempts=5" in step["run"]
+    assert "OUT_OF_USAGE_CREDITS" in step["run"]
+
+
+def test_cfb_readiness_audit_does_not_fail_daily_refresh() -> None:
+    workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    step = next(
+        item
+        for item in workflow["jobs"]["refresh"]["steps"]
+        if item.get("name") == "Post-sync validation"
+    )
+    collapsed = " ".join(step["run"].split())
+    assert "audit_cfb_readiness.py" in collapsed
+    assert "sports_edge_cfb_audit.json || true" in collapsed
+
+
 def test_daily_research_step_wires_propline_fallback_secret() -> None:
     workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
     step = next(
