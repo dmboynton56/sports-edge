@@ -39,3 +39,18 @@ def test_daily_research_step_wires_propline_fallback_secret() -> None:
     assert "PROPLINE_API_KEY" in step["env"]
     assert "ODDS_API_KEY" in step["env"]
     assert "fetch_mlb_game_odds.py" in step["run"]
+    assert "sql/023_odds_api_usage.sql" in step["run"]
+    assert "PropLine-first" in step["run"]
+
+
+def test_pmr_and_daily_apply_shared_odds_budget_table() -> None:
+    pmr = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    daily = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    pmr_runs = " ".join(
+        step.get("run", "") for step in pmr["jobs"]["refresh"]["steps"] if isinstance(step.get("run"), str)
+    )
+    daily_runs = " ".join(
+        step.get("run", "") for step in daily["jobs"]["refresh"]["steps"] if isinstance(step.get("run"), str)
+    )
+    assert "sql/023_odds_api_usage.sql" in pmr_runs
+    assert "sql/023_odds_api_usage.sql" in daily_runs

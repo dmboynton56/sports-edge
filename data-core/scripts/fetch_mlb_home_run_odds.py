@@ -32,6 +32,14 @@ from src.data.mlb_hr_odds_fetcher import (  # noqa: E402
     fetch_day_hr_odds_propline,
     get_api_key,
 )
+from src.data.odds_api_budget import (  # noqa: E402
+    SKIP_REASON_SHARED_BUDGET,
+    SOURCE_HR,
+    claim_odds_api_usage,
+    denver_today,
+    odds_already_used_today,
+    should_skip_odds_api,
+)
 from src.data.propline_client import PropLineClient, PropLineError, get_propline_api_key  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
@@ -53,47 +61,12 @@ def _clean(value: Any) -> Any:
 
 
 def _odds_already_used_today(denver_date: str) -> tuple[bool, str | None]:
-    """Check if The Odds API was already used for this Denver date.
-    
+    """Check if the shared MLB Odds budget is already claimed for this Denver date.
+
     Returns:
-        (already_used, provider_used) - True if 'the_odds_api' provider was used today
+        (already_used, source) - True if HR or research already spent Odds today
     """
-    try:
-        creds = load_supabase_credentials()
-        if not creds.get("url") or not creds.get("db_password"):
-            return False, None
-        
-        conn = create_pg_connection(
-            supabase_url=creds["url"],
-            password=creds["db_password"],
-            host_override=creds.get("db_host"),
-            port=creds["db_port"],
-            database=creds["db_name"],
-            user=creds["db_user"],
-        )
-        try:
-            with conn.cursor() as cur:
-                # Check if The Odds API was already used today by looking at odds_snapshots
-                cur.execute(
-                    """
-                    select distinct provider
-                    from mlb_home_run_odds_snapshots
-                    where game_date = %s
-                      and provider = 'the_odds_api'
-                    limit 1
-                    """,
-                    (denver_date,),
-                    prepare=False,
-                )
-                result = cur.fetchone()
-                if result:
-                    return True, result[0]
-                return False, None
-        finally:
-            conn.close()
-    except Exception as exc:
-        print(f"Warning: Could not check Odds API usage for {denver_date}: {exc}")
-        return False, None
+    return odds_already_used_today(denver_date)
 
 
 def _sync_supabase(odds: pd.DataFrame) -> int:
@@ -189,8 +162,7 @@ def _requested_markets(args: argparse.Namespace) -> list[str] | None:
 
 def _should_skip_odds_api(already_used_today: bool, force_odds_api: bool) -> bool:
     """Keep daily conservation by default while allowing an explicit recovery run."""
-
-    return already_used_today and not force_odds_api
+    return should_skip_odds_api(already_used_today, force_odds_api)
 
 
 def parse_args() -> argparse.Namespace:
@@ -231,9 +203,14 @@ def main() -> None:
     requested_markets = _requested_markets(args)
     audit_market = requested_markets[0] if requested_markets and len(requested_markets) == 1 else HR_MARKET
 
-    # Check if Odds API was already used today (Denver date)
-    denver_date = args.date.isoformat()
-    odds_used_today, prior_provider = _odds_already_used_today(denver_date)
+    # Shared MLB Odds budget is keyed to Denver today, not the slate --date.
+    budget_date = denver_today()
+    odds_used_today, prior_provider = _odds_already_used_today(budget_date)
+    if odds_used_today:
+        print(
+            f"Shared Odds API budget already used for Denver {budget_date} "
+            f"(prior_source={prior_provider})"
+        )
     
     # Try The Odds API first
     odds_api_key = None
@@ -287,38 +264,46 @@ def main() -> None:
     should_fallback = False
     fallback_reason = ""
 
-    # Skip Odds API if already used today (conserve credits)
+    # Skip Odds API if the shared MLB daily budget is already spent
     if _should_skip_odds_api(odds_used_today, args.force_odds_api) and odds_api_key:
         should_fallback = True
-        fallback_reason = f"The Odds API already used today for {denver_date} (conserving credits: at most one Odds API call per Denver day)"
-        print(fallback_reason)
-    # Try The Odds API if key is available and not already used today
+        fallback_reason = (
+            f"{SKIP_REASON_SHARED_BUDGET} for {budget_date} (prior_source={prior_provider})"
+        )
+        print(f"Skipping Odds API: {fallback_reason}")
+    # Try The Odds API if key is available and the shared budget still allows it
     elif odds_api_key:
-        client = OddsApiClient(api_key=odds_api_key)
-        try:
-            odds, audit = fetch_day_hr_odds(
-                client,
-                game_date=args.date,
-                schedule=schedule,
-                regions=args.regions,
-                markets=requested_markets,
-            )
-            print(f"The Odds API returned {len(odds)} priced rows, {audit.get('apiCreditsRemaining', 'unknown')} credits remaining")
-            # Check for quota exhaustion or empty board
-            if audit.get("apiCreditsRemaining") == "0":
-                should_fallback = True
-                fallback_reason = "The Odds API quota exhausted (0 credits remaining)"
-            elif odds.empty or len(odds) == 0:
-                should_fallback = True
-                fallback_reason = "The Odds API returned 0 priced rows"
-        except MlbHrOddsError as exc:
-            error_str = str(exc)
-            # Fallback on 401 (auth), 429 (rate limit), or quota errors
-            if "401" in error_str or "429" in error_str or "quota" in error_str.lower():
-                should_fallback = True
-                fallback_reason = f"The Odds API error: {exc}"
-            else:
-                raise
+        claimed = claim_odds_api_usage(budget_date, SOURCE_HR, notes="mlb hr odds")
+        if claimed is False and not args.force_odds_api:
+            should_fallback = True
+            fallback_reason = f"{SKIP_REASON_SHARED_BUDGET} for {budget_date} (lost claim race)"
+            print(f"Skipping Odds API: {fallback_reason}")
+        else:
+            client = OddsApiClient(api_key=odds_api_key)
+            try:
+                odds, audit = fetch_day_hr_odds(
+                    client,
+                    game_date=args.date,
+                    schedule=schedule,
+                    regions=args.regions,
+                    markets=requested_markets,
+                )
+                print(f"The Odds API returned {len(odds)} priced rows, {audit.get('apiCreditsRemaining', 'unknown')} credits remaining")
+                # Check for quota exhaustion or empty board
+                if audit.get("apiCreditsRemaining") == "0":
+                    should_fallback = True
+                    fallback_reason = "The Odds API quota exhausted (0 credits remaining)"
+                elif odds.empty or len(odds) == 0:
+                    should_fallback = True
+                    fallback_reason = "The Odds API returned 0 priced rows"
+            except MlbHrOddsError as exc:
+                error_str = str(exc)
+                # Fallback on 401 (auth), 429 (rate limit), or quota errors
+                if "401" in error_str or "429" in error_str or "quota" in error_str.lower():
+                    should_fallback = True
+                    fallback_reason = f"The Odds API error: {exc}"
+                else:
+                    raise
 
     # Fallback to PropLine if needed and available
     if should_fallback and propline_api_key:

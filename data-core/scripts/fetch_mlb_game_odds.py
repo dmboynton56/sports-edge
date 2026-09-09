@@ -2,9 +2,10 @@
 """
 Fetch MLB game market odds for research markets.
 
-Tries The Odds API first (at most once per Denver day). On quota/auth/empty,
-falls back to PropLine (`PROPLINE_API_KEY`). Writes moneyline (h2h), run-line
-(spreads), and totals into Supabase `odds_snapshots` for research predictions.
+PropLine-first when `PROPLINE_API_KEY` is set. The Odds API is only used if
+PropLine is missing/fails/empty, and only if the shared MLB daily Odds budget
+(`odds_api_usage`) still allows it. HR and research share at most one Odds API
+session per America/Denver day. Fail closed if both providers miss.
 """
 
 from __future__ import annotations
@@ -28,9 +29,17 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.data.mlb_fetcher import mlb_schedule_to_games_df  # noqa: E402
+from src.data.odds_api_budget import (  # noqa: E402
+    SKIP_REASON_PROPLINE_FIRST,
+    SKIP_REASON_SHARED_BUDGET,
+    SOURCE_RESEARCH,
+    claim_odds_api_usage,
+    denver_today,
+    odds_already_used_today,
+    should_skip_odds_api,
+)
 from src.data.propline_client import (  # noqa: E402
     PropLineClient,
-    PropLineError,
     fetch_propline_mlb_game_odds,
     get_propline_api_key,
 )
@@ -78,52 +87,9 @@ def odds_api_error_should_fallback(exc: BaseException) -> bool:
     )
 
 
-def should_skip_odds_api(already_used_today: bool, force_odds_api: bool) -> bool:
-    """Keep daily conservation by default while allowing an explicit recovery run."""
-    return already_used_today and not force_odds_api
-
-
 def _odds_already_used_today(denver_date: str) -> tuple[bool, str | None]:
-    """True when The Odds API already produced HR snapshots for this Denver date.
-
-    Research game lines share the same Odds API quota as Player Market Refresh.
-    Checking HR snapshots avoids a second paid call after PMR has already
-    exhausted the day; PropLine remains the fallback when that happens.
-    """
-    try:
-        creds = load_supabase_credentials()
-        if not creds.get("url") or not creds.get("db_password"):
-            return False, None
-        conn = create_pg_connection(
-            supabase_url=creds["url"],
-            password=creds["db_password"],
-            host_override=creds.get("db_host"),
-            port=creds["db_port"],
-            database=creds["db_name"],
-            user=creds["db_user"],
-        )
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    select distinct provider
-                    from mlb_home_run_odds_snapshots
-                    where game_date = %s
-                      and provider = 'the_odds_api'
-                    limit 1
-                    """,
-                    (denver_date,),
-                    prepare=False,
-                )
-                result = cur.fetchone()
-                if result:
-                    return True, result[0]
-                return False, None
-        finally:
-            conn.close()
-    except Exception as exc:  # noqa: BLE001
-        LOGGER.warning("Could not check Odds API usage for %s: %s", denver_date, exc)
-        return False, None
+    """True when the shared MLB Odds budget is already claimed for this Denver date."""
+    return odds_already_used_today(denver_date)
 
 
 def load_odds_provider_keys() -> tuple[str | None, str | None]:
@@ -144,64 +110,88 @@ def fetch_mlb_game_odds_events(
     force_odds_api: bool = False,
     fetch_odds_api=None,
     fetch_propline=None,
+    claim_odds_usage=None,
 ) -> tuple[list[dict[str, Any]], str, str | None]:
-    """Fetch game-line events from Odds API, then PropLine on quota/empty/skip.
+    """Fetch research game lines: PropLine first, Odds only if needed and budgeted.
 
-    Returns ``(events, provider, fallback_reason)``. Does not invent prices.
+    Returns ``(events, provider, skip_or_fallback_reason)``. Does not invent prices.
     """
     fetch_odds_api = fetch_odds_api or fetch_mlb_odds
     fetch_propline = fetch_propline or (
         lambda markets: fetch_propline_mlb_game_odds(PropLineClient(api_key=propline_api_key or ""), markets=markets)
     )
-    should_fallback = False
-    fallback_reason = ""
-    events: list[dict[str, Any]] = []
-    provider = "none"
 
     if not odds_api_key and not propline_api_key:
         raise RuntimeError("Neither ODDS_API_KEY nor PROPLINE_API_KEY found in environment")
 
-    if odds_api_key and should_skip_odds_api(already_used_today, force_odds_api):
-        should_fallback = True
-        fallback_reason = (
-            "The Odds API already used today (conserving credits: at most one Odds API call per Denver day)"
-        )
-        LOGGER.warning(fallback_reason)
-    elif odds_api_key:
+    propline_reason = ""
+    if propline_api_key:
         try:
-            events = fetch_odds_api(odds_api_key, markets)
-            provider = "the_odds_api"
-            if not events:
-                should_fallback = True
-                fallback_reason = "The Odds API returned 0 events"
+            events = fetch_propline(markets) or []
         except Exception as exc:  # noqa: BLE001
-            if odds_api_error_should_fallback(exc):
-                should_fallback = True
-                fallback_reason = str(exc)
-                LOGGER.warning("Odds API failed; will try PropLine: %s", fallback_reason)
-            else:
-                raise
+            propline_reason = f"PropLine failed: {exc}"
+            LOGGER.warning("PropLine-first miss for MLB research; considering Odds API: %s", propline_reason)
+        else:
+            if events:
+                LOGGER.info(
+                    "Using PropLine for MLB research (%s events). Odds skipped: %s",
+                    len(events),
+                    SKIP_REASON_PROPLINE_FIRST,
+                )
+                return events, "propline", SKIP_REASON_PROPLINE_FIRST
+            propline_reason = "PropLine returned 0 MLB game-line events"
+            LOGGER.warning("PropLine-first miss for MLB research; considering Odds API: %s", propline_reason)
     else:
-        should_fallback = True
-        fallback_reason = "ODDS_API_KEY not set, using PropLine"
+        propline_reason = "PROPLINE_API_KEY not set"
 
-    if not should_fallback:
-        return events, provider, None
+    if not odds_api_key:
+        raise RuntimeError(
+            f"PropLine unavailable and ODDS_API_KEY is not set: {propline_reason}"
+        )
 
-    if not propline_api_key:
-        if events:
-            LOGGER.warning("Would fallback to PropLine but PROPLINE_API_KEY not set: %s", fallback_reason)
-            return events, provider, fallback_reason
-        raise RuntimeError(f"Odds fetch failed and PROPLINE_API_KEY is not set: {fallback_reason}")
+    if should_skip_odds_api(already_used_today, force_odds_api):
+        LOGGER.warning(
+            "Skipping Odds API for MLB research: %s after '%s'",
+            SKIP_REASON_SHARED_BUDGET,
+            propline_reason,
+        )
+        raise RuntimeError(
+            f"Odds fetch skipped ({SKIP_REASON_SHARED_BUDGET}) after '{propline_reason}'"
+        )
 
-    LOGGER.info("Falling back to PropLine: %s", fallback_reason)
+    if claim_odds_usage is not None:
+        claimed = claim_odds_usage()
+        if claimed is False and not force_odds_api:
+            LOGGER.warning(
+                "Skipping Odds API for MLB research: lost shared-budget claim after '%s'",
+                propline_reason,
+            )
+            raise RuntimeError(
+                f"Odds fetch skipped ({SKIP_REASON_SHARED_BUDGET}) after '{propline_reason}'"
+            )
+
+    LOGGER.info(
+        "Calling The Odds API for MLB research after PropLine miss (%s)",
+        propline_reason,
+    )
     try:
-        events = fetch_propline(markets)
-    except PropLineError as exc:
-        raise RuntimeError(f"PropLine fallback failed after '{fallback_reason}': {exc}") from exc
+        events = fetch_odds_api(odds_api_key, markets)
+    except Exception as exc:  # noqa: BLE001
+        if odds_api_error_should_fallback(exc):
+            raise RuntimeError(
+                f"Odds API failed after '{propline_reason}': {exc}"
+            ) from exc
+        raise
     if not events:
-        raise RuntimeError(f"PropLine returned 0 MLB game-line events after fallback: {fallback_reason}")
-    return events, "propline", fallback_reason
+        raise RuntimeError(
+            f"The Odds API returned 0 events after '{propline_reason}'"
+        )
+    LOGGER.info(
+        "Using The Odds API for MLB research (%s events). Prior miss: %s",
+        len(events),
+        propline_reason,
+    )
+    return events, "the_odds_api", propline_reason or None
 
 
 def _is_full_game_market(market: dict[str, Any]) -> bool:
@@ -639,15 +629,18 @@ def main() -> None:
     if not odds_api_key and not propline_api_key:
         raise SystemExit("Neither ODDS_API_KEY nor PROPLINE_API_KEY found in environment")
 
-    game_date = pd.to_datetime(args.date).date() if args.date else pd.Timestamp.now().date()
+    game_date = pd.to_datetime(args.date).date() if args.date else pd.Timestamp.now(tz="America/Denver").date()
     season = args.season or game_date.year
-    already_used_today, prior_provider = _odds_already_used_today(game_date.isoformat())
+    budget_date = denver_today()
+    already_used_today, prior_source = _odds_already_used_today(budget_date)
     if already_used_today:
         LOGGER.info(
-            "The Odds API already used today for %s (prior_provider=%s)",
-            game_date,
-            prior_provider,
+            "Shared Odds API budget already used for Denver %s (prior_source=%s); research will not call Odds",
+            budget_date,
+            prior_source,
         )
+    else:
+        LOGGER.info("Shared Odds API budget unused for Denver %s", budget_date)
 
     # Fetch schedule
     from src.data.mlb_fetcher import fetch_mlb_schedule
@@ -662,15 +655,20 @@ def main() -> None:
     LOGGER.info(f"Found {len(schedule)} games in schedule for {game_date}")
 
     markets = [m.strip() for m in args.markets.split(",") if m.strip()]
+
+    def _claim_research_odds_budget() -> bool:
+        return claim_odds_api_usage(budget_date, SOURCE_RESEARCH, notes="mlb research game odds")
+
     odds_events, provider, fallback_reason = fetch_mlb_game_odds_events(
         markets=markets,
         odds_api_key=odds_api_key,
         propline_api_key=propline_api_key,
         already_used_today=already_used_today,
         force_odds_api=args.force_odds_api,
+        claim_odds_usage=_claim_research_odds_budget,
     )
     LOGGER.info(
-        "Fetched %s MLB events from %s%s",
+        "Fetched %s MLB research events from provider=%s%s",
         len(odds_events),
         provider,
         f" ({fallback_reason})" if fallback_reason else "",

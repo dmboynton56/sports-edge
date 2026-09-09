@@ -128,7 +128,7 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
+        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql sql/023_odds_api_usage.sql
 
       - name: Prepare trusted-board migration for this run
         if: ${{ env.RUN_MLB_HR == 'true' && env.SYNC_SUPABASE == 'true' && env.APPLY_TRUSTED_BOARD_MIGRATION == 'true' }}
@@ -246,7 +246,7 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
+        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql sql/023_odds_api_usage.sql
 
       - name: Fetch MLB home run odds
         if: ${{ env.RUN_MLB_HR == 'true' }}
@@ -261,9 +261,9 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          # PropLine fallback: if ODDS_API_KEY is missing, quota-exhausted (401/429), or
-          # returns 0 priced rows, the script falls back to PROPLINE_API_KEY if set.
-          # To enable PropLine, add GitHub secret PROPLINE_API_KEY (get free key at https://prop-line.com).
+          # Shared odds_api_usage row: at most one Odds API session per Denver day
+          # across HR + research. Skip Odds if research already claimed today.
+          # PropLine fallback: missing key, already used, quota/401/429, or 0 priced rows.
           if [ "$SYNC_SUPABASE" = "true" ]; then
             python scripts/fetch_mlb_home_run_odds.py \
               --date "${{ steps.dates.outputs.date }}" \
