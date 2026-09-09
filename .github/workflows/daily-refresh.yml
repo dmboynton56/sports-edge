@@ -161,7 +161,8 @@ jobs:
             sql/013_injury_availability_tables.sql \
             sql/018_game_explanations.sql \
             sql/021_nfl_anytime_td_markets.sql \
-            sql/022_cfb_team_markets.sql
+            sql/022_cfb_team_markets.sql \
+            sql/023_odds_api_usage.sql
 
       - name: Sync injury impact estimates
         if: ${{ env.DRY_RUN != 'true' && (steps.plan.outputs.run_nba == 'true' || steps.plan.outputs.run_nfl == 'true') }}
@@ -281,9 +282,9 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
         run: |
-          python scripts/apply_supabase_sql_files.py sql/019_mlb_research_predictions.sql
-          # Odds API is once per Denver day. Quota/401/429/empty → PropLine.
-          # Dual-provider failure stays fail-closed: model-only rows, no invented prices.
+          python scripts/apply_supabase_sql_files.py sql/019_mlb_research_predictions.sql sql/023_odds_api_usage.sql
+          # Research is PropLine-first. Odds API is shared once per Denver day with HR
+          # (odds_api_usage). Quota/empty/both-miss → fail-closed model-only, no invented prices.
           python scripts/fetch_mlb_game_odds.py --date "${{ steps.plan.outputs.anchor_date }}" || echo "Warning: MLB odds fetch failed; predictions will be model-only"
           python scripts/sync_mlb_research_predictions.py --date "${{ steps.plan.outputs.anchor_date }}" --season "${{ steps.plan.outputs.mlb_season }}"
           python scripts/audit_mlb_research_readiness.py --date "${{ steps.plan.outputs.anchor_date }}" --json
@@ -359,7 +360,7 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
           # PropLine fallback: falls back to PROPLINE_API_KEY if ODDS_API_KEY fails or returns no prices.
-          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql
+          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql sql/023_odds_api_usage.sql
           python scripts/fetch_mlb_home_run_odds.py \
             --date "${{ steps.plan.outputs.anchor_date }}" \
             --sync-supabase

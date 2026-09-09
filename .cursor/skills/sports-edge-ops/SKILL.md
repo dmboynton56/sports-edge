@@ -19,7 +19,8 @@ Short ownership map. Read the workflow YAML if a step name matters.
 ## MLB HR odds
 
 - Canonical fetch is PMR, afternoon cron **after 2:00 PM MT** (`cron: 15 20 * * *` ≈ 2:15 PM MT) so the board clears the 2pm eligibility gate.
-- The Odds API is **once per Denver day**. A second run that day should skip Odds and use PropLine (`PROPLINE_API_KEY`).
+- The Odds API is **once per Denver day** for *all* MLB usage (HR + research), stamped in `odds_api_usage`. A second run that day skips Odds and uses PropLine (`PROPLINE_API_KEY`).
+- Research (Daily) is **PropLine-first**. It only calls Odds if PropLine misses *and* the shared budget is still free.
 - Fallback when Odds is missing, already used today, 401/429, quota 0, or 0 priced rows.
 - Both fail → fail closed (empty / `provider=failed`). Do not invent prices or EV.
 

@@ -28,7 +28,7 @@ Do not edit `.cursor/plans/*.plan.md`. Do not revert landed work: UI makeover, O
 
 HR odds = PMR. Research MLB = Daily. `run_mlb_hr` on Daily is a deprecated escape hatch — do not make it canonical again.
 
-Odds API is **once per Denver day**. Missing / empty / quota → PropLine (`PROPLINE_API_KEY`). Fail closed if both fail: no invented prices, no fake EV.
+Odds API is **once per Denver day** across MLB HR + research (`odds_api_usage`). Research is **PropLine-first**; Odds only if PropLine misses and the shared budget is free. Missing / empty / quota → PropLine. Fail closed if both fail: no invented prices, no fake EV.
 
 Ops detail: `.cursor/skills/sports-edge-ops/SKILL.md`.
 

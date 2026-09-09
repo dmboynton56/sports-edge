@@ -426,45 +426,50 @@ def test_extract_totals_skips_team_and_period_markets():
     assert book_key == "draftkings"
 
 
-def test_odds_api_quota_falls_back_to_propline():
-    """Daily #299: Odds API 401 OUT_OF_USAGE_CREDITS must use PropLine, not model-only."""
-
-    def boom(_key, _markets):
-        raise RuntimeError(
-            'Odds API error 401: {"message":"Usage quota has been reached.",'
-            '"error_code":"OUT_OF_USAGE_CREDITS"}'
-        )
-
-    propline_events = [{"id": "pl1", "home_team": "New York Yankees", "away_team": "Boston Red Sox"}]
-    events, provider, reason = odds_fetcher.fetch_mlb_game_odds_events(
-        markets=["h2h", "spreads", "totals"],
-        odds_api_key="odds-key",
-        propline_api_key="pl-key",
-        fetch_odds_api=boom,
-        fetch_propline=lambda _markets: propline_events,
-    )
-
-    assert events == propline_events
-    assert provider == "propline"
-    assert "401" in reason
-    assert "OUT_OF_USAGE_CREDITS" in reason
-
-
-def test_empty_odds_api_board_falls_back_to_propline():
+def test_research_uses_propline_even_when_shared_budget_already_spent():
+    """PropLine-first must still succeed after HR has claimed the Odds budget."""
+    called = {"odds": 0}
     events, provider, reason = odds_fetcher.fetch_mlb_game_odds_events(
         markets=["h2h"],
         odds_api_key="odds-key",
         propline_api_key="pl-key",
-        fetch_odds_api=lambda _key, _markets: [],
+        already_used_today=True,
+        fetch_odds_api=lambda _key, _markets: called.__setitem__("odds", 1) or [{"id": "odds"}],
         fetch_propline=lambda _markets: [{"id": "pl1"}],
     )
     assert events == [{"id": "pl1"}]
     assert provider == "propline"
-    assert "0 events" in reason
+    assert called["odds"] == 0
+    assert "PropLine-first" in reason
 
 
-def test_skip_odds_api_when_already_used_today():
-    called = {"odds": 0}
+def test_research_prefers_propline_and_does_not_call_odds():
+    """Research is PropLine-first so morning Daily cannot burn Odds credits."""
+    called = {"odds": 0, "claim": 0}
+
+    def odds_api(_key, _markets):
+        called["odds"] += 1
+        return [{"id": "odds"}]
+
+    propline_events = [{"id": "pl1", "home_team": "New York Yankees"}]
+    events, provider, reason = odds_fetcher.fetch_mlb_game_odds_events(
+        markets=["h2h", "spreads", "totals"],
+        odds_api_key="odds-key",
+        propline_api_key="pl-key",
+        fetch_odds_api=odds_api,
+        fetch_propline=lambda _markets: propline_events,
+        claim_odds_usage=lambda: called.__setitem__("claim", called["claim"] + 1) or True,
+    )
+
+    assert events == propline_events
+    assert provider == "propline"
+    assert called["odds"] == 0
+    assert called["claim"] == 0
+    assert "PropLine-first" in reason
+
+
+def test_research_uses_odds_when_propline_empty_and_budget_free():
+    called = {"odds": 0, "claim": 0}
 
     def odds_api(_key, _markets):
         called["odds"] += 1
@@ -474,19 +479,62 @@ def test_skip_odds_api_when_already_used_today():
         markets=["h2h"],
         odds_api_key="odds-key",
         propline_api_key="pl-key",
-        already_used_today=True,
-        force_odds_api=False,
+        already_used_today=False,
         fetch_odds_api=odds_api,
-        fetch_propline=lambda _markets: [{"id": "pl1"}],
+        fetch_propline=lambda _markets: [],
+        claim_odds_usage=lambda: called.__setitem__("claim", called["claim"] + 1) or True,
     )
 
+    assert events == [{"id": "odds"}]
+    assert provider == "the_odds_api"
+    assert called["odds"] == 1
+    assert called["claim"] == 1
+    assert "0 MLB game-line events" in reason
+
+
+def test_research_skips_odds_when_propline_empty_and_shared_budget_used():
+    called = {"odds": 0}
+
+    def odds_api(_key, _markets):
+        called["odds"] += 1
+        return [{"id": "odds"}]
+
+    with pytest.raises(RuntimeError, match="shared daily budget"):
+        odds_fetcher.fetch_mlb_game_odds_events(
+            markets=["h2h"],
+            odds_api_key="odds-key",
+            propline_api_key="pl-key",
+            already_used_today=True,
+            force_odds_api=False,
+            fetch_odds_api=odds_api,
+            fetch_propline=lambda _markets: [],
+        )
+
     assert called["odds"] == 0
-    assert events == [{"id": "pl1"}]
-    assert provider == "propline"
-    assert "already used today" in reason
 
 
-def test_force_odds_api_bypasses_once_daily_skip():
+def test_research_skips_odds_when_propline_fails_and_hr_already_used_today():
+    """If HR already stamped the shared budget, research must not call Odds."""
+    called = {"odds": 0}
+
+    def odds_api(_key, _markets):
+        called["odds"] += 1
+        return [{"id": "odds"}]
+
+    with pytest.raises(RuntimeError, match="already used today"):
+        odds_fetcher.fetch_mlb_game_odds_events(
+            markets=["h2h"],
+            odds_api_key="odds-key",
+            propline_api_key="pl-key",
+            already_used_today=True,
+            fetch_odds_api=odds_api,
+            fetch_propline=lambda _markets: (_ for _ in ()).throw(RuntimeError("PropLine down")),
+        )
+
+    assert called["odds"] == 0
+
+
+def test_force_odds_api_bypasses_shared_budget_after_propline_miss():
     events, provider, reason = odds_fetcher.fetch_mlb_game_odds_events(
         markets=["h2h"],
         odds_api_key="odds-key",
@@ -494,11 +542,32 @@ def test_force_odds_api_bypasses_once_daily_skip():
         already_used_today=True,
         force_odds_api=True,
         fetch_odds_api=lambda _key, _markets: [{"id": "odds"}],
-        fetch_propline=lambda _markets: [{"id": "pl1"}],
+        fetch_propline=lambda _markets: [],
+        claim_odds_usage=lambda: False,
     )
     assert events == [{"id": "odds"}]
     assert provider == "the_odds_api"
-    assert reason is None
+    assert "0 MLB game-line events" in reason
+
+
+def test_lost_shared_budget_claim_skips_odds():
+    called = {"odds": 0}
+
+    def odds_api(_key, _markets):
+        called["odds"] += 1
+        return [{"id": "odds"}]
+
+    with pytest.raises(RuntimeError, match="shared daily budget"):
+        odds_fetcher.fetch_mlb_game_odds_events(
+            markets=["h2h"],
+            odds_api_key="odds-key",
+            propline_api_key=None,
+            already_used_today=False,
+            fetch_odds_api=odds_api,
+            claim_odds_usage=lambda: False,
+        )
+
+    assert called["odds"] == 0
 
 
 def test_non_quota_odds_error_does_not_fallback():
@@ -509,9 +578,8 @@ def test_non_quota_odds_error_does_not_fallback():
         odds_fetcher.fetch_mlb_game_odds_events(
             markets=["h2h"],
             odds_api_key="odds-key",
-            propline_api_key="pl-key",
+            propline_api_key=None,
             fetch_odds_api=boom,
-            fetch_propline=lambda _markets: [{"id": "pl1"}],
         )
 
 
@@ -519,12 +587,24 @@ def test_quota_without_propline_fails_closed():
     def boom(_key, _markets):
         raise RuntimeError("Odds API error 401: OUT_OF_USAGE_CREDITS")
 
-    with pytest.raises(RuntimeError, match="PROPLINE_API_KEY is not set"):
+    with pytest.raises(RuntimeError, match="ODDS_API_KEY is not set|OUT_OF_USAGE_CREDITS"):
         odds_fetcher.fetch_mlb_game_odds_events(
             markets=["h2h"],
             odds_api_key="odds-key",
             propline_api_key=None,
             fetch_odds_api=boom,
+        )
+
+
+def test_both_providers_empty_fails_closed():
+    with pytest.raises(RuntimeError, match="returned 0 events"):
+        odds_fetcher.fetch_mlb_game_odds_events(
+            markets=["h2h"],
+            odds_api_key="odds-key",
+            propline_api_key="pl-key",
+            fetch_odds_api=lambda _key, _markets: [],
+            fetch_propline=lambda _markets: [],
+            claim_odds_usage=lambda: True,
         )
 
 
