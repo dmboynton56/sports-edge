@@ -154,9 +154,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       <BrandMark />
                       Sports Edge
                     </SheetTitle>
-                    <SheetDescription className="sr-only">
-                      Primary Sports Edge navigation
-                    </SheetDescription>
+                    <SheetDescription className="sr-only">Browse sports, markets, results, and model performance.</SheetDescription>
                   </SheetHeader>
                   <div className="mt-8">
                     <MobileNav onNavigate={() => setOpen(false)} />

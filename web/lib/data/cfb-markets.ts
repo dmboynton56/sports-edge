@@ -1,4 +1,4 @@
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig, supabaseFetch } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 import type { Prediction } from "@/lib/data/types";
 
 type SupabaseCfbPrediction = {
@@ -61,18 +61,6 @@ export type CfbMarketFeed = {
   gaps: string[];
 };
 
-async function supabaseRest<T>(resource: string): Promise<T[] | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-  const response = await supabaseFetch(`${config.url.replace(/\/$/, "")}/rest/v1/${resource}`, {
-    headers: { apikey: config.anonKey, Authorization: `Bearer ${config.anonKey}` },
-    next: { revalidate: 60 },
-  });
-  if (!response.ok) return null;
-  // SAFETY: This helper is called only with the typed Supabase view selected by each CFB feed query.
-  return (await response.json()) as T[];
-}
-
 function mapGame(row: SupabaseCfbPrediction): CfbSlateGame {
   return {
     eventId: row.event_id,
@@ -133,9 +121,11 @@ export async function getCfbMarketFeed(): Promise<CfbMarketFeed> {
   const [gameRows, marketRows] = await Promise.all([
     supabaseRest<SupabaseCfbPrediction>(
       "cfb_team_predictions_latest?select=*&order=game_time_utc.asc&limit=500",
+      60,
     ),
     supabaseRest<SupabaseCfbMarket>(
       "cfb_market_edges_latest?select=*&order=game_time_utc.asc,market.asc,edge.desc&limit=1500",
+      60,
     ),
   ]);
   const games = (gameRows ?? []).map(mapGame);

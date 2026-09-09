@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { deriveMlbHrBoardSnapshot } from "@/lib/data/player-markets";
 import { deriveDataQuality } from "@/lib/data/data-quality";
 import { summarizeMlbHr } from "@/lib/data/results";
+
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); });
 
 type Run = Exclude<Parameters<typeof deriveMlbHrBoardSnapshot>[0], null>;
 type BoardRow = Parameters<typeof deriveMlbHrBoardSnapshot>[1][number];
@@ -32,19 +34,6 @@ function boardRow(overrides: Partial<BoardRow> = {}): BoardRow {
   return {
     board_row_id: "row-1",
     run_id: "run-1",
-    run_key: baseRun.run_key,
-    run_slate_date: baseRun.slate_date,
-    run_window: baseRun.run_window,
-    run_status: "healthy",
-    run_completed_at: baseRun.completed_at,
-    run_prediction_ts: baseRun.prediction_ts,
-    run_odds_ts: baseRun.odds_ts,
-    run_gaps: [],
-    run_total_candidates: 2,
-    run_priced_candidates: 1,
-    run_top25_denominator: 2,
-    run_top25_priced_count: 1,
-    run_top25_coverage: 0.5,
     slate_date: baseRun.slate_date,
     game_id: "game-1",
     player_id: "player-1",
@@ -188,4 +177,56 @@ describe("MLB HR trusted board snapshot", () => {
     expect(summary.modelOnlySample).toBe(1);
     expect(summary.modelOnlyHitRate).toBe(0);
   });
+});
+
+
+it("hides a board assembled from different publication runs", () => {
+  const snapshot = deriveMlbHrBoardSnapshot(
+    baseRun,
+    [boardRow({ run_id: "newer-run" })],
+    new Date("2026-08-11T16:00:00Z"),
+  );
+  expect(snapshot.status).toBe("unavailable");
+  expect(snapshot.rows).toEqual([]);
+  expect(snapshot.gaps.join(" ")).toContain("do not match the selected run");
+});
+
+it("reads immutable rows for the selected run, even if latest publication changes", async () => {
+  const { getMlbHomeRunBoardSnapshot } = await import("./player-markets");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-key");
+  const fetchMock = vi.fn()
+    .mockResolvedValueOnce({ ok: true, json: async () => [{ ...baseRun, total_candidates: 1 }] })
+    .mockResolvedValueOnce({ ok: true, json: async () => [boardRow()] });
+  vi.stubGlobal("fetch", fetchMock);
+  const snapshot = await getMlbHomeRunBoardSnapshot(new Date("2026-08-11T16:00:00Z"));
+  expect(snapshot.status).toBe("healthy");
+  expect(snapshot.rows).toHaveLength(1);
+  const rowUrl = new URL(fetchMock.mock.calls[1][0]);
+  expect(rowUrl.pathname).toBe("/rest/v1/mlb_home_run_board_rows");
+  expect(rowUrl.searchParams.get("run_id")).toBe("eq.run-1");
+});
+
+it("withholds a truncated publication instead of reporting a healthy partial fetch", async () => {
+  const { getMlbHomeRunBoardSnapshot } = await import("./player-markets");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-key");
+  vi.stubGlobal("fetch", vi.fn()
+    .mockResolvedValueOnce({ ok: true, json: async () => [baseRun] })
+    .mockResolvedValueOnce({ ok: true, json: async () => [boardRow()] }));
+  const snapshot = await getMlbHomeRunBoardSnapshot(new Date("2026-08-11T16:00:00Z"));
+  expect(snapshot.status).toBe("unavailable");
+  expect(snapshot.rows).toEqual([]);
+  expect(snapshot.gaps.join(" ")).toContain("incomplete");
+});
+
+it("does not fetch candidates for a failed publication", async () => {
+  const { getMlbHomeRunBoardSnapshot } = await import("./player-markets");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+  vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-key");
+  const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => [{ ...baseRun, status: "failed" }] });
+  vi.stubGlobal("fetch", fetchMock);
+  const snapshot = await getMlbHomeRunBoardSnapshot(new Date("2026-08-11T16:00:00Z"));
+  expect(snapshot.rows).toEqual([]);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
 });

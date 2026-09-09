@@ -39,7 +39,6 @@ export type MlbHrResultRow = {
   edge?: number | null;
   ev?: number | null;
   odds_status?: string | null;
-  raw_record?: import("@/lib/data/json").JsonObject | null;
 };
 
 export type PgaResultRow = {
@@ -100,6 +99,15 @@ export type ResultsData = {
   gaps: string[];
 };
 
+// Exclude unused raw records and publication metadata to reduce transfer size
+// and keep the current results response within the Next.js fetch cache limit.
+const MLB_HR_RESULTS_QUERY = "mlb_home_run_published_results?select=" + [
+  "board_row_id", "game_date", "game_id", "player_name", "team", "model_version",
+  "rank", "top_k_bucket", "model_probability", "actual_home_run", "actual_home_runs",
+  "actual_plate_appearances", "evaluated_at", "american_price", "market_probability",
+  "edge", "ev", "odds_status",
+].join(",") + "&order=game_date.desc,rank.asc&limit=5000";
+
 function rate(wins: number, losses: number) {
   const risked = wins + losses;
   return risked ? wins / risked : null;
@@ -109,7 +117,9 @@ export function summarizeGameResults(rows: GameResultRow[]): ResultsSummary[] {
   const groups = new Map<string, GameResultRow[]>();
   for (const row of rows) {
     const key = `${row.league}|${row.model_version}`;
-    groups.set(key, [...(groups.get(key) ?? []), row]);
+    const group = groups.get(key);
+    if (group) group.push(row);
+    else groups.set(key, [row]);
   }
   return Array.from(groups.entries()).flatMap(([key, group]) => {
     const [league, modelVersion] = key.split("|");
@@ -150,7 +160,9 @@ export function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
   const groups = new Map<string, MlbHrResultRow[]>();
   for (const row of rows) {
     const key = `${row.model_version}|${row.top_k_bucket ?? "field"}`;
-    groups.set(key, [...(groups.get(key) ?? []), row]);
+    const group = groups.get(key);
+    if (group) group.push(row);
+    else groups.set(key, [row]);
   }
   return Array.from(groups.entries()).map(([key, group]) => {
     const [modelVersion, bucket] = key.split("|");
@@ -164,7 +176,8 @@ export function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
         (row.odds_status === "ok" || row.odds_status === "raw_implied"),
     );
     const pricedWins = priced.filter((row) => row.actual_home_run === true).length;
-    const modelOnly = evaluable.filter((row) => !priced.includes(row));
+    const pricedSet = new Set(priced);
+    const modelOnly = evaluable.filter((row) => !pricedSet.has(row));
     const modelOnlyWins = modelOnly.filter((row) => row.actual_home_run === true).length;
     const flatUnits = priced.reduce((sum, row) => {
       if (row.actual_home_run !== true && row.actual_home_run !== false) return sum;
@@ -198,7 +211,9 @@ export function summarizeMlbHr(rows: MlbHrResultRow[]): ResultsSummary[] {
 export function summarizePga(rows: PgaResultRow[]): ResultsSummary[] {
   const groups = new Map<string, PgaResultRow[]>();
   for (const row of rows) {
-    groups.set(row.model_version, [...(groups.get(row.model_version) ?? []), row]);
+    const group = groups.get(row.model_version);
+    if (group) group.push(row);
+    else groups.set(row.model_version, [row]);
   }
   return Array.from(groups.entries()).flatMap(([modelVersion, group]) => {
     const top10Wins = group.filter((row) => row.top10_hit === true).length;
@@ -315,7 +330,7 @@ export async function getGameResultRows(league: string): Promise<RawResults<Game
 
 export async function getMlbHomeRunResultRows(): Promise<RawResults<MlbHrResultRow>> {
   const rows = await supabaseRest<MlbHrResultRow>(
-    "mlb_home_run_published_results?select=*&order=game_date.desc,rank.asc&limit=5000",
+    MLB_HR_RESULTS_QUERY,
   );
   return { rows: rows ?? [], gaps: resultGaps("MLB home run results", rows) };
 }
@@ -330,7 +345,7 @@ export async function getPgaResultRows(): Promise<RawResults<PgaResultRow>> {
 export async function getResultsData(): Promise<ResultsData> {
   const [gameRows, mlbHrRows, pgaRows] = await Promise.all([
     supabaseRest<GameResultRow>("game_prediction_results?select=*&order=game_date.desc&limit=5000"),
-    supabaseRest<MlbHrResultRow>("mlb_home_run_published_results?select=*&order=game_date.desc,rank.asc&limit=5000"),
+    supabaseRest<MlbHrResultRow>(MLB_HR_RESULTS_QUERY),
     supabaseRest<PgaResultRow>("pga_prediction_results?select=*&order=evaluated_at.desc&limit=5000"),
   ]);
 

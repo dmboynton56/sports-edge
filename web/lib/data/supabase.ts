@@ -1,4 +1,5 @@
 import type { JsonValue } from "@/lib/data/json";
+import { cache } from "react";
 
 export type SupabaseRuntimeConfig = {
   url?: string;
@@ -54,7 +55,9 @@ export async function supabaseFetch(
   }
 }
 
-export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
+// Abort signals disable Next.js fetch memoization. React cache restores request-scoped
+// deduplication within server renders; results are not retained between renders.
+export const supabaseRest = cache(async function supabaseRest<T>(resource: string, revalidate = 300): Promise<T[] | null> {
   const config = getSupabaseRuntimeConfig();
   if (!config.url || !config.anonKey) return null;
 
@@ -65,7 +68,7 @@ export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
         apikey: config.anonKey,
         Authorization: `Bearer ${config.anonKey}`,
       },
-      next: { revalidate: 300 },
+      next: { revalidate },
     });
     if (!response.ok) return null;
     const payload = await response.json();
@@ -73,4 +76,4 @@ export async function supabaseRest<T>(resource: string): Promise<T[] | null> {
   } catch {
     return null;
   }
-}
+});

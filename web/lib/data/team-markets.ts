@@ -1,4 +1,4 @@
-import { getSupabaseMissingEnv, getSupabaseRuntimeConfig, asRestRows, supabaseFetch } from "@/lib/data/supabase";
+import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 import type { Prediction } from "@/lib/data/types";
 
 export type FreshnessStatus = "fresh" | "stale" | "no_prediction" | "no_odds";
@@ -84,26 +84,6 @@ const SPREAD_RESIDUAL_SIGMA = {
   NBA: 15.191160518903473,
 } satisfies Record<"NBA" | "NFL", number>;
 
-async function supabaseRest<T>(resource: string): Promise<T[] | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-  try {
-    const base = config.url.replace(/\/$/, "");
-    const response = await supabaseFetch(`${base}/rest/v1/${resource}`, {
-      headers: {
-        apikey: config.anonKey,
-        Authorization: `Bearer ${config.anonKey}`,
-      },
-      next: { revalidate: 60 },
-    });
-    if (!response.ok) return null;
-    const payload = await response.json();
-    return asRestRows<T>(payload);
-  } catch {
-    return null;
-  }
-}
-
 function todayInTimeZone(timeZone: string): string {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,
@@ -152,7 +132,7 @@ async function fetchGamesInWindow(league: string, start: string, end: string) {
     `&game_date=gte.${start}&game_date=lte.${end}` +
     `&order=game_time_utc.asc` +
     `&select=id,league,season,week,game_time_utc,game_date,home_team,away_team,book_spread`;
-  return supabaseRest<SupabaseGameRow>(resource);
+  return supabaseRest<SupabaseGameRow>(resource, 60);
 }
 
 async function fetchLatestPredictions(gameIds: string[], modelVersion?: string) {
@@ -163,7 +143,7 @@ async function fetchLatestPredictions(gameIds: string[], modelVersion?: string) 
     (modelVersion ? `&model_version=eq.${modelVersion}` : "") +
     `&order=asof_ts.desc` +
     `&select=game_id,my_spread,my_home_win_prob,model_version,asof_ts`;
-  const rows = (await supabaseRest<SupabasePredictionRow>(resource)) ?? [];
+  const rows = (await supabaseRest<SupabasePredictionRow>(resource, 60)) ?? [];
   const latest = new Map<string, SupabasePredictionRow>();
   for (const row of rows) {
     if (!latest.has(row.game_id)) latest.set(row.game_id, row);
@@ -178,7 +158,7 @@ async function fetchLatestOdds(gameIds: string[]) {
     `odds_snapshots?game_id=in.(${inList})&market=eq.spread&selection=eq.home` +
     `&order=snapshot_ts.desc` +
     `&select=game_id,book,line,price,snapshot_ts,market,selection`;
-  const rows = (await supabaseRest<SupabaseOddsRow>(resource)) ?? [];
+  const rows = (await supabaseRest<SupabaseOddsRow>(resource, 60)) ?? [];
   const latest = new Map<string, SupabaseOddsRow>();
   for (const row of rows) {
     if (!latest.has(row.game_id)) latest.set(row.game_id, row);
@@ -194,7 +174,7 @@ async function fetchLatestFeaturedOdds(gameIds: string[]) {
     `&market=in.(moneyline,spread,total)` +
     `&order=snapshot_ts.desc` +
     `&select=game_id,book,line,price,snapshot_ts,market,selection`;
-  const rows = (await supabaseRest<SupabaseOddsRow>(resource)) ?? [];
+  const rows = (await supabaseRest<SupabaseOddsRow>(resource, 60)) ?? [];
   const latest = new Map<string, SupabaseOddsRow>();
   for (const row of rows) {
     const key = `${row.game_id}:${row.market}:${row.selection}`;
@@ -493,13 +473,10 @@ export async function getTeamSlateGame(
   league: "NBA" | "NFL",
   gameId: string,
 ): Promise<TeamSlateGame | null> {
-  const config = getSupabaseRuntimeConfig();
-  if (!config.url || !config.anonKey) return null;
-
   const resource =
     `games?id=eq.${gameId}&league=eq.${league}` +
     `&select=id,league,season,week,game_time_utc,game_date,home_team,away_team,book_spread`;
-  const games = await supabaseRest<SupabaseGameRow>(resource);
+  const games = await supabaseRest<SupabaseGameRow>(resource, 60);
   const game = games?.[0];
   if (!game) return null;
 
