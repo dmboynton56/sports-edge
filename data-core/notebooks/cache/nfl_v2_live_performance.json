@@ -1,12 +1,87 @@
 {
+  "alerts": [],
   "gaps": [
-    "No completed games with a timestamp-safe v2 prediction are available yet."
+    "Four weeks and 64 graded games are required before a live-rollout decision."
   ],
-  "generated_at": "2026-09-07T18:50:13.424479+00:00",
-  "graded_games": 0,
-  "metrics": {},
+  "generated_at": "2026-09-14T19:33:30.435426+00:00",
+  "graded_games": 15,
+  "graded_weeks": 1,
+  "metrics": {
+    "margin": {
+      "avg_actual_margin": -0.5333333333333333,
+      "avg_predicted_margin": 2.4991536274253163,
+      "home_margin_bias": 3.032486960758649,
+      "mae": 11.999415155011938,
+      "rmse": 14.35735169680546,
+      "rows": 15
+    },
+    "probability": {
+      "accuracy": 0.4666666666666667,
+      "actual_rate": 0.6,
+      "auc": 0.4629629629629629,
+      "avg_probability": 0.5556125202543174,
+      "brier": 0.26412650615868555,
+      "calibration": [
+        {
+          "actual_rate": 0.5,
+          "avg_probability": 0.363636363636364,
+          "bias": -0.13636363636363602,
+          "bucket": "(0.3, 0.4]",
+          "rows": 2
+        },
+        {
+          "actual_rate": 0.6666666666666666,
+          "avg_probability": 0.4836037863421235,
+          "bias": -0.18306288032454315,
+          "bucket": "(0.4, 0.5]",
+          "rows": 6
+        },
+        {
+          "actual_rate": 0.5,
+          "avg_probability": 0.555555555555556,
+          "bias": 0.055555555555556024,
+          "bucket": "(0.5, 0.6]",
+          "rows": 2
+        },
+        {
+          "actual_rate": 1.0,
+          "avg_probability": 0.658823529411765,
+          "bias": -0.34117647058823497,
+          "bucket": "(0.6, 0.7]",
+          "rows": 1
+        },
+        {
+          "actual_rate": 0.5,
+          "avg_probability": 0.7338394294916035,
+          "bias": 0.23383942949160352,
+          "bucket": "(0.7, 0.8]",
+          "rows": 4
+        }
+      ],
+      "ece_10": 0.18391665695601947,
+      "home_probability_bias": -0.04438747974568258,
+      "log_loss": 0.7253232193480149,
+      "rows": 15,
+      "sharpness_std": 0.1289656195720239
+    }
+  },
   "model_version": "nfl-v2-live-20260906",
+  "sample_gate": {
+    "minimum_games": 64,
+    "minimum_weeks": 4,
+    "reached": false
+  },
   "season": 2026,
-  "segments": [],
-  "status": "awaiting_graded_games"
+  "segments": [
+    {
+      "auc": 0.4629629629629629,
+      "brier": 0.26412650615868555,
+      "ece_10": 0.18391665695601947,
+      "home_probability_bias": -0.04438747974568258,
+      "log_loss": 0.7253232193480149,
+      "rows": 15,
+      "segment": "weeks_1_4"
+    }
+  ],
+  "status": "monitoring"
 }

@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-07T18:50:13.604333+00:00",
+  "generated_at": "2026-09-14T19:33:30.648468+00:00",
   "oddspapi": {
     "api_version": "v4",
     "cumulative_api_requests": 241,
@@ -144,7 +144,7 @@
       ],
       "data_source": "Timestamp-safe Supabase live predictions; 2025 v1 retained as comparison",
       "gaps": [
-        "No completed games with a timestamp-safe v2 prediction are available yet.",
+        "Four weeks and 64 graded games are required before a live-rollout decision.",
         "OddsPapi historical NFL coverage is recent-fixture limited on this key tier",
         "Injuries are excluded until historical point-in-time coverage passes its gate"
       ],
@@ -155,14 +155,14 @@
         "bigquery_brier": 0.26675504905752667,
         "bigquery_log_loss": 0.7439216892468532,
         "bigquery_spread_mae": 11.148356792670684,
-        "live_auc": null,
-        "live_brier": null,
-        "live_ece_10": null,
-        "live_home_margin_bias": null,
-        "live_home_probability_bias": null,
-        "live_log_loss": null,
-        "live_margin_mae": null,
-        "live_status": "awaiting_graded_games",
+        "live_auc": 0.4629629629629629,
+        "live_brier": 0.26412650615868555,
+        "live_ece_10": 0.18391665695601947,
+        "live_home_margin_bias": 3.032486960758649,
+        "live_home_probability_bias": -0.04438747974568258,
+        "live_log_loss": 0.7253232193480149,
+        "live_margin_mae": 11.999415155011938,
+        "live_status": "monitoring",
         "supabase_ats_losses": 29,
         "supabase_ats_pushes": 0,
         "supabase_ats_roi": -0.07954545454545459,
@@ -172,8 +172,8 @@
       "odds_status": "partial_supabase_spread_odds",
       "sample": {
         "bigquery_scored_games": 285,
-        "live_graded_games": 0,
-        "live_graded_weeks": 0,
+        "live_graded_games": 15,
+        "live_graded_weeks": 1,
         "odds_joined_games": 56,
         "oddspapi_spread_rows": 0,
         "supabase_graded_games": 56
