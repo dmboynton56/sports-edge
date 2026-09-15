@@ -12,7 +12,8 @@ on:
         required: false
         default: "false"
   schedule:
-    - cron: "30 14 * * 1"
+    # Tuesday, after Daily Refresh has ingested the final Monday-night result.
+    - cron: "30 14 * * 2"
 
 permissions:
   contents: write
