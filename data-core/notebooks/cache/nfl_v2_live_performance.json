@@ -3,24 +3,24 @@
   "gaps": [
     "Four weeks and 64 graded games are required before a live-rollout decision."
   ],
-  "generated_at": "2026-09-14T19:33:30.435426+00:00",
-  "graded_games": 15,
+  "generated_at": "2026-09-15T17:58:32.412267+00:00",
+  "graded_games": 16,
   "graded_weeks": 1,
   "metrics": {
     "margin": {
-      "avg_actual_margin": -0.5333333333333333,
-      "avg_predicted_margin": 2.4991536274253163,
-      "home_margin_bias": 3.032486960758649,
-      "mae": 11.999415155011938,
-      "rmse": 14.35735169680546,
-      "rows": 15
+      "avg_actual_margin": 0.8125,
+      "avg_predicted_margin": 2.29794904510144,
+      "home_margin_bias": 1.485449045101439,
+      "mae": 12.606959188433487,
+      "rmse": 14.92432330024505,
+      "rows": 16
     },
     "probability": {
-      "accuracy": 0.4666666666666667,
-      "actual_rate": 0.6,
-      "auc": 0.4629629629629629,
-      "avg_probability": 0.5556125202543174,
-      "brier": 0.26412650615868555,
+      "accuracy": 0.4375,
+      "actual_rate": 0.625,
+      "auc": 0.45000000000000007,
+      "avg_probability": 0.551769090679599,
+      "brier": 0.26361340921234894,
       "calibration": [
         {
           "actual_rate": 0.5,
@@ -30,11 +30,11 @@
           "rows": 2
         },
         {
-          "actual_rate": 0.6666666666666666,
-          "avg_probability": 0.4836037863421235,
-          "bias": -0.18306288032454315,
+          "actual_rate": 0.7142857142857143,
+          "avg_probability": 0.48510576644450926,
+          "bias": -0.22917994784120505,
           "bucket": "(0.4, 0.5]",
-          "rows": 6
+          "rows": 7
         },
         {
           "actual_rate": 0.5,
@@ -58,11 +58,11 @@
           "rows": 4
         }
       ],
-      "ece_10": 0.18391665695601947,
-      "home_probability_bias": -0.04438747974568258,
-      "log_loss": 0.7253232193480149,
-      "rows": 15,
-      "sharpness_std": 0.1289656195720239
+      "ece_10": 0.20403951295509176,
+      "home_probability_bias": -0.073230909320401,
+      "log_loss": 0.7240518705266983,
+      "rows": 16,
+      "sharpness_std": 0.1257545311531896
     }
   },
   "model_version": "nfl-v2-live-20260906",
@@ -74,12 +74,12 @@
   "season": 2026,
   "segments": [
     {
-      "auc": 0.4629629629629629,
-      "brier": 0.26412650615868555,
-      "ece_10": 0.18391665695601947,
-      "home_probability_bias": -0.04438747974568258,
-      "log_loss": 0.7253232193480149,
-      "rows": 15,
+      "auc": 0.45000000000000007,
+      "brier": 0.26361340921234894,
+      "ece_10": 0.20403951295509176,
+      "home_probability_bias": -0.073230909320401,
+      "log_loss": 0.7240518705266983,
+      "rows": 16,
       "segment": "weeks_1_4"
     }
   ],
