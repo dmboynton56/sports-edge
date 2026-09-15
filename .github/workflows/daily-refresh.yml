@@ -546,7 +546,9 @@ jobs:
           fi
 
       - name: Sync Final Scores
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
+        # Preserve result ingestion for healthy leagues even if an earlier
+        # league-specific market refresh fails (for example, the CFB source).
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
