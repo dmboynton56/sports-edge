@@ -16,7 +16,7 @@ export default async function NflMarketsPage() {
     <div>
       <PageHeader
         title="NFL Markets"
-        description="Week 1 moneyline, spread, total, and guarded anytime-touchdown markets. Team outputs remain preliminary; TD probabilities passed an out-of-time outcome holdout, with role and longshot filters applied before EV is shown."
+        description="Moneyline, spread, total, and guarded anytime-touchdown markets. Team outputs are a monitored v2 rollout; stale sportsbook snapshots stay model-only with no EV."
         meta={feed.generatedAt}
       />
       {predictions.length > 0 ? (

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   americanImpliedProbability,
   buildTeamMarketPredictions,
+  deriveFreshness,
   spreadCoverProbability,
 } from "@/lib/data/team-markets";
 
@@ -50,7 +51,8 @@ describe("team market normalization", () => {
   });
 
   it("publishes priced moneyline/spread rows and keeps unmodeled totals honest", () => {
-    const rows = buildTeamMarketPredictions("NFL", [game], [prediction], odds);
+    const now = new Date("2026-09-03T18:00:00Z").getTime();
+    const rows = buildTeamMarketPredictions("NFL", [game], [prediction], odds, now);
     expect(rows).toHaveLength(6);
 
     const homeMoneyline = rows.find((row) => row.market === "moneyline" && row.subject.startsWith("SEA"));
@@ -58,10 +60,32 @@ describe("team market normalization", () => {
     expect(homeMoneyline?.impliedProbability).toBeCloseTo(0.5798, 3);
     expect(homeMoneyline?.edge).toBeGreaterThan(0);
     expect(homeMoneyline?.ev).toBeCloseTo(0.0833, 3);
+    expect(homeMoneyline?.marketStatus).toBe("research");
 
     const totals = rows.filter((row) => row.market === "total");
     expect(totals).toHaveLength(2);
     expect(totals.every((row) => row.modelVersion === "unmodeled")).toBe(true);
     expect(totals.every((row) => row.edge == null && row.ev == null)).toBe(true);
+  });
+
+  it("marks a current prediction with a stale NFL book snapshot as stale", () => {
+    const now = new Date("2026-09-16T18:00:00Z").getTime();
+    expect(deriveFreshness("2026-09-16T17:40:00Z", -3, "2026-09-07T18:17:00Z", now, 48)).toBe("stale");
+    expect(deriveFreshness("2026-09-16T17:40:00Z", -3, "2026-09-16T12:00:00Z", now, 48)).toBe("fresh");
+    expect(deriveFreshness("2026-09-16T17:40:00Z", null, null, now, 48)).toBe("no_odds");
+  });
+
+  it("withholds NFL edge and EV when the sportsbook snapshot is stale", () => {
+    const now = new Date("2026-09-16T18:00:00Z").getTime();
+    const rows = buildTeamMarketPredictions("NFL", [game], [prediction], odds, now);
+    const moneyline = rows.find((row) => row.market === "moneyline" && row.subject.startsWith("SEA"));
+    expect(moneyline).toMatchObject({
+      modelProbability: 0.65,
+      marketStatus: "model_only",
+      edge: null,
+      ev: null,
+      kelly: null,
+    });
+    expect(moneyline?.price).toBe(-150);
   });
 });

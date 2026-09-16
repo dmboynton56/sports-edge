@@ -42,6 +42,17 @@ def test_sync_market_odds_retries_transient_failures_without_continue_on_error()
     assert "OUT_OF_USAGE_CREDITS" in step["run"]
 
 
+def test_cfb_refresh_does_not_block_nfl_book_spread_repair() -> None:
+    workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    steps = {step["name"]: step for step in workflow["jobs"]["refresh"]["steps"]}
+    cfb = steps["Refresh college football team markets"]
+    repair = steps["Repair Missing Book Spreads"]
+    scores = steps["Sync Final Scores"]
+    assert cfb.get("continue-on-error") is True
+    assert "always()" in str(repair.get("if"))
+    assert "always()" in str(scores.get("if"))
+
+
 def test_cfb_readiness_audit_does_not_fail_daily_refresh() -> None:
     workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
     step = next(

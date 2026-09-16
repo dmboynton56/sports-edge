@@ -190,10 +190,10 @@ export function normalizePerformanceSport(raw: RawPerformanceSport): Performance
         "bigquery_accuracy",
         "bigquery_default_accuracy",
       ]),
-      auc: numberMetric(metrics, ["auc", "roc_auc", "bigquery_auc", "win_auc"]),
-      brier: numberMetric(metrics, ["brier", "bigquery_brier", "baseline_brier"]),
+      auc: numberMetric(metrics, ["auc", "live_auc", "roc_auc", "bigquery_auc", "win_auc"]),
+      brier: numberMetric(metrics, ["brier", "live_brier", "bigquery_brier", "baseline_brier"]),
       logLoss: numberMetric(metrics, ["log_loss", "bigquery_log_loss", "baseline_log_loss"]),
-      mae: numberMetric(metrics, ["mae", "bigquery_spread_mae", "sg_lgbm_mae"]),
+      mae: numberMetric(metrics, ["mae", "live_margin_mae", "bigquery_spread_mae", "sg_lgbm_mae"]),
       roi: numberMetric(metrics, [
         "supabase_ats_roi",
         "flat_roi",

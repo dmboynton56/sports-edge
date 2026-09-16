@@ -83,3 +83,5 @@ def test_live_report_tracks_probability_margin_and_home_bias():
     assert report["metrics"]["probability"]["brier"] == pytest.approx(0.16)
     assert report["metrics"]["margin"]["home_margin_bias"] == pytest.approx(0.5)
     assert report["sample_gate"]["reached"] is False
+    assert report["games"][0]["winner_hit"] is True
+    assert report["games"][1]["winner_hit"] is True

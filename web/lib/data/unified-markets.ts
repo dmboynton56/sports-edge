@@ -166,13 +166,19 @@ export function prepareUnifiedMarketRows(
       continue;
     }
 
-    const marketStatus = row.price == null || row.book === "model"
+    const marketStatus = row.marketStatus === "model_only" || row.price == null || row.book === "model"
       ? "model_only"
       : row.marketStatus === "supported"
         ? "supported"
         : "research";
     if (!deduplicated.has(row.id)) {
-      deduplicated.set(row.id, { ...row, marketStatus });
+      deduplicated.set(row.id, {
+        ...row,
+        marketStatus,
+        edge: marketStatus === "model_only" ? null : row.edge,
+        ev: marketStatus === "model_only" ? null : row.ev,
+        kelly: marketStatus === "model_only" ? null : row.kelly,
+      });
     }
   }
 
