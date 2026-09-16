@@ -505,7 +505,10 @@ jobs:
             --season "${{ steps.plan.outputs.nfl_season }}"
 
       - name: Refresh college football team markets
+        # Research-only. Isolate from Daily job status so an ESPN/CFB
+        # outage cannot red NFL/MLB production refresh.
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_cfb == 'true' }}
+        continue-on-error: true
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
