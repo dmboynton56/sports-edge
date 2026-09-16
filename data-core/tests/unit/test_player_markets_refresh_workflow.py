@@ -42,6 +42,40 @@ def test_sync_market_odds_retries_transient_failures_without_continue_on_error()
     assert "OUT_OF_USAGE_CREDITS" in step["run"]
 
 
+def _daily_step(name: str) -> dict:
+    workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    return next(
+        item
+        for item in workflow["jobs"]["refresh"]["steps"]
+        if item.get("name") == name
+    )
+
+
+def test_cfb_market_refresh_does_not_fail_daily_refresh() -> None:
+    step = _daily_step("Refresh college football team markets")
+    assert step.get("continue-on-error") is True
+    assert "refresh_cfb_markets.py" in step["run"]
+
+
+def test_nfl_mlb_production_steps_still_hard_fail() -> None:
+    for name in (
+        "Generate NFL Predictions",
+        "Generate MLB Predictions",
+        "Sync Predictions to Supabase",
+        "Sync Market Odds",
+        "Refresh NFL anytime touchdown markets",
+        "Repair Missing Book Spreads",
+    ):
+        step = _daily_step(name)
+        assert "continue-on-error" not in step, name
+
+
+def test_sync_final_scores_still_runs_after_market_failures() -> None:
+    step = _daily_step("Sync Final Scores")
+    assert "always()" in str(step.get("if", ""))
+    assert "continue-on-error" not in step
+
+
 def test_cfb_readiness_audit_does_not_fail_daily_refresh() -> None:
     workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding="utf-8"))
     step = next(
