@@ -97,6 +97,26 @@ def build_report(frame: pd.DataFrame, model_version: str, season: int) -> dict:
     numeric["home_win"] = (numeric["home_score"] > numeric["away_score"]).astype(int)
     numeric["home_margin"] = numeric["home_score"] - numeric["away_score"]
     numeric["predicted_margin"] = -numeric["my_spread"]
+    numeric["winner_hit"] = ((numeric["my_home_win_prob"] >= 0.5) == numeric["home_win"]).astype(int)
+    numeric["spread_error"] = (numeric["home_margin"] - numeric["predicted_margin"]).abs()
+
+    sort_columns = [column for column in ("week", "home_team") if column in numeric.columns]
+    ordered = numeric.sort_values(sort_columns, kind="mergesort") if sort_columns else numeric
+    games = [
+        {
+            "game_id": str(row.game_id),
+            "week": None if pd.isna(row.week) else int(row.week),
+            "home_team": None if pd.isna(getattr(row, "home_team", None)) else str(row.home_team),
+            "away_team": None if pd.isna(getattr(row, "away_team", None)) else str(row.away_team),
+            "home_score": int(row.home_score),
+            "away_score": int(row.away_score),
+            "my_home_win_prob": float(row.my_home_win_prob),
+            "my_spread": float(row.my_spread),
+            "winner_hit": bool(row.winner_hit),
+            "spread_error": float(row.spread_error),
+        }
+        for row in ordered.itertuples(index=False)
+    ]
 
     probability = probability_metrics(numeric["home_win"], numeric["my_home_win_prob"])
     margin = margin_metrics(numeric["home_margin"], numeric["predicted_margin"])
@@ -132,6 +152,7 @@ def build_report(frame: pd.DataFrame, model_version: str, season: int) -> dict:
         "graded_weeks": weeks,
         "sample_gate": {"minimum_games": 64, "minimum_weeks": 4, "reached": eligible_sample},
         "metrics": {"probability": probability, "margin": margin},
+        "games": games,
         "segments": segments,
         "alerts": alerts,
         "gaps": [] if eligible_sample else ["Four weeks and 64 graded games are required before a live-rollout decision."],

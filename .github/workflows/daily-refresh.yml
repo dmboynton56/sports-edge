@@ -505,7 +505,9 @@ jobs:
             --season "${{ steps.plan.outputs.nfl_season }}"
 
       - name: Refresh college football team markets
+        # CFB ESPN history 400s must not skip NFL book-spread repair or fail Daily.
         if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_cfb == 'true' }}
+        continue-on-error: true
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -522,7 +524,8 @@ jobs:
             --lookahead-days 3
 
       - name: Repair Missing Book Spreads
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
+        # Same isolation as final-score sync: a CFB/source failure must not skip NFL/NBA lines.
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

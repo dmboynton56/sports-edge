@@ -35,6 +35,7 @@ export type TeamSlateFeed = {
 
 const SLATE_TIME_ZONE = "America/Denver";
 const FRESH_HOURS = 24;
+export const ODDS_FRESH_HOURS = { NFL: 48, NBA: 24 } as const;
 const PREFERRED_MODEL_VERSION = {
   NFL: "nfl-v2-live-20260906",
   NBA: "v3",
@@ -108,14 +109,28 @@ function gameServingDate(row: SupabaseGameRow): string {
   });
 }
 
-function deriveFreshness(
+export function isStaleTimestamp(
+  timestamp: string | null | undefined,
+  freshHours: number,
+  nowMs = Date.now(),
+): boolean {
+  if (!timestamp) return true;
+  const parsed = new Date(timestamp).getTime();
+  if (!Number.isFinite(parsed)) return true;
+  return nowMs - parsed > freshHours * 60 * 60 * 1000;
+}
+
+export function deriveFreshness(
   predictionTs: string | null,
   bookSpread: number | null,
+  oddsTs: string | null = null,
+  nowMs = Date.now(),
+  oddsFreshHours = FRESH_HOURS,
 ): FreshnessStatus {
   if (!predictionTs) return "no_prediction";
-  const ageMs = Date.now() - new Date(predictionTs).getTime();
-  if (ageMs > FRESH_HOURS * 60 * 60 * 1000) return "stale";
+  if (isStaleTimestamp(predictionTs, FRESH_HOURS, nowMs)) return "stale";
   if (bookSpread == null) return "no_odds";
+  if (oddsTs && isStaleTimestamp(oddsTs, oddsFreshHours, nowMs)) return "stale";
   return "fresh";
 }
 
@@ -249,6 +264,7 @@ export function buildTeamMarketPredictions(
   games: SupabaseGameRow[],
   predictionRows: SupabasePredictionRow[],
   oddsRows: SupabaseOddsRow[],
+  nowMs = Date.now(),
 ): Prediction[] {
   const predictions = new Map(predictionRows.map((row) => [row.game_id, row]));
   const odds = new Map(
@@ -292,9 +308,12 @@ export function buildTeamMarketPredictions(
           modelVersion = `${prediction.model_version ?? "unknown"}-residual`;
         }
 
-        const edge = modelProbability != null && impliedProbability != null
-          ? modelProbability - impliedProbability
-          : null;
+        const staleOdds = isStaleTimestamp(row.snapshot_ts, ODDS_FRESH_HOURS[league], nowMs);
+        let edge: number | null = null;
+        if (modelProbability != null && impliedProbability != null && !staleOdds) {
+          edge = modelProbability - impliedProbability;
+        }
+        const priced = edge != null;
         const subjectTeam = selection === "home" ? game.home_team : game.away_team;
         const subject = row.market === "total"
           ? `${game.away_team} @ ${game.home_team} ${selection}`
@@ -316,11 +335,11 @@ export function buildTeamMarketPredictions(
           modelProbability,
           impliedProbability,
           edge,
-          ev: expectedValue(modelProbability, row.price),
-          kelly: quarterKelly(modelProbability, row.price),
+          ev: priced ? expectedValue(modelProbability, row.price) : null,
+          kelly: priced ? quarterKelly(modelProbability, row.price) : null,
           confidence: modelProbability == null ? null : Math.abs(modelProbability - 0.5) * 2,
           modelVersion,
-          marketStatus: modelProbability == null ? "model_only" : "research",
+          marketStatus: modelProbability == null || staleOdds ? "model_only" : "research",
           detailHref: `/markets/${league.toLowerCase()}/${game.id}`,
           source: "Supabase team model + The Odds API snapshot",
           updatedAt: prediction?.asof_ts ?? row.snapshot_ts,
@@ -355,7 +374,13 @@ function buildSlateGame(
     modelVersion: prediction?.model_version ?? null,
     predictionTs: prediction?.asof_ts ?? null,
     oddsTs: odds?.snapshot_ts ?? null,
-    freshnessStatus: deriveFreshness(prediction?.asof_ts ?? null, bookSpread),
+    freshnessStatus: deriveFreshness(
+      prediction?.asof_ts ?? null,
+      bookSpread,
+      odds?.snapshot_ts ?? null,
+      Date.now(),
+      ODDS_FRESH_HOURS[game.league === "NBA" ? "NBA" : "NFL"],
+    ),
   };
 }
 
@@ -435,13 +460,20 @@ export async function getTeamMarketPredictions(
       fetchLatestFeaturedOdds(gameIds),
     ]);
     const predictionRows = Array.from(predictionMap.values());
-    const normalized = buildTeamMarketPredictions(league, games, predictionRows, oddsRows);
+    const nowMs = Date.now();
+    const normalized = buildTeamMarketPredictions(league, games, predictionRows, oddsRows, nowMs);
     const gaps: string[] = [];
     if (predictionRows.length < games.length) {
       gaps.push(`${games.length - predictionRows.length} ${league} games lack a current team prediction.`);
     }
     if (oddsRows.length < games.length * 6) {
       gaps.push(`${league} featured-market outcome coverage is incomplete (${oddsRows.length}/${games.length * 6}).`);
+    }
+    const staleOdds = oddsRows.filter((row) => isStaleTimestamp(row.snapshot_ts, ODDS_FRESH_HOURS[league], nowMs)).length;
+    if (staleOdds) {
+      gaps.push(
+        `${league} sportsbook snapshots are older than ${ODDS_FRESH_HOURS[league]}h; edge and EV are withheld until a current price lands.`,
+      );
     }
     if (normalized.some((row) => row.market === "total")) {
       gaps.push(`${league} totals prices are live, but a validated totals model head is not yet available; edge and EV stay blank.`);

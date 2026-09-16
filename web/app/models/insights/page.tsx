@@ -3,6 +3,12 @@ import { PageHeader } from "@/components/dashboard/PageHeader";
 
 const posts = [
   {
+    href: "/models/insights/nfl-week-1-2026",
+    title: "NFL Week 1 2026 recap",
+    description:
+      "Live v2 vs v1 grades, sportsbook ATS, and the Week 2 changes that are actually in bounds.",
+  },
+  {
     href: "/models/insights/grading-roundup-2026",
     title: "2026 Grading & Backtest Roundup",
     description:

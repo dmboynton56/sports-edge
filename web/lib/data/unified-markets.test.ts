@@ -110,6 +110,29 @@ describe("unified markets", () => {
     expect(result.missingModelProbability).toBe(1);
   });
 
+  it("keeps priced model-only rows from inventing EV after stale-odds fail-closed", () => {
+    const now = new Date("2026-09-04T00:00:00Z").getTime();
+    const result = prepareUnifiedMarketRows([
+      prediction({
+        id: "stale-nfl",
+        marketStatus: "model_only",
+        price: 330,
+        edge: 0.28,
+        ev: 1.17,
+        kelly: 0.1,
+      }),
+    ], now);
+
+    expect(result.predictions[0]).toMatchObject({
+      id: "stale-nfl",
+      marketStatus: "model_only",
+      price: 330,
+      edge: null,
+      ev: null,
+      kelly: null,
+    });
+  });
+
   it("deduplicates non-empty warnings", () => {
     expect(deduplicateWarnings(["gap", "gap", "", null, "other"])).toEqual(["gap", "other"]);
   });
