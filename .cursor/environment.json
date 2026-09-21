@@ -1,0 +1,11 @@
+{
+  "name": "Sports Edge",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh",
+  "terminals": [
+    {
+      "name": "web-dev",
+      "command": "cd web && npm run dev"
+    }
+  ]
+}
