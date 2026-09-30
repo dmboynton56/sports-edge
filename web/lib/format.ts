@@ -34,6 +34,8 @@ export function formatDateTime(value: string | null | undefined) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "n/a";
   return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Denver",
+    timeZoneName: "short",
     month: "short",
     day: "numeric",
     hour: "numeric",

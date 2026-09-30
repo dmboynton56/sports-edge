@@ -52,12 +52,13 @@ function Shell({
 function BoardRow({ prediction }: { prediction: Prediction }) {
   const { edge } = prediction;
   const modelOnlyPlayer = prediction.price == null && isPlayerProbabilityMarket(prediction.market);
+  const modelOnly = prediction.price == null && isFiniteNumber(prediction.modelProbability);
   const detail = [
     prediction.book === "model" ? "model only" : prediction.book,
     isFiniteNumber(prediction.line) ? `line ${formatNumber(prediction.line, 1)}` : null,
     modelOnlyPlayer
       ? `fair odds ${formatFairAmericanOdds(prediction.modelProbability)}`
-      : formatAmericanPrice(prediction.price),
+      : prediction.price == null ? "book price unavailable" : formatAmericanPrice(prediction.price),
   ].filter(Boolean).join(" · ");
 
   const row = (
@@ -73,7 +74,7 @@ function BoardRow({ prediction }: { prediction: Prediction }) {
         <div
           className={cn(
             "figure text-[19px] leading-tight",
-            modelOnlyPlayer
+            modelOnly
               ? "text-foreground"
               : !isFiniteNumber(edge)
               ? "text-muted-foreground"
@@ -82,10 +83,10 @@ function BoardRow({ prediction }: { prediction: Prediction }) {
                 : "text-positive",
           )}
         >
-          {modelOnlyPlayer ? formatPct(prediction.modelProbability, 0) : isFiniteNumber(edge) ? formatPct(edge) : "—"}
+          {modelOnly ? formatPct(prediction.modelProbability, 0) : isFiniteNumber(edge) ? formatPct(edge) : "—"}
         </div>
         <div className="text-[11px] text-muted-foreground">
-          {modelOnlyPlayer ? "model probability" : (
+          {modelOnly ? "model probability" : (
             <>{isFiniteNumber(edge) ? "edge · " : "no price · "}model {formatPct(prediction.modelProbability, 0)}</>
           )}
         </div>
@@ -123,7 +124,10 @@ export function LiveBoardPanel({
   if (predictions.length > 0) {
     // A feed with no usable timestamp shouldn't advertise "updated n/a".
     const stamp = generatedAt ? formatDateTime(generatedAt) : "n/a";
-    const note = `Top ${predictions.length} by expected value${stamp === "n/a" ? "" : ` · updated ${stamp}`}`;
+    const ranking = predictions.some((prediction) => isFiniteNumber(prediction.ev))
+      ? `Top ${predictions.length} by expected value`
+      : "Upcoming model probabilities";
+    const note = `${ranking}${stamp === "n/a" ? "" : ` · updated ${stamp}`}`;
     return (
       <Shell
         eyebrow="Live board"

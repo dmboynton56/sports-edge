@@ -1,8 +1,5 @@
-"use client";
-
 import Link from "next/link";
 
-import { PickCard, type EnrichedPick } from "@/components/PickCard";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -14,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { FreshnessStatus, TeamSlateFeed, TeamSlateGame } from "@/lib/data/team-markets";
+import { isFiniteNumber } from "@/lib/data/json";
 import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 
 function formatSpread(line: number | null) {
@@ -27,39 +25,21 @@ function freshnessVariant(status: FreshnessStatus) {
   return "missing";
 }
 
-function toEnrichedPick(game: TeamSlateGame): EnrichedPick | null {
-  if (game.modelSpread == null || game.homeWinProb == null || game.bookSpread == null) {
-    return null;
-  }
-  return {
-    id: game.gameId,
-    game: {
-      id: game.gameId,
-      league: game.league,
-      homeTeam: game.homeTeam,
-      awayTeam: game.awayTeam,
-      gameTimeUtc: game.gameTimeUtc,
-    },
-    currentOdds: {
-      book: "consensus",
-      market: "spread",
-      line: game.bookSpread,
-      price: -110,
-    },
-    prediction: {
-      predictedSpread: game.modelSpread,
-      homeWinProb: game.homeWinProb,
-    },
-    edgePts: game.edgePts ?? 0,
-  };
+function modelWinner(game: TeamSlateGame) {
+  const probability = game.homeWinProb;
+  if (!isFiniteNumber(probability) || probability < 0 || probability > 1) return "n/a";
+  if (probability === 0.5) return "Even · 50.0%";
+  return probability > 0.5
+    ? `${game.homeTeam} · ${formatPct(probability)}`
+    : `${game.awayTeam} · ${formatPct(1 - probability)}`;
 }
 
 function FreshnessBadge({ status }: { status: FreshnessStatus }) {
   const labels = {
-    fresh: "Fresh",
-    stale: "Stale",
-    no_prediction: "No pred",
-    no_odds: "No odds",
+    fresh: "With book odds",
+    stale: "Stale forecast",
+    no_prediction: "Forecast missing",
+    no_odds: "Model only",
   } satisfies Record<FreshnessStatus, string>;
   return <Badge variant={freshnessVariant(status)}>{labels[status]}</Badge>;
 }
@@ -71,7 +51,8 @@ export function TeamSpreadBoard({
   feed: TeamSlateFeed;
   detailBasePath: "/markets/nba" | "/markets/nfl";
 }) {
-  const cardPicks = feed.games.map(toEnrichedPick).filter((pick): pick is EnrichedPick => pick !== null);
+  const predictionTs = feed.games.map((game) => game.predictionTs)
+    .filter((stamp): stamp is string => Boolean(stamp)).sort().at(-1);
 
   return (
     <div className="space-y-4">
@@ -93,51 +74,56 @@ export function TeamSpreadBoard({
       <Card>
         <CardHeader>
           <CardTitle>
-            {feed.league} Slate ({feed.windowStart}
+            {feed.league} game forecasts ({feed.windowStart}
             {feed.windowEnd !== feed.windowStart ? ` → ${feed.windowEnd}` : ""})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Projected spread is from the home team&apos;s perspective. Model winner shows
+            the team with the higher win probability. Book prices are required for edge or EV.
+          </p>
+          <Table className="min-w-[760px]">
             <TableHeader>
               <TableRow>
                 <TableHead>Matchup</TableHead>
-                <TableHead>Time</TableHead>
-                <TableHead>Book</TableHead>
-                <TableHead>Model</TableHead>
-                <TableHead>Edge</TableHead>
-                <TableHead>Win%</TableHead>
+                <TableHead>Kickoff</TableHead>
+                <TableHead>Projected home spread</TableHead>
+                <TableHead>Model winner</TableHead>
+                <TableHead>Book home spread</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {feed.games.length ? (
-                feed.games.map((game) => (
-                  <TableRow key={game.gameId}>
-                    <TableCell>
-                      <Link
-                        href={`${detailBasePath}/${game.gameId}`}
-                        className="font-medium hover:underline"
-                      >
-                        {game.awayTeam} @ {game.homeTeam}
-                      </Link>
-                      {game.week != null ? (
-                        <div className="text-xs text-muted-foreground">Week {game.week}</div>
-                      ) : null}
-                    </TableCell>
-                    <TableCell>{formatDateTime(game.gameTimeUtc)}</TableCell>
-                    <TableCell>{formatSpread(game.bookSpread)}</TableCell>
-                    <TableCell>{formatSpread(game.modelSpread)}</TableCell>
-                    <TableCell>{formatSpread(game.edgePts)}</TableCell>
-                    <TableCell>{formatPct(game.homeWinProb)}</TableCell>
-                    <TableCell>
-                      <FreshnessBadge status={game.freshnessStatus} />
-                    </TableCell>
-                  </TableRow>
-                ))
+                feed.games.map((game) => {
+                  const currentForecast = game.freshnessStatus === "fresh" || game.freshnessStatus === "no_odds";
+                  return (
+                    <TableRow key={game.gameId}>
+                      <TableCell>
+                        <Link
+                          href={`${detailBasePath}/${game.gameId}`}
+                          className="font-medium hover:underline"
+                        >
+                          {game.awayTeam} @ {game.homeTeam}
+                        </Link>
+                        {game.week != null ? (
+                          <div className="text-xs text-muted-foreground">Week {game.week}</div>
+                        ) : null}
+                      </TableCell>
+                      <TableCell>{formatDateTime(game.gameTimeUtc)}</TableCell>
+                      <TableCell>{currentForecast ? formatSpread(game.modelSpread) : "n/a"}</TableCell>
+                      <TableCell>{currentForecast ? modelWinner(game) : "n/a"}</TableCell>
+                      <TableCell>{formatSpread(game.bookSpread)}</TableCell>
+                      <TableCell>
+                        <FreshnessBadge status={game.freshnessStatus} />
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-muted-foreground">
+                  <TableCell colSpan={6} className="text-muted-foreground">
                     No games in serving window.
                   </TableCell>
                 </TableRow>
@@ -147,18 +133,8 @@ export function TeamSpreadBoard({
         </CardContent>
       </Card>
 
-      {cardPicks.length ? (
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {cardPicks.map((pick) => (
-            <Link key={pick.id} href={`${detailBasePath}/${pick.id}`}>
-              <PickCard pick={pick} />
-            </Link>
-          ))}
-        </div>
-      ) : null}
-
       <p className="text-xs text-muted-foreground">
-        {formatNumber(feed.games.length)} games · updated {formatDateTime(feed.generatedAt)}
+        {formatNumber(feed.games.length)} games · forecasts updated {formatDateTime(predictionTs)}
       </p>
     </div>
   );

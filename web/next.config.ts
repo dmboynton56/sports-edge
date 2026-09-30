@@ -20,7 +20,7 @@ const nextConfig: NextConfig = {
       },
       {
         source: "/nfl",
-        destination: "/markets?sport=NFL&market=spread",
+        destination: "/markets/nfl",
         permanent: false,
       },
       {

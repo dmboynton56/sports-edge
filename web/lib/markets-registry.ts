@@ -105,8 +105,8 @@ export const SPORTS: SportEntry[] = [
     markets: [
       {
         slug: "spread-winner",
-        label: "Week 1 team & TD board",
-        short: "Week 1",
+        label: "Weekly team & TD board",
+        short: "weekly board",
         href: "/markets/nfl",
         status: "live",
         description: "Moneyline, spread, total, and guarded anytime-touchdown research signals.",
