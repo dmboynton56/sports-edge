@@ -25,7 +25,7 @@ Short ownership map. Read the workflow YAML if a step name matters.
 
 ## Manual dispatch
 
-- NFL team and touchdown predictions run Tuesday for one Tuesday–Monday cycle. Availability context still runs daily within that cycle.
+- NFL team predictions run Tuesday for one Tuesday–Monday cycle. Touchdown probabilities refresh with NFL odds captures so the model can use newly available game totals. Availability context still runs daily within that cycle.
 - NFL moneyline/spread/game-total prices run Tuesday and Sunday, plus a first-of-month catch-up. Team-total event responses are reused for the cycle.
 - All scheduled current game-odds fetches share `odds_api_request_cache` from `sql/023_odds_api_usage.sql`: 500 account credits, 50 reserved, NFL allocation protected. Missing ledger/quota headers skips paid calls.
 - `audit_odds_api_credits.py` reads monthly reservations and free account quota headers; Daily publishes the report in its run summary.

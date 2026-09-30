@@ -127,7 +127,7 @@ def test_nfl_refresh_uses_weekly_gates_and_has_one_canonical_odds_path():
     assert 'run_nfl_predictions' not in steps['Update NFL Raw Data']['if']
     assert '--skip-odds' in steps['Generate NBA Predictions']['run']
     assert 'Repair Missing Book Spreads' not in steps
-    assert 'run_nfl_predictions' in steps['Refresh NFL anytime touchdown markets']['if']
+    assert 'run_nfl_odds' in steps['Refresh NFL anytime touchdown markets']['if']
     assert 'ODDS_API_KEY' not in steps['Refresh NFL anytime touchdown markets'].get('env', {})
 
 

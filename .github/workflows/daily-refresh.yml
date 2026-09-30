@@ -481,7 +481,8 @@ jobs:
           done
 
       - name: Refresh NFL anytime touchdown markets
-        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl_predictions == 'true' && steps.nfl_predictions.outcome == 'success' }}
+        # The TD model needs captured game totals, including month-start recovery.
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl_odds == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
