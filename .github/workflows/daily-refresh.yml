@@ -33,7 +33,7 @@ concurrency:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   PYTHONPATH: ${{ github.workspace }}/data-core
-  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  DISCORD_WEBHOOK_URL: ${{ github.event.inputs.skip_notifications != 'true' && secrets.DISCORD_WEBHOOK_URL || '' }}
   DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
   FORCE_FULL_REBUILD: ${{ github.event.inputs.force_full_rebuild || 'false' }}
   FORCE_NFL_REFRESH: ${{ github.event.inputs.force_nfl_refresh || 'false' }}

@@ -132,5 +132,8 @@ def test_nfl_refresh_uses_weekly_gates_and_has_one_canonical_odds_path():
 
 
 def test_manual_recovery_can_suppress_external_notifications():
+    workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding='utf-8'))
+    assert "github.event.inputs.skip_notifications != 'true'" in workflow['env']['DISCORD_WEBHOOK_URL']
+    assert "|| ''" in workflow['env']['DISCORD_WEBHOOK_URL']
     for name in ('Notify Discord on Success', 'Notify Discord on Failure', 'Notify portfolio doc sync'):
         assert "github.event.inputs.skip_notifications != 'true'" in _daily_step(name)['if']
