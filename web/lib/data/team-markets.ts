@@ -1,5 +1,6 @@
 import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 import type { Prediction } from "@/lib/data/types";
+import { nflPredictionIsCurrent, nflWeekWindow } from "@/lib/nfl-week";
 
 export type FreshnessStatus = "fresh" | "stale" | "no_prediction" | "no_odds";
 
@@ -108,13 +109,14 @@ function gameServingDate(row: SupabaseGameRow): string {
   });
 }
 
-function deriveFreshness(
+export function deriveFreshness(
   predictionTs: string | null,
   bookSpread: number | null,
+  league: string = "NBA",
 ): FreshnessStatus {
   if (!predictionTs) return "no_prediction";
   const ageMs = Date.now() - new Date(predictionTs).getTime();
-  if (ageMs > FRESH_HOURS * 60 * 60 * 1000) return "stale";
+  if (league === "NFL" ? !nflPredictionIsCurrent(predictionTs) : ageMs > FRESH_HOURS * 60 * 60 * 1000) return "stale";
   if (bookSpread == null) return "no_odds";
   return "fresh";
 }
@@ -171,7 +173,7 @@ async function fetchLatestFeaturedOdds(gameIds: string[]) {
   const inList = gameIds.map((id) => `"${id}"`).join(",");
   const resource =
     `odds_snapshots?game_id=in.(${inList})&selection=not.is.null` +
-    `&market=in.(moneyline,spread,total)` +
+    `&market=in.(moneyline,spread,total,team_total)` +
     `&order=snapshot_ts.desc` +
     `&select=game_id,book,line,price,snapshot_ts,market,selection`;
   const rows = (await supabaseRest<SupabaseOddsRow>(resource, 60)) ?? [];
@@ -240,6 +242,9 @@ function quarterKelly(probability: number | null, price: number | null) {
 }
 
 function counterpartSelection(market: string, selection: string | null) {
+  if (market === "team_total") return selection?.endsWith("_over")
+    ? selection.replace("_over", "_under")
+    : selection?.replace("_under", "_over");
   if (market === "total") return selection === "over" ? "under" : "over";
   return selection === "home" ? "away" : "home";
 }
@@ -295,9 +300,11 @@ export function buildTeamMarketPredictions(
         const edge = modelProbability != null && impliedProbability != null
           ? modelProbability - impliedProbability
           : null;
-        const subjectTeam = selection === "home" ? game.home_team : game.away_team;
+        const subjectTeam = selection === "home" || selection.startsWith("home_") ? game.home_team : game.away_team;
         const subject = row.market === "total"
           ? `${game.away_team} @ ${game.home_team} ${selection}`
+          : row.market === "team_total"
+            ? `${subjectTeam} team total ${selection.split("_")[1]}`
           : `${subjectTeam} ${row.market}`;
 
         return {
@@ -323,7 +330,7 @@ export function buildTeamMarketPredictions(
           marketStatus: modelProbability == null ? "model_only" : "research",
           detailHref: `/markets/${league.toLowerCase()}/${game.id}`,
           source: "Supabase team model + The Odds API snapshot",
-          updatedAt: prediction?.asof_ts ?? row.snapshot_ts,
+          updatedAt: modelProbability == null ? row.snapshot_ts : prediction?.asof_ts ?? row.snapshot_ts,
         };
       });
   });
@@ -355,7 +362,7 @@ function buildSlateGame(
     modelVersion: prediction?.model_version ?? null,
     predictionTs: prediction?.asof_ts ?? null,
     oddsTs: odds?.snapshot_ts ?? null,
-    freshnessStatus: deriveFreshness(prediction?.asof_ts ?? null, bookSpread),
+    freshnessStatus: deriveFreshness(prediction?.asof_ts ?? null, bookSpread, game.league),
   };
 }
 
@@ -365,9 +372,11 @@ export async function getTeamSlateFeed(
 ): Promise<TeamSlateFeed> {
   const gaps = supabaseConfigGaps();
   const today = todayInTimeZone(SLATE_TIME_ZONE);
-  const lookahead = options?.lookaheadDays ?? (league === "NFL" ? 14 : 1);
+  const lookahead = options?.lookaheadDays ?? (league === "NFL" ? 6 : 1);
   const windowStart = today;
-  const windowEnd = addDays(today, lookahead);
+  const windowEnd = league === "NFL"
+    ? [addDays(today, lookahead), nflWeekWindow(today).end].sort()[0]
+    : addDays(today, lookahead);
 
   const games = await fetchGamesInWindow(league, windowStart, windowEnd);
   if (!Array.isArray(games)) {
@@ -415,8 +424,10 @@ export async function getTeamMarketPredictions(
   options?: { lookaheadDays?: number },
 ): Promise<TeamMarketFeed> {
   const today = todayInTimeZone(SLATE_TIME_ZONE);
-  const lookaheadDays = options?.lookaheadDays ?? (league === "NFL" ? 14 : 2);
-  const end = addDays(today, lookaheadDays);
+  const lookaheadDays = options?.lookaheadDays ?? (league === "NFL" ? 6 : 2);
+  const end = league === "NFL"
+    ? [addDays(today, lookaheadDays), nflWeekWindow(today).end].sort()[0]
+    : addDays(today, lookaheadDays);
   try {
     const games = await fetchGamesInWindow(league, today, end);
     if (!Array.isArray(games) || games.length === 0) {
@@ -434,17 +445,23 @@ export async function getTeamMarketPredictions(
       fetchLatestPredictions(gameIds, PREFERRED_MODEL_VERSION[league]),
       fetchLatestFeaturedOdds(gameIds),
     ]);
-    const predictionRows = Array.from(predictionMap.values());
+    const predictionRows = Array.from(predictionMap.values()).filter(
+      (row) => league !== "NFL" || nflPredictionIsCurrent(row.asof_ts),
+    );
     const normalized = buildTeamMarketPredictions(league, games, predictionRows, oddsRows);
     const gaps: string[] = [];
     if (predictionRows.length < games.length) {
       gaps.push(`${games.length - predictionRows.length} ${league} games lack a current team prediction.`);
     }
-    if (oddsRows.length < games.length * 6) {
-      gaps.push(`${league} featured-market outcome coverage is incomplete (${oddsRows.length}/${games.length * 6}).`);
+    const featuredCount = oddsRows.filter((row) => row.market !== "team_total").length;
+    if (featuredCount < games.length * 6) {
+      gaps.push(`${league} featured-market outcome coverage is incomplete (${featuredCount}/${games.length * 6}).`);
     }
-    if (normalized.some((row) => row.market === "total")) {
-      gaps.push(`${league} totals prices are live, but a validated totals model head is not yet available; edge and EV stay blank.`);
+    if (normalized.some((row) => row.market === "total" || row.market === "team_total")) {
+      gaps.push(`${league} totals show captured sportsbook prices; a validated totals model is not yet available, so edge and EV stay blank.`);
+    }
+    if (league === "NFL" && oddsRows.filter((row) => row.market === "team_total").length < games.length * 4) {
+      gaps.push("NFL team-total outcome coverage is incomplete.");
     }
     if (league === "NFL") {
       gaps.push("NFL v2 is live under monitored rollout; it improved on v1 but did not clear every formal promotion gate, and injuries remain excluded pending point-in-time coverage.");

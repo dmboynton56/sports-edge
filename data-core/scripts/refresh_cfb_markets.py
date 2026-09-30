@@ -30,6 +30,7 @@ from src.models.cfb_market import (  # noqa: E402
     normal_probability_above,
 )
 from src.data.odds_api_errors import OddsApiQuotaExhausted, check_odds_api_response  # noqa: E402
+from src.data.odds_api_client import budgeted_get, response_timestamp  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
 
@@ -68,7 +69,7 @@ def quarter_kelly(probability: float, price: float) -> float:
 
 
 def fetch_odds(api_key: str) -> tuple[list[dict[str, Any]], datetime, int | None]:
-    response = requests.get(
+    response = budgeted_get(
         ODDS_URL,
         params={
             "apiKey": api_key,
@@ -77,11 +78,11 @@ def fetch_odds(api_key: str) -> tuple[list[dict[str, Any]], datetime, int | None
             "oddsFormat": "american",
             "dateFormat": "iso",
         },
-        timeout=30,
+        source="cfb",
     )
     check_odds_api_response(response, context="CFB team-market odds")
     remaining = response.headers.get("x-requests-remaining")
-    return response.json(), datetime.now(timezone.utc), int(remaining) if remaining else None
+    return response.json(), response_timestamp(response), int(remaining) if remaining else None
 
 
 def match_odds_event(game: dict[str, Any], odds_events: list[dict[str, Any]]) -> dict[str, Any] | None:

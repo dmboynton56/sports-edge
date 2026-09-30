@@ -115,21 +115,6 @@ type SupabaseMlbHrRow = {
   statcast_artifact_loaded: boolean | null;
 };
 
-type SupabaseMlbHrEdgeRow = SupabaseMlbHrRow & {
-  best_book: string | null;
-  best_book_title: string | null;
-  best_price: number | null;
-  implied_probability: number | null;
-  no_vig_probability: number | null;
-  market_probability: number | null;
-  edge: number | null;
-  ev: number | null;
-  kelly: number | null;
-  odds_books_count: number | null;
-  odds_snapshot_ts: string | null;
-  odds_status: string | null;
-};
-
 type SupabaseMlbHrBoardRunRow = {
   run_id: string;
   run_key: string;
@@ -290,29 +275,6 @@ function mapSupabaseMlb(row: SupabaseMlbHrRow): MlbHomeRunPrediction {
   };
 }
 
-function mapSupabaseMlbEdge(row: SupabaseMlbHrEdgeRow): MlbHomeRunPrediction {
-  const base = mapSupabaseMlb(row);
-  return {
-    ...base,
-    book: row.best_book ?? "missing",
-    price: row.best_price,
-    impliedProbability: row.market_probability ?? row.implied_probability,
-    edge: row.edge,
-    ev: row.ev,
-    kelly: row.kelly,
-    source: "Supabase mlb_home_run_edges_latest",
-    marketStatus: row.best_price == null ? "model_only" : "supported",
-    bestBook: row.best_book,
-    bestBookTitle: row.best_book_title,
-    bestPrice: row.best_price,
-    noVigProbability: row.no_vig_probability,
-    marketProbability: row.market_probability,
-    oddsBooksCount: row.odds_books_count,
-    oddsSnapshotTs: row.odds_snapshot_ts,
-    oddsStatus: row.odds_status,
-  };
-}
-
 function stringList(value: string[] | string | null | undefined): string[] {
   if (Array.isArray(value)) return value.filter(Boolean);
   if (!value) return [];
@@ -328,7 +290,6 @@ function stringList(value: string[] | string | null | undefined): string[] {
 
 function mapBoardRow(row: SupabaseMlbHrBoardRow): MlbHomeRunPrediction {
   const isV1 = row.model_version.startsWith(MLB_HR_V1_MODEL);
-  const priced = row.odds_status === "ok" || row.odds_status === "raw_implied";
   return {
     id: row.board_row_id,
     sport: "MLB",
@@ -339,17 +300,17 @@ function mapBoardRow(row: SupabaseMlbHrBoardRow): MlbHomeRunPrediction {
     subject: `${row.player_name} HR`,
     player: row.player_name,
     market: "home_run",
-    book: row.book ?? "model",
+    book: "model",
     line: 0.5,
-    price: priced ? row.american_price : null,
+    price: null,
     modelProbability: row.model_probability,
-    impliedProbability: priced ? row.market_probability ?? row.raw_market_probability : null,
-    edge: priced ? row.edge : null,
-    ev: priced ? row.ev : null,
-    kelly: priced ? row.quarter_kelly : null,
+    impliedProbability: null,
+    edge: null,
+    ev: null,
+    kelly: null,
     confidence: null,
     modelVersion: row.model_version,
-    marketStatus: priced ? "supported" : "model_only",
+    marketStatus: "model_only",
     detailHref: "/markets/mlb/home-runs",
     source: "Supabase immutable MLB HR publication",
     updatedAt: row.prediction_ts,
@@ -375,13 +336,13 @@ function mapBoardRow(row: SupabaseMlbHrBoardRow): MlbHomeRunPrediction {
     statcastReadyRows: null,
     statcastTotalRows: null,
     statcastArtifactLoaded: null,
-    bestBook: priced ? row.book : null,
-    bestPrice: priced ? row.american_price : null,
-    noVigProbability: priced ? row.no_vig_market_probability : null,
-    marketProbability: priced ? row.market_probability : null,
-    oddsBooksCount: priced ? row.odds_books_count : null,
-    oddsSnapshotTs: priced ? row.odds_snapshot_ts : null,
-    oddsStatus: row.odds_status,
+    bestBook: null,
+    bestPrice: null,
+    noVigProbability: null,
+    marketProbability: null,
+    oddsBooksCount: null,
+    oddsSnapshotTs: null,
+    oddsStatus: "missing_odds",
   };
 }
 
@@ -498,8 +459,6 @@ export function deriveMlbHrBoardSnapshot(
     })
     .sort((left, right) => (left.rank ?? Number.MAX_SAFE_INTEGER) - (right.rank ?? Number.MAX_SAFE_INTEGER));
   const predictions = rows.map(mapBoardRow);
-  const priced = predictions.filter((row) => row.oddsStatus === "ok" || row.oddsStatus === "raw_implied");
-  const missingOdds = predictions.filter((row) => row.oddsStatus === "missing_odds").length;
   const currentRunGaps = boardStatus.gaps.filter(
     (gap) => !gap.includes("candidates do not have a fresh valid sportsbook price"),
   );
@@ -509,13 +468,13 @@ export function deriveMlbHrBoardSnapshot(
     modelStatus: "candidate",
     runWindow: run.run_window,
     predictionAsOf: run.prediction_ts,
-    oddsAsOf: run.odds_ts,
+    oddsAsOf: null,
     counts: {
       candidates: predictions.length,
-      priced: priced.length,
+      priced: 0,
       top25Eligible: run.top25_denominator,
-      top25Priced: run.top25_priced_count,
-      top25Coverage: run.top25_coverage,
+      top25Priced: 0,
+      top25Coverage: null,
     },
     rows: predictions,
     gaps: uniqueGaps([
@@ -523,11 +482,6 @@ export function deriveMlbHrBoardSnapshot(
       predictions.length < sourceRows.filter((row) => row.model_version.startsWith(MLB_HR_V1_MODEL)).length
         ? "Rows for games that have started or begin within five minutes are hidden."
         : null,
-      missingOdds && priced.length === 0
-        ? `${missingOdds} candidates do not have a fresh valid sportsbook price. The serving run completed successfully, but upstream odds were unavailable at publication time.`
-        : missingOdds
-          ? `${missingOdds} candidates do not have a fresh valid sportsbook price.`
-          : null,
     ]),
     dataSource: "supabase_board",
     completedAt: run.completed_at,
@@ -733,16 +687,10 @@ function buildBoardFromSupabaseRows(
   }
 
   for (const model of Object.values(models)) {
-    const missingOdds = model.predictions.filter(
-      (row) => row.oddsStatus === "missing_odds",
-    ).length;
     const missingStatcast = model.predictions.filter(
       (row) => row.modelAgreement === "Missing Statcast" || row.statcastAvailable === false,
     ).length;
     model.gaps = [
-      missingOdds
-        ? `Missing sportsbook odds for ${missingOdds} MLB home run candidates.`
-        : null,
       missingStatcast
         ? `Statcast features unavailable for ${missingStatcast} candidates; those rows use the V1 fallback.`
         : null,
@@ -777,26 +725,6 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
   // rank-limited query can return duplicate players from the two models.
   const targetModel = modelVersion ?? MLB_HR_V1_MODEL;
   const versionQuery = modelVersionFilter(targetModel);
-  const edgeRows = await supabaseRest<SupabaseMlbHrEdgeRow>(
-    `mlb_home_run_edges_latest?select=*&game_date=eq.${slateDate}${versionQuery}&order=rank.asc&limit=120`,
-    60,
-  );
-  if (edgeRows && edgeRows.length) {
-    const missingOdds = edgeRows.filter((row) => row.odds_status === "missing_odds").length;
-    return {
-      generatedAt: edgeRows[0]?.prediction_ts ?? null,
-      defaultModel: targetModel,
-      modelVersion: edgeRows[0]?.model_version ?? "mlb-hr-v1-heuristic",
-      productionStatus: "candidate",
-      predictions: edgeRows.map(mapSupabaseMlbEdge),
-      gaps: missingOdds
-        ? [`Missing sportsbook odds for ${missingOdds} MLB home run candidates.`]
-        : [],
-      dataSource: "supabase_edges",
-      statcastHealth: healthFromRows(edgeRows.map(mapSupabaseMlbEdge)),
-    };
-  }
-
   const latestRows = await supabaseRest<SupabaseMlbHrRow>(
     `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}${versionQuery}&order=rank.asc&limit=120`,
     60,
@@ -857,18 +785,6 @@ export async function getMlbHomeRunFeed(modelVersion?: string): Promise<MlbHomeR
 
 export async function getMlbHomeRunBoardData(): Promise<MlbHomeRunBoardData> {
   const slateDate = todayInTimeZone(MLB_SLATE_TIME_ZONE);
-  const edgeRows = await supabaseRest<SupabaseMlbHrEdgeRow>(
-    `mlb_home_run_edges_latest?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
-    60,
-  );
-  if (edgeRows && edgeRows.length) {
-    return buildBoardFromSupabaseRows(
-      edgeRows.map(mapSupabaseMlbEdge),
-      edgeRows[0]?.prediction_ts ?? null,
-      "supabase_edges",
-    );
-  }
-
   const latestRows = await supabaseRest<SupabaseMlbHrRow>(
     `mlb_home_run_predictions_latest?select=*&game_date=eq.${slateDate}&order=model_version.asc,rank.asc&limit=300`,
     60,
@@ -1098,7 +1014,7 @@ export async function getProductionPredictionFeed(): Promise<{
     getCfbMarketFeed(),
   ]);
   const pga = pgaBoard.dataSource === "supabase_predictions" ? pgaBoard.normalizedMarkets ?? [] : [];
-  const mlbPredictions = mlb.dataSource === "supabase_edges" || mlb.dataSource === "supabase_predictions"
+  const mlbPredictions = mlb.dataSource === "supabase_predictions"
     ? mlb.predictions
     : [];
   return {

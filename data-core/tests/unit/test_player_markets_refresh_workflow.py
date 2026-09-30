@@ -113,3 +113,20 @@ def test_pmr_and_daily_apply_shared_odds_budget_table() -> None:
     )
     assert "sql/023_odds_api_usage.sql" in pmr_runs
     assert "sql/023_odds_api_usage.sql" in daily_runs
+
+
+def test_nfl_refresh_uses_weekly_gates_and_has_one_canonical_odds_path():
+    workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding='utf-8'))
+    steps = {s['name']: s for s in workflow['jobs']['refresh']['steps']}
+    assert "run_nfl_predictions" in steps['Generate NFL Predictions']['if']
+    assert '--window-days 6' in steps['Generate NFL Predictions']['run']
+    assert 'nfl_start_date' in steps['Generate NFL Predictions']['run']
+    assert 'run_nfl_odds' in steps['Sync Market Odds']['env']['RUN_NFL']
+    assert 'always()' in steps['Sync Market Odds']['if']
+    assert 'always()' in steps['Sync Predictions to Supabase']['if']
+    assert 'always()' in steps['Audit NFL weekly readiness']['if']
+    assert 'run_nfl_predictions' not in steps['Update NFL Raw Data']['if']
+    assert '--skip-odds' in steps['Generate NBA Predictions']['run']
+    assert 'Repair Missing Book Spreads' not in steps
+    assert 'run_nfl_predictions' in steps['Refresh NFL anytime touchdown markets']['if']
+    assert 'ODDS_API_KEY' not in steps['Refresh NFL anytime touchdown markets'].get('env', {})

@@ -10,7 +10,7 @@ Useful sports-analytics app (predictions, boards, freshness, research). **Not** 
 | `web/` | Next.js dashboard — canonical public surface (Vercel root `web/`) |
 | `.github/workflows/` | Daily Refresh, Player Market Refresh, other crons |
 
-Do not edit `.cursor/plans/*.plan.md`. Do not revert landed work: UI makeover, Odds-once-per-day, BQ isolation, MLB research audit.
+Do not edit `.cursor/plans/*.plan.md`. Do not revert landed work: UI makeover, BQ isolation, MLB research audit.
 
 ## Secrets
 
@@ -24,11 +24,13 @@ Do not edit `.cursor/plans/*.plan.md`. Do not revert landed work: UI makeover, O
 | Workflow | Owns | When |
 | --- | --- | --- |
 | Daily Refresh (`.github/workflows/daily-refresh.yml`) | League slates, **research MLB** (ML / run line / totals + `audit_mlb_research_readiness`) | Morning cron ~7:05 AM MT |
-| Player Market Refresh (`.github/workflows/player-markets-refresh.yml`) | **MLB HR odds** + HR board / player markets | Afternoon cron **after 2pm MT** (`15 20 * * *` ≈ 2:15 PM MT) |
+| Player Market Refresh (`.github/workflows/player-markets-refresh.yml`) | **MLB HR probabilities** + HR board / player markets | Afternoon cron **after 2pm MT** (`15 20 * * *` ≈ 2:15 PM MT) |
 
-HR odds = PMR. Research MLB = Daily. `run_mlb_hr` on Daily is a deprecated escape hatch — do not make it canonical again.
+HR probabilities = PMR. Research MLB = Daily. NFL touchdown probabilities = Daily. `run_mlb_hr` on Daily is a deprecated escape hatch — do not make it canonical again.
 
-Odds API is **once per Denver day** across MLB HR + research (`odds_api_usage`). Research is **PropLine-first**; Odds only if PropLine misses and the shared budget is free. Missing / empty / quota → PropLine. Fail closed if both fail: no invented prices, no fake EV.
+Player HR and touchdown refreshes do not request sportsbook props. Show model probabilities and derived fair odds, explicitly labeled as model output. Do not call them book prices or calculate edge/EV/Kelly from them.
+
+MLB game research is **PropLine-first**; Odds API is a fallback when PropLine misses and the shared Denver-day budget is free (`odds_api_usage`). Missing / empty / quota → PropLine. Fail closed if both fail: no invented prices or EV.
 
 Ops detail: `.cursor/skills/sports-edge-ops/SKILL.md`.
 

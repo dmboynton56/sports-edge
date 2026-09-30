@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   isQualifiedAnytimeTdRow,
+  getNflAnytimeTdFeed,
   mapAnytimeTdRow,
   type NflAnytimeTdRow,
 } from "@/lib/data/nfl-anytime-td";
@@ -21,7 +22,7 @@ const baseRow: NflAnytimeTdRow = {
   td_probability: 0.32,
   sample_games: 40,
   model_version: "nfl-anytime-td-v1",
-  prediction_ts: "2026-09-03T15:00:00Z",
+  prediction_ts: "2026-09-08T15:00:00Z",
   quality_flags: [],
   best_book: "draftkings",
   best_book_title: "DraftKings",
@@ -34,6 +35,8 @@ const baseRow: NflAnytimeTdRow = {
   odds_status: "priced",
 };
 
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.useRealTimers(); });
+
 describe("NFL anytime TD serving guardrails", () => {
   it("maps a qualified row to the shared market contract", () => {
     expect(isQualifiedAnytimeTdRow(baseRow)).toBe(true);
@@ -41,15 +44,34 @@ describe("NFL anytime TD serving guardrails", () => {
       sport: "NFL",
       market: "anytime_td",
       subject: "Example Runner TD (DEN vs KC)",
-      price: 250,
-      edge: 0.0343,
+      price: null,
+      edge: null,
+      ev: null,
+      marketStatus: "model_only",
     });
   });
 
-  it("withholds role-uncertain and extreme longshot rows", () => {
+  it("withholds role-uncertain and invalid probability rows without requiring a price", () => {
     expect(
       isQualifiedAnytimeTdRow({ ...baseRow, quality_flags: ["secondary_depth_role"] }),
     ).toBe(false);
-    expect(isQualifiedAnytimeTdRow({ ...baseRow, best_price: 1200 })).toBe(false);
+    expect(isQualifiedAnytimeTdRow({ ...baseRow, best_price: null, odds_status: "missing" })).toBe(true);
+    expect(isQualifiedAnytimeTdRow({ ...baseRow, td_probability: 0 })).toBe(false);
+  });
+
+  it("publishes qualified touchdown predictions with no book price", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-10T13:00:00Z"));
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-key");
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [{ ...baseRow, best_price: null, odds_status: "missing" }],
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const feed = await getNflAnytimeTdFeed();
+    expect(feed.predictions).toHaveLength(1);
+    expect(feed.predictions[0]).toMatchObject({ price: null, edge: null, marketStatus: "model_only" });
+    expect(new URL(fetchMock.mock.calls[0][0]).searchParams.get("order")).toBe("td_probability.desc");
   });
 });

@@ -1,5 +1,6 @@
 import type { Prediction } from "@/lib/data/types";
 import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
+import { denverDate, nflPredictionIsCurrent, nflWeekWindow } from "@/lib/nfl-week";
 
 export type NflAnytimeTdRow = {
   id: string;
@@ -43,13 +44,11 @@ const BLOCKING_QUALITY_FLAGS = new Set([
   "limited_history",
   "missing_game_total",
 ]);
-const MAX_RECOMMENDATION_PRICE = 1000;
 
 export function isQualifiedAnytimeTdRow(row: NflAnytimeTdRow) {
   const flags = Array.isArray(row.quality_flags) ? row.quality_flags : [];
-  return row.odds_status === "priced"
-    && row.best_price != null
-    && row.best_price <= MAX_RECOMMENDATION_PRICE
+  return row.td_probability > 0
+    && row.td_probability < 1
     && row.sample_games >= 10
     && !flags.some((flag) => BLOCKING_QUALITY_FLAGS.has(flag));
 }
@@ -65,26 +64,26 @@ export function mapAnytimeTdRow(row: NflAnytimeTdRow): Prediction {
     subject: `${row.player_name} TD (${row.team} vs ${row.opponent})`,
     player: row.player_name,
     market: "anytime_td",
-    book: row.best_book_title ?? row.best_book ?? "n/a",
+    book: "model",
     line: null,
-    price: row.best_price,
+    price: null,
     modelProbability: row.td_probability,
-    impliedProbability: row.market_probability,
-    edge: row.edge,
-    ev: row.ev,
-    kelly: row.quarter_kelly,
+    impliedProbability: null,
+    edge: null,
+    ev: null,
+    kelly: null,
     confidence: Math.min(0.9, 0.55 + 0.35 * historyConfidence),
     modelVersion: row.model_version,
-    marketStatus: "research",
+    marketStatus: "model_only",
     detailHref: `/markets/nfl/${row.game_id}`,
-    source: "Calibrated nflverse player model + The Odds API best price",
-    updatedAt: row.odds_snapshot_ts ?? row.prediction_ts,
+    source: "Calibrated nflverse player model; fair odds derived from model probability",
+    updatedAt: row.prediction_ts,
   };
 }
 
 export async function getNflAnytimeTdFeed(): Promise<NflAnytimeTdFeed> {
   const rows = await supabaseRest<NflAnytimeTdRow>(
-    "nfl_anytime_td_edges_latest?select=*&order=ev.desc.nullslast&limit=500",
+    "nfl_anytime_td_edges_latest?select=*&order=td_probability.desc&limit=500",
     60,
   );
   if (!rows) {
@@ -100,23 +99,23 @@ export async function getNflAnytimeTdFeed(): Promise<NflAnytimeTdFeed> {
     };
   }
 
-  const priced = rows.filter((row) => row.odds_status === "priced" && row.best_price != null);
-  const qualified = priced.filter(isQualifiedAnytimeTdRow);
-  const filtered = priced.length - qualified.length;
-  const missingOdds = rows.length - priced.length;
+  const today = denverDate();
+  const end = nflWeekWindow(today).end;
+  const qualified = rows.filter((row) => row.game_date >= today && row.game_date <= end
+    && nflPredictionIsCurrent(row.prediction_ts) && isQualifiedAnytimeTdRow(row));
+  const filtered = rows.length - qualified.length;
   const timestamps = rows
-    .flatMap((row) => [row.prediction_ts, row.odds_snapshot_ts])
+    .map((row) => row.prediction_ts)
     .filter((value): value is string => Boolean(value))
     .sort();
   return {
     generatedAt: timestamps.at(-1) ?? null,
     predictions: qualified.map(mapAnytimeTdRow),
     gaps: [
-      "NFL anytime-TD probabilities passed a 2025 out-of-time outcome holdout, but sportsbook ROI is not yet backtested; one-way prices use raw implied probability rather than no-vig probability.",
+      "NFL anytime-TD fair odds come from model probabilities. They are not sportsbook offers, and no betting edge or EV is calculated.",
       filtered
-        ? `${filtered} priced anytime-TD rows are withheld by role, injury, sample-size, or +1000 longshot guardrails.`
+        ? `${filtered} NFL anytime-TD rows are withheld by role, injury, sample-size, or invalid probability guardrails.`
         : "",
-      missingOdds ? `${missingOdds} modeled NFL players do not have a current anytime-TD price.` : "",
     ].filter(Boolean),
   };
 }

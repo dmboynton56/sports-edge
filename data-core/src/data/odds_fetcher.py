@@ -3,21 +3,23 @@ Odds data fetcher using The Odds API.
 Fetches spreads, totals, and moneylines from sportsbooks.
 """
 
-import requests
 import pandas as pd
 from datetime import datetime
 from typing import Optional, List, Dict
 import os
 from dotenv import load_dotenv
+from pathlib import Path
+from src.data.odds_api_client import budgeted_get
+from src.data.odds_api_errors import OddsApiQuotaExhausted
 
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
 
 
 def fetch_odds(
     league: str,
     date: Optional[str] = None,
     regions: str = 'us',
-    markets: str = 'spreads,totals,moneylines',
+    markets: str = 'spreads,totals,h2h',
     bookmakers: Optional[str] = None,
 ) -> pd.DataFrame:
     """
@@ -27,7 +29,7 @@ def fetch_odds(
         league: 'nfl' or 'nba'
         date: Optional date string YYYY-MM-DD (default: today)
         regions: Comma-separated regions (default: 'us')
-        markets: Comma-separated markets (default: 'spreads,totals,moneylines')
+        markets: Comma-separated markets (default: 'spreads,totals,h2h')
     
     Returns:
         DataFrame with odds data
@@ -57,8 +59,7 @@ def fetch_odds(
         params['commenceTimeTo'] = f"{date}T23:59:59Z"
     
     try:
-        response = requests.get(base_url, params=params)
-        response.raise_for_status()
+        response = budgeted_get(base_url, params=params, source=league.lower())
         
         data = response.json()
         
@@ -92,8 +93,8 @@ def fetch_odds(
         df = pd.DataFrame(rows)
         return df
         
-    except requests.exceptions.RequestException as e:
-        print(f"Error fetching odds: {e}")
+    except OddsApiQuotaExhausted as e:
+        print(f"Odds request skipped: {e}")
         return pd.DataFrame()
 
 

@@ -16,7 +16,7 @@ export default async function NflMarketsPage() {
     <div>
       <PageHeader
         title="NFL Markets"
-        description="Week 1 moneyline, spread, total, and guarded anytime-touchdown markets. Team outputs remain preliminary; TD probabilities passed an out-of-time outcome holdout, with role and longshot filters applied before EV is shown."
+        description="NFL moneyline, spread, and total markets use sportsbook prices. Anytime-touchdown rows show guarded model probabilities and fair odds derived from those probabilities, with no sportsbook EV."
         meta={feed.generatedAt}
       />
       {predictions.length > 0 ? (
@@ -24,7 +24,7 @@ export default async function NflMarketsPage() {
       ) : (
         <EmptyState
           title="No NFL board right now"
-          description="NFL featured markets publish when a scheduled slate has both model predictions and sportsbook snapshots."
+          description="NFL team markets need a scheduled slate and sportsbook snapshots. Touchdown probabilities publish when the player model has a valid current slate."
         />
       )}
     </div>

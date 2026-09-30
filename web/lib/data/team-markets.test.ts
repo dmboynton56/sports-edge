@@ -64,4 +64,18 @@ describe("team market normalization", () => {
     expect(totals.every((row) => row.modelVersion === "unmodeled")).toBe(true);
     expect(totals.every((row) => row.edge == null && row.ev == null)).toBe(true);
   });
+
+  it("keeps each team's total prices distinct with no invented model output", () => {
+    const teamTotals = ["home", "away"].flatMap((side) => ["over", "under"].map((pick) => ({
+      game_id: game.id, book: "fanduel", market: "team_total", selection: `${side}_${pick}`,
+      line: side === "home" ? 25.5 : 19.5, price: pick === "over" ? -105 : -115, snapshot_ts: snapshot,
+    })));
+    const rows = buildTeamMarketPredictions("NFL", [game], [prediction], teamTotals);
+    expect(rows.map((row) => row.subject)).toEqual([
+      "SEA team total over", "SEA team total under", "NE team total over", "NE team total under",
+    ]);
+    expect(rows.every((row) => row.modelProbability == null && row.edge == null && row.ev == null && row.kelly == null)).toBe(true);
+    expect(rows[0].impliedProbability).toBeCloseTo((105 / 205) / (105 / 205 + 115 / 215));
+    expect(rows[0].updatedAt).toBe(snapshot);
+  });
 });

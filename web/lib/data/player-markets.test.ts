@@ -76,7 +76,7 @@ describe("MLB HR trusted board snapshot", () => {
     expect(snapshot.rows).toHaveLength(0);
   });
 
-  it("serves current rows and keeps model-only pricing blank", () => {
+  it("serves current probabilities without presenting stored book prices as model fair odds", () => {
     const snapshot = deriveMlbHrBoardSnapshot(
       baseRun,
       [
@@ -87,7 +87,9 @@ describe("MLB HR trusted board snapshot", () => {
     );
     expect(snapshot.status).toBe("healthy");
     expect(snapshot.counts.candidates).toBe(2);
-    expect(snapshot.counts.priced).toBe(1);
+    expect(snapshot.counts.priced).toBe(0);
+    expect(snapshot.rows[0].price).toBeNull();
+    expect(snapshot.rows[0].edge).toBeNull();
     expect(snapshot.rows[1].edge).toBeNull();
   });
 
@@ -128,7 +130,7 @@ describe("MLB HR trusted board snapshot", () => {
 
     expect(snapshot.status).toBe("healthy");
     expect(snapshot.counts.candidates).toBe(1);
-    expect(snapshot.counts.priced).toBe(1);
+    expect(snapshot.counts.priced).toBe(0);
   });
 
   it("represents a confirmed no-slate run explicitly", () => {

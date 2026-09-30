@@ -1,9 +1,7 @@
 name: Player Market Refresh
 
-# MLB HR odds are fetched once daily at 2:15 PM America/Denver (20:15 UTC in MDT,
-# 21:15 UTC in MST) to conserve The Odds API Starter plan credits (500/month).
-# This timing allows the afternoon run to satisfy the 2:00 PM MT eligibility gate
-# on the live board while still capturing lines before late games.
+# MLB HR probabilities refresh after 2:00 PM Mountain so the afternoon board
+# satisfies its publication gate. Player prop sportsbook prices are not fetched.
 # The workflow can still be triggered manually via workflow_dispatch for ad-hoc runs.
 
 on:
@@ -247,31 +245,6 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql sql/023_odds_api_usage.sql
-
-      - name: Fetch MLB home run odds
-        if: ${{ env.RUN_MLB_HR == 'true' }}
-        shell: bash
-        env:
-          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
-          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
-          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
-          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: |
-          # Shared odds_api_usage row: at most one Odds API session per Denver day
-          # across HR + research. Skip Odds if research already claimed today.
-          # PropLine fallback: missing key, already used, quota/401/429, or 0 priced rows.
-          if [ "$SYNC_SUPABASE" = "true" ]; then
-            python scripts/fetch_mlb_home_run_odds.py \
-              --date "${{ steps.dates.outputs.date }}" \
-              --sync-supabase
-          else
-            python scripts/fetch_mlb_home_run_odds.py \
-              --date "${{ steps.dates.outputs.date }}"
-          fi
 
       - name: Export combined prediction feed
         shell: bash
