@@ -129,3 +129,8 @@ def test_nfl_refresh_uses_weekly_gates_and_has_one_canonical_odds_path():
     assert 'Repair Missing Book Spreads' not in steps
     assert 'run_nfl_predictions' in steps['Refresh NFL anytime touchdown markets']['if']
     assert 'ODDS_API_KEY' not in steps['Refresh NFL anytime touchdown markets'].get('env', {})
+
+
+def test_manual_recovery_can_suppress_external_notifications():
+    for name in ('Notify Discord on Success', 'Notify Discord on Failure', 'Notify portfolio doc sync'):
+        assert "github.event.inputs.skip_notifications != 'true'" in _daily_step(name)['if']

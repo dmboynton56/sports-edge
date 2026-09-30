@@ -17,6 +17,10 @@ on:
         description: "Recompute this NFL week for a manual data/recovery update (credit caps still apply)"
         required: false
         default: "false"
+      skip_notifications:
+        description: "Skip Discord and portfolio notifications during a manual recovery run"
+        required: false
+        default: "false"
       run_mlb_hr:
         description: "Deprecated escape hatch; MLB HR is canonical in player-markets-refresh"
         required: false
@@ -684,7 +688,7 @@ jobs:
           cat /tmp/sports_edge_run_summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Notify Discord on Success
-        if: success()
+        if: ${{ success() && github.event.inputs.skip_notifications != 'true' }}
         shell: bash
         run: |
           if [ -z "$DISCORD_WEBHOOK_URL" ]; then
@@ -697,7 +701,7 @@ jobs:
             "$DISCORD_WEBHOOK_URL"
 
       - name: Notify Discord on Failure
-        if: failure()
+        if: ${{ failure() && github.event.inputs.skip_notifications != 'true' }}
         shell: bash
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -718,7 +722,7 @@ jobs:
           fi
 
       - name: Notify portfolio doc sync
-        if: success()
+        if: ${{ success() && github.event.inputs.skip_notifications != 'true' }}
         env:
           PORTFOLIO_DISPATCH_TOKEN: ${{ secrets.PORTFOLIO_DISPATCH_TOKEN }}
         run: |

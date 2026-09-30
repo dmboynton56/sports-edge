@@ -30,6 +30,7 @@ Short ownership map. Read the workflow YAML if a step name matters.
 - All scheduled current game-odds fetches share `odds_api_request_cache` from `sql/023_odds_api_usage.sql`: 500 account credits, 50 reserved, NFL allocation protected. Missing ledger/quota headers skips paid calls.
 - `audit_odds_api_credits.py` reads monthly reservations and free account quota headers; Daily publishes the report in its run summary.
 - `force_nfl_refresh=true` regenerates only the current NFL cycle. It does not enable injury adjustments in NFL v2 or bypass odds caching/credit caps.
+- `skip_notifications=true` suppresses Discord and portfolio notifications for a manual recovery run; scheduled notification behavior stays enabled.
 
 - Daily: morning catch-up or research MLB. Leave `run_mlb_hr` false.
 - PMR: afternoon/ad-hoc HR. Default `run_mlb_hr=true`; no player prop price fetch is scheduled.
