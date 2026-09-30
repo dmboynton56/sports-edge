@@ -1,4 +1,5 @@
 import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
+import { isFiniteNumber } from "@/lib/data/json";
 import type { Prediction } from "@/lib/data/types";
 import { nflPredictionIsCurrent, nflWeekWindow } from "@/lib/nfl-week";
 
@@ -116,6 +117,7 @@ export function deriveFreshness(
 ): FreshnessStatus {
   if (!predictionTs) return "no_prediction";
   const ageMs = Date.now() - new Date(predictionTs).getTime();
+  if (!Number.isFinite(ageMs) || ageMs < 0) return "stale";
   if (league === "NFL" ? !nflPredictionIsCurrent(predictionTs) : ageMs > FRESH_HOURS * 60 * 60 * 1000) return "stale";
   if (bookSpread == null) return "no_odds";
   return "fresh";
@@ -249,6 +251,49 @@ function counterpartSelection(market: string, selection: string | null) {
   return selection === "home" ? "away" : "home";
 }
 
+function modelOnlyMoneylines(
+  league: "NBA" | "NFL",
+  game: SupabaseGameRow,
+  prediction: SupabasePredictionRow | undefined,
+  oddsRows: SupabaseOddsRow[],
+): Prediction[] {
+  const homeProbability = prediction?.my_home_win_prob;
+  if (!prediction || !isFiniteNumber(homeProbability) || homeProbability < 0 || homeProbability > 1
+    || deriveFreshness(prediction.asof_ts, null, league) !== "no_odds") {
+    return [];
+  }
+  return (["home", "away"] as const)
+    .filter((selection) => !oddsRows.some((row) => row.market === "moneyline" && row.selection === selection))
+    .map((selection) => {
+      const probability = selection === "home" ? homeProbability : 1 - homeProbability;
+      return {
+        id: `${game.id}-moneyline-${selection}`,
+        sport: league,
+        league,
+        gameId: game.id,
+        eventTime: game.game_time_utc,
+        subject: `${selection === "home" ? game.home_team : game.away_team} moneyline`,
+        homeTeam: game.home_team,
+        awayTeam: game.away_team,
+        market: "moneyline",
+        book: "model",
+        line: null,
+        price: null,
+        modelProbability: probability,
+        impliedProbability: null,
+        edge: null,
+        ev: null,
+        kelly: null,
+        confidence: Math.abs(probability - 0.5) * 2,
+        modelVersion: prediction.model_version ?? "unknown",
+        marketStatus: "model_only",
+        detailHref: `/markets/${league.toLowerCase()}/${game.id}`,
+        source: "Team model forecast; sportsbook price unavailable",
+        updatedAt: prediction.asof_ts,
+      } satisfies Prediction;
+    });
+}
+
 export function buildTeamMarketPredictions(
   league: "NBA" | "NFL",
   games: SupabaseGameRow[],
@@ -263,8 +308,8 @@ export function buildTeamMarketPredictions(
   return games.flatMap((game) => {
     const prediction = predictions.get(game.id);
     const eventTime = game.game_time_utc;
-    return oddsRows
-      .filter((row) => row.game_id === game.id)
+    const gameOdds = oddsRows.filter((row) => row.game_id === game.id);
+    const pricedMarkets = gameOdds
       .map((row): Prediction => {
         const selection = row.selection ?? "unknown";
         const counterpart = odds.get(
@@ -327,12 +372,13 @@ export function buildTeamMarketPredictions(
           kelly: quarterKelly(modelProbability, row.price),
           confidence: modelProbability == null ? null : Math.abs(modelProbability - 0.5) * 2,
           modelVersion,
-          marketStatus: modelProbability == null ? "model_only" : "research",
+          marketStatus: modelProbability == null || row.price == null ? "model_only" : "research",
           detailHref: `/markets/${league.toLowerCase()}/${game.id}`,
           source: "Supabase team model + The Odds API snapshot",
           updatedAt: modelProbability == null ? row.snapshot_ts : prediction?.asof_ts ?? row.snapshot_ts,
         };
       });
+    return [...pricedMarkets, ...modelOnlyMoneylines(league, game, prediction, gameOdds)];
   });
 }
 

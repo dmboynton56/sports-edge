@@ -1,12 +1,17 @@
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import { MarketsTable } from "@/components/dashboard/MarketsTable";
-import { PageHeader } from "@/components/dashboard/PageHeader";
+import { PageHeader, SectionHeading } from "@/components/dashboard/PageHeader";
+import { TeamSpreadBoard } from "@/components/leagues/TeamSpreadBoard";
 import { getProductionPredictionFeed } from "@/lib/data/player-markets";
+import { getTeamSlateFeed } from "@/lib/data/team-markets";
 
 export const dynamic = "force-dynamic";
 
 export default async function NflMarketsPage() {
-  const feed = await getProductionPredictionFeed();
+  const [feed, slate] = await Promise.all([
+    getProductionPredictionFeed(),
+    getTeamSlateFeed("NFL"),
+  ]);
   const predictions = feed.predictions.filter(
     (prediction) => prediction.sport.toLowerCase() === "nfl",
   );
@@ -16,17 +21,23 @@ export default async function NflMarketsPage() {
     <div>
       <PageHeader
         title="NFL Markets"
-        description="NFL moneyline, spread, and total markets use sportsbook prices. Anytime-touchdown rows show guarded model probabilities and fair odds derived from those probabilities, with no sportsbook EV."
+        description="This week's model win probabilities and projected spreads stay visible while sportsbook prices are unavailable. Priced markets and guarded touchdown probabilities appear below when available."
         meta={feed.generatedAt}
       />
+      {slate.games.length > 0 ? (
+        <TeamSpreadBoard feed={slate} detailBasePath="/markets/nfl" />
+      ) : null}
       {predictions.length > 0 ? (
-        <MarketsTable initialPredictions={predictions} initialGaps={gaps} />
-      ) : (
+        <>
+          <SectionHeading title="Market probabilities" note="Model only until a book price is captured" />
+          <MarketsTable initialPredictions={predictions} initialGaps={gaps} />
+        </>
+      ) : slate.games.length === 0 ? (
         <EmptyState
           title="No NFL board right now"
-          description="NFL team markets need a scheduled slate and sportsbook snapshots. Touchdown probabilities publish when the player model has a valid current slate."
+          description="No NFL games or publishable model probabilities are available in the current week."
         />
-      )}
+      ) : null}
     </div>
   );
 }

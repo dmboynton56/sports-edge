@@ -37,7 +37,7 @@ test("markets uses URL-backed filters and an initially collapsed warnings disclo
 test("legacy routes redirect to canonical markets and models URLs", async ({ page }) => {
   const redirects = [
     ["/nba", "/markets?sport=NBA&market=spread"],
-    ["/nfl", "/markets?sport=NFL&market=spread"],
+    ["/nfl", "/markets/nfl"],
     ["/performance", "/models/performance"],
     ["/results", "/models/results"],
     ["/insights", "/models/insights"],
