@@ -5,6 +5,7 @@ import { SportChip } from "@/components/dashboard/SportChip";
 import { isFiniteNumber } from "@/lib/data/json";
 import type { Performance, Prediction } from "@/lib/data/types";
 import { formatAmericanPrice, formatDateTime, formatNumber, formatPct } from "@/lib/format";
+import { formatFairAmericanOdds, isPlayerProbabilityMarket } from "@/lib/fair-odds";
 import { cn } from "@/lib/utils";
 
 const STATUS_LABEL = {
@@ -50,10 +51,13 @@ function Shell({
 
 function BoardRow({ prediction }: { prediction: Prediction }) {
   const { edge } = prediction;
+  const modelOnlyPlayer = prediction.price == null && isPlayerProbabilityMarket(prediction.market);
   const detail = [
     prediction.book === "model" ? "model only" : prediction.book,
     isFiniteNumber(prediction.line) ? `line ${formatNumber(prediction.line, 1)}` : null,
-    formatAmericanPrice(prediction.price),
+    modelOnlyPlayer
+      ? `fair odds ${formatFairAmericanOdds(prediction.modelProbability)}`
+      : formatAmericanPrice(prediction.price),
   ].filter(Boolean).join(" · ");
 
   const row = (
@@ -69,18 +73,21 @@ function BoardRow({ prediction }: { prediction: Prediction }) {
         <div
           className={cn(
             "figure text-[19px] leading-tight",
-            !isFiniteNumber(edge)
+            modelOnlyPlayer
+              ? "text-foreground"
+              : !isFiniteNumber(edge)
               ? "text-muted-foreground"
               : edge < 0
                 ? "text-destructive"
                 : "text-positive",
           )}
         >
-          {isFiniteNumber(edge) ? formatPct(edge) : "—"}
+          {modelOnlyPlayer ? formatPct(prediction.modelProbability, 0) : isFiniteNumber(edge) ? formatPct(edge) : "—"}
         </div>
         <div className="text-[11px] text-muted-foreground">
-          {isFiniteNumber(edge) ? "edge · " : "no price · "}
-          model {formatPct(prediction.modelProbability, 0)}
+          {modelOnlyPlayer ? "model probability" : (
+            <>{isFiniteNumber(edge) ? "edge · " : "no price · "}model {formatPct(prediction.modelProbability, 0)}</>
+          )}
         </div>
       </div>
     </>

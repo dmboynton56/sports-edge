@@ -11,6 +11,7 @@ import logging
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from src.utils.nfl_schedule import DENVER, nfl_prediction_cutoff, nfl_week_window
 
 LOGGER = logging.getLogger("generate_run_summary")
 
@@ -125,6 +126,8 @@ def fetch_supabase_snapshot(
         "odds_by_league": {},
         "latest_odds_snapshot_ts": None,
     }
+    nfl_start, nfl_end = nfl_week_window(datetime.now(DENVER).date())
+    nfl_cutoff = nfl_prediction_cutoff(nfl_start)
 
     try:
         with conn.cursor() as cur:
@@ -133,11 +136,15 @@ def fetch_supabase_snapshot(
                 SELECT COALESCE(g.league, 'unknown') AS league, COUNT(*)
                 FROM model_predictions p
                 LEFT JOIN games g ON g.id = p.game_id
-                WHERE p.asof_ts >= NOW() - (%s || ' hours')::interval
+                WHERE (g.league = 'NFL'
+                       AND COALESCE(g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date) BETWEEN %s AND %s
+                       AND p.asof_ts >= %s)
+                   OR (COALESCE(g.league, '') <> 'NFL'
+                       AND p.asof_ts >= NOW() - (%s || ' hours')::interval)
                 GROUP BY COALESCE(g.league, 'unknown')
                 ORDER BY league
                 """,
-                (prediction_hours,),
+                (nfl_start, nfl_end, nfl_cutoff, prediction_hours),
             )
             snapshot["predictions_by_league"] = {
                 str(league): int(count) for league, count in cur.fetchall()
@@ -182,11 +189,15 @@ def fetch_supabase_snapshot(
                 SELECT COALESCE(g.league, 'unknown') AS league, COUNT(*), MAX(o.snapshot_ts)
                 FROM odds_snapshots o
                 LEFT JOIN games g ON g.id = o.game_id
-                WHERE o.snapshot_ts >= NOW() - (%s || ' hours')::interval
+                WHERE (g.league = 'NFL'
+                       AND COALESCE(g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date) BETWEEN %s AND %s
+                       AND o.snapshot_ts >= %s)
+                   OR (COALESCE(g.league, '') <> 'NFL'
+                       AND o.snapshot_ts >= NOW() - (%s || ' hours')::interval)
                 GROUP BY COALESCE(g.league, 'unknown')
                 ORDER BY league
                 """,
-                (odds_hours,),
+                (nfl_start, nfl_end, nfl_cutoff, odds_hours),
             )
             for league, count, latest_snapshot_ts in cur.fetchall():
                 snapshot["odds_by_league"][str(league)] = {
@@ -387,9 +398,9 @@ def render_markdown(summary: dict[str, Any]) -> str:
         odds_by_league = format_by_league_inline(snapshot.get("odds_by_league", {}))
         lines.extend(
             [
-                f"- Prediction window: `{snapshot.get('prediction_hours')}h`",
+                f"- Prediction window: `{snapshot.get('prediction_hours')}h`; NFL uses the current Tuesday-Monday cycle",
                 f"- Score lookback: `{snapshot.get('score_lookback_days')}d`",
-                f"- Odds window: `{snapshot.get('odds_hours')}h`",
+                f"- Odds window: `{snapshot.get('odds_hours')}h`; NFL uses the current Tuesday-Monday cycle",
                 f"- Predictions by league: {predictions_by_league}",
                 f"- Games by league: {games_by_league}",
                 f"- Final scores by league: {final_scores_by_league}",

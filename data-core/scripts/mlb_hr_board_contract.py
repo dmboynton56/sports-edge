@@ -140,6 +140,7 @@ def classify_run(
     source_ok: bool,
     predictions_valid: bool,
     top25_coverage: float | None,
+    pricing_required: bool = True,
 ) -> str:
     """Classify a run according to the public fail-closed status contract."""
 
@@ -147,6 +148,8 @@ def classify_run(
         return "no_slate"
     if not source_ok or not predictions_valid:
         return "failed"
+    if not pricing_required:
+        return "healthy"
     if top25_coverage is not None and top25_coverage >= MIN_TOP25_COVERAGE:
         return "healthy"
     return "partial"

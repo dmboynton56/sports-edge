@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 import requests
+from src.data.odds_api_client import budgeted_get, response_timestamp
 from dotenv import load_dotenv
 
 from src.data.odds_math import (
@@ -142,7 +143,7 @@ def fetch_outrights(
     if not sport_key:
         raise ValueError(f"Unknown tournament '{tournament}'. Valid: {list(GOLF_SPORT_KEYS)}")
 
-    resp = requests.get(
+    resp = budgeted_get(
         f"{BASE_URL}/sports/{sport_key}/odds",
         params={
             "apiKey": api_key,
@@ -150,12 +151,13 @@ def fetch_outrights(
             "markets": "outrights",
             "oddsFormat": odds_format,
         },
+        source="pga",
     )
-    resp.raise_for_status()
 
     headers = {
         "requests_remaining": resp.headers.get("x-requests-remaining", ""),
         "requests_used": resp.headers.get("x-requests-used", ""),
+        "fetched_at": response_timestamp(resp).isoformat(),
     }
     return resp.json(), headers
 
@@ -283,7 +285,7 @@ def fetch_and_summarize(
         LOG.warning("No odds data returned for %s", tournament)
         return {
             "tournament": TOURNAMENT_DISPLAY.get(tournament, tournament),
-            "fetchedAt": datetime.now(timezone.utc).isoformat(),
+            "fetchedAt": headers["fetched_at"],
             "books": [],
             "overrounds": {},
             "playerOdds": [],
@@ -305,7 +307,7 @@ def fetch_and_summarize(
 
     return {
         "tournament": TOURNAMENT_DISPLAY.get(tournament, tournament),
-        "fetchedAt": datetime.now(timezone.utc).isoformat(),
+        "fetchedAt": headers["fetched_at"],
         "commenceTime": df["commence_time"].iloc[0] if not df.empty else "",
         "books": books,
         "overrounds": book_overrounds,

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""Create, publish, and finalize immutable MLB HR board runs.
-
-The workflow calls this script before and after the existing prediction/odds
-sync steps.  It deliberately writes a snapshot into ``mlb_home_run_board_rows``
-instead of asking the website to recompute edge values from moving odds data.
-"""
+"""Create, publish, and finalize immutable MLB HR probability board runs."""
 
 from __future__ import annotations
 
@@ -25,7 +20,6 @@ if str(ROOT) not in sys.path:
 from scripts.mlb_hr_board_contract import (  # noqa: E402
     classify_run,
     coverage_stats,
-    is_priced_row,
     parse_timestamp,
     schedule_confirms_slate_over,
 )
@@ -78,11 +72,8 @@ def _fetch_rows(conn, args: argparse.Namespace) -> list[dict[str, Any]]:
               game_id, game_date, event_time, player_id, player_name, team, opponent, venue,
               lineup_slot, lineup_status, opposing_probable_pitcher, hr_probability,
               baseline_probability, rank, model_version, prediction_ts, quality_flags,
-              statcast_available, statcast_coverage,
-              best_market, best_book, best_price, implied_probability, no_vig_probability,
-              market_probability, edge, ev, kelly, odds_books_count,
-              odds_snapshot_ts, odds_status
-            from mlb_home_run_edges_latest
+              statcast_available, statcast_coverage
+            from mlb_home_run_predictions_latest
             where game_date = %s and model_version like %s
             order by rank nulls last, player_name
             """,
@@ -163,17 +154,6 @@ def publish_rows(conn, args: argparse.Namespace) -> None:
         run_id = result[0]
         insert_rows = []
         for row in rows:
-            candidate = {
-                "book": row.get("best_book"),
-                "american_price": row.get("best_price"),
-                "market_probability": row.get("market_probability") or row.get("no_vig_probability") or row.get("implied_probability"),
-                "odds_snapshot_ts": row.get("odds_snapshot_ts"),
-            }
-            source_status = row.get("odds_status") or "missing_odds"
-            if source_status in {"ok", "raw_implied"} and not is_priced_row(candidate, publication_ts):
-                source_status = "stale" if row.get("odds_snapshot_ts") else "invalid"
-            if source_status not in {"ok", "raw_implied", "missing_odds", "stale", "invalid"}:
-                source_status = "invalid"
             insert_rows.append(
                 (
                     run_id,
@@ -192,17 +172,8 @@ def publish_rows(conn, args: argparse.Namespace) -> None:
                     row.get("hr_probability"),
                     row.get("baseline_probability"),
                     row.get("rank"),
-                    row.get("best_book") if source_status in {"ok", "raw_implied"} else None,
-                    row.get("best_price") if source_status in {"ok", "raw_implied"} else None,
-                    row.get("implied_probability"),
-                    row.get("no_vig_probability"),
-                    row.get("market_probability") or row.get("no_vig_probability") or row.get("implied_probability"),
-                    row.get("edge") if source_status in {"ok", "raw_implied"} else None,
-                    row.get("ev") if source_status in {"ok", "raw_implied"} else None,
-                    row.get("kelly") if source_status in {"ok", "raw_implied"} else None,
-                    row.get("odds_snapshot_ts") if source_status in {"ok", "raw_implied"} else None,
-                    source_status,
-                    row.get("odds_books_count"),
+                    None, None, None, None, None, None, None, None, None,
+                    "missing_odds", None,
                     json.dumps(row.get("quality_flags") or []),
                     row.get("statcast_available"),
                     row.get("statcast_coverage"),
@@ -267,10 +238,7 @@ def finalize_run(conn, args: argparse.Namespace) -> None:
         odds_values = [value for value in odds_values if value is not None]
         latest_prediction_ts = max(prediction_values, default=prediction_ts)
         latest_odds_ts = max(odds_values, default=existing_odds_ts)
-        missing = sum(1 for row in rows if not is_priced_row(row, completed_at))
         gaps = []
-        if missing:
-            gaps.append(f"{missing} candidates do not have a fresh valid sportsbook price.")
         if args.status:
             status = args.status
         else:
@@ -279,6 +247,7 @@ def finalize_run(conn, args: argparse.Namespace) -> None:
                 source_ok=not args.source_failed,
                 predictions_valid=not args.validation_failed,
                 top25_coverage=stats["top25_coverage"],
+                pricing_required=False,
             )
         cur.execute(
             """

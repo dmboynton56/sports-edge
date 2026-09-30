@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish calibrated NFL anytime-TD predictions and current sportsbook odds."""
+"""Publish calibrated NFL anytime-TD probabilities, with optional price research."""
 
 from __future__ import annotations
 
@@ -62,7 +62,7 @@ def parse_args() -> argparse.Namespace:
         help="Refresh existing prices only inside this many hours of kickoff.",
     )
     parser.add_argument("--minimum-refresh-hours", type=int, default=6)
-    parser.add_argument("--skip-odds", action="store_true")
+    parser.add_argument("--fetch-odds", action="store_true", help="Opt in to sportsbook TD research calls.")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
@@ -517,10 +517,10 @@ def main() -> None:
 
         odds_rows: list[dict[str, Any]] = []
         odds_summary: dict[str, Any] = {"skipped": True}
-        if not args.skip_odds:
+        if args.fetch_odds:
             api_key = os.getenv("ODDS_API_KEY")
             if not api_key:
-                raise SystemExit("ODDS_API_KEY is required unless --skip-odds is used")
+                raise SystemExit("ODDS_API_KEY is required with --fetch-odds")
             try:
                 odds_rows, odds_summary = fetch_odds_rows(
                     games,

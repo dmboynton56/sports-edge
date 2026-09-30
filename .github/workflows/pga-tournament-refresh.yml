@@ -97,7 +97,7 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/017_player_market_health_results.sql
+        run: python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/017_player_market_health_results.sql sql/023_odds_api_usage.sql
 
       - name: Refresh PGA tournament
         shell: bash

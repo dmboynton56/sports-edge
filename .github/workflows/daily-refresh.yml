@@ -13,6 +13,14 @@ on:
         description: "Force full feature snapshot rebuild"
         required: false
         default: "false"
+      force_nfl_refresh:
+        description: "Recompute this NFL week for a manual data/recovery update (credit caps still apply)"
+        required: false
+        default: "false"
+      skip_notifications:
+        description: "Skip Discord and portfolio notifications during a manual recovery run"
+        required: false
+        default: "false"
       run_mlb_hr:
         description: "Deprecated escape hatch; MLB HR is canonical in player-markets-refresh"
         required: false
@@ -28,6 +36,7 @@ env:
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
   DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
   FORCE_FULL_REBUILD: ${{ github.event.inputs.force_full_rebuild || 'false' }}
+  FORCE_NFL_REFRESH: ${{ github.event.inputs.force_nfl_refresh || 'false' }}
   RUN_MLB_HR: ${{ github.event.inputs.run_mlb_hr || 'false' }}
   MLB_HR_STATCAST_MIN_COVERAGE: ${{ vars.MLB_HR_STATCAST_MIN_COVERAGE || '0.50' }}
   MLB_HR_STATCAST_MIN_BATTER_BBE: ${{ vars.MLB_HR_STATCAST_MIN_BATTER_BBE || '5' }}
@@ -103,6 +112,7 @@ jobs:
           python scripts/backfill_nba_raw.py --project "$PROJECT_ID" --seasons "$SEASON" --schedule-start "$START_DATE" --schedule-window-days 3
 
       - name: Update NFL Raw Data
+        # Keep completed scores current without recomputing this week's forecast.
         if: ${{ steps.plan.outputs.run_nfl == 'true' }}
         shell: bash
         run: |
@@ -128,11 +138,11 @@ jobs:
           fi
 
       - name: Build NFL Feature Snapshots
-        if: ${{ steps.plan.outputs.run_nfl == 'true' }}
+        if: ${{ steps.plan.outputs.run_nfl_predictions == 'true' }}
         shell: bash
         run: |
           SEASON="${{ steps.plan.outputs.nfl_season }}"
-          ANCHOR_DATE="${{ steps.plan.outputs.anchor_date }}"
+          ANCHOR_DATE="${{ steps.plan.outputs.nfl_start_date }}"
           if [ "$FORCE_FULL_REBUILD" = "true" ]; then
             python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$SEASON" --replace
           else
@@ -142,7 +152,7 @@ jobs:
               --seasons "$SEASON" \
               --date "$ANCHOR_DATE" \
               --lookback-days 0 \
-              --lookahead-days 14
+              --lookahead-days 6
           fi
 
       - name: Apply dashboard serving migrations
@@ -198,11 +208,11 @@ jobs:
           python scripts/refresh_nfl_availability.py \
             --project "$PROJECT_ID" \
             --season "${{ steps.plan.outputs.nfl_season }}" \
-            --start-date "${{ steps.plan.outputs.anchor_date }}" \
-            --lookahead-days 14
+            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
+            --lookahead-days 6
 
       - name: Prepare isolated NBA/NFL model artifact runtime
-        if: ${{ steps.plan.outputs.run_nba == 'true' || steps.plan.outputs.run_nfl == 'true' }}
+        if: ${{ steps.plan.outputs.run_nba == 'true' || steps.plan.outputs.run_nfl_predictions == 'true' }}
         shell: bash
         run: |
           # Reuse shared dependencies, but keep artifact-specific sklearn out of
@@ -229,11 +239,13 @@ jobs:
             --model-version v3 \
             --date "${{ steps.plan.outputs.anchor_date }}" \
             --season "${{ steps.plan.outputs.nba_season }}" \
+            --skip-odds \
             --injury-aware \
             --include-explanations
 
       - name: Generate NFL Predictions
-        if: ${{ steps.plan.outputs.run_nfl == 'true' }}
+        id: nfl_predictions
+        if: ${{ steps.plan.outputs.run_nfl_predictions == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -248,8 +260,8 @@ jobs:
           .venv-nba-nfl/bin/python -m src.pipeline.refresh_nfl \
             --project "$PROJECT_ID" \
             --model-version nfl-v2-live-20260906 \
-            --start-date "${{ steps.plan.outputs.anchor_date }}" \
-            --window-days 14 \
+            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
+            --window-days 6 \
             --season "${{ steps.plan.outputs.nfl_season }}" \
             --injury-aware \
             --include-explanations
@@ -345,26 +357,6 @@ jobs:
             --date "${{ steps.plan.outputs.anchor_date }}" \
             --allow-empty
 
-      - name: Fetch MLB HR Odds
-        if: ${{ env.DRY_RUN != 'true' && env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
-        shell: bash
-        env:
-          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-          PROPLINE_API_KEY: ${{ secrets.PROPLINE_API_KEY }}
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
-          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
-          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
-          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
-          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-        run: |
-          # PropLine fallback: falls back to PROPLINE_API_KEY if ODDS_API_KEY fails or returns no prices.
-          python scripts/apply_supabase_sql_files.py sql/015_player_market_serving_tables.sql sql/016_mlb_hr_recency_columns.sql sql/017_player_market_health_results.sql sql/023_odds_api_usage.sql
-          python scripts/fetch_mlb_home_run_odds.py \
-            --date "${{ steps.plan.outputs.anchor_date }}" \
-            --sync-supabase
-
       - name: Sync MLB HR Markets to Supabase
         if: ${{ env.DRY_RUN != 'true' && env.RUN_MLB_HR == 'true' && steps.plan.outputs.run_mlb == 'true' }}
         shell: bash
@@ -386,7 +378,7 @@ jobs:
         run: python scripts/sync_player_markets_to_bigquery.py --project "$PROJECT_ID" --skip-pga
 
       - name: Sync Predictions to Supabase
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -397,7 +389,7 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           RUN_NBA: ${{ steps.plan.outputs.run_nba }}
-          RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
+          RUN_NFL: ${{ steps.plan.outputs.run_nfl_predictions == 'true' && steps.nfl_predictions.outcome == 'success' }}
           RUN_MLB: ${{ steps.plan.outputs.run_mlb }}
         run: |
           if [ "$RUN_NBA" = "true" ]; then
@@ -409,8 +401,8 @@ jobs:
               --league NFL \
               --season "${{ steps.plan.outputs.nfl_season }}" \
               --model-version nfl-v2-live-20260906 \
-              --start-date "${{ steps.plan.outputs.anchor_date }}" \
-              --window-days 14
+              --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
+              --window-days 6
           fi
           if [ "$RUN_MLB" = "true" ]; then
             python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --window-days 0
@@ -429,7 +421,7 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           RUN_NBA: ${{ steps.plan.outputs.run_nba }}
-          RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
+          RUN_NFL: ${{ steps.plan.outputs.run_nfl_predictions }}
         run: |
           if [ "$RUN_NBA" = "true" ]; then
             python scripts/sync_explanations_to_supabase.py --league NBA || true
@@ -439,7 +431,7 @@ jobs:
           fi
 
       - name: Sync Market Odds
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -451,9 +443,9 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           RUN_NBA: ${{ steps.plan.outputs.run_nba }}
-          RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
+          RUN_NFL: ${{ steps.plan.outputs.run_nfl_odds }}
         run: |
-          python scripts/apply_supabase_sql_files.py sql/020_team_market_odds.sql
+          python scripts/apply_supabase_sql_files.py sql/020_team_market_odds.sql sql/023_odds_api_usage.sql
           # sync_odds.py exits 0 on Odds API quota/auth exhaustion (OUT_OF_USAGE_CREDITS
           # / 429) so this retry loop does not re-hit an empty Starter-plan key for ~7.5m.
           # Transient network / 5xx failures still exit 1 and retry here.
@@ -489,7 +481,7 @@ jobs:
           done
 
       - name: Refresh NFL anytime touchdown markets
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl == 'true' }}
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl_predictions == 'true' && steps.nfl_predictions.outcome == 'success' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -499,7 +491,6 @@ jobs:
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
-          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
           python scripts/refresh_nfl_anytime_td.py \
             --season "${{ steps.plan.outputs.nfl_season }}"
@@ -520,33 +511,28 @@ jobs:
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
         run: |
+          CFB_ODDS_ARGS=()
+          if [ "${{ steps.plan.outputs.run_cfb_odds }}" != "true" ]; then
+            CFB_ODDS_ARGS+=(--skip-odds)
+          fi
           python scripts/refresh_cfb_markets.py \
             --date "${{ steps.plan.outputs.anchor_date }}" \
-            --lookahead-days 3
+            --lookahead-days 3 "${CFB_ODDS_ARGS[@]}"
 
-      - name: Repair Missing Book Spreads
-        if: ${{ env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
+      - name: Audit monthly Odds API credits
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_any == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
           SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
           SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
-          RUN_NBA: ${{ steps.plan.outputs.run_nba }}
-          RUN_NFL: ${{ steps.plan.outputs.run_nfl }}
         run: |
-          START_DATE=$(date -u -d "3 days ago" +%Y-%m-%d)
-          END_DATE=$(date -u -d "14 days" +%Y-%m-%d)
-          if [ "$RUN_NBA" = "true" ]; then
-            python scripts/populate_existing_book_odds.py --league NBA --start-date "$START_DATE" --end-date "$END_DATE"
-          fi
-          if [ "$RUN_NFL" = "true" ]; then
-            python scripts/populate_existing_book_odds.py --league NFL --start-date "$START_DATE" --end-date "$END_DATE"
-          fi
+          python scripts/audit_odds_api_credits.py | tee /tmp/sports_edge_odds_credits.json
+          cat /tmp/sports_edge_odds_credits.json >> "$GITHUB_STEP_SUMMARY"
 
       - name: Sync Final Scores
         # Preserve result ingestion for healthy leagues even if an earlier
@@ -632,13 +618,6 @@ jobs:
           if [ "${{ steps.plan.outputs.run_nba }}" = "true" ]; then
             python scripts/audit_season_readiness.py --league NBA --json | tee /tmp/sports_edge_nba_audit.json || true
           fi
-          if [ "${{ steps.plan.outputs.run_nfl }}" = "true" ]; then
-            python scripts/audit_season_readiness.py \
-              --league NFL \
-              --date "${{ steps.plan.outputs.anchor_date }}" \
-              --lookahead-days 14 \
-              --json | tee /tmp/sports_edge_nfl_audit.json || true
-          fi
           if [ "${{ steps.plan.outputs.run_cfb }}" = "true" ]; then
             # Same as NBA/NFL audits: do not red Daily Refresh when CFB odds coverage
             # is incomplete because The Odds API Starter quota is exhausted.
@@ -651,6 +630,24 @@ jobs:
           echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
           cat /tmp/sports_edge_validation.json >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+      - name: Audit NFL weekly readiness
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/audit_season_readiness.py \
+            --league NFL \
+            --date "${{ steps.plan.outputs.nfl_start_date }}" \
+            --lookahead-days 6 \
+            --json | tee /tmp/sports_edge_nfl_audit.json
+          cat /tmp/sports_edge_nfl_audit.json >> "$GITHUB_STEP_SUMMARY"
 
       - name: Dry-run summary
         if: ${{ env.DRY_RUN == 'true' }}
@@ -691,7 +688,7 @@ jobs:
           cat /tmp/sports_edge_run_summary.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Notify Discord on Success
-        if: success()
+        if: ${{ success() && github.event.inputs.skip_notifications != 'true' }}
         shell: bash
         run: |
           if [ -z "$DISCORD_WEBHOOK_URL" ]; then
@@ -704,7 +701,7 @@ jobs:
             "$DISCORD_WEBHOOK_URL"
 
       - name: Notify Discord on Failure
-        if: failure()
+        if: ${{ failure() && github.event.inputs.skip_notifications != 'true' }}
         shell: bash
         env:
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
@@ -725,7 +722,7 @@ jobs:
           fi
 
       - name: Notify portfolio doc sync
-        if: success()
+        if: ${{ success() && github.event.inputs.skip_notifications != 'true' }}
         env:
           PORTFOLIO_DISPATCH_TOKEN: ${{ secrets.PORTFOLIO_DISPATCH_TOKEN }}
         run: |

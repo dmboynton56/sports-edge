@@ -11,14 +11,12 @@ def _healthy_report() -> dict:
         "missing_book_spread": 0,
         "market_coverage": {
             market: {"complete_games": 2, "fresh_games": 2}
-            for market in ("moneyline", "spread", "total")
+            for market in ("moneyline", "spread", "total", "team_total")
         },
         "availability_reports": 4,
         "fresh_availability_reports": 4,
         "eligible_absences_missing_impact": 0,
         "anytime_td_prediction_games": 2,
-        "anytime_td_odds_games": 2,
-        "fresh_anytime_td_odds_games": 2,
         "qualified_anytime_td_rows": 3,
     }
 
@@ -27,7 +25,7 @@ def test_readiness_issues_accepts_complete_fresh_coverage():
     assert readiness_issues(_healthy_report()) == []
 
 
-def test_readiness_issues_rejects_partial_predictions_odds_and_availability():
+def test_readiness_issues_rejects_partial_predictions_team_odds_and_availability():
     report = _healthy_report()
     report["games_with_prediction"] = 1
     report["fresh_predictions"] = 0
@@ -42,3 +40,9 @@ def test_readiness_issues_rejects_partial_predictions_odds_and_availability():
     assert "1 games missing paired total odds." in issues
     assert "1 latest NFL availability reports are stale." in issues
     assert "1 eligible NFL absences are missing impact estimates." in issues
+
+
+def test_readiness_does_not_require_anytime_td_book_prices():
+    report = _healthy_report()
+    report["anytime_td_odds_games"] = 0
+    assert readiness_issues(report) == []

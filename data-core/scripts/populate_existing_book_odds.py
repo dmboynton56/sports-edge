@@ -269,6 +269,7 @@ def main():
     skipped_no_spread = 0
     # Fetch odds per date to limit API calls
     for game_date, day_games in games.groupby("game_date"):
+        alternate_odds_df = None
         odds_df = odds_fetcher.fetch_odds(
             args.league,
             date=game_date.isoformat(),
@@ -289,21 +290,22 @@ def main():
         for _, game in day_games.iterrows():
             spread = pick_home_spread(odds_df, game["home_team"], game["away_team"], args.bookmakers, args.league)
             if not spread:
-                # Fallback: re-fetch without bookmaker filter for this game/date
-                alt_df = odds_fetcher.fetch_odds(
-                    args.league,
-                    date=game_date.isoformat(),
-                    markets="spreads",
-                    bookmakers=None,
-                )
-                if alt_df.empty:
-                    alt_df = odds_fetcher.fetch_odds(
+                # Reuse the unfiltered fallback for every missing game on this date.
+                if alternate_odds_df is None:
+                    alternate_odds_df = odds_fetcher.fetch_odds(
                         args.league,
-                        date=None,
+                        date=game_date.isoformat(),
                         markets="spreads",
                         bookmakers=None,
                     )
-                spread = pick_home_spread(alt_df, game["home_team"], game["away_team"], None, args.league)
+                    if alternate_odds_df.empty:
+                        alternate_odds_df = odds_fetcher.fetch_odds(
+                            args.league,
+                            date=None,
+                            markets="spreads",
+                            bookmakers=None,
+                        )
+                spread = pick_home_spread(alternate_odds_df, game["home_team"], game["away_team"], None, args.league)
             if not spread:
                 print(f"  No spread found for {game['away_team']} @ {game['home_team']} on {game_date}.")
                 skipped_no_spread += 1

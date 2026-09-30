@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
+from src.utils.nfl_schedule import DENVER, nfl_prediction_cutoff, nfl_week_window
 
 LOGGER = logging.getLogger("audit_season_readiness")
 REQUIRED_TEAM_MARKETS = ("moneyline", "spread", "total")
@@ -56,7 +57,8 @@ def readiness_issues(report: dict[str, Any]) -> list[str]:
     if int(report.get("missing_book_spread") or 0) > 0:
         issues.append(f"{report['missing_book_spread']} games missing book_spread.")
 
-    for market in REQUIRED_TEAM_MARKETS:
+    required_markets = (*REQUIRED_TEAM_MARKETS, "team_total") if report.get("league") == "NFL" else REQUIRED_TEAM_MARKETS
+    for market in required_markets:
         coverage = (report.get("market_coverage") or {}).get(market, {})
         complete = int(coverage.get("complete_games") or 0)
         fresh = int(coverage.get("fresh_games") or 0)
@@ -76,14 +78,8 @@ def readiness_issues(report: dict[str, Any]) -> list[str]:
         if missing_impacts:
             issues.append(f"{missing_impacts} eligible NFL absences are missing impact estimates.")
         td_prediction_games = int(report.get("anytime_td_prediction_games") or 0)
-        td_odds_games = int(report.get("anytime_td_odds_games") or 0)
-        fresh_td_odds_games = int(report.get("fresh_anytime_td_odds_games") or 0)
         if td_prediction_games < scheduled:
             issues.append(f"{scheduled - td_prediction_games} games missing anytime-TD predictions.")
-        if td_odds_games < scheduled:
-            issues.append(f"{scheduled - td_odds_games} games missing anytime-TD odds.")
-        elif fresh_td_odds_games < scheduled:
-            issues.append(f"{scheduled - fresh_td_odds_games} games have stale anytime-TD odds.")
         if int(report.get("qualified_anytime_td_rows") or 0) == 0:
             issues.append("No anytime-TD rows passed serving guardrails.")
     return issues
@@ -107,6 +103,8 @@ def audit_league(
     }
 
     with conn.cursor() as cur:
+        prediction_cutoff = nfl_prediction_cutoff(start_date) if league == "NFL" else datetime.now(timezone.utc) - timedelta(hours=48)
+        odds_cutoff = nfl_prediction_cutoff(start_date) if league == "NFL" else datetime.now(timezone.utc) - timedelta(hours=FRESHNESS_HOURS)
         week_clause = ""
         params: list[Any] = [league, start_date, end_date]
         if week is not None:
@@ -147,9 +145,9 @@ def audit_league(
             SELECT
               (SELECT COUNT(*) FROM scoped) AS games,
               (SELECT COUNT(*) FROM latest_pred) AS with_prediction,
-              (SELECT COUNT(*) FROM latest_pred WHERE asof_ts >= NOW() - INTERVAL '48 hours') AS fresh_predictions
+              (SELECT COUNT(*) FROM latest_pred WHERE asof_ts >= %s) AS fresh_predictions
             """,
-            params,
+            [*params, prediction_cutoff],
         )
         games, with_prediction, fresh_predictions = cur.fetchone()
         report["games_with_prediction"] = int(with_prediction)
@@ -193,6 +191,7 @@ def audit_league(
               WHERE (
                 (o.market IN ('moneyline', 'spread') AND o.selection IN ('home', 'away'))
                 OR (o.market = 'total' AND o.selection IN ('over', 'under'))
+                OR (o.market = 'team_total' AND o.selection IN ('home_over', 'home_under', 'away_over', 'away_under'))
               )
               ORDER BY o.game_id, o.market, o.selection, o.snapshot_ts DESC
             ),
@@ -209,22 +208,25 @@ def audit_league(
                 OR
                 (market = 'total'
                   AND BOOL_OR(selection = 'over') AND BOOL_OR(selection = 'under'))
+                OR (market = 'team_total'
+                  AND BOOL_OR(selection = 'home_over') AND BOOL_OR(selection = 'home_under')
+                  AND BOOL_OR(selection = 'away_over') AND BOOL_OR(selection = 'away_under'))
             )
             SELECT
               market,
               COUNT(*) AS complete_games,
               COUNT(*) FILTER (
-                WHERE pair_snapshot >= NOW() - INTERVAL '{FRESHNESS_HOURS} hours'
+                WHERE pair_snapshot >= %s
               ) AS fresh_games
             FROM paired
             GROUP BY market
             """,
-            params,
+            [*params, odds_cutoff],
             prepare=False,
         )
         market_rows = {str(row[0]): (int(row[1]), int(row[2])) for row in cur.fetchall()}
         report["market_coverage"] = {}
-        for market in REQUIRED_TEAM_MARKETS:
+        for market in ((*REQUIRED_TEAM_MARKETS, "team_total") if league == "NFL" else REQUIRED_TEAM_MARKETS):
             complete, fresh = market_rows.get(market, (0, 0))
             report["market_coverage"][market] = {
                 "complete_games": complete,
@@ -346,27 +348,22 @@ def audit_league(
                 SELECT
                   (SELECT COUNT(DISTINCT p.game_id)
                    FROM nfl_anytime_td_predictions p JOIN scoped s ON s.id = p.game_id),
-                  (SELECT COUNT(DISTINCT o.game_id)
-                   FROM nfl_anytime_td_odds_snapshots o JOIN scoped s ON s.id = o.game_id),
-                  (SELECT COUNT(DISTINCT o.game_id)
-                   FROM nfl_anytime_td_odds_snapshots o JOIN scoped s ON s.id = o.game_id
-                   WHERE o.snapshot_ts >= NOW() - INTERVAL '{FRESHNESS_HOURS} hours'),
                   (SELECT COUNT(*)
                    FROM nfl_anytime_td_edges_latest e JOIN scoped s ON s.id = e.game_id
-                   WHERE e.odds_status = 'priced'
-                     AND e.best_price <= 1000
-                     AND e.sample_games >= 10
-                     AND e.quality_flags = '[]'::jsonb)
+                   WHERE e.sample_games >= 10
+                     AND e.td_probability > 0 AND e.td_probability < 1
+                     AND NOT (e.quality_flags ?| ARRAY[
+                       'questionable', 'secondary_depth_role', 'deep_depth_chart',
+                       'roster_role_unverified', 'limited_history', 'missing_game_total'
+                     ]))
                 """,
                 params,
                 prepare=False,
             )
-            td_prediction_games, td_odds_games, fresh_td_odds_games, qualified_td = cur.fetchone()
+            td_prediction_games, qualified_td = cur.fetchone()
             report.update(
                 {
                     "anytime_td_prediction_games": int(td_prediction_games),
-                    "anytime_td_odds_games": int(td_odds_games),
-                    "fresh_anytime_td_odds_games": int(fresh_td_odds_games),
                     "qualified_anytime_td_rows": int(qualified_td),
                 }
             )
@@ -382,8 +379,11 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     load_dotenv(ROOT / ".env")
 
-    anchor = args.date or datetime.now(timezone.utc).date()
-    start_date, end_date = _date_window(anchor, args.lookahead_days)
+    anchor = args.date or datetime.now(DENVER).date()
+    start_date, end_date = (
+        nfl_week_window(anchor) if args.league == "NFL"
+        else _date_window(anchor, args.lookahead_days)
+    )
 
     creds = load_supabase_credentials()
     conn = create_pg_connection(

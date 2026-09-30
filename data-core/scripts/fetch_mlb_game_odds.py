@@ -223,11 +223,13 @@ def fetch_mlb_odds(api_key: str, markets: list[str] | None = None) -> list[dict[
         "dateFormat": "iso",
     }
 
-    resp = requests.get(url, params=params, timeout=30)
-    if resp.status_code != 200:
-        raise RuntimeError(f"Odds API error {resp.status_code}: {resp.text}")
+    from src.data.odds_api_client import budgeted_get, response_timestamp
+
+    resp = budgeted_get(url, params=params, source="mlb")
 
     data = resp.json()
+    for event in data:
+        event["_snapshot_ts"] = response_timestamp(resp).isoformat()
     LOGGER.info(f"Fetched {len(data)} MLB events from The Odds API")
     return data
 
@@ -598,7 +600,9 @@ def sync_mlb_odds(
             continue
 
         result = sync_event_odds(
-            conn, event, game_pk, home_abbr, away_abbr, snapshot_ts, provider=provider
+            conn, event, game_pk, home_abbr, away_abbr,
+            datetime.fromisoformat(event["_snapshot_ts"]) if event.get("_snapshot_ts") else snapshot_ts,
+            provider=provider,
         )
         results.append(result)
 

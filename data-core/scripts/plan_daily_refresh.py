@@ -17,6 +17,11 @@ from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 from zoneinfo import ZoneInfo
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from src.utils.nfl_schedule import nfl_week_window
 
 try:
     from google.cloud import bigquery
@@ -182,6 +187,7 @@ def build_plan(
     lookahead_days: int,
     force_full_rebuild: bool,
     project: str = "",
+    force_nfl_refresh: bool = False,
 ) -> dict:
     if lookback_days < 0 or lookahead_days < 0:
         raise ValueError("lookback_days and lookahead_days must be non-negative.")
@@ -250,8 +256,15 @@ def build_plan(
             plan["world_cup_start_date"] = wc_start.isoformat()
             plan["world_cup_end_date"] = wc_end.isoformat()
 
+    nfl_start, nfl_end = nfl_week_window(anchor)
+    plan["nfl_start_date"] = nfl_start.isoformat()
+    plan["nfl_end_date"] = nfl_end.isoformat()
+    plan["run_nfl_predictions"] = bool(plan["run_nfl"] and (anchor.weekday() == 1 or force_nfl_refresh or force_full_rebuild))
+    # Month-start catches the Thursday Oct 1 reset even if Tuesday's key was empty.
+    plan["run_nfl_odds"] = bool(plan["run_nfl"] and (anchor.weekday() in {1, 6} or anchor.day == 1 or force_nfl_refresh or force_full_rebuild))
+    plan["run_cfb_odds"] = bool(plan["run_cfb"] and (anchor.weekday() in {3, 5} or force_full_rebuild))
     plan["run_any"] = any(bool(plan[f"run_{league.lower()}"]) for league in LEAGUES)
-    plan["run_market_odds"] = bool(plan["run_nba"] or plan["run_nfl"])
+    plan["run_market_odds"] = bool(plan["run_nba"] or plan["run_nfl_odds"])
     return plan
 
 
@@ -278,6 +291,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--lookback-days", type=int, default=1)
     parser.add_argument("--lookahead-days", type=int, default=10)
+    parser.add_argument("--force-nfl-refresh", default=os.getenv("FORCE_NFL_REFRESH", "false"))
     parser.add_argument(
         "--force-full-rebuild",
         default=os.getenv("FORCE_FULL_REBUILD", "false"),
@@ -299,6 +313,7 @@ def main() -> None:
         lookahead_days=args.lookahead_days,
         force_full_rebuild=parse_bool(args.force_full_rebuild),
         project=args.project,
+        force_nfl_refresh=parse_bool(args.force_nfl_refresh),
     )
     print(json.dumps(plan, indent=2, sort_keys=True))
 

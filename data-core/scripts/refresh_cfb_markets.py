@@ -30,6 +30,7 @@ from src.models.cfb_market import (  # noqa: E402
     normal_probability_above,
 )
 from src.data.odds_api_errors import OddsApiQuotaExhausted, check_odds_api_response  # noqa: E402
+from src.data.odds_api_client import budgeted_get, response_timestamp  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
 
@@ -68,7 +69,7 @@ def quarter_kelly(probability: float, price: float) -> float:
 
 
 def fetch_odds(api_key: str) -> tuple[list[dict[str, Any]], datetime, int | None]:
-    response = requests.get(
+    response = budgeted_get(
         ODDS_URL,
         params={
             "apiKey": api_key,
@@ -77,11 +78,11 @@ def fetch_odds(api_key: str) -> tuple[list[dict[str, Any]], datetime, int | None
             "oddsFormat": "american",
             "dateFormat": "iso",
         },
-        timeout=30,
+        source="cfb",
     )
     check_odds_api_response(response, context="CFB team-market odds")
     remaining = response.headers.get("x-requests-remaining")
-    return response.json(), datetime.now(timezone.utc), int(remaining) if remaining else None
+    return response.json(), response_timestamp(response), int(remaining) if remaining else None
 
 
 def match_odds_event(game: dict[str, Any], odds_events: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -332,32 +333,35 @@ def sync_rows(
                 for row in odds_rows
             ],
         )
-        event_ids = [str(value) for value in scored["event_id"].tolist()]
-        cur.execute(
-            "DELETE FROM cfb_market_recommendations WHERE model_version=%s AND event_id=ANY(%s::text[])",
-            (model.model_version, event_ids),
-            prepare=False,
-        )
-        cur.executemany(
-            """
-                INSERT INTO cfb_market_recommendations (
-                  event_id, model_version, market, selection, subject, book,
-                  book_title, line, price, model_probability, implied_probability,
-                  edge, ev, quarter_kelly, confidence, quality_flags,
-                  prediction_ts, odds_snapshot_ts, updated_at
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
-            """,
-            [
-                (
-                    row["event_id"], row["model_version"], row["market"], row["selection"],
-                    row["subject"], row["book"], row["book_title"], row["line"], row["price"],
-                    row["model_probability"], row["implied_probability"], row["edge"], row["ev"],
-                    row["quarter_kelly"], row["confidence"], Jsonb(row["quality_flags"]),
-                    row["prediction_ts"], row["odds_snapshot_ts"],
-                )
-                for row in recommendations
-            ],
-        )
+        # Off-cycle/budget-blocked runs retain captured prices. Their original
+        # timestamps still make the serving view withhold stale edge/EV.
+        if odds_rows:
+            event_ids = [str(value) for value in scored["event_id"].tolist()]
+            cur.execute(
+                "DELETE FROM cfb_market_recommendations WHERE model_version=%s AND event_id=ANY(%s::text[])",
+                (model.model_version, event_ids),
+                prepare=False,
+            )
+            cur.executemany(
+                """
+                    INSERT INTO cfb_market_recommendations (
+                      event_id, model_version, market, selection, subject, book,
+                      book_title, line, price, model_probability, implied_probability,
+                      edge, ev, quarter_kelly, confidence, quality_flags,
+                      prediction_ts, odds_snapshot_ts, updated_at
+                    ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+                """,
+                [
+                    (
+                        row["event_id"], row["model_version"], row["market"], row["selection"],
+                        row["subject"], row["book"], row["book_title"], row["line"], row["price"],
+                        row["model_probability"], row["implied_probability"], row["edge"], row["ev"],
+                        row["quarter_kelly"], row["confidence"], Jsonb(row["quality_flags"]),
+                        row["prediction_ts"], row["odds_snapshot_ts"],
+                    )
+                    for row in recommendations
+                ],
+            )
     conn.commit()
 
 

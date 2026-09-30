@@ -1,7 +1,12 @@
-from datetime import date
+from datetime import date, datetime, timezone
+from types import SimpleNamespace
+from unittest.mock import MagicMock
+
+import pandas as pd
+import pytest
 
 from scripts.audit_cfb_readiness import readiness
-from scripts.refresh_cfb_markets import american_implied_probability, match_odds_event, normalize_team
+from scripts.refresh_cfb_markets import american_implied_probability, match_odds_event, normalize_team, sync_rows
 from scripts.train_cfb_market_model import (
     ESPN_SCOREBOARD_LIMIT,
     fetch_games,
@@ -9,7 +14,7 @@ from scripts.train_cfb_market_model import (
     month_tokens,
     scoreboard_params,
 )
-from src.models.cfb_market import normal_probability_above, parse_espn_scoreboard
+from src.models.cfb_market import FEATURE_COLUMNS, normal_probability_above, parse_espn_scoreboard
 
 
 def test_parse_espn_scoreboard_preserves_pregame_contract():
@@ -147,3 +152,28 @@ def test_fetch_games_queries_yyyy_mm_months_and_filters_window(monkeypatch):
     assert all(call["params"]["limit"] == 200 for call in calls)
     assert ids == {"aug-31", "sep-spill", "sep-01", "sep-14"}
     assert "sep-20" not in ids
+
+
+@pytest.mark.parametrize('has_capture', [False, True])
+def test_cfb_refresh_retains_recommendations_unless_prices_were_captured(has_capture):
+    conn = MagicMock()
+    cursor = conn.cursor.return_value.__enter__.return_value
+    scored = pd.DataFrame([{
+        **{column: 0 for column in FEATURE_COLUMNS},
+        'event_id': 'game', 'home_games_before': 3, 'away_games_before': 3,
+        'predicted_home_points': 24, 'predicted_away_points': 21,
+        'predicted_margin': 3, 'predicted_total': 45, 'home_win_probability': 0.6,
+    }])
+    captured = [{
+        'event_id': 'game', 'provider_event_id': 'provider-game', 'book': 'draftkings',
+        'book_title': 'DraftKings', 'market': 'moneyline', 'selection': 'home',
+        'line': None, 'price': -150, 'implied_probability': 0.6, 'last_update': None,
+        'snapshot_ts': datetime(2026, 10, 1, tzinfo=timezone.utc), 'raw_record': {},
+    }] if has_capture else []
+    model = SimpleNamespace(model_version='cfb-test', margin_sigma=14, total_sigma=15)
+    sync_rows(conn, [], scored, captured, [], model, datetime.now(timezone.utc))
+    assert any('DELETE FROM cfb_market_recommendations' in call.args[0]
+               for call in cursor.execute.call_args_list) is has_capture
+    assert any('INSERT INTO cfb_team_predictions' in call.args[0]
+               for call in cursor.execute.call_args_list)
+    conn.commit.assert_called_once()

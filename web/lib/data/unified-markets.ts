@@ -202,7 +202,7 @@ export async function getUnifiedMarketFeed(): Promise<UnifiedMarketFeed> {
     getMlbResearchBoard("moneyline"),
     getMlbResearchBoard("run_line"),
     getMlbResearchBoard("total"),
-    getTeamMarketPredictions("NFL", { lookaheadDays: 14 }),
+    getTeamMarketPredictions("NFL"),
     getNflAnytimeTdFeed(),
     getCfbMarketFeed(),
     getTeamMarketPredictions("NBA", { lookaheadDays: 2 }),

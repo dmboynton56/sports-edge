@@ -22,6 +22,7 @@ from src.models.nfl_v2 import PBP_AGGREGATE_SQL
 from src.models.predictor import GamePredictor
 from src.utils.injury_loader import load_injury_impacts_from_supabase
 from src.utils.explanation_export import build_explanation_rows, write_explanation_cache
+from src.utils.nfl_schedule import DENVER, nfl_week_window
 
 
 def _parse_args() -> argparse.Namespace:
@@ -40,13 +41,13 @@ def _parse_args() -> argparse.Namespace:
         "--start-date",
         type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
         default=None,
-        help="Override the week start date (YYYY-MM-DD). Default: upcoming Thursday.",
+        help="Override the week start date (YYYY-MM-DD). Default: this forecast cycle's Tuesday.",
     )
     parser.add_argument(
         "--window-days",
         type=int,
         default=6,
-        help="Number of days to include after start date (default: 6 for Thu-Mon).",
+        help="Number of days after start date (default: 6 for Tuesday-Monday).",
     )
     parser.add_argument(
         "--season",
@@ -73,17 +74,7 @@ def _parse_args() -> argparse.Namespace:
 
 
 def _nfl_week_start(today: datetime.date) -> datetime.date:
-    """Return the Thursday that starts the current NFL week."""
-    weekday = today.weekday()  # Monday=0
-    # Tue (1), Wed (2) -> Look forward to upcoming Thursday (3)
-    if weekday in [1, 2]:
-        return today + timedelta(days=(3 - weekday))
-    # Thu (3), Fri (4), Sat (5), Sun (6), Mon (0) -> Look back to most recent Thursday
-    else:
-        if weekday == 0:  # Monday
-            return today - timedelta(days=4)
-        else:  # Thursday-Sunday
-            return today - timedelta(days=(weekday - 3))
+    return nfl_week_window(today)[0]
 
 
 def _query_games(client: bigquery.Client, project: str, start_date: datetime.date, end_date: datetime.date) -> pd.DataFrame:
@@ -208,11 +199,14 @@ def _log_model_run(
 def main() -> None:
     load_dotenv()
     args = _parse_args()
-    client = bigquery.Client(project=args.project)
-
-    today = datetime.now(tz=timezone.utc).date()
+    today = datetime.now(tz=DENVER).date()
     start_date = args.start_date or _nfl_week_start(today)
     end_date = start_date + timedelta(days=args.window_days)
+    if not 0 <= args.window_days <= 6:
+        raise SystemExit("NFL forecasts are limited to one Tuesday-Monday cycle (--window-days 0..6).")
+    if end_date > nfl_week_window(start_date)[1]:
+        raise SystemExit("NFL forecasts cannot extend beyond this cycle's Monday.")
+    client = bigquery.Client(project=args.project)
     season = args.season or (start_date.year if start_date.month >= 8 else start_date.year - 1)
     print(f"Building predictions for games between {start_date} and {end_date}. Target season={season}.")
 

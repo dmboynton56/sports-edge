@@ -26,6 +26,7 @@ import {
 import type { Prediction } from "@/lib/data/types";
 import { isFiniteNumber } from "@/lib/data/json";
 import { formatAmericanPrice, formatDateTime, formatNumber, formatPct } from "@/lib/format";
+import { formatFairAmericanOdds, isPlayerProbabilityMarket } from "@/lib/fair-odds";
 import {
   filterAndSortMarketRows,
   MARKET_TABLE_PAGE_SIZE,
@@ -41,7 +42,7 @@ const SORT_LABELS = {
   subject: "Pick",
   eventTime: "Start",
   market: "Market",
-  price: "Price",
+  price: "Book / fair odds",
   modelProbability: "Probability",
   edge: "Edge",
   ev: "EV",
@@ -265,7 +266,9 @@ export function MarketsTable({
                     <div className="font-medium text-foreground">{prediction.book}</div>
                     <div className="whitespace-nowrap text-xs text-muted-foreground">
                       {isFiniteNumber(prediction.line) ? `line ${formatNumber(prediction.line, 1)} · ` : ""}
-                      {formatAmericanPrice(prediction.price)}
+                      {prediction.price == null && isPlayerProbabilityMarket(prediction.market)
+                        ? `Fair odds ${formatFairAmericanOdds(prediction.modelProbability)}`
+                        : formatAmericanPrice(prediction.price)}
                     </div>
                   </TableCell>
                   <TableCell>

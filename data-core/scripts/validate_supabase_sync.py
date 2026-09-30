@@ -12,12 +12,14 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
 
 ROOT = Path(__file__).resolve().parent.parent
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
+from src.utils.nfl_schedule import DENVER, nfl_prediction_cutoff, nfl_week_window
 
 LOGGER = logging.getLogger("validate_supabase_sync")
 
@@ -76,16 +78,24 @@ def main() -> None:
         user=creds["db_user"],
     )
 
-    report: dict[str, int] = {}
+    today = datetime.now(DENVER).date()
+    nfl_start, nfl_end = nfl_week_window(today)
+    nfl_cutoff = nfl_prediction_cutoff(today)
+    report: dict[str, int | float] = {}
     try:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 SELECT COUNT(*)
-                FROM model_predictions
-                WHERE asof_ts >= NOW() - (%s || ' hours')::interval
+                FROM model_predictions p
+                LEFT JOIN games g ON g.id = p.game_id
+                WHERE (g.league = 'NFL'
+                       AND COALESCE(g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date) BETWEEN %s AND %s
+                       AND p.asof_ts >= %s)
+                   OR (COALESCE(g.league, '') <> 'NFL'
+                       AND p.asof_ts >= NOW() - (%s || ' hours')::interval)
                 """,
-                (args.prediction_hours,),
+                (nfl_start, nfl_end, nfl_cutoff, args.prediction_hours),
             )
             report["recent_predictions"] = int(cur.fetchone()[0])
 
@@ -167,9 +177,11 @@ def main() -> None:
                   >= (now() AT TIME ZONE 'America/Denver')::date - (%s || ' days')::interval
                   AND COALESCE(game_date, (game_time_utc AT TIME ZONE 'America/Denver')::date)
                   <= (now() AT TIME ZONE 'America/Denver')::date + (%s || ' days')::interval
+                  AND (league <> 'NFL' OR COALESCE(game_date,
+                    (game_time_utc AT TIME ZONE 'America/Denver')::date) BETWEEN %s AND %s)
                 GROUP BY league
                 """,
-                (args.book_spread_lookback_days, args.book_spread_lookahead_days),
+                (args.book_spread_lookback_days, args.book_spread_lookahead_days, nfl_start, nfl_end),
             )
             for league, games, missing_book_spread in cur.fetchall():
                 league_key = str(league).lower()
@@ -210,21 +222,23 @@ def main() -> None:
                       FROM games g
                       WHERE g.league = %s
                         AND COALESCE(g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date)
-                          >= (now() AT TIME ZONE 'America/Denver')::date
+                          >= %s
                         AND COALESCE(g.game_date, (g.game_time_utc AT TIME ZONE 'America/Denver')::date)
-                          <= (now() AT TIME ZONE 'America/Denver')::date + (%s || ' days')::interval
+                          <= %s
                     ),
                     latest_pred AS (
                       SELECT DISTINCT ON (p.game_id) p.game_id
                       FROM model_predictions p
                       JOIN scoped s ON s.id = p.game_id
+                      WHERE p.asof_ts >= %s
                       ORDER BY p.game_id, p.asof_ts DESC
                     )
                     SELECT
                       (SELECT COUNT(*) FROM scoped) AS games,
                       (SELECT COUNT(*) FROM latest_pred) AS with_prediction
                     """,
-                    (league, 7 if league == "NFL" else 1),
+                    (league, today, nfl_end if league == "NFL" else today + timedelta(days=1),
+                     nfl_cutoff if league == "NFL" else datetime.now(DENVER) - timedelta(hours=args.prediction_hours)),
                 )
                 games, with_prediction = cur.fetchone()
                 report[f"{league_key}_slate_window_games"] = int(games)
@@ -249,7 +263,7 @@ def main() -> None:
             failures.append(
                 f"Found {report['orphan_predictions']} orphan predictions (max {args.max_orphans})."
             )
-        if report.get("mlb_recent_predictions", 0) <= 0:
+        if report.get("mlb_window_games", 0) > 0 and report.get("mlb_recent_predictions", 0) <= 0:
             failures.append("No recent MLB model_predictions rows found.")
         if failures:
             for failure in failures:

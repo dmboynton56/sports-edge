@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 import os
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone, timedelta
@@ -29,6 +30,8 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from src.data.odds_api_errors import check_odds_api_response, is_odds_api_quota_error
+from src.data.odds_api_client import budgeted_get, response_timestamp
+from src.utils.nfl_schedule import nfl_week_window
 from src.utils.supabase_pg import (
     create_pg_connection,
     load_supabase_credentials,
@@ -37,7 +40,7 @@ from src.utils.team_codes import canonical_team_abbr
 
 LOGGER = logging.getLogger("sync_odds")
 PREFERRED_BOOKMAKERS = ["draftkings", "betmgm", "fanduel"]
-ODDS_WINDOW_DAYS = {"NFL": 14, "NBA": 10}
+ODDS_WINDOW_DAYS = {"NFL": 7, "NBA": 10}
 SERVING_TIMEZONE = ZoneInfo("America/Denver")
 
 
@@ -61,6 +64,19 @@ class FeaturedMarketOutcome:
 
 def odds_window_days(league: str) -> int:
     return ODDS_WINDOW_DAYS.get(league.upper(), 10)
+
+
+def serving_dates(league: str, now: datetime) -> tuple[date, date]:
+    today = now.astimezone(SERVING_TIMEZONE).date()
+    return nfl_week_window(today) if league == "NFL" else (today - timedelta(days=2), today + timedelta(days=10))
+
+
+def request_bounds(league: str, now: datetime) -> dict[str, str]:
+    start, end = serving_dates(league, now)
+    return {
+        "commenceTimeFrom": datetime.combine(start, datetime.min.time(), SERVING_TIMEZONE).astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "commenceTimeTo": (datetime.combine(end + timedelta(days=1), datetime.min.time(), SERVING_TIMEZONE) - timedelta(seconds=1)).astimezone(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }
 
 
 def odds_event_schedule_date(event: Dict[str, Any]) -> Optional[date]:
@@ -283,9 +299,33 @@ def pick_featured_market_outcomes(
                 ]
             )
             break
+    return selected + pick_team_total_outcomes(event, home_code, away_code, mapping)
+
+
+def pick_team_total_outcomes(event, home_code, away_code, mapping) -> list[FeaturedMarketOutcome]:
+    """Preserve each team's paired real prices; never derive them from game totals."""
+    selected = []
+    for team, side in ((home_code, "home"), (away_code, "away")):
+        for book in ordered_bookmakers(event.get("bookmakers", [])):
+            market = next((m for m in book.get("markets", []) if m.get("key") == "team_totals"), None)
+            outcomes = [o for o in (market or {}).get("outcomes", []) if get_team_code(o.get("description", ""), mapping) == team]
+            over = next((o for o in outcomes if str(o.get("name", "")).lower() == "over"), None)
+            under = next((o for o in outcomes if str(o.get("name", "")).lower() == "under"), None)
+            if not over or not under or over.get("point") is None or over.get("point") != under.get("point"):
+                continue
+            try:
+                line = float(over["point"])
+                prices = [float(outcome["price"]) for outcome in (over, under)]
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not math.isfinite(line) or any(not math.isfinite(price) or abs(price) < 100 or not price.is_integer() for price in prices):
+                continue
+            selected.extend(FeaturedMarketOutcome("team_total", f"{side}_{label}", line, int(price), book["key"])
+                            for label, price in zip(("over", "under"), prices))
+            break
     return selected
 
-def fetch_odds_data(api_key: str, league: str) -> List[Dict[str, Any]]:
+def fetch_odds_data(api_key: str, league: str, *, now_utc: datetime | None = None) -> List[Dict[str, Any]]:
     """Fetch odds from The Odds API for a given league."""
     sport_key = 'americanfootball_nfl' if league == 'NFL' else 'basketball_nba'
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
@@ -297,16 +337,49 @@ def fetch_odds_data(api_key: str, league: str) -> List[Dict[str, Any]]:
         'dateFormat': 'iso',
         'bookmakers': 'draftkings,betmgm,fanduel'
     }
+    params.update(request_bounds(league, now_utc or datetime.now(timezone.utc)))
     
-    resp = requests.get(url, params=params, timeout=30)
+    resp = budgeted_get(url, params=params, source=league.lower())
     check_odds_api_response(resp, context=f"{league} odds")
-    return resp.json()
+    events = resp.json()
+    for event in events:
+        event["_snapshot_ts"] = response_timestamp(resp).isoformat()
+    return events
+
+
+def fetch_nfl_team_totals(api_key: str, events: list[dict], *, now_utc: datetime | None = None) -> list[dict]:
+    """One team_totals market per game, reused for the entire forecast cycle."""
+    now = now_utc or datetime.now(timezone.utc)
+    start, end = serving_dates("NFL", now)
+    totals = []
+    for event in events:
+        schedule_date = odds_event_schedule_date(event)
+        if schedule_date is None or not start <= schedule_date <= end:
+            continue
+        kickoff = datetime.fromisoformat(str(event["commence_time"]).replace("Z", "+00:00"))
+        if kickoff <= now or not event.get("id"):
+            continue
+        try:
+            response = budgeted_get(
+                f"https://api.the-odds-api.com/v4/sports/americanfootball_nfl/events/{event['id']}/odds",
+                params={"apiKey": api_key, "markets": "team_totals", "bookmakers": "draftkings,betmgm,fanduel", "oddsFormat": "american", "dateFormat": "iso"},
+                source="nfl", cache_period=f"team-totals-{start.isoformat()}", retry_empty=True,
+            )
+        except RuntimeError as exc:
+            if not is_odds_api_quota_error(exc):
+                raise
+            LOGGER.warning("NFL team totals stopped: %s", exc)
+            break
+        payload = response.json()
+        if payload:
+            payload["_snapshot_ts"] = response_timestamp(response).isoformat()
+            totals.append(payload)
+    return totals
 
 def count_expected_games(conn, league: str) -> int:
     """Count games in the serving window where odds should be attempted."""
     now = datetime.now(timezone.utc)
-    start_window = now.isoformat()
-    end_window = (now + timedelta(days=odds_window_days(league))).isoformat()
+    start_date, end_date = serving_dates(league, now)
     with conn.cursor() as cur:
         cur.execute(
             """
@@ -314,9 +387,9 @@ def count_expected_games(conn, league: str) -> int:
             FROM games
             WHERE league = %s
               AND game_time_utc >= %s
-              AND game_time_utc <= %s
+              AND game_date BETWEEN %s AND %s
             """,
-            (league, start_window, end_window),
+            (league, now.isoformat(), start_date, end_date),
         )
         return int(cur.fetchone()[0])
 
@@ -357,19 +430,18 @@ def sync_odds_to_supabase(
     updates_by_game: dict[object, tuple[float, Optional[int], str]] = {}
     snapshots_by_key: dict[
         tuple[object, str, str],
-        tuple[object, str, str, Optional[float], int, str, str, datetime],
+        tuple[object, str, str, Optional[float], int, str, str, datetime, datetime],
     ] = {}
     matched_game_ids: set[object] = set()
-    games_by_market: dict[str, set[object]] = {"moneyline": set(), "spread": set(), "total": set()}
+    games_by_market: dict[str, set[object]] = {market: set() for market in ("moneyline", "spread", "total", "team_total")}
     
     # Match the serving slate only. The API may return an entire season.
     now = now_utc or datetime.now(timezone.utc)
     if now.tzinfo is None:
         now = now.replace(tzinfo=timezone.utc)
-    start_window = (now - timedelta(days=2)).isoformat()
-    end_window = (now + timedelta(days=odds_window_days(league))).isoformat()
-    local_start_date = (now - timedelta(days=2)).astimezone(SERVING_TIMEZONE).date()
-    local_end_date = (now + timedelta(days=odds_window_days(league))).astimezone(SERVING_TIMEZONE).date()
+    local_start_date, local_end_date = serving_dates(league, now)
+    bounds = request_bounds(league, now)
+    start_window, end_window = bounds["commenceTimeFrom"], bounds["commenceTimeTo"]
     
     # Fetch recent games from Supabase to match
     with conn.cursor() as cur:
@@ -447,6 +519,7 @@ def sync_odds_to_supabase(
                             outcome.selection,
                             provider_event_id,
                             commence_time,
+                            datetime.fromisoformat(event["_snapshot_ts"]) if event.get("_snapshot_ts") else now,
                         ),
                     )
                     games_by_market[outcome.market].add(gid)
@@ -483,15 +556,14 @@ def sync_odds_to_supabase(
     updates = [(*values, gid) for gid, values in updates_by_game.items()]
     snapshots = list(snapshots_by_key.values())
 
-    # The odds provider often returns the same featured prices on every poll.
-    # Keep BigQuery as the full history, but only append a Supabase snapshot
-    # when the serving value actually changed.
+    # Replaying a cached response must not make its prices look newly captured.
+    # A genuinely new capture still records unchanged prices for freshness/history.
     if snapshots:
         with conn.cursor() as cur:
             cur.execute(
                 """
                 SELECT DISTINCT ON (game_id, market, selection)
-                    game_id, market, selection, book, line, price, provider_event_id
+                    game_id, market, selection, book, line, price, provider_event_id, snapshot_ts
                 FROM odds_snapshots
                 WHERE game_id = ANY(%s)
                 ORDER BY game_id, market, selection, snapshot_ts DESC
@@ -499,15 +571,15 @@ def sync_odds_to_supabase(
                 (list(matched_game_ids),),
             )
             latest_by_key = {
-                (game_id, market, selection): (book, line, price, provider_event_id)
-                for game_id, market, selection, book, line, price, provider_event_id in cur.fetchall()
+                (game_id, market, selection): (book, line, price, provider_event_id, snapshot_ts)
+                for game_id, market, selection, book, line, price, provider_event_id, snapshot_ts in cur.fetchall()
             }
 
         snapshots = [
             snapshot
             for snapshot in snapshots
             if latest_by_key.get((snapshot[0], snapshot[2], snapshot[5]))
-            != (snapshot[1], snapshot[3], snapshot[4], snapshot[6])
+            != (snapshot[1], snapshot[3], snapshot[4], snapshot[6], snapshot[8])
         ]
 
     if updates or snapshots:
@@ -524,9 +596,9 @@ def sync_odds_to_supabase(
                         game_id, book, market, line, price, snapshot_ts,
                         selection, provider_event_id, commence_time_utc
                     )
-                    VALUES (%s, %s, %s, %s, %s, NOW(), %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
-                    snapshots,
+                    [(*s[:5], s[8], *s[5:8]) for s in snapshots],
                 )
         conn.commit()
         LOGGER.info(
@@ -675,6 +747,9 @@ def main():
         for league in leagues:
             LOGGER.info(f"Starting sync for {league}...")
             expected_games = count_expected_games(pg_conn, league)
+            if expected_games == 0:
+                LOGGER.info("No upcoming %s serving games; skipping paid odds requests", league)
+                continue
             try:
                 odds_data = fetch_odds_data(api_key, league)
             except RuntimeError as exc:
@@ -699,6 +774,10 @@ def main():
                 
             LOGGER.info(f"Retrieved {len(odds_data)} games from The Odds API for {league}")
             result = sync_odds_to_supabase(pg_conn, league, odds_data)
+            if league == "NFL":
+                team_totals = fetch_nfl_team_totals(api_key, odds_data)
+                if team_totals:
+                    sync_odds_to_supabase(pg_conn, league, team_totals)
             if result.supabase_games > 0 and result.matched_count == 0:
                 overlapping_dates = result.supabase_dates & result.odds_dates
                 message = (

@@ -67,6 +67,7 @@ def test_run_classification_includes_no_slate_and_partial():
     assert classify_run(has_slate=True, source_ok=True, predictions_valid=True, top25_coverage=0.79) == "partial"
     assert classify_run(has_slate=True, source_ok=True, predictions_valid=True, top25_coverage=0.8) == "healthy"
     assert classify_run(has_slate=True, source_ok=False, predictions_valid=True, top25_coverage=1) == "failed"
+    assert classify_run(has_slate=True, source_ok=True, predictions_valid=True, top25_coverage=0, pricing_required=False) == "healthy"
 
 
 def test_slate_over_requires_complete_official_schedule_and_expected_games():

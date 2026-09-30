@@ -65,7 +65,7 @@ export type MlbHomeRunFeed = {
   productionStatus: "candidate" | "approved" | "blocked";
   predictions: MlbHomeRunPrediction[];
   gaps: string[];
-  dataSource?: "supabase_edges" | "supabase_predictions" | "static_json" | "unavailable";
+  dataSource?: "supabase_predictions" | "static_json" | "unavailable";
   statcastHealth?: MlbHomeRunStatcastHealth;
   models?: Record<string, MlbHomeRunModelFeed>;
 };

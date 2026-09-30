@@ -1,4 +1,5 @@
 from datetime import date, datetime, timezone
+import pytest
 
 from scripts import plan_daily_refresh, predict_mlb_home_runs
 
@@ -57,7 +58,8 @@ def test_build_plan_activates_nfl_when_upcoming_schedule_is_available(monkeypatc
 
     assert plan["run_nfl"] is True
     assert plan["run_cfb"] is True
-    assert plan["run_market_odds"] is True
+    assert plan["run_market_odds"] is False
+    assert plan["run_nfl_predictions"] is False
     assert "schedule available" in plan["nfl_reason"]
     assert "historical features only" in plan["nfl_reason"]
 
@@ -131,3 +133,27 @@ def test_default_slate_date_after_denver_midnight():
 
     assert plan_daily_refresh.default_anchor_date(boundary) == date(2026, 7, 16)
     assert predict_mlb_home_runs.default_slate_date(boundary) == date(2026, 7, 16)
+
+
+@pytest.mark.parametrize('day,predictions,odds,start,end', [
+    ('2026-09-29', True, True, '2026-09-29', '2026-10-05'),
+    ('2026-09-30', False, False, '2026-09-29', '2026-10-05'),
+    ('2026-10-01', False, True, '2026-09-29', '2026-10-05'),
+    ('2026-10-04', False, True, '2026-09-29', '2026-10-05'),
+    ('2026-10-05', False, False, '2026-09-29', '2026-10-05'),
+    ('2026-10-06', True, True, '2026-10-06', '2026-10-12'),
+])
+def test_nfl_weekly_predictions_and_month_start_odds_recovery(monkeypatch, day, predictions, odds, start, end):
+    monkeypatch.setattr(plan_daily_refresh, 'nfl_schedule_available', lambda _: True)
+    plan = plan_daily_refresh.build_plan(anchor=date.fromisoformat(day), lookback_days=1, lookahead_days=14, force_full_rebuild=False)
+    assert plan['run_nfl_predictions'] is predictions
+    assert plan['run_nfl_odds'] is odds
+    assert (plan['nfl_start_date'], plan['nfl_end_date']) == (start, end)
+
+
+def test_explicit_nfl_recovery_stays_in_same_cycle(monkeypatch):
+    monkeypatch.setattr(plan_daily_refresh, 'nfl_schedule_available', lambda _: True)
+    plan = plan_daily_refresh.build_plan(anchor=date(2026, 10, 3), lookback_days=1, lookahead_days=14, force_full_rebuild=False, force_nfl_refresh=True)
+    assert plan['run_nfl_predictions'] is True
+    assert plan['run_nfl_odds'] is True
+    assert plan['nfl_end_date'] == '2026-10-05'
