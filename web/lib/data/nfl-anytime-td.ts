@@ -104,7 +104,7 @@ export async function getNflAnytimeTdFeed(): Promise<NflAnytimeTdFeed> {
   const qualified = rows.filter((row) => row.game_date >= today && row.game_date <= end
     && nflPredictionIsCurrent(row.prediction_ts) && isQualifiedAnytimeTdRow(row));
   const filtered = rows.length - qualified.length;
-  const timestamps = rows
+  const timestamps = qualified
     .map((row) => row.prediction_ts)
     .filter((value): value is string => Boolean(value))
     .sort();
@@ -114,7 +114,7 @@ export async function getNflAnytimeTdFeed(): Promise<NflAnytimeTdFeed> {
     gaps: [
       "NFL anytime-TD fair odds come from model probabilities. They are not sportsbook offers, and no betting edge or EV is calculated.",
       filtered
-        ? `${filtered} NFL anytime-TD rows are withheld by role, injury, sample-size, or invalid probability guardrails.`
+        ? `${filtered} NFL anytime-TD rows are withheld by forecast freshness, game window, role, injury, sample-size, or invalid probability guardrails.`
         : "",
     ].filter(Boolean),
   };

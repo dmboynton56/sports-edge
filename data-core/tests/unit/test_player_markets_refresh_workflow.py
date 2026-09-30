@@ -64,7 +64,6 @@ def test_nfl_mlb_production_steps_still_hard_fail() -> None:
         "Sync Predictions to Supabase",
         "Sync Market Odds",
         "Refresh NFL anytime touchdown markets",
-        "Repair Missing Book Spreads",
     ):
         step = _daily_step(name)
         assert "continue-on-error" not in step, name

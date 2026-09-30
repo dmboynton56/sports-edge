@@ -333,32 +333,35 @@ def sync_rows(
                 for row in odds_rows
             ],
         )
-        event_ids = [str(value) for value in scored["event_id"].tolist()]
-        cur.execute(
-            "DELETE FROM cfb_market_recommendations WHERE model_version=%s AND event_id=ANY(%s::text[])",
-            (model.model_version, event_ids),
-            prepare=False,
-        )
-        cur.executemany(
-            """
-                INSERT INTO cfb_market_recommendations (
-                  event_id, model_version, market, selection, subject, book,
-                  book_title, line, price, model_probability, implied_probability,
-                  edge, ev, quarter_kelly, confidence, quality_flags,
-                  prediction_ts, odds_snapshot_ts, updated_at
-                ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
-            """,
-            [
-                (
-                    row["event_id"], row["model_version"], row["market"], row["selection"],
-                    row["subject"], row["book"], row["book_title"], row["line"], row["price"],
-                    row["model_probability"], row["implied_probability"], row["edge"], row["ev"],
-                    row["quarter_kelly"], row["confidence"], Jsonb(row["quality_flags"]),
-                    row["prediction_ts"], row["odds_snapshot_ts"],
-                )
-                for row in recommendations
-            ],
-        )
+        # Off-cycle/budget-blocked runs retain captured prices. Their original
+        # timestamps still make the serving view withhold stale edge/EV.
+        if odds_rows:
+            event_ids = [str(value) for value in scored["event_id"].tolist()]
+            cur.execute(
+                "DELETE FROM cfb_market_recommendations WHERE model_version=%s AND event_id=ANY(%s::text[])",
+                (model.model_version, event_ids),
+                prepare=False,
+            )
+            cur.executemany(
+                """
+                    INSERT INTO cfb_market_recommendations (
+                      event_id, model_version, market, selection, subject, book,
+                      book_title, line, price, model_probability, implied_probability,
+                      edge, ev, quarter_kelly, confidence, quality_flags,
+                      prediction_ts, odds_snapshot_ts, updated_at
+                    ) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+                """,
+                [
+                    (
+                        row["event_id"], row["model_version"], row["market"], row["selection"],
+                        row["subject"], row["book"], row["book_title"], row["line"], row["price"],
+                        row["model_probability"], row["implied_probability"], row["edge"], row["ev"],
+                        row["quarter_kelly"], row["confidence"], Jsonb(row["quality_flags"]),
+                        row["prediction_ts"], row["odds_snapshot_ts"],
+                    )
+                    for row in recommendations
+                ],
+            )
     conn.commit()
 
 

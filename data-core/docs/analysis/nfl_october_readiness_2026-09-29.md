@@ -1,6 +1,6 @@
 # NFL October readiness — September 29, 2026
 
-Local implementation and research readout. These changes have not been deployed or applied to the production database.
+Implementation and research readout, with pre-merge verification updated September 30. The rollout checks below distinguish code verification from live account and serving-data coverage.
 
 ## Credit math and October budget
 
@@ -86,4 +86,6 @@ Local credentials are absent, so I could inspect Actions and published performan
 
 After the required explicit pre-merge reviews and deployment, the workflow applies the extended `sql/023_odds_api_usage.sql` ledger. Run Daily Refresh once with `force_nfl_refresh=true` to publish the current cycle if the previous failed run left it missing, then check the independent NFL readiness and credit summaries. October 1 odds catch-up is automatic. The web changes must be deployed for the one-week serving window and team-total rows to take effect.
 
-Verification: 153 targeted Python tests; 14 frontend tests; TypeScript checking; PostgreSQL verification of repeatable schema application, reservations, restricted access, current-week monitoring, and stale forecast exclusion. The local sklearn version emitted an existing deprecation warning; CI retains the repository's isolated model runtimes. All live-account and live-data claims remain unverified until rollout.
+Verification: 408 Python tests; 53 frontend tests; frontend lint and production build (including TypeScript checking); PostgreSQL verification of repeatable schema application, reservations, restricted access, current-week monitoring, and stale forecast exclusion. Two sklearn/SciPy optimization warnings were emitted locally; CI retains the repository's isolated model runtimes. Live account and serving-data coverage require the rollout checks above.
+
+Both required reviews (`/thermo-nuclear-review` and `/thermo-nuclear-code-quality-review`) were explicitly completed September 30. Review fixes preserve CFB captured recommendations on days without an odds fetch, reject invalid team-total price pairs, and report touchdown feed freshness from eligible current-cycle rows. Quota reservation and response recording now have separate transaction responsibilities, with one connection cleanup path. The rebase preserves the landed CFB reliability fix and newer PGA/performance exports.

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import math
 import os
 from dataclasses import dataclass, field
 from datetime import date, datetime, timezone, timedelta
@@ -312,10 +313,15 @@ def pick_team_total_outcomes(event, home_code, away_code, mapping) -> list[Featu
             under = next((o for o in outcomes if str(o.get("name", "")).lower() == "under"), None)
             if not over or not under or over.get("point") is None or over.get("point") != under.get("point"):
                 continue
-            if over.get("price") is None or under.get("price") is None:
+            try:
+                line = float(over["point"])
+                prices = [float(outcome["price"]) for outcome in (over, under)]
+            except (KeyError, TypeError, ValueError):
                 continue
-            selected.extend(FeaturedMarketOutcome("team_total", f"{side}_{label}", float(outcome["point"]), int(outcome["price"]), book["key"])
-                            for label, outcome in (("over", over), ("under", under)))
+            if not math.isfinite(line) or any(not math.isfinite(price) or abs(price) < 100 or not price.is_integer() for price in prices):
+                continue
+            selected.extend(FeaturedMarketOutcome("team_total", f"{side}_{label}", line, int(price), book["key"])
+                            for label, price in zip(("over", "under"), prices))
             break
     return selected
 

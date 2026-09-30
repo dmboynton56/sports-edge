@@ -361,6 +361,14 @@ def test_team_total_fetch_skips_finished_games_and_future_cycles():
         assert fetch.call_args.kwargs['cache_period'] == 'team-totals-2026-09-29'
 
 
+@pytest.mark.parametrize('field,value', [('price', 0), ('price', float('inf')), ('price', 'invalid'), ('point', float('nan'))])
+def test_team_total_invalid_pair_is_withheld_without_losing_other_team(field, value):
+    event = _team_total_event()
+    event['bookmakers'][0]['markets'][0]['outcomes'][0][field] = value
+    rows = pick_team_total_outcomes(event, 'SEA', 'NE', NFL_MAPPING)
+    assert [row.selection for row in rows] == ['away_over', 'away_under']
+
+
 def test_cached_odds_keep_original_snapshot_timestamp():
     event = _team_total_event()
     event['_snapshot_ts'] = '2026-09-29T13:05:00+00:00'

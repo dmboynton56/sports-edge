@@ -74,4 +74,22 @@ describe("NFL anytime TD serving guardrails", () => {
     expect(feed.predictions[0]).toMatchObject({ price: null, edge: null, marketStatus: "model_only" });
     expect(new URL(fetchMock.mock.calls[0][0]).searchParams.get("order")).toBe("td_probability.desc");
   });
+
+  it("does not report an old or future-cycle feed as freshly generated", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-09-10T13:00:00Z"));
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", "test-key");
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => [
+        { ...baseRow, prediction_ts: "2026-09-01T15:00:00Z" },
+        { ...baseRow, game_date: "2026-09-20" },
+      ],
+    }));
+    const feed = await getNflAnytimeTdFeed();
+    expect(feed.predictions).toEqual([]);
+    expect(feed.generatedAt).toBeNull();
+    expect(feed.gaps.join(" ")).toContain("forecast freshness");
+  });
 });

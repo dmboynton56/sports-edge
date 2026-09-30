@@ -71,6 +71,71 @@ def response_timestamp(response) -> datetime:
     return datetime.fromisoformat(raw) if raw else datetime.now(timezone.utc)
 
 
+def _reserve_or_reuse(conn, *, request_key: str, source: str, cost: int,
+                     params: dict[str, Any], now: datetime, retry_empty: bool,
+                     get, timeout: int) -> requests.Response | None:
+    """Serialize the decision and commit a reservation before any paid HTTP."""
+    with conn.cursor() as cur:
+        cur.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK_ID,), prepare=False)
+        cur.execute("SELECT status, payload, headers, fetched_at FROM odds_api_request_cache WHERE request_key = %s",
+                    (request_key,), prepare=False)
+        cached = cur.fetchone()
+        if cached:
+            if cached[0] != "complete":
+                raise OddsApiBudgetBlocked("Odds request already reserved or failed in this period; avoiding duplicate spend")
+            retry_allowed = (
+                retry_empty
+                and cached[2].get("x-requests-last") == "0"
+                and cached[3].astimezone(ZoneInfo("America/Denver")).date()
+                < now.astimezone(ZoneInfo("America/Denver")).date()
+            )
+            if not retry_allowed:
+                conn.commit()
+                LOGGER.info("Reusing %s Odds API snapshot captured at %s", source, cached[3])
+                return _response(cached[1], cached[2], cached[3])
+        month = now.astimezone(timezone.utc).date().replace(day=1)
+        cur.execute("SELECT source, SUM(cost), SUM(cost) FILTER (WHERE status = 'reserved') FROM odds_api_request_cache WHERE budget_month = %s GROUP BY source",
+                    (month,), prepare=False)
+        rows = cur.fetchall()
+        spending = {row[0]: int(row[1]) for row in rows}
+        pending = sum(int(row[2] or 0) for row in rows)
+        probe = get(f"{BASE_URL}/sports/", params={"apiKey": params["apiKey"]}, timeout=timeout)
+        check_odds_api_response(probe, context="Odds API quota check")
+        try:
+            used = int(probe.headers["x-requests-used"])
+            remaining = int(probe.headers["x-requests-remaining"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise OddsApiBudgetBlocked("Quota headers unavailable; paid request skipped") from exc
+        check_budget(source=source, cost=cost, used=used, remaining=remaining, spending=spending, pending=pending)
+        cur.execute("""INSERT INTO odds_api_request_cache
+                    (request_key, budget_month, source, cost, status)
+                    VALUES (%s, %s, %s, %s, 'reserved')
+                    ON CONFLICT (request_key) DO UPDATE SET
+                      budget_month = EXCLUDED.budget_month, cost = EXCLUDED.cost,
+                      status = 'reserved', payload = NULL, headers = '{}'::jsonb,
+                      fetched_at = NULL""",
+                    (request_key, month, source, cost), prepare=False)
+    conn.commit()
+    return None
+
+
+def _record_response(conn, request_key: str, response: requests.Response,
+                     estimated_cost: int, fetched_at: datetime) -> None:
+    headers = {k.lower(): v for k, v in response.headers.items() if k.lower().startswith("x-requests-")}
+    payload = response.json() if response.status_code == 200 else None
+    try:
+        charged = int(headers.get("x-requests-last", estimated_cost))
+    except (TypeError, ValueError):
+        charged = estimated_cost
+    with conn.cursor() as cur:
+        cur.execute("UPDATE odds_api_request_cache SET status = %s, cost = %s, payload = %s, headers = %s, fetched_at = %s WHERE request_key = %s",
+                    ("complete" if response.status_code == 200 else "failed", charged, Jsonb(payload), Jsonb(headers), fetched_at, request_key), prepare=False)
+    conn.commit()
+    response.headers[FETCHED_AT_HEADER] = fetched_at.isoformat()
+    LOGGER.info("Odds API cost=%s used=%s remaining=%s", charged,
+                headers.get("x-requests-used"), headers.get("x-requests-remaining"))
+
+
 def budgeted_get(url: str, *, params: dict[str, Any], source: str,
                  cache_period: str | None = None, timeout: int = 30,
                  retry_empty: bool = False,
@@ -92,94 +157,36 @@ def budgeted_get(url: str, *, params: dict[str, Any], source: str,
     safe_params = {key: value for key, value in params.items() if key != "apiKey"}
     identity = json.dumps([parsed.path.rstrip("/"), safe_params, source, period], sort_keys=True)
     request_key = sha256(identity.encode()).hexdigest()
-    month = now.astimezone(timezone.utc).date().replace(day=1)
     cost = request_cost(params)
     get = get or requests.get
     owns_conn = conn is None
     try:
-        if conn is None:
-            creds = load_supabase_credentials()
-            if not creds["db_password"]:
-                raise OddsApiBudgetBlocked("Missing credentials for durable Odds API credit ledger")
-            conn = create_pg_connection(creds["url"], creds["db_password"], creds.get("db_host"),
-                                        creds["db_port"], creds["db_name"], creds["db_user"])
-        with conn.cursor() as cur:
-            cur.execute("SELECT pg_advisory_xact_lock(%s)", (LOCK_ID,), prepare=False)
-            cur.execute("SELECT status, payload, headers, fetched_at FROM odds_api_request_cache WHERE request_key = %s",
-                        (request_key,), prepare=False)
-            cached = cur.fetchone()
-            if cached:
-                if cached[0] != "complete":
-                    raise OddsApiBudgetBlocked("Odds request already reserved or failed in this period; avoiding duplicate spend")
-                empty_on_earlier_day = (
-                    retry_empty
-                    and cached[2].get("x-requests-last") == "0"
-                    and cached[3].astimezone(ZoneInfo("America/Denver")).date()
-                    < now.astimezone(ZoneInfo("America/Denver")).date()
-                )
-                if not empty_on_earlier_day:
-                    conn.commit()
-                    LOGGER.info("Reusing %s Odds API snapshot captured at %s", source, cached[3])
-                    result = _response(cached[1], cached[2], cached[3])
-                    if owns_conn:
-                        conn.close()
-                    return result
-            cur.execute("SELECT source, SUM(cost), SUM(cost) FILTER (WHERE status = 'reserved') FROM odds_api_request_cache WHERE budget_month = %s GROUP BY source",
-                        (month,), prepare=False)
-            rows = cur.fetchall()
-            spending = {row[0]: int(row[1]) for row in rows}
-            pending = sum(int(row[2] or 0) for row in rows)
-            probe = get(f"{BASE_URL}/sports/", params={"apiKey": params["apiKey"]}, timeout=timeout)
-            check_odds_api_response(probe, context="Odds API quota check")
-            try:
-                used = int(probe.headers["x-requests-used"])
-                remaining = int(probe.headers["x-requests-remaining"])
-            except (KeyError, TypeError, ValueError) as exc:
-                raise OddsApiBudgetBlocked("Quota headers unavailable; paid request skipped") from exc
-            check_budget(source=source, cost=cost, used=used, remaining=remaining, spending=spending, pending=pending)
-            cur.execute("""INSERT INTO odds_api_request_cache
-                        (request_key, budget_month, source, cost, status)
-                        VALUES (%s, %s, %s, %s, 'reserved')
-                        ON CONFLICT (request_key) DO UPDATE SET
-                          budget_month = EXCLUDED.budget_month, cost = EXCLUDED.cost,
-                          status = 'reserved', payload = NULL, headers = '{}'::jsonb,
-                          fetched_at = NULL""",
-                        (request_key, month, source, cost), prepare=False)
-        conn.commit()
-    except OddsApiQuotaExhausted:
-        if conn is not None:
-            conn.rollback()
-        if owns_conn and conn is not None:
-            conn.close()
-        raise
-    except Exception as exc:
-        if conn is not None:
-            conn.rollback()
-        if owns_conn and conn is not None:
-            conn.close()
-        raise OddsApiBudgetBlocked(f"Cannot reserve Odds API credits ({type(exc).__name__}); paid request skipped") from None
-
-    try:
-        # Network failures leave a durable reservation. Do not blindly retry.
-        response = get(url, params=params, timeout=timeout)
-        fetched_at = supplied_now or datetime.now(timezone.utc)
-        headers = {k.lower(): v for k, v in response.headers.items() if k.lower().startswith("x-requests-")}
-        payload = response.json() if response.status_code == 200 else None
+        # Reservation failures never reach the paid request phase.
         try:
-            charged = int(headers.get("x-requests-last", cost))
-        except (TypeError, ValueError):
-            charged = cost
-        with conn.cursor() as cur:
-            cur.execute("UPDATE odds_api_request_cache SET status = %s, cost = %s, payload = %s, headers = %s, fetched_at = %s WHERE request_key = %s",
-                        ("complete" if response.status_code == 200 else "failed", charged, Jsonb(payload), Jsonb(headers), fetched_at, request_key), prepare=False)
-        conn.commit()
-        response.headers[FETCHED_AT_HEADER] = fetched_at.isoformat()
-        LOGGER.info("%s Odds API cost=%s used=%s remaining=%s", source, charged,
-                    headers.get("x-requests-used"), headers.get("x-requests-remaining"))
+            if conn is None:
+                creds = load_supabase_credentials()
+                if not creds["db_password"]:
+                    raise OddsApiBudgetBlocked("Missing credentials for durable Odds API credit ledger")
+                conn = create_pg_connection(creds["url"], creds["db_password"], creds.get("db_host"),
+                                            creds["db_port"], creds["db_name"], creds["db_user"])
+            cached = _reserve_or_reuse(conn, request_key=request_key, source=source, cost=cost,
+                                      params=params, now=now, retry_empty=retry_empty, get=get, timeout=timeout)
+        except Exception as exc:
+            if conn is not None:
+                conn.rollback()
+            if isinstance(exc, OddsApiQuotaExhausted):
+                raise
+            raise OddsApiBudgetBlocked(f"Cannot reserve Odds API credits ({type(exc).__name__}); paid request skipped") from None
+        if cached is not None:
+            return cached
+        # Network failures retain the committed reservation; a retry cannot buy again.
+        try:
+            response = get(url, params=params, timeout=timeout)
+            _record_response(conn, request_key, response, cost, supplied_now or datetime.now(timezone.utc))
+        except requests.RequestException as exc:
+            raise OddsApiBudgetBlocked(f"Odds API request interrupted ({type(exc).__name__}); reservation retained") from None
         check_odds_api_response(response, context=f"{source} odds")
         return response
-    except requests.RequestException as exc:
-        raise OddsApiBudgetBlocked(f"Odds API request interrupted ({type(exc).__name__}); reservation retained") from None
     finally:
-        if owns_conn:
+        if owns_conn and conn is not None:
             conn.close()
