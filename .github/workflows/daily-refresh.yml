@@ -33,7 +33,7 @@ concurrency:
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   PYTHONPATH: ${{ github.workspace }}/data-core
-  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+  DISCORD_WEBHOOK_URL: ${{ github.event.inputs.skip_notifications != 'true' && secrets.DISCORD_WEBHOOK_URL || '' }}
   DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
   FORCE_FULL_REBUILD: ${{ github.event.inputs.force_full_rebuild || 'false' }}
   FORCE_NFL_REFRESH: ${{ github.event.inputs.force_nfl_refresh || 'false' }}
@@ -481,7 +481,8 @@ jobs:
           done
 
       - name: Refresh NFL anytime touchdown markets
-        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl_predictions == 'true' && steps.nfl_predictions.outcome == 'success' }}
+        # The TD model needs captured game totals, including month-start recovery.
+        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_nfl_odds == 'true' }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}

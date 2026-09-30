@@ -127,10 +127,13 @@ def test_nfl_refresh_uses_weekly_gates_and_has_one_canonical_odds_path():
     assert 'run_nfl_predictions' not in steps['Update NFL Raw Data']['if']
     assert '--skip-odds' in steps['Generate NBA Predictions']['run']
     assert 'Repair Missing Book Spreads' not in steps
-    assert 'run_nfl_predictions' in steps['Refresh NFL anytime touchdown markets']['if']
+    assert 'run_nfl_odds' in steps['Refresh NFL anytime touchdown markets']['if']
     assert 'ODDS_API_KEY' not in steps['Refresh NFL anytime touchdown markets'].get('env', {})
 
 
 def test_manual_recovery_can_suppress_external_notifications():
+    workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding='utf-8'))
+    assert "github.event.inputs.skip_notifications != 'true'" in workflow['env']['DISCORD_WEBHOOK_URL']
+    assert "|| ''" in workflow['env']['DISCORD_WEBHOOK_URL']
     for name in ('Notify Discord on Success', 'Notify Discord on Failure', 'Notify portfolio doc sync'):
         assert "github.event.inputs.skip_notifications != 'true'" in _daily_step(name)['if']
