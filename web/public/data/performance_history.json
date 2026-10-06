@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-29T19:36:04.719740+00:00",
+  "generatedAt": "2026-10-06T19:44:35.478226+00:00",
   "source": "data-core/notebooks/cache/performance_history.json",
   "oddspapi": {
     "api_version": "v4",
@@ -194,8 +194,8 @@
       "sampleSize": 285,
       "sample": {
         "bigquery_scored_games": 285,
-        "live_graded_games": 48,
-        "live_graded_weeks": 3,
+        "live_graded_games": 64,
+        "live_graded_weeks": 4,
         "odds_joined_games": 56,
         "oddspapi_spread_rows": 0,
         "supabase_graded_games": 56
@@ -206,14 +206,14 @@
         "bigquery_brier": 0.26675504905752667,
         "bigquery_log_loss": 0.7439216892468532,
         "bigquery_spread_mae": 11.148356792670684,
-        "live_auc": 0.5017857142857143,
-        "live_brier": 0.26172623895794694,
-        "live_ece_10": 0.16830408727695723,
-        "live_home_margin_bias": 1.4035914045220157,
-        "live_home_probability_bias": -0.028897991273784784,
-        "live_log_loss": 0.7204926453013405,
-        "live_margin_mae": 11.222288907745435,
-        "live_status": "monitoring",
+        "live_auc": 0.595734126984127,
+        "live_brier": 0.24380710794774924,
+        "live_ece_10": 0.09969745524623445,
+        "live_home_margin_bias": 1.7617911249028388,
+        "live_home_probability_bias": -0.007672648137901916,
+        "live_log_loss": 0.6810321112986368,
+        "live_margin_mae": 9.961327037873097,
+        "live_status": "alert",
         "supabase_ats_losses": 29,
         "supabase_ats_pushes": 0,
         "supabase_ats_roi": -0.07954545454545459,
@@ -245,7 +245,6 @@
         "notebooks/cache/nfl_v2_live_performance.json"
       ],
       "gaps": [
-        "Four weeks and 64 graded games are required before a live-rollout decision.",
         "OddsPapi historical NFL coverage is recent-fixture limited on this key tier",
         "Injuries are excluded until historical point-in-time coverage passes its gate"
       ],
@@ -584,7 +583,6 @@
   "gaps": [
     "NBA: raw_nba_odds stale before OddsPapi tail patch for Feb-May 2026",
     "NBA: Supabase season still has historical rows missing book_spread",
-    "NFL: Four weeks and 64 graded games are required before a live-rollout decision.",
     "NFL: OddsPapi historical NFL coverage is recent-fixture limited on this key tier",
     "NFL: Injuries are excluded until historical point-in-time coverage passes its gate",
     "MLB: Free historical moneylines are consensus/comparison sources, not sharp-book closing lines",
