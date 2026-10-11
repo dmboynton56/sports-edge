@@ -3,7 +3,7 @@
     "PGA model artifacts were unavailable; used deterministic baseline fallback.",
     "Course-fit is disabled for this non-Masters event unless full artifacts are present."
   ],
-  "generatedAt": "2026-10-10T10:25:12.670843+00:00",
+  "generatedAt": "2026-10-11T10:32:39.771240+00:00",
   "predictions": [
     {
       "baselineProbability": 0.13022009526926226,
@@ -8330,14 +8330,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.00964,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Xander Schauffele",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Xander Schauffele",
-      "updatedAt": "2026-10-10T10:24:55.633505+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428143+00:00"
     },
     {
       "book": "model",
@@ -8352,14 +8352,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.39799999999999996,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Xander Schauffele",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Xander Schauffele",
-      "updatedAt": "2026-10-10T10:24:55.633524+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428161+00:00"
     },
     {
       "book": "model",
@@ -8374,14 +8374,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.855,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Xander Schauffele",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Xander Schauffele",
-      "updatedAt": "2026-10-10T10:24:55.633527+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428166+00:00"
     },
     {
       "book": "model",
@@ -8403,7 +8403,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Xander Schauffele",
-      "updatedAt": "2026-10-10T10:24:55.633531+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428169+00:00"
     },
     {
       "book": "model",
@@ -8418,14 +8418,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.00064,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jordan Spieth",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Jordan Spieth",
-      "updatedAt": "2026-10-10T10:24:55.633534+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428173+00:00"
     },
     {
       "book": "model",
@@ -8440,14 +8440,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.11732,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jordan Spieth",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Jordan Spieth",
-      "updatedAt": "2026-10-10T10:24:55.633537+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428177+00:00"
     },
     {
       "book": "model",
@@ -8462,14 +8462,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.5462400000000001,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jordan Spieth",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Jordan Spieth",
-      "updatedAt": "2026-10-10T10:24:55.633541+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428182+00:00"
     },
     {
       "book": "model",
@@ -8491,7 +8491,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Jordan Spieth",
-      "updatedAt": "2026-10-10T10:24:55.633560+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428199+00:00"
     },
     {
       "book": "model",
@@ -8506,14 +8506,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 4e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Hideki Matsuyama",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Hideki Matsuyama",
-      "updatedAt": "2026-10-10T10:24:55.633563+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428203+00:00"
     },
     {
       "book": "model",
@@ -8528,14 +8528,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.01768,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Hideki Matsuyama",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Hideki Matsuyama",
-      "updatedAt": "2026-10-10T10:24:55.633566+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428207+00:00"
     },
     {
       "book": "model",
@@ -8550,14 +8550,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.20216,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Hideki Matsuyama",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Hideki Matsuyama",
-      "updatedAt": "2026-10-10T10:24:55.633568+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428210+00:00"
     },
     {
       "book": "model",
@@ -8579,7 +8579,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Hideki Matsuyama",
-      "updatedAt": "2026-10-10T10:24:55.633571+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428213+00:00"
     },
     {
       "book": "model",
@@ -8601,7 +8601,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Collin Morikawa",
-      "updatedAt": "2026-10-10T10:24:55.633573+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428216+00:00"
     },
     {
       "book": "model",
@@ -8616,14 +8616,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00436,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Collin Morikawa",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Collin Morikawa",
-      "updatedAt": "2026-10-10T10:24:55.633576+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428219+00:00"
     },
     {
       "book": "model",
@@ -8638,14 +8638,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.08990000000000001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Collin Morikawa",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Collin Morikawa",
-      "updatedAt": "2026-10-10T10:24:55.633578+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428222+00:00"
     },
     {
       "book": "model",
@@ -8667,7 +8667,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Collin Morikawa",
-      "updatedAt": "2026-10-10T10:24:55.633580+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428225+00:00"
     },
     {
       "book": "model",
@@ -8682,14 +8682,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.00046,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Min Woo Lee",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Min Woo Lee",
-      "updatedAt": "2026-10-10T10:24:55.633583+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428228+00:00"
     },
     {
       "book": "model",
@@ -8704,14 +8704,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.10082,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Min Woo Lee",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Min Woo Lee",
-      "updatedAt": "2026-10-10T10:24:55.633590+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428236+00:00"
     },
     {
       "book": "model",
@@ -8726,14 +8726,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.5136,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Min Woo Lee",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Min Woo Lee",
-      "updatedAt": "2026-10-10T10:24:55.633592+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428239+00:00"
     },
     {
       "book": "model",
@@ -8755,7 +8755,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Min Woo Lee",
-      "updatedAt": "2026-10-10T10:24:55.633594+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428242+00:00"
     },
     {
       "book": "model",
@@ -8770,14 +8770,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.1142,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Adam Scott",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Scott",
-      "updatedAt": "2026-10-10T10:24:55.633597+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428245+00:00"
     },
     {
       "book": "model",
@@ -8792,14 +8792,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.8409400000000001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Adam Scott",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Scott",
-      "updatedAt": "2026-10-10T10:24:55.633599+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428247+00:00"
     },
     {
       "book": "model",
@@ -8814,14 +8814,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.98886,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Adam Scott",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Scott",
-      "updatedAt": "2026-10-10T10:24:55.633602+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428250+00:00"
     },
     {
       "book": "model",
@@ -8843,7 +8843,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Scott",
-      "updatedAt": "2026-10-10T10:24:55.633604+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428253+00:00"
     },
     {
       "book": "model",
@@ -8865,7 +8865,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Maverick McNealy",
-      "updatedAt": "2026-10-10T10:24:55.633606+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428256+00:00"
     },
     {
       "book": "model",
@@ -8887,7 +8887,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Maverick McNealy",
-      "updatedAt": "2026-10-10T10:24:55.633608+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428259+00:00"
     },
     {
       "book": "model",
@@ -8902,14 +8902,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 4e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Maverick McNealy",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Maverick McNealy",
-      "updatedAt": "2026-10-10T10:24:55.633610+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428262+00:00"
     },
     {
       "book": "model",
@@ -8931,7 +8931,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Maverick McNealy",
-      "updatedAt": "2026-10-10T10:24:55.633616+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428268+00:00"
     },
     {
       "book": "model",
@@ -8946,14 +8946,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.00048,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Christiaan Bezuidenhout",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Christiaan Bezuidenhout",
-      "updatedAt": "2026-10-10T10:24:55.633619+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428272+00:00"
     },
     {
       "book": "model",
@@ -8968,14 +8968,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.08926,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Christiaan Bezuidenhout",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Christiaan Bezuidenhout",
-      "updatedAt": "2026-10-10T10:24:55.633621+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428274+00:00"
     },
     {
       "book": "model",
@@ -8990,14 +8990,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.47968000000000005,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Christiaan Bezuidenhout",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Christiaan Bezuidenhout",
-      "updatedAt": "2026-10-10T10:24:55.633623+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428277+00:00"
     },
     {
       "book": "model",
@@ -9019,7 +9019,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Christiaan Bezuidenhout",
-      "updatedAt": "2026-10-10T10:24:55.633625+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428280+00:00"
     },
     {
       "book": "model",
@@ -9034,14 +9034,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.10210000000000001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Justin Thomas",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Justin Thomas",
-      "updatedAt": "2026-10-10T10:24:55.633628+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428283+00:00"
     },
     {
       "book": "model",
@@ -9056,14 +9056,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.8210999999999999,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Justin Thomas",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Justin Thomas",
-      "updatedAt": "2026-10-10T10:24:55.633630+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428286+00:00"
     },
     {
       "book": "model",
@@ -9078,14 +9078,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.98492,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Justin Thomas",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Justin Thomas",
-      "updatedAt": "2026-10-10T10:24:55.633633+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428288+00:00"
     },
     {
       "book": "model",
@@ -9107,7 +9107,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Justin Thomas",
-      "updatedAt": "2026-10-10T10:24:55.633635+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428291+00:00"
     },
     {
       "book": "model",
@@ -9129,7 +9129,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Taylor Pendrith",
-      "updatedAt": "2026-10-10T10:24:55.633637+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428294+00:00"
     },
     {
       "book": "model",
@@ -9151,7 +9151,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Taylor Pendrith",
-      "updatedAt": "2026-10-10T10:24:55.633640+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428297+00:00"
     },
     {
       "book": "model",
@@ -9166,14 +9166,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 8e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Taylor Pendrith",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Taylor Pendrith",
-      "updatedAt": "2026-10-10T10:24:55.633642+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428300+00:00"
     },
     {
       "book": "model",
@@ -9195,7 +9195,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Taylor Pendrith",
-      "updatedAt": "2026-10-10T10:24:55.633644+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428302+00:00"
     },
     {
       "book": "model",
@@ -9217,7 +9217,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Denny McCarthy",
-      "updatedAt": "2026-10-10T10:24:55.633646+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428305+00:00"
     },
     {
       "book": "model",
@@ -9232,14 +9232,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.010360000000000001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Denny McCarthy",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Denny McCarthy",
-      "updatedAt": "2026-10-10T10:24:55.633649+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428308+00:00"
     },
     {
       "book": "model",
@@ -9254,14 +9254,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.14548,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Denny McCarthy",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Denny McCarthy",
-      "updatedAt": "2026-10-10T10:24:55.633651+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428311+00:00"
     },
     {
       "book": "model",
@@ -9283,7 +9283,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Denny McCarthy",
-      "updatedAt": "2026-10-10T10:24:55.633653+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428314+00:00"
     },
     {
       "book": "model",
@@ -9305,7 +9305,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Wyndham Clark",
-      "updatedAt": "2026-10-10T10:24:55.633655+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428317+00:00"
     },
     {
       "book": "model",
@@ -9327,7 +9327,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Wyndham Clark",
-      "updatedAt": "2026-10-10T10:24:55.633658+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428319+00:00"
     },
     {
       "book": "model",
@@ -9349,7 +9349,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Wyndham Clark",
-      "updatedAt": "2026-10-10T10:24:55.633660+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428322+00:00"
     },
     {
       "book": "model",
@@ -9371,7 +9371,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Wyndham Clark",
-      "updatedAt": "2026-10-10T10:24:55.633662+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428325+00:00"
     },
     {
       "book": "model",
@@ -9393,7 +9393,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tony Finau",
-      "updatedAt": "2026-10-10T10:24:55.633664+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428328+00:00"
     },
     {
       "book": "model",
@@ -9408,14 +9408,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00032,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Tony Finau",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tony Finau",
-      "updatedAt": "2026-10-10T10:24:55.633667+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428331+00:00"
     },
     {
       "book": "model",
@@ -9430,14 +9430,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.00794,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Tony Finau",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tony Finau",
-      "updatedAt": "2026-10-10T10:24:55.633669+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428334+00:00"
     },
     {
       "book": "model",
@@ -9459,7 +9459,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tony Finau",
-      "updatedAt": "2026-10-10T10:24:55.633671+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428337+00:00"
     },
     {
       "book": "model",
@@ -9481,7 +9481,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sahith Theegala",
-      "updatedAt": "2026-10-10T10:24:55.633674+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428340+00:00"
     },
     {
       "book": "model",
@@ -9503,7 +9503,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sahith Theegala",
-      "updatedAt": "2026-10-10T10:24:55.633676+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428343+00:00"
     },
     {
       "book": "model",
@@ -9525,7 +9525,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sahith Theegala",
-      "updatedAt": "2026-10-10T10:24:55.633678+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428346+00:00"
     },
     {
       "book": "model",
@@ -9547,7 +9547,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sahith Theegala",
-      "updatedAt": "2026-10-10T10:24:55.633681+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428349+00:00"
     },
     {
       "book": "model",
@@ -9569,7 +9569,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Taylor",
-      "updatedAt": "2026-10-10T10:24:55.633683+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428352+00:00"
     },
     {
       "book": "model",
@@ -9584,14 +9584,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00054,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Nick Taylor",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Taylor",
-      "updatedAt": "2026-10-10T10:24:55.633686+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428355+00:00"
     },
     {
       "book": "model",
@@ -9606,14 +9606,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.02376,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Nick Taylor",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Taylor",
-      "updatedAt": "2026-10-10T10:24:55.633688+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428358+00:00"
     },
     {
       "book": "model",
@@ -9635,7 +9635,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Taylor",
-      "updatedAt": "2026-10-10T10:24:55.633690+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428361+00:00"
     },
     {
       "book": "model",
@@ -9657,7 +9657,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nico Echavarria",
-      "updatedAt": "2026-10-10T10:24:55.633692+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428364+00:00"
     },
     {
       "book": "model",
@@ -9672,14 +9672,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0025,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Nico Echavarria",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nico Echavarria",
-      "updatedAt": "2026-10-10T10:24:55.633694+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428366+00:00"
     },
     {
       "book": "model",
@@ -9694,14 +9694,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.0617,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Nico Echavarria",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nico Echavarria",
-      "updatedAt": "2026-10-10T10:24:55.633696+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428369+00:00"
     },
     {
       "book": "model",
@@ -9723,7 +9723,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nico Echavarria",
-      "updatedAt": "2026-10-10T10:24:55.633699+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428372+00:00"
     },
     {
       "book": "model",
@@ -9738,14 +9738,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.0051,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Sungjae Im",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sungjae Im",
-      "updatedAt": "2026-10-10T10:24:55.633701+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428375+00:00"
     },
     {
       "book": "model",
@@ -9760,14 +9760,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.27856000000000003,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Sungjae Im",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sungjae Im",
-      "updatedAt": "2026-10-10T10:24:55.633704+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428379+00:00"
     },
     {
       "book": "model",
@@ -9782,14 +9782,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.76526,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Sungjae Im",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sungjae Im",
-      "updatedAt": "2026-10-10T10:24:55.633706+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428382+00:00"
     },
     {
       "book": "model",
@@ -9811,7 +9811,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Sungjae Im",
-      "updatedAt": "2026-10-10T10:24:55.633708+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428385+00:00"
     },
     {
       "book": "model",
@@ -9833,7 +9833,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Greyserman",
-      "updatedAt": "2026-10-10T10:24:55.633711+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428388+00:00"
     },
     {
       "book": "model",
@@ -9855,7 +9855,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Greyserman",
-      "updatedAt": "2026-10-10T10:24:55.633713+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428390+00:00"
     },
     {
       "book": "model",
@@ -9877,7 +9877,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Greyserman",
-      "updatedAt": "2026-10-10T10:24:55.633715+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428393+00:00"
     },
     {
       "book": "model",
@@ -9899,7 +9899,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Greyserman",
-      "updatedAt": "2026-10-10T10:24:55.633717+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428396+00:00"
     },
     {
       "book": "model",
@@ -9914,14 +9914,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 4e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Keegan Bradley",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Keegan Bradley",
-      "updatedAt": "2026-10-10T10:24:55.633719+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428399+00:00"
     },
     {
       "book": "model",
@@ -9936,14 +9936,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0263,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Keegan Bradley",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Keegan Bradley",
-      "updatedAt": "2026-10-10T10:24:55.633721+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428402+00:00"
     },
     {
       "book": "model",
@@ -9958,14 +9958,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.2577,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Keegan Bradley",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Keegan Bradley",
-      "updatedAt": "2026-10-10T10:24:55.633723+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428405+00:00"
     },
     {
       "book": "model",
@@ -9987,7 +9987,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Keegan Bradley",
-      "updatedAt": "2026-10-10T10:24:55.633725+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428408+00:00"
     },
     {
       "book": "model",
@@ -10002,14 +10002,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.01282,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Max Homa",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Homa",
-      "updatedAt": "2026-10-10T10:24:55.633728+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428411+00:00"
     },
     {
       "book": "model",
@@ -10024,14 +10024,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.45194,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Max Homa",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Homa",
-      "updatedAt": "2026-10-10T10:24:55.633730+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428414+00:00"
     },
     {
       "book": "model",
@@ -10046,14 +10046,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.8788800000000001,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Max Homa",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Homa",
-      "updatedAt": "2026-10-10T10:24:55.633732+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428417+00:00"
     },
     {
       "book": "model",
@@ -10075,7 +10075,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Homa",
-      "updatedAt": "2026-10-10T10:24:55.633734+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428420+00:00"
     },
     {
       "book": "model",
@@ -10097,7 +10097,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Thompson",
-      "updatedAt": "2026-10-10T10:24:55.633736+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428423+00:00"
     },
     {
       "book": "model",
@@ -10119,7 +10119,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Thompson",
-      "updatedAt": "2026-10-10T10:24:55.633739+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428426+00:00"
     },
     {
       "book": "model",
@@ -10134,14 +10134,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.0017399999999999998,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Davis Thompson",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Thompson",
-      "updatedAt": "2026-10-10T10:24:55.633741+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428429+00:00"
     },
     {
       "book": "model",
@@ -10163,7 +10163,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Thompson",
-      "updatedAt": "2026-10-10T10:24:55.633743+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428432+00:00"
     },
     {
       "book": "model",
@@ -10185,7 +10185,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt McCarty",
-      "updatedAt": "2026-10-10T10:24:55.633745+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428435+00:00"
     },
     {
       "book": "model",
@@ -10207,7 +10207,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt McCarty",
-      "updatedAt": "2026-10-10T10:24:55.633764+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428437+00:00"
     },
     {
       "book": "model",
@@ -10229,7 +10229,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt McCarty",
-      "updatedAt": "2026-10-10T10:24:55.633766+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428440+00:00"
     },
     {
       "book": "model",
@@ -10251,7 +10251,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt McCarty",
-      "updatedAt": "2026-10-10T10:24:55.633768+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428443+00:00"
     },
     {
       "book": "model",
@@ -10266,14 +10266,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.07907999999999998,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Stephan Jaeger",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Stephan Jaeger",
-      "updatedAt": "2026-10-10T10:24:55.633770+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428446+00:00"
     },
     {
       "book": "model",
@@ -10288,14 +10288,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.78204,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Stephan Jaeger",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Stephan Jaeger",
-      "updatedAt": "2026-10-10T10:24:55.633773+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428449+00:00"
     },
     {
       "book": "model",
@@ -10310,14 +10310,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.98016,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Stephan Jaeger",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Stephan Jaeger",
-      "updatedAt": "2026-10-10T10:24:55.633775+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428452+00:00"
     },
     {
       "book": "model",
@@ -10339,7 +10339,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Stephan Jaeger",
-      "updatedAt": "2026-10-10T10:24:55.633777+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428455+00:00"
     },
     {
       "book": "model",
@@ -10354,14 +10354,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.0,
+      "modelProbability": 0.00804,
       "modelVersion": "pga-baseline-v0",
       "player": "Rickie Fowler",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rickie Fowler",
-      "updatedAt": "2026-10-10T10:24:55.633779+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428458+00:00"
     },
     {
       "book": "model",
@@ -10376,14 +10376,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0,
+      "modelProbability": 0.1187089933014484,
       "modelVersion": "pga-baseline-v0",
       "player": "Rickie Fowler",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rickie Fowler",
-      "updatedAt": "2026-10-10T10:24:55.633781+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428461+00:00"
     },
     {
       "book": "model",
@@ -10398,14 +10398,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.0,
+      "modelProbability": 0.2458046686916888,
       "modelVersion": "pga-baseline-v0",
       "player": "Rickie Fowler",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rickie Fowler",
-      "updatedAt": "2026-10-10T10:24:55.633784+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428464+00:00"
     },
     {
       "book": "model",
@@ -10420,14 +10420,14 @@
       "league": "PGA",
       "line": null,
       "market": "make_cut",
-      "modelProbability": 1.0,
+      "modelProbability": 0.4086289564149646,
       "modelVersion": "pga-baseline-v0",
       "player": "Rickie Fowler",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rickie Fowler",
-      "updatedAt": "2026-10-10T10:24:55.633786+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428467+00:00"
     },
     {
       "book": "model",
@@ -10442,14 +10442,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.00034,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kosuke Sunagawa",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kosuke Sunagawa",
-      "updatedAt": "2026-10-10T10:24:55.633788+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428470+00:00"
     },
     {
       "book": "model",
@@ -10464,14 +10464,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.06178,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kosuke Sunagawa",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kosuke Sunagawa",
-      "updatedAt": "2026-10-10T10:24:55.633790+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428473+00:00"
     },
     {
       "book": "model",
@@ -10486,14 +10486,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.40896,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kosuke Sunagawa",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kosuke Sunagawa",
-      "updatedAt": "2026-10-10T10:24:55.633792+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428475+00:00"
     },
     {
       "book": "model",
@@ -10515,7 +10515,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kosuke Sunagawa",
-      "updatedAt": "2026-10-10T10:24:55.633794+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428478+00:00"
     },
     {
       "book": "model",
@@ -10530,14 +10530,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 2e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Beau Hossler",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Beau Hossler",
-      "updatedAt": "2026-10-10T10:24:55.633796+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428481+00:00"
     },
     {
       "book": "model",
@@ -10552,14 +10552,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.024820000000000002,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Beau Hossler",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Beau Hossler",
-      "updatedAt": "2026-10-10T10:24:55.633799+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428484+00:00"
     },
     {
       "book": "model",
@@ -10574,14 +10574,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.25026,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Beau Hossler",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Beau Hossler",
-      "updatedAt": "2026-10-10T10:24:55.633801+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428487+00:00"
     },
     {
       "book": "model",
@@ -10603,7 +10603,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Beau Hossler",
-      "updatedAt": "2026-10-10T10:24:55.633803+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428490+00:00"
     },
     {
       "book": "model",
@@ -10625,7 +10625,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Steven Fisk",
-      "updatedAt": "2026-10-10T10:24:55.633805+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428493+00:00"
     },
     {
       "book": "model",
@@ -10647,7 +10647,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Steven Fisk",
-      "updatedAt": "2026-10-10T10:24:55.633807+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428495+00:00"
     },
     {
       "book": "model",
@@ -10669,7 +10669,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Steven Fisk",
-      "updatedAt": "2026-10-10T10:24:55.633810+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428499+00:00"
     },
     {
       "book": "model",
@@ -10691,7 +10691,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Steven Fisk",
-      "updatedAt": "2026-10-10T10:24:55.633812+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428501+00:00"
     },
     {
       "book": "model",
@@ -10706,14 +10706,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.00013999999999999898,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ben Kohles",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Kohles",
-      "updatedAt": "2026-10-10T10:24:55.633814+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428504+00:00"
     },
     {
       "book": "model",
@@ -10728,14 +10728,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0614,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ben Kohles",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Kohles",
-      "updatedAt": "2026-10-10T10:24:55.633816+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428507+00:00"
     },
     {
       "book": "model",
@@ -10750,14 +10750,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.41082,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ben Kohles",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Kohles",
-      "updatedAt": "2026-10-10T10:24:55.633818+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428510+00:00"
     },
     {
       "book": "model",
@@ -10779,7 +10779,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Kohles",
-      "updatedAt": "2026-10-10T10:24:55.633820+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428513+00:00"
     },
     {
       "book": "model",
@@ -10801,7 +10801,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Putnam",
-      "updatedAt": "2026-10-10T10:24:55.633823+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428516+00:00"
     },
     {
       "book": "model",
@@ -10816,14 +10816,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0082,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Andrew Putnam",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Putnam",
-      "updatedAt": "2026-10-10T10:24:55.633825+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428519+00:00"
     },
     {
       "book": "model",
@@ -10838,14 +10838,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.12752,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Andrew Putnam",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Putnam",
-      "updatedAt": "2026-10-10T10:24:55.633827+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428521+00:00"
     },
     {
       "book": "model",
@@ -10867,7 +10867,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Putnam",
-      "updatedAt": "2026-10-10T10:24:55.633829+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428524+00:00"
     },
     {
       "book": "model",
@@ -10882,14 +10882,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.16513999999999998,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Brennan",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Brennan",
-      "updatedAt": "2026-10-10T10:24:55.633832+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428527+00:00"
     },
     {
       "book": "model",
@@ -10904,14 +10904,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.88712,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Brennan",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Brennan",
-      "updatedAt": "2026-10-10T10:24:55.633834+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428530+00:00"
     },
     {
       "book": "model",
@@ -10926,14 +10926,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.99286,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Brennan",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Brennan",
-      "updatedAt": "2026-10-10T10:24:55.633837+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428533+00:00"
     },
     {
       "book": "model",
@@ -10955,7 +10955,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Brennan",
-      "updatedAt": "2026-10-10T10:24:55.633839+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428536+00:00"
     },
     {
       "book": "model",
@@ -10977,7 +10977,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tomohiro Ishizaka",
-      "updatedAt": "2026-10-10T10:24:55.633841+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428539+00:00"
     },
     {
       "book": "model",
@@ -10992,14 +10992,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0004,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Tomohiro Ishizaka",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tomohiro Ishizaka",
-      "updatedAt": "2026-10-10T10:24:55.633844+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428542+00:00"
     },
     {
       "book": "model",
@@ -11014,14 +11014,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.021240000000000002,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Tomohiro Ishizaka",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tomohiro Ishizaka",
-      "updatedAt": "2026-10-10T10:24:55.633846+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428545+00:00"
     },
     {
       "book": "model",
@@ -11043,7 +11043,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tomohiro Ishizaka",
-      "updatedAt": "2026-10-10T10:24:55.633848+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428548+00:00"
     },
     {
       "book": "model",
@@ -11065,7 +11065,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rasmus Neergaard-Petersen",
-      "updatedAt": "2026-10-10T10:24:55.633850+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428551+00:00"
     },
     {
       "book": "model",
@@ -11080,14 +11080,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00252,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Rasmus Neergaard-Petersen",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rasmus Neergaard-Petersen",
-      "updatedAt": "2026-10-10T10:24:55.633852+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428553+00:00"
     },
     {
       "book": "model",
@@ -11102,14 +11102,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.05722000000000001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Rasmus Neergaard-Petersen",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rasmus Neergaard-Petersen",
-      "updatedAt": "2026-10-10T10:24:55.633855+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428556+00:00"
     },
     {
       "book": "model",
@@ -11131,7 +11131,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rasmus Neergaard-Petersen",
-      "updatedAt": "2026-10-10T10:24:55.633857+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428559+00:00"
     },
     {
       "book": "model",
@@ -11146,14 +11146,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 6e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Takumi Kanaya",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Takumi Kanaya",
-      "updatedAt": "2026-10-10T10:24:55.633860+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428563+00:00"
     },
     {
       "book": "model",
@@ -11168,14 +11168,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.024380000000000002,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Takumi Kanaya",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Takumi Kanaya",
-      "updatedAt": "2026-10-10T10:24:55.633862+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428566+00:00"
     },
     {
       "book": "model",
@@ -11190,14 +11190,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.24674,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Takumi Kanaya",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Takumi Kanaya",
-      "updatedAt": "2026-10-10T10:24:55.633864+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428569+00:00"
     },
     {
       "book": "model",
@@ -11219,7 +11219,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Takumi Kanaya",
-      "updatedAt": "2026-10-10T10:24:55.633867+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428572+00:00"
     },
     {
       "book": "model",
@@ -11241,7 +11241,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aldrich Potgieter",
-      "updatedAt": "2026-10-10T10:24:55.633869+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428575+00:00"
     },
     {
       "book": "model",
@@ -11263,7 +11263,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aldrich Potgieter",
-      "updatedAt": "2026-10-10T10:24:55.633872+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428578+00:00"
     },
     {
       "book": "model",
@@ -11285,7 +11285,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aldrich Potgieter",
-      "updatedAt": "2026-10-10T10:24:55.633874+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428581+00:00"
     },
     {
       "book": "model",
@@ -11307,7 +11307,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aldrich Potgieter",
-      "updatedAt": "2026-10-10T10:24:55.633876+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428584+00:00"
     },
     {
       "book": "model",
@@ -11329,7 +11329,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sanghee Lee",
-      "updatedAt": "2026-10-10T10:24:55.633878+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428587+00:00"
     },
     {
       "book": "model",
@@ -11351,7 +11351,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sanghee Lee",
-      "updatedAt": "2026-10-10T10:24:55.633881+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428590+00:00"
     },
     {
       "book": "model",
@@ -11373,7 +11373,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sanghee Lee",
-      "updatedAt": "2026-10-10T10:24:55.633883+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428592+00:00"
     },
     {
       "book": "model",
@@ -11395,7 +11395,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sanghee Lee",
-      "updatedAt": "2026-10-10T10:24:55.633885+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428595+00:00"
     },
     {
       "book": "model",
@@ -11410,14 +11410,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.07734,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jordan Smith",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jordan Smith",
-      "updatedAt": "2026-10-10T10:24:55.633888+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428598+00:00"
     },
     {
       "book": "model",
@@ -11432,14 +11432,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.77638,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jordan Smith",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jordan Smith",
-      "updatedAt": "2026-10-10T10:24:55.633890+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428601+00:00"
     },
     {
       "book": "model",
@@ -11454,14 +11454,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.97926,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jordan Smith",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jordan Smith",
-      "updatedAt": "2026-10-10T10:24:55.633892+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428604+00:00"
     },
     {
       "book": "model",
@@ -11483,7 +11483,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jordan Smith",
-      "updatedAt": "2026-10-10T10:24:55.633894+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428607+00:00"
     },
     {
       "book": "model",
@@ -11505,7 +11505,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ricky Castillo",
-      "updatedAt": "2026-10-10T10:24:55.633897+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428610+00:00"
     },
     {
       "book": "model",
@@ -11520,14 +11520,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00268,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ricky Castillo",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ricky Castillo",
-      "updatedAt": "2026-10-10T10:24:55.633899+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428613+00:00"
     },
     {
       "book": "model",
@@ -11542,14 +11542,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.05618,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ricky Castillo",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ricky Castillo",
-      "updatedAt": "2026-10-10T10:24:55.633901+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428616+00:00"
     },
     {
       "book": "model",
@@ -11571,7 +11571,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ricky Castillo",
-      "updatedAt": "2026-10-10T10:24:55.633903+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428619+00:00"
     },
     {
       "book": "model",
@@ -11593,7 +11593,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Taylor Moore",
-      "updatedAt": "2026-10-10T10:24:55.633906+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428622+00:00"
     },
     {
       "book": "model",
@@ -11608,14 +11608,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00214,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Taylor Moore",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Taylor Moore",
-      "updatedAt": "2026-10-10T10:24:55.633908+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428625+00:00"
     },
     {
       "book": "model",
@@ -11630,14 +11630,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.055540000000000006,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Taylor Moore",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Taylor Moore",
-      "updatedAt": "2026-10-10T10:24:55.633910+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428628+00:00"
     },
     {
       "book": "model",
@@ -11659,7 +11659,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Taylor Moore",
-      "updatedAt": "2026-10-10T10:24:55.633913+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428631+00:00"
     },
     {
       "book": "model",
@@ -11674,14 +11674,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 2e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Thorbjornsen",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Thorbjornsen",
-      "updatedAt": "2026-10-10T10:24:55.633915+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428634+00:00"
     },
     {
       "book": "model",
@@ -11696,14 +11696,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.024980000000000002,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Thorbjornsen",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Thorbjornsen",
-      "updatedAt": "2026-10-10T10:24:55.633917+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428637+00:00"
     },
     {
       "book": "model",
@@ -11718,14 +11718,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.24539999999999998,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Thorbjornsen",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Thorbjornsen",
-      "updatedAt": "2026-10-10T10:24:55.633919+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428639+00:00"
     },
     {
       "book": "model",
@@ -11747,7 +11747,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Thorbjornsen",
-      "updatedAt": "2026-10-10T10:24:55.633922+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428643+00:00"
     },
     {
       "book": "model",
@@ -11762,14 +11762,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.0,
+      "modelProbability": 0.00712,
       "modelVersion": "pga-baseline-v0",
       "player": "Hiroshi Iwata",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hiroshi Iwata",
-      "updatedAt": "2026-10-10T10:24:55.633924+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428646+00:00"
     },
     {
       "book": "model",
@@ -11784,14 +11784,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0,
+      "modelProbability": 0.1156587520581733,
       "modelVersion": "pga-baseline-v0",
       "player": "Hiroshi Iwata",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hiroshi Iwata",
-      "updatedAt": "2026-10-10T10:24:55.633927+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428649+00:00"
     },
     {
       "book": "model",
@@ -11806,14 +11806,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.0,
+      "modelProbability": 0.2417128318547016,
       "modelVersion": "pga-baseline-v0",
       "player": "Hiroshi Iwata",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hiroshi Iwata",
-      "updatedAt": "2026-10-10T10:24:55.633929+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428652+00:00"
     },
     {
       "book": "model",
@@ -11828,14 +11828,14 @@
       "league": "PGA",
       "line": null,
       "market": "make_cut",
-      "modelProbability": 1.0,
+      "modelProbability": 0.4071029047265418,
       "modelVersion": "pga-baseline-v0",
       "player": "Hiroshi Iwata",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hiroshi Iwata",
-      "updatedAt": "2026-10-10T10:24:55.633931+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428655+00:00"
     },
     {
       "book": "model",
@@ -11857,7 +11857,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Suber",
-      "updatedAt": "2026-10-10T10:24:55.633933+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428657+00:00"
     },
     {
       "book": "model",
@@ -11872,14 +11872,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00242,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jackson Suber",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Suber",
-      "updatedAt": "2026-10-10T10:24:55.633936+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428660+00:00"
     },
     {
       "book": "model",
@@ -11894,14 +11894,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.05678,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jackson Suber",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Suber",
-      "updatedAt": "2026-10-10T10:24:55.633938+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428663+00:00"
     },
     {
       "book": "model",
@@ -11923,7 +11923,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Suber",
-      "updatedAt": "2026-10-10T10:24:55.633940+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428666+00:00"
     },
     {
       "book": "model",
@@ -11945,7 +11945,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Matt Wallace",
-      "updatedAt": "2026-10-10T10:24:55.633943+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428669+00:00"
     },
     {
       "book": "model",
@@ -11960,14 +11960,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00034,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Matt Wallace",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Matt Wallace",
-      "updatedAt": "2026-10-10T10:24:55.633945+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428672+00:00"
     },
     {
       "book": "model",
@@ -11982,14 +11982,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.02138,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Matt Wallace",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Matt Wallace",
-      "updatedAt": "2026-10-10T10:24:55.633948+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428675+00:00"
     },
     {
       "book": "model",
@@ -12011,7 +12011,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Matt Wallace",
-      "updatedAt": "2026-10-10T10:24:55.633951+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428678+00:00"
     },
     {
       "book": "model",
@@ -12026,14 +12026,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.16176,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Zach Bauchou",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zach Bauchou",
-      "updatedAt": "2026-10-10T10:24:55.633953+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428697+00:00"
     },
     {
       "book": "model",
@@ -12048,14 +12048,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.8859999999999999,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Zach Bauchou",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zach Bauchou",
-      "updatedAt": "2026-10-10T10:24:55.633955+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428700+00:00"
     },
     {
       "book": "model",
@@ -12070,14 +12070,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.9931399999999999,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Zach Bauchou",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zach Bauchou",
-      "updatedAt": "2026-10-10T10:24:55.633957+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428703+00:00"
     },
     {
       "book": "model",
@@ -12099,7 +12099,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zach Bauchou",
-      "updatedAt": "2026-10-10T10:24:55.633959+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428706+00:00"
     },
     {
       "book": "model",
@@ -12114,14 +12114,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 8e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryo Hisatsune",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryo Hisatsune",
-      "updatedAt": "2026-10-10T10:24:55.633962+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428708+00:00"
     },
     {
       "book": "model",
@@ -12136,14 +12136,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0233,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryo Hisatsune",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryo Hisatsune",
-      "updatedAt": "2026-10-10T10:24:55.633964+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428712+00:00"
     },
     {
       "book": "model",
@@ -12158,14 +12158,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.24282,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryo Hisatsune",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryo Hisatsune",
-      "updatedAt": "2026-10-10T10:24:55.633966+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428715+00:00"
     },
     {
       "book": "model",
@@ -12187,7 +12187,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryo Hisatsune",
-      "updatedAt": "2026-10-10T10:24:55.633969+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428718+00:00"
     },
     {
       "book": "model",
@@ -12209,7 +12209,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Lipsky",
-      "updatedAt": "2026-10-10T10:24:55.633971+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428721+00:00"
     },
     {
       "book": "model",
@@ -12224,14 +12224,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 6e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "David Lipsky",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Lipsky",
-      "updatedAt": "2026-10-10T10:24:55.633973+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428724+00:00"
     },
     {
       "book": "model",
@@ -12246,14 +12246,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.00624,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "David Lipsky",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Lipsky",
-      "updatedAt": "2026-10-10T10:24:55.633975+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428727+00:00"
     },
     {
       "book": "model",
@@ -12275,7 +12275,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Lipsky",
-      "updatedAt": "2026-10-10T10:24:55.633978+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428730+00:00"
     },
     {
       "book": "model",
@@ -12297,7 +12297,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aguri Iwasaki",
-      "updatedAt": "2026-10-10T10:24:55.633980+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428733+00:00"
     },
     {
       "book": "model",
@@ -12319,7 +12319,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aguri Iwasaki",
-      "updatedAt": "2026-10-10T10:24:55.633982+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428736+00:00"
     },
     {
       "book": "model",
@@ -12334,14 +12334,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 6e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Aguri Iwasaki",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aguri Iwasaki",
-      "updatedAt": "2026-10-10T10:24:55.633984+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428739+00:00"
     },
     {
       "book": "model",
@@ -12363,7 +12363,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aguri Iwasaki",
-      "updatedAt": "2026-10-10T10:24:55.633987+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428741+00:00"
     },
     {
       "book": "model",
@@ -12385,7 +12385,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Phillips",
-      "updatedAt": "2026-10-10T10:24:55.633989+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428745+00:00"
     },
     {
       "book": "model",
@@ -12407,7 +12407,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Phillips",
-      "updatedAt": "2026-10-10T10:24:55.633992+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428747+00:00"
     },
     {
       "book": "model",
@@ -12422,14 +12422,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.00182,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Chandler Phillips",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Phillips",
-      "updatedAt": "2026-10-10T10:24:55.633994+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428750+00:00"
     },
     {
       "book": "model",
@@ -12451,7 +12451,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Phillips",
-      "updatedAt": "2026-10-10T10:24:55.633996+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428753+00:00"
     },
     {
       "book": "model",
@@ -12466,14 +12466,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.0771,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Keith Mitchell",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Keith Mitchell",
-      "updatedAt": "2026-10-10T10:24:55.633999+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428756+00:00"
     },
     {
       "book": "model",
@@ -12488,14 +12488,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.7762,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Keith Mitchell",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Keith Mitchell",
-      "updatedAt": "2026-10-10T10:24:55.634001+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428759+00:00"
     },
     {
       "book": "model",
@@ -12510,14 +12510,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.97962,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Keith Mitchell",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Keith Mitchell",
-      "updatedAt": "2026-10-10T10:24:55.634003+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428762+00:00"
     },
     {
       "book": "model",
@@ -12539,7 +12539,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Keith Mitchell",
-      "updatedAt": "2026-10-10T10:24:55.634006+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428764+00:00"
     },
     {
       "book": "model",
@@ -12554,14 +12554,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.00416,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Brian Harman",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Brian Harman",
-      "updatedAt": "2026-10-10T10:24:55.634008+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428768+00:00"
     },
     {
       "book": "model",
@@ -12576,14 +12576,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.26828,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Brian Harman",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Brian Harman",
-      "updatedAt": "2026-10-10T10:24:55.634010+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428771+00:00"
     },
     {
       "book": "model",
@@ -12598,14 +12598,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.75598,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Brian Harman",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Brian Harman",
-      "updatedAt": "2026-10-10T10:24:55.634013+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428773+00:00"
     },
     {
       "book": "model",
@@ -12627,7 +12627,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Brian Harman",
-      "updatedAt": "2026-10-10T10:24:55.634015+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428776+00:00"
     },
     {
       "book": "model",
@@ -12649,7 +12649,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Lee Hodges",
-      "updatedAt": "2026-10-10T10:24:55.634017+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428779+00:00"
     },
     {
       "book": "model",
@@ -12664,14 +12664,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00828,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Lee Hodges",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Lee Hodges",
-      "updatedAt": "2026-10-10T10:24:55.634019+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428782+00:00"
     },
     {
       "book": "model",
@@ -12686,14 +12686,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.1263,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Lee Hodges",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Lee Hodges",
-      "updatedAt": "2026-10-10T10:24:55.634022+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428785+00:00"
     },
     {
       "book": "model",
@@ -12715,7 +12715,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Lee Hodges",
-      "updatedAt": "2026-10-10T10:24:55.634024+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428788+00:00"
     },
     {
       "book": "model",
@@ -12737,7 +12737,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Smalley",
-      "updatedAt": "2026-10-10T10:24:55.634026+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428791+00:00"
     },
     {
       "book": "model",
@@ -12759,7 +12759,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Smalley",
-      "updatedAt": "2026-10-10T10:24:55.634028+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428794+00:00"
     },
     {
       "book": "model",
@@ -12781,7 +12781,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Smalley",
-      "updatedAt": "2026-10-10T10:24:55.634030+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428797+00:00"
     },
     {
       "book": "model",
@@ -12803,7 +12803,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alex Smalley",
-      "updatedAt": "2026-10-10T10:24:55.634033+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428799+00:00"
     },
     {
       "book": "model",
@@ -12825,7 +12825,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Yusaku Hosono",
-      "updatedAt": "2026-10-10T10:24:55.634035+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428803+00:00"
     },
     {
       "book": "model",
@@ -12840,14 +12840,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00816,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Yusaku Hosono",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Yusaku Hosono",
-      "updatedAt": "2026-10-10T10:24:55.634037+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428805+00:00"
     },
     {
       "book": "model",
@@ -12862,14 +12862,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.12452,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Yusaku Hosono",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Yusaku Hosono",
-      "updatedAt": "2026-10-10T10:24:55.634040+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428808+00:00"
     },
     {
       "book": "model",
@@ -12891,7 +12891,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Yusaku Hosono",
-      "updatedAt": "2026-10-10T10:24:55.634042+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428811+00:00"
     },
     {
       "book": "model",
@@ -12913,7 +12913,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Keita Nakajima",
-      "updatedAt": "2026-10-10T10:24:55.634044+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428814+00:00"
     },
     {
       "book": "model",
@@ -12935,7 +12935,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Keita Nakajima",
-      "updatedAt": "2026-10-10T10:24:55.634046+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428817+00:00"
     },
     {
       "book": "model",
@@ -12950,14 +12950,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.0020399999999999997,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Keita Nakajima",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Keita Nakajima",
-      "updatedAt": "2026-10-10T10:24:55.634049+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428820+00:00"
     },
     {
       "book": "model",
@@ -12979,7 +12979,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Keita Nakajima",
-      "updatedAt": "2026-10-10T10:24:55.634051+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428823+00:00"
     },
     {
       "book": "model",
@@ -12994,14 +12994,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 2e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ren Yonezawa",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ren Yonezawa",
-      "updatedAt": "2026-10-10T10:24:55.634053+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428826+00:00"
     },
     {
       "book": "model",
@@ -13016,14 +13016,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00788,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ren Yonezawa",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ren Yonezawa",
-      "updatedAt": "2026-10-10T10:24:55.634056+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428829+00:00"
     },
     {
       "book": "model",
@@ -13038,14 +13038,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.1253,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ren Yonezawa",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ren Yonezawa",
-      "updatedAt": "2026-10-10T10:24:55.634058+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428832+00:00"
     },
     {
       "book": "model",
@@ -13067,7 +13067,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ren Yonezawa",
-      "updatedAt": "2026-10-10T10:24:55.634060+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428835+00:00"
     },
     {
       "book": "model",
@@ -13082,14 +13082,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.00012,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Doug Ghim",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Doug Ghim",
-      "updatedAt": "2026-10-10T10:24:55.634063+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428838+00:00"
     },
     {
       "book": "model",
@@ -13104,14 +13104,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.024900000000000002,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Doug Ghim",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Doug Ghim",
-      "updatedAt": "2026-10-10T10:24:55.634065+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428841+00:00"
     },
     {
       "book": "model",
@@ -13126,14 +13126,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.24794,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Doug Ghim",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Doug Ghim",
-      "updatedAt": "2026-10-10T10:24:55.634067+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428844+00:00"
     },
     {
       "book": "model",
@@ -13155,7 +13155,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Doug Ghim",
-      "updatedAt": "2026-10-10T10:24:55.634070+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428846+00:00"
     },
     {
       "book": "model",
@@ -13177,7 +13177,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pierceson Coody",
-      "updatedAt": "2026-10-10T10:24:55.634072+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428849+00:00"
     },
     {
       "book": "model",
@@ -13192,14 +13192,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 2e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Pierceson Coody",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pierceson Coody",
-      "updatedAt": "2026-10-10T10:24:55.634074+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428852+00:00"
     },
     {
       "book": "model",
@@ -13214,14 +13214,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.0016,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Pierceson Coody",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pierceson Coody",
-      "updatedAt": "2026-10-10T10:24:55.634076+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428855+00:00"
     },
     {
       "book": "model",
@@ -13243,7 +13243,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pierceson Coody",
-      "updatedAt": "2026-10-10T10:24:55.634078+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428858+00:00"
     },
     {
       "book": "model",
@@ -13265,7 +13265,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Johnny Keefer",
-      "updatedAt": "2026-10-10T10:24:55.634081+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428861+00:00"
     },
     {
       "book": "model",
@@ -13280,14 +13280,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 4e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Johnny Keefer",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Johnny Keefer",
-      "updatedAt": "2026-10-10T10:24:55.634083+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428864+00:00"
     },
     {
       "book": "model",
@@ -13302,14 +13302,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.0072,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Johnny Keefer",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Johnny Keefer",
-      "updatedAt": "2026-10-10T10:24:55.634085+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428867+00:00"
     },
     {
       "book": "model",
@@ -13331,7 +13331,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Johnny Keefer",
-      "updatedAt": "2026-10-10T10:24:55.634088+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428870+00:00"
     },
     {
       "book": "model",
@@ -13346,14 +13346,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.0001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Patrick Rodgers",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Rodgers",
-      "updatedAt": "2026-10-10T10:24:55.634090+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428873+00:00"
     },
     {
       "book": "model",
@@ -13368,14 +13368,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.02456,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Patrick Rodgers",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Rodgers",
-      "updatedAt": "2026-10-10T10:24:55.634092+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428875+00:00"
     },
     {
       "book": "model",
@@ -13390,14 +13390,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.24366,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Patrick Rodgers",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Rodgers",
-      "updatedAt": "2026-10-10T10:24:55.634094+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428878+00:00"
     },
     {
       "book": "model",
@@ -13419,7 +13419,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Rodgers",
-      "updatedAt": "2026-10-10T10:24:55.634097+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428881+00:00"
     },
     {
       "book": "model",
@@ -13434,14 +13434,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.011080000000000001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Mac Meissner",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mac Meissner",
-      "updatedAt": "2026-10-10T10:24:55.634099+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428884+00:00"
     },
     {
       "book": "model",
@@ -13456,14 +13456,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.43442000000000003,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Mac Meissner",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mac Meissner",
-      "updatedAt": "2026-10-10T10:24:55.634102+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428887+00:00"
     },
     {
       "book": "model",
@@ -13478,14 +13478,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.87028,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Mac Meissner",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mac Meissner",
-      "updatedAt": "2026-10-10T10:24:55.634104+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428890+00:00"
     },
     {
       "book": "model",
@@ -13507,7 +13507,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mac Meissner",
-      "updatedAt": "2026-10-10T10:24:55.634106+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428893+00:00"
     },
     {
       "book": "model",
@@ -13522,14 +13522,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.16274,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jacob Bridgeman",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jacob Bridgeman",
-      "updatedAt": "2026-10-10T10:24:55.634108+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428896+00:00"
     },
     {
       "book": "model",
@@ -13544,14 +13544,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.8868,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jacob Bridgeman",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jacob Bridgeman",
-      "updatedAt": "2026-10-10T10:24:55.634111+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428898+00:00"
     },
     {
       "book": "model",
@@ -13566,14 +13566,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.9936400000000001,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jacob Bridgeman",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jacob Bridgeman",
-      "updatedAt": "2026-10-10T10:24:55.634113+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428901+00:00"
     },
     {
       "book": "model",
@@ -13595,7 +13595,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jacob Bridgeman",
-      "updatedAt": "2026-10-10T10:24:55.634115+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428904+00:00"
     },
     {
       "book": "model",
@@ -13617,7 +13617,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Yoshinori Fujimoto",
-      "updatedAt": "2026-10-10T10:24:55.634117+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428907+00:00"
     },
     {
       "book": "model",
@@ -13639,7 +13639,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Yoshinori Fujimoto",
-      "updatedAt": "2026-10-10T10:24:55.634119+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428910+00:00"
     },
     {
       "book": "model",
@@ -13654,14 +13654,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.00232,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Yoshinori Fujimoto",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Yoshinori Fujimoto",
-      "updatedAt": "2026-10-10T10:24:55.634121+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428913+00:00"
     },
     {
       "book": "model",
@@ -13683,7 +13683,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Yoshinori Fujimoto",
-      "updatedAt": "2026-10-10T10:24:55.634124+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428915+00:00"
     },
     {
       "book": "model",
@@ -13705,7 +13705,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John Parry",
-      "updatedAt": "2026-10-10T10:24:55.634126+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428918+00:00"
     },
     {
       "book": "model",
@@ -13720,14 +13720,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00882,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "John Parry",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John Parry",
-      "updatedAt": "2026-10-10T10:24:55.634128+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428921+00:00"
     },
     {
       "book": "model",
@@ -13742,14 +13742,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.12622,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "John Parry",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John Parry",
-      "updatedAt": "2026-10-10T10:24:55.634130+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428924+00:00"
     },
     {
       "book": "model",
@@ -13771,7 +13771,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John Parry",
-      "updatedAt": "2026-10-10T10:24:55.634132+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428927+00:00"
     },
     {
       "book": "model",
@@ -13786,14 +13786,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.001,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kevin Roy",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Roy",
-      "updatedAt": "2026-10-10T10:24:55.634135+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428930+00:00"
     },
     {
       "book": "model",
@@ -13808,14 +13808,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.14071999999999998,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kevin Roy",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Roy",
-      "updatedAt": "2026-10-10T10:24:55.634137+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428933+00:00"
     },
     {
       "book": "model",
@@ -13830,14 +13830,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.58914,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kevin Roy",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Roy",
-      "updatedAt": "2026-10-10T10:24:55.634139+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428936+00:00"
     },
     {
       "book": "model",
@@ -13859,7 +13859,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Roy",
-      "updatedAt": "2026-10-10T10:24:55.634141+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428939+00:00"
     },
     {
       "book": "model",
@@ -13874,14 +13874,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.01142,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryan Gerard",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Gerard",
-      "updatedAt": "2026-10-10T10:24:55.634143+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428942+00:00"
     },
     {
       "book": "model",
@@ -13896,14 +13896,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.43126,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryan Gerard",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Gerard",
-      "updatedAt": "2026-10-10T10:24:55.634145+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428944+00:00"
     },
     {
       "book": "model",
@@ -13918,14 +13918,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.87208,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Ryan Gerard",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Gerard",
-      "updatedAt": "2026-10-10T10:24:55.634148+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428947+00:00"
     },
     {
       "book": "model",
@@ -13947,7 +13947,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ryan Gerard",
-      "updatedAt": "2026-10-10T10:24:55.634150+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428950+00:00"
     },
     {
       "book": "model",
@@ -13969,7 +13969,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jinichiro Kozuma",
-      "updatedAt": "2026-10-10T10:24:55.634152+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428953+00:00"
     },
     {
       "book": "model",
@@ -13984,14 +13984,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 6e-05,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jinichiro Kozuma",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jinichiro Kozuma",
-      "updatedAt": "2026-10-10T10:24:55.634154+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428956+00:00"
     },
     {
       "book": "model",
@@ -14006,14 +14006,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.006979999999999999,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Jinichiro Kozuma",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jinichiro Kozuma",
-      "updatedAt": "2026-10-10T10:24:55.634156+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428959+00:00"
     },
     {
       "book": "model",
@@ -14035,7 +14035,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jinichiro Kozuma",
-      "updatedAt": "2026-10-10T10:24:55.634159+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428962+00:00"
     },
     {
       "book": "model",
@@ -14057,7 +14057,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Ventura",
-      "updatedAt": "2026-10-10T10:24:55.634161+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428964+00:00"
     },
     {
       "book": "model",
@@ -14072,14 +14072,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00774,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kristoffer Ventura",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Ventura",
-      "updatedAt": "2026-10-10T10:24:55.634163+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428967+00:00"
     },
     {
       "book": "model",
@@ -14094,14 +14094,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.12674,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kristoffer Ventura",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Ventura",
-      "updatedAt": "2026-10-10T10:24:55.634165+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428970+00:00"
     },
     {
       "book": "model",
@@ -14123,7 +14123,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Ventura",
-      "updatedAt": "2026-10-10T10:24:55.634167+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428973+00:00"
     },
     {
       "book": "model",
@@ -14145,7 +14145,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kurt Kitayama",
-      "updatedAt": "2026-10-10T10:24:55.634170+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428976+00:00"
     },
     {
       "book": "model",
@@ -14167,7 +14167,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kurt Kitayama",
-      "updatedAt": "2026-10-10T10:24:55.634172+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428979+00:00"
     },
     {
       "book": "model",
@@ -14189,7 +14189,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kurt Kitayama",
-      "updatedAt": "2026-10-10T10:24:55.634174+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428982+00:00"
     },
     {
       "book": "model",
@@ -14211,7 +14211,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kurt Kitayama",
-      "updatedAt": "2026-10-10T10:24:55.634176+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428984+00:00"
     },
     {
       "book": "model",
@@ -14233,7 +14233,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Billy Horschel",
-      "updatedAt": "2026-10-10T10:24:55.634178+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428987+00:00"
     },
     {
       "book": "model",
@@ -14248,14 +14248,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.00754,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Billy Horschel",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Billy Horschel",
-      "updatedAt": "2026-10-10T10:24:55.634181+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428990+00:00"
     },
     {
       "book": "model",
@@ -14270,14 +14270,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.11972,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Billy Horschel",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Billy Horschel",
-      "updatedAt": "2026-10-10T10:24:55.634183+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428993+00:00"
     },
     {
       "book": "model",
@@ -14299,7 +14299,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Billy Horschel",
-      "updatedAt": "2026-10-10T10:24:55.634185+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428996+00:00"
     },
     {
       "book": "model",
@@ -14321,7 +14321,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Kevin Yu",
-      "updatedAt": "2026-10-10T10:24:55.634187+00:00"
+      "updatedAt": "2026-10-11T10:32:21.428999+00:00"
     },
     {
       "book": "model",
@@ -14343,7 +14343,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Kevin Yu",
-      "updatedAt": "2026-10-10T10:24:55.634189+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429002+00:00"
     },
     {
       "book": "model",
@@ -14358,14 +14358,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.00034,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Kevin Yu",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Kevin Yu",
-      "updatedAt": "2026-10-10T10:24:55.634192+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429005+00:00"
     },
     {
       "book": "model",
@@ -14387,7 +14387,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Kevin Yu",
-      "updatedAt": "2026-10-10T10:24:55.634194+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429007+00:00"
     },
     {
       "book": "model",
@@ -14402,14 +14402,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.0,
+      "modelProbability": 0.0039,
       "modelVersion": "pga-baseline-v0",
       "player": "Koshin Nagasaki",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Koshin Nagasaki",
-      "updatedAt": "2026-10-10T10:24:55.634196+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429011+00:00"
     },
     {
       "book": "model",
@@ -14424,14 +14424,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.0,
+      "modelProbability": 0.0755498087518008,
       "modelVersion": "pga-baseline-v0",
       "player": "Koshin Nagasaki",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Koshin Nagasaki",
-      "updatedAt": "2026-10-10T10:24:55.634198+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429013+00:00"
     },
     {
       "book": "model",
@@ -14446,14 +14446,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.0,
+      "modelProbability": 0.1730749436218282,
       "modelVersion": "pga-baseline-v0",
       "player": "Koshin Nagasaki",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Koshin Nagasaki",
-      "updatedAt": "2026-10-10T10:24:55.634200+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429016+00:00"
     },
     {
       "book": "model",
@@ -14468,14 +14468,14 @@
       "league": "PGA",
       "line": null,
       "market": "make_cut",
-      "modelProbability": 1.0,
+      "modelProbability": 0.267893017592882,
       "modelVersion": "pga-baseline-v0",
       "player": "Koshin Nagasaki",
       "price": null,
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Koshin Nagasaki",
-      "updatedAt": "2026-10-10T10:24:55.634203+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429019+00:00"
     },
     {
       "book": "model",
@@ -14490,14 +14490,14 @@
       "league": "PGA",
       "line": null,
       "market": "win",
-      "modelProbability": 0.002759999999999999,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Kim",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Michael Kim",
-      "updatedAt": "2026-10-10T10:24:55.634205+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429022+00:00"
     },
     {
       "book": "model",
@@ -14512,14 +14512,14 @@
       "league": "PGA",
       "line": null,
       "market": "top10",
-      "modelProbability": 0.23335999999999998,
+      "modelProbability": 0.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Kim",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Michael Kim",
-      "updatedAt": "2026-10-10T10:24:55.634207+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429025+00:00"
     },
     {
       "book": "model",
@@ -14534,14 +14534,14 @@
       "league": "PGA",
       "line": null,
       "market": "top20",
-      "modelProbability": 0.72104,
+      "modelProbability": 1.0,
       "modelVersion": "pga-baseline-v0",
       "player": "Michael Kim",
       "price": null,
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Michael Kim",
-      "updatedAt": "2026-10-10T10:24:55.634209+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429028+00:00"
     },
     {
       "book": "model",
@@ -14563,7 +14563,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Michael Kim",
-      "updatedAt": "2026-10-10T10:24:55.634212+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429031+00:00"
     },
     {
       "book": "model",
@@ -14585,7 +14585,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tom Hoge",
-      "updatedAt": "2026-10-10T10:24:55.634215+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429034+00:00"
     },
     {
       "book": "model",
@@ -14607,7 +14607,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tom Hoge",
-      "updatedAt": "2026-10-10T10:24:55.634217+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429037+00:00"
     },
     {
       "book": "model",
@@ -14629,7 +14629,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tom Hoge",
-      "updatedAt": "2026-10-10T10:24:55.634219+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429040+00:00"
     },
     {
       "book": "model",
@@ -14651,7 +14651,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Tom Hoge",
-      "updatedAt": "2026-10-10T10:24:55.634222+00:00"
+      "updatedAt": "2026-10-11T10:32:21.429043+00:00"
     }
   ],
   "source": "combined player market artifacts"
