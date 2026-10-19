@@ -172,7 +172,8 @@ jobs:
             sql/018_game_explanations.sql \
             sql/021_nfl_anytime_td_markets.sql \
             sql/022_cfb_team_markets.sql \
-            sql/023_odds_api_usage.sql
+            sql/023_odds_api_usage.sql \
+            sql/025_nfl_injury_prediction_snapshots.sql
 
       - name: Sync injury impact estimates
         if: ${{ env.DRY_RUN != 'true' && (steps.plan.outputs.run_nba == 'true' || steps.plan.outputs.run_nfl == 'true') }}
@@ -210,6 +211,12 @@ jobs:
             --season "${{ steps.plan.outputs.nfl_season }}" \
             --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
             --lookahead-days 6
+          python scripts/refresh_nfl_injury_news.py \
+            --project "$PROJECT_ID" \
+            --season "${{ steps.plan.outputs.nfl_season }}" \
+            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
+            --lookahead-days 6 \
+            --snapshot
 
       - name: Prepare isolated NBA/NFL model artifact runtime
         if: ${{ steps.plan.outputs.run_nba == 'true' || steps.plan.outputs.run_nfl_predictions == 'true' }}
@@ -265,6 +272,12 @@ jobs:
             --season "${{ steps.plan.outputs.nfl_season }}" \
             --injury-aware \
             --include-explanations
+          python scripts/refresh_nfl_injury_news.py \
+            --project "$PROJECT_ID" \
+            --season "${{ steps.plan.outputs.nfl_season }}" \
+            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
+            --lookahead-days 6 \
+            --mark-latest-used
 
       - name: Generate MLB Predictions
         if: ${{ steps.plan.outputs.run_mlb == 'true' }}

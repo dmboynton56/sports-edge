@@ -23,6 +23,8 @@ Book lines are nflverse closing/consensus, converted to Sports Edge home-spread 
 
 Finals: nflverse, ESPN scoreboard (`Final/OT` for SEA@DEN and PIT@TB), and the public results page.
 
+**QB starter authority is ESPN box score + drives, not nflverse `home_qb_name` / `away_qb_name`.** The reconstruction JSON still carries those nflverse schedule fields (SEA `away_qb_name=Drew Lock`). That field lagged. Event `401872995` passing: Sam Darnold 27/51, 278 yards; Bo Nix 17/27, 107. The original write of this eval treated Lock as the SEA starter. That claim is false and is removed below.
+
 Repro: `PYTHONPATH=data-core python data-core/scripts/eval_nfl_2026_week7.py`
 
 ---
@@ -74,12 +76,12 @@ The public Results spread row is **home-covers-the-model-line**, not a sportsboo
 
 | Game | Score | Model spread | Book | p_home | mkt p_home | QBs (away / home) | ML | Book ATS | err |
 | --- | --- | ---: | ---: | ---: | ---: | --- | --- | --- | ---: |
-| SEA@DEN | 14-17 OT | +2.5 | +2.5 | 0.494 | 0.417 | **Lock** / Nix | L | L | −5.5 |
+| SEA@DEN | 14-17 OT | +2.5 | +2.5 | 0.494 | 0.417 | **Darnold** / Nix | L | L | −5.5 |
 | TEN@IND | 26-20 | −6.5 | −6.5 | 0.764 | 0.718 | Ward / Jones | **L** | W | +12.5 |
 | PIT@TB | 26-19 OT | −0.6 | +2.5 | 0.364 | 0.437 | Rodgers / Daniels | W | W | +7.6 |
 | CAR@PHI | 25-14 | +5.1 | +3.0 | 0.431 | 0.407 | Young / **McKee** | W | W | +5.9 |
 | CHI@ATL | 31-23 | +1.0 | +1.5 | 0.431 | 0.483 | Williams / Penix | W | W | +7.0 |
-| NO@NYG | 34-27 | −3.7 | +1.5 | 0.494 | 0.504 | Shough / Winston | W | L | +10.7 |
+| NO@NYG | 34-27 | −3.7 | +1.5 | 0.494 | 0.504 | Shough / **Winston** (McCarthy in relief) | W | L | +10.7 |
 | BUF@LV | 33-30 | +6.5 | +5.5 | 0.364 | 0.325 | Allen / Cousins | W | W | −3.5 |
 | BAL@CLE | 10-13 | +9.3 | +3.0 | 0.364 | 0.396 | **Huntley** / Watson | **L** | L | −12.3 |
 | ARI@LA | 18-16 | −11.1 | −12.5 | 0.764 | 0.840 | Brissett / Stafford | **L** | L | +13.1 |
@@ -108,9 +110,33 @@ Favorites are too confident. ECE 0.088 on 92 games already exceeds the live-roll
 
 ---
 
+## ESPN-verified starters (box + drives, 2026-10-19)
+
+Passing order on the ESPN box is yards, not kickoff. Starter = first dropback on the drive chart.
+
+| Event | Game | ESPN starter (away / home) | Also played | nflverse schedule QB field |
+| --- | --- | --- | --- | --- |
+| 401872995 | SEA@DEN 14-17 OT | **Darnold** / Nix | — | **Lock** / Nix ← lagged; this was the eval error |
+| 401873003 | TEN@IND | Ward / Jones | — | matches |
+| 401873002 | PIT@TB OT | Rodgers / **Daniels** | — | matches |
+| 401872998 | CAR@PHI | Young / **McKee** | — | matches |
+| 401872999 | CHI@ATL | Williams / Penix | — | matches |
+| 401873000 | NO@NYG | Shough / **Winston** | McCarthy (relief; 11/21, 243; first NYG pass is `J.Winston` at Q1 15:00) | Winston |
+| 401873005 | BUF@LV | Allen / Cousins | — | matches |
+| 401872997 | BAL@CLE | **Huntley** / Watson | — | matches |
+| 401873004 | ARI@LA | Brissett / Stafford | — | matches |
+| 401873001 | NYJ@NE | Smith / Maye | — | matches |
+| 401873007 | DAL@GB | Prescott / Love | — | matches |
+| 401872996 | HOU@JAX | Stroud / Lawrence | — | matches |
+| 401873006 | LAC@KC | Herbert / Mahomes | — | matches |
+
+nflverse injury file `injuries_2026.csv` (week 6, hit 2026-10-19): Lamar Out (ankle) weeks 5–6; Hurts/Mayfield not needed from nflverse because ESPN box + IR/Out comments already show McKee and Daniels starting. Drew Lock week 6 limited, Darnold not on that week-6 report — that is a **report gap**, not evidence Lock started.
+
+Toss-up band `|p_home-0.5|≤0.05` on this slate: SEA 0.494, NO@NYG 0.494, DAL 0.494. Under the serving rule those three have **no moneyline pick**. Two of six ML misses (SEA, DAL) sit in that band.
+
 ## What threw the moneylines
 
-Six ML misses: SEA, IND, BAL, LA, DAL, JAX. Grounded vs speculation labeled.
+Six ML misses: SEA, IND, BAL, LA, DAL, JAX. Grounded vs speculation labeled. SEA is **not** a QB-identity miss.
 
 ### 1. Tuesday freeze is real (ops, not a feature bug)
 
@@ -127,33 +153,34 @@ Odds: The Odds API **did** return 14 NFL events Tuesday (~13:07 UTC capture, reu
 
 **Leverage of the freeze on this specific slate:** no team played TNF and Sunday, so missing SEA@DEN PBP did not leak into Sunday team features. The freeze mattered for **availability that changed after Tuesday**, not for in-week EPA.
 
-### 2. Injuries / QB identity — BAL is the clean hit; SEA is a posted-starter miss
+### 2. Injuries / QB identity — BAL is the clean hit; SEA is not
 
 v2 `expected_qb()` is the **mode of the last three PBP dropback QBs**, not the posted starter (`nfl_v2.py`). Injury deltas are explicitly no-ops in `refresh_nfl.py`.
 
-| Team | Last 3 PBP QBs before this slate | Posted starter | Injury report (week 6) |
+| Team | Last 3 PBP QBs before this slate | ESPN game starter | Notes that survive a box-score check |
 | --- | --- | --- | --- |
-| BAL | Lamar, Lamar, **Huntley** | Huntley | Lamar **Out** (ankle) weeks 5 and 6 |
-| SEA | Darnold, Darnold, Darnold | **Lock** | Lock limited; Darnold not on the week-6 report |
-| PHI | (Hurts-led) | McKee | Hurts **Out** (calf) |
-| TB | (Mayfield-led) | Jalon Daniels | Mayfield **Out** |
+| BAL | Lamar, Lamar, **Huntley** | Huntley | Lamar **Out** (ankle) weeks 5 and 6 (nflverse + ESPN). Last-3 mode still Lamar. |
+| SEA | Darnold, Darnold, Darnold | **Darnold** | nflverse schedule field and this eval originally said Lock. ESPN `401872995`: Darnold 27/51, 278. Features already had Darnold. |
+| PHI | Hurts-led | McKee | Hurts IR (calf). Win, not a miss. |
+| TB | Mayfield-led | Jalon Daniels | Mayfield Out. Win, not a miss. |
+| NYG | — | Winston | McCarthy also played in relief. Box lists McCarthy first on yards; Q1 15:00 PBP is Winston. |
 
 **BAL@CLE (grounded):** model CLE +9.3 / BAL 63.6% vs market CLE +3 / BAL −170. Huntley already started week 5, but 2/3 last QBs are still Lamar, so the model keeps Lamar’s prior EPA. It was **more** on Baltimore than the book, which had already moved to Huntley. CLE 13–10. Close game, but the *line* was the tell.
 
-**SEA@DEN (grounded starter mismatch, speculative price impact):** model and market both had SEA (model DEN +2.5 / 49.4% DEN; market DEN +2.5 / SEA −155). DEN won in OT. A Darnold→Lock swap should move a line; it did not move *this* reconstruction because last-3 QBs were Darnold and injuries are off. Whether a Lock-aware model would have flipped the pick is **speculation** — the market also stayed on Seattle.
+**SEA@DEN (close-game variance, not a starter miss):** model and market both had SEA (model DEN +2.5 / 49.4% DEN; market DEN +2.5 / SEA −155). DEN won in OT. Last-3 QBs were Darnold and Darnold started. A Darnold→Lock swap **did not happen**. nflverse listing Lock is source lag, not a posted-starter miss we can ground. Price impact of a Lock start is not a claim this eval can make. `p_home=0.494` is a toss-up under the ±0.05 rule; there should not have been a moneyline pick.
 
 **PHI / TB:** Hurts and Mayfield out. Model *and* market were already on CAR and PIT. Those were wins, not misses. Injury blindness did not cause this week’s ML 0-fer on those two.
 
-**IND, LA, DAL, JAX:** posted QBs match last-3 PBP QBs (Jones, Stafford, Prescott, Lawrence). Not a QB-identity story.
+**IND, LA, DAL, JAX:** ESPN starters match last-3 PBP QBs (Jones, Stafford, Prescott, Lawrence). Not a QB-identity story. DAL is also a toss-up (`p_home=0.494`).
 
 ### 3. Overconfidence and uncoupled spread vs ML
 
 - IND 76% / LA 76% / JAX 65% are the same isotonic plateaus used for much bigger and much smaller edges. JAX vs market was the overconfidence case: model JAX −7.9 / 65% vs book JAX −2.5 / 56%, London/Wembley (`home_field=0`, correct). HOU 34–31.
-- **Spread model and probability model disagree** on PIT@TB, NO@NYG, DAL@GB (margin favorite ≠ `p>=0.5` favorite). Winner grading uses probability only. DAL was a 49.4% pick of Dallas while the margin model had GB −0.3; GB won by 10. That is a serving-contract issue, not just variance.
+- **Spread model and probability model disagree** on PIT@TB, NO@NYG, DAL@GB (margin favorite ≠ `p>=0.5` favorite). Winner grading uses probability only. DAL was a 49.4% pick of Dallas while the margin model had GB −0.3; GB won by 10. NO@NYG and DAL (and SEA) sit in the ±0.05 toss-up band — do not publish a moneyline pick there, and do not require spread/ML agreement. PIT@TB (`p=0.364`) is outside that band and is still a real uncoupled-model case.
 
 ### 4. Close-game variance (grounded, not a bug)
 
-Four of six misses were one-score games: SEA@DEN OT, ARI@LA 18–16, BAL@CLE 13–10, HOU@JAX 34–31. IND (6) and DAL (10) were not. LA was a 12.5-point favorite on the book; an 18–16 dog win is mostly variance. Market was *more* on the Rams (84%) than the model (76%).
+Four of six misses were one-score games: SEA@DEN OT, ARI@LA 18–16, BAL@CLE 13–10, HOU@JAX 34–31. IND (6) and DAL (10) were not. SEA is this bucket, not the QB-identity bucket. LA was a 12.5-point favorite on the book; an 18–16 dog win is mostly variance. Market was *more* on the Rams (84%) than the model (76%).
 
 ### 5. Home field / rest — not the miss driver
 
@@ -171,10 +198,10 @@ Four of six misses were one-score games: SEA@DEN OT, ARI@LA 18–16, BAL@CLE 13�
 
 ## Prioritized recommendations
 
-1. **Posted-starter QB identity as an inference-time override** (do not wait on a full injury backtest). Last-3 mode cannot see Lamar Out + Huntley, or a Darnold→Lock scratch. The already-running `refresh_nfl_availability.py` feed is the obvious join key. Keep the historical coverage gate for *training*; fail closed if the posted starter is missing rather than silently using Lamar.
-2. **Regenerate the current cycle on confirmed QB/injury changes**, not only Tuesday. `force_nfl_refresh` already exists. Wire it to the availability delta (Lamar Out, Hurts Out, Lock starting) instead of hoping a human dispatches it. TNF results are low leverage unless that team plays again; availability is not.
+1. **Posted-starter QB identity as an inference-time override** (do not wait on a full injury backtest). Last-3 mode cannot see Lamar Out + Huntley. Do **not** cite Darnold→Lock — Lock did not start. The already-running `refresh_nfl_availability.py` feed plus ESPN injuries/depth charts are the join keys. Keep the historical coverage gate for *training*; fail closed if the posted starter is missing rather than silently using Lamar.
+2. **Regenerate only games whose QB or key-injury status changed**, not the whole Tuesday slate and not only via a human `force_nfl_refresh`. BAL Huntley is the template; SEA Darnold is not. TNF results are low leverage unless that team plays again; availability is not.
 3. **Fix `odds_snapshots_market_check` to allow `team_total`** (and `home_over` / `home_under` selections) or stop sending team totals into that table. This is why the workflow is red and why closing/Sunday quotes are fragile. Featured ML/spread already captured; don’t take the job down after that.
-4. **Couple or constrain spread vs ML.** Ridge margin and isotonic HGB independently picking opposite sides on coin-flip games is a product bug. Either derive `p_home` from the margin (with a residual sigma you already use on the board) or refuse to publish a moneyline favorite that disagrees with `my_spread`.
+4. **Toss-up band, then couple.** If `|p_home-0.5|≤0.05`, label toss-up and do not make a moneyline pick (SEA, NO@NYG, DAL this week). Spread and ML do not need to agree in that band. Outside it, Ridge margin and isotonic HGB independently picking opposite sides (PIT@TB) is still a serving-contract issue.
 5. **Recalibrate / replace the isotonic plateaus.** Six unique p-values in a 13-game week, 76% bucket actual 65% S2D, ECE 0.088 with the sample gate already reached. Next experiment family: probability calibration only, 2026 live held out, 2020–2025 rolling origin. Do not retune on this week’s residuals.
 6. **Treat public spread ATS as a line-calibration metric** and add a second column: model side vs book, fail-closed when `book_spread` is null. The 42% number is being read as “the model is 42% ATS” when it is “homes cover the model’s own line 42%.”
 7. **Home-margin bias (+1.8 S2D, +2.9 this week).** Check `home_field` against 2026 scoring; this is the existing live alert (`home-margin bias exceeds ±0.75`). Not this week’s ML story, but it is why KC/SF get −15/−14 when the book is −7.5.
@@ -188,5 +215,7 @@ Do not ship an injury *magnitude* into v2 until the point-in-time coverage gate 
 - Live board: https://sports-edge.drewboynton.com/models/results and `/markets/nfl`, `/models/performance/nfl`
 - Artifact + code: `data-core/src/models/nfl_live.py`, `nfl_v2.py`, `src/pipeline/refresh_nfl.py`, `scripts/plan_daily_refresh.py`
 - Actions: runs `38457969062` (Tue 10/13 predictions), `38568277017` (Wed skip), `39129688994` (Sun skip + odds crash)
-- nflverse schedules, PBP, injury reports; ESPN scoreboard for 2026-10-15 / 18 / 19
-- Cached metrics: `data-core/notebooks/cache/nfl_2026_week7_eval.json`
+- nflverse schedules, PBP, injury reports (week-grained; Lock limited week 6 is not a box-score starter)
+- ESPN scoreboard + summary box/drives: events `401872995` (SEA@DEN), `401873000` (NO@NYG), and the Sunday 2026-10-18 scoreboard
+- Cached metrics: `data-core/notebooks/cache/nfl_2026_week7_eval.json` (nflverse `away_qb_name` for SEA is still Lock; do not reread that as the starter)
+- Design follow-up: `docs/design/nfl-injury-news.md`

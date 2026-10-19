@@ -7,6 +7,12 @@ injuries, and the feature store is leakage-safe (pregame row before the game
 updates team state). Week-7 Sunday features therefore match the Tuesday freeze
 except for SEA/DEN after TNF.
 
+nflverse ``home_qb_name`` / ``away_qb_name`` are schedule fields, not ESPN
+starters. SEA@DEN event 401872995 started Sam Darnold (27/51, 278). The
+reconstruction JSON may still say Drew Lock. Do not treat that column as who
+played. NO@NYG event 401873000 started Jameis Winston; J.J. McCarthy was
+relief (box lists McCarthy first by yards).
+
 Outputs JSON under notebooks/cache/. Not a serving path.
 """
 
@@ -537,6 +543,7 @@ def main() -> None:
             "Supabase/BigQuery credentials are not in this environment; published numeric forecasts are reconstructed from the frozen live artifact.",
             "Reconstruction is validated against the public site's winner/model-line ATS grades and the live WAS@SF board.",
             "v2 excludes injuries; expected QB is the mode of the last three PBP dropback QBs, not the posted starter.",
+            "nflverse home_qb_name/away_qb_name are schedule fields. ESPN box/drives are the starter authority (SEA Darnold, not Lock).",
             "Daily Refresh regenerated 14 NFL predictions on 2026-10-13 19:55 UTC and skipped regeneration Wed-Sun (run_nfl_predictions=false).",
         ],
         "public_site_snapshot": {

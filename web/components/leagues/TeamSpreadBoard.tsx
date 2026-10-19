@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import type { FreshnessStatus, TeamSlateFeed, TeamSlateGame } from "@/lib/data/team-markets";
 import { isFiniteNumber } from "@/lib/data/json";
+import { isNflTossUp, nflMoneylinePick } from "@/lib/data/nfl-toss-up";
 import { formatDateTime, formatNumber, formatPct } from "@/lib/format";
 
 function formatSpread(line: number | null) {
@@ -25,13 +26,20 @@ function freshnessVariant(status: FreshnessStatus) {
   return "missing";
 }
 
-function modelWinner(game: TeamSlateGame) {
+function modelWinner(game: TeamSlateGame, league: string) {
   const probability = game.homeWinProb;
   if (!isFiniteNumber(probability) || probability < 0 || probability > 1) return "n/a";
-  if (probability === 0.5) return "Even · 50.0%";
-  return probability > 0.5
-    ? `${game.homeTeam} · ${formatPct(probability)}`
-    : `${game.awayTeam} · ${formatPct(1 - probability)}`;
+  if (league === "NFL" && isNflTossUp(probability)) {
+    return `Toss-up · home ${formatPct(probability)}`;
+  }
+  const pick = league === "NFL"
+    ? nflMoneylinePick(game.homeTeam, game.awayTeam, probability)
+    : probability === 0.5
+      ? null
+      : probability > 0.5 ? game.homeTeam : game.awayTeam;
+  if (!pick) return `Even · ${formatPct(probability)}`;
+  const pickProb = pick === game.homeTeam ? probability : 1 - probability;
+  return `${pick} · ${formatPct(pickProb)}`;
 }
 
 function FreshnessBadge({ status }: { status: FreshnessStatus }) {
@@ -80,8 +88,9 @@ export function TeamSpreadBoard({
         </CardHeader>
         <CardContent>
           <p className="mb-4 text-sm text-muted-foreground">
-            Projected spread is from the home team&apos;s perspective. Model winner shows
-            the team with the higher win probability. Book prices are required for edge or EV.
+            Projected spread is from the home team&apos;s perspective. Model winner is the
+            side with win probability above 50%. NFL games inside ±5 points of a coin
+            flip are toss-ups with no moneyline pick. Book prices are required for edge or EV.
           </p>
           <Table className="min-w-[760px]">
             <TableHeader>
@@ -113,7 +122,7 @@ export function TeamSpreadBoard({
                       </TableCell>
                       <TableCell>{formatDateTime(game.gameTimeUtc)}</TableCell>
                       <TableCell>{currentForecast ? formatSpread(game.modelSpread) : "n/a"}</TableCell>
-                      <TableCell>{currentForecast ? modelWinner(game) : "n/a"}</TableCell>
+                      <TableCell>{currentForecast ? modelWinner(game, feed.league) : "n/a"}</TableCell>
                       <TableCell>{formatSpread(game.bookSpread)}</TableCell>
                       <TableCell>
                         <FreshnessBadge status={game.freshnessStatus} />

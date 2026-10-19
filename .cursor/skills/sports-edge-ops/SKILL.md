@@ -14,6 +14,7 @@ Short ownership map. Read the workflow YAML if a step name matters.
 | Research MLB missing / audit fail (`audit_mlb_research_readiness`) | **Daily Refresh** | PMR |
 | MLB HR probabilities / fair odds / 2pm board gate | **Player Market Refresh** | Daily (`run_mlb_hr` is a deprecated escape hatch) |
 | NBA / NFL / CFB slate, injuries, team predictions | Daily Refresh | PMR |
+| NFL starter/injury news after Tuesday, TNF/Sunday reopen | **NFL Injury Refresh** (`nfl-injury-refresh.yml`) | Daily (Tuesday freeze is the full slate; injury cron re-prices changed games only) |
 | PGA tournament board | `pga-tournament-refresh.yml` | Daily / PMR unless you also need those |
 
 ## Player probabilities and game odds
@@ -29,7 +30,7 @@ Short ownership map. Read the workflow YAML if a step name matters.
 - NFL moneyline/spread/game-total prices run Tuesday and Sunday, plus a first-of-month catch-up. Team-total event responses are reused for the cycle.
 - All scheduled current game-odds fetches share `odds_api_request_cache` from `sql/023_odds_api_usage.sql`: 500 account credits, 50 reserved, NFL allocation protected. Missing ledger/quota headers skips paid calls.
 - `audit_odds_api_credits.py` reads monthly reservations and free account quota headers; Daily publishes the report in its run summary.
-- `force_nfl_refresh=true` regenerates only the current NFL cycle. It does not enable injury adjustments in NFL v2 or bypass odds caching/credit caps.
+- `force_nfl_refresh=true` regenerates only the current NFL cycle. Posted-starter overrides load when snapshots exist; v2 still does not apply injury *magnitudes*. Credit caps and odds caching still apply.
 - `skip_notifications=true` suppresses Discord and portfolio notifications for a manual recovery run; scheduled notification behavior stays enabled.
 
 - Daily: morning catch-up or research MLB. Leave `run_mlb_hr` false.

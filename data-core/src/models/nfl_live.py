@@ -5,12 +5,13 @@ from __future__ import annotations
 from hashlib import sha256
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import joblib
 import numpy as np
 import pandas as pd
 
+from src.models.nfl_toss_up import is_nfl_toss_up, nfl_moneyline_pick
 from src.models.nfl_v2 import FEATURE_COLUMNS, audit_nfl_feature_store, build_nfl_feature_store
 
 
@@ -55,6 +56,7 @@ def predict_live_games(
     target_game_ids: list[str],
     *,
     artifact_path: Path = DEFAULT_ARTIFACT,
+    posted_starters: Mapping[tuple[str, str], str] | None = None,
 ) -> pd.DataFrame:
     """Score target games from a chronological schedule containing prior results."""
     artifact = load_live_artifact(artifact_path)
@@ -67,7 +69,12 @@ def predict_live_games(
         raise ValueError(
             f"NFL v2 completed-game PBP coverage is {coverage:.1%}; at least 99.0% is required."
         )
-    features = build_nfl_feature_store(schedules, team_game_stats, include_unplayed=True)
+    features = build_nfl_feature_store(
+        schedules,
+        team_game_stats,
+        include_unplayed=True,
+        posted_starters=posted_starters,
+    )
     audit = audit_nfl_feature_store(features, raise_on_error=True)
     if not audit["ready"]:
         raise ValueError(f"NFL v2 live feature audit failed: {audit['issues']}")
@@ -91,6 +98,11 @@ def predict_live_games(
     output = targets[["game_id", "season", "week", "game_date", "home_team", "away_team"]].copy()
     output = output.rename(columns={"week": "season_week"})
     output["home_win_probability"] = probability
+    output["is_toss_up"] = [bool(is_nfl_toss_up(value)) for value in probability]
+    output["moneyline_pick"] = [
+        nfl_moneyline_pick(str(row.home_team), str(row.away_team), float(row.home_win_probability))
+        for row in output.itertuples(index=False)
+    ]
     output["predicted_margin"] = margin
     # Existing serving tables use betting-spread convention: negative means
     # the home team is favored, the inverse of predicted home margin.

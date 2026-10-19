@@ -80,6 +80,18 @@ def test_rolling_windows_shift_and_exclude_unappended_current_value():
     assert state.value("margin", 3) != before
 
 
+def test_posted_starter_overrides_last_three_mode():
+    features = build_nfl_feature_store(_schedules(), _stats())
+    baseline = features.loc[features.game_id == "g2"].iloc[0]
+    overridden = build_nfl_feature_store(
+        _schedules(),
+        _stats(),
+        posted_starters={("g2", "DEN"): "DEN-BACKUP"},
+    ).loc[lambda frame: frame.game_id == "g2"].iloc[0]
+    assert overridden["qb_prior_epa_diff"] != baseline["qb_prior_epa_diff"]
+    assert overridden["qb_stability_diff"] != baseline["qb_stability_diff"]
+
+
 def test_missing_pbp_does_not_invent_epa_observations():
     features = build_nfl_feature_store(_schedules(), pd.DataFrame())
     assert features.loc[features.game_id == "g2", "adj_off_epa_diff_3"].iloc[0] == 0.0

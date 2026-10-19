@@ -28,6 +28,15 @@ it("groups team results by league and model while preserving pushes", () => {
   expect(result[2]).toMatchObject({ league: "NBA", losses: 1, roi: -1 });
 });
 
+it("excludes NFL toss-up moneylines from winner W-L", () => {
+  const base: GameResultRow = { league: "NFL", season: 2026, week: 1, game_date: "2026-09-01", home_team: "A", away_team: "B", home_score: 20, away_score: 10, book_spread: -3, my_spread: -4, my_home_win_prob: 0.6, model_version: "v1", spread_result: "win", winner_result: "win", flat_ats_units: 1 };
+  const result = summarizeGameResults([
+    base,
+    { ...base, my_home_win_prob: 0.494, winner_result: "loss" },
+  ]);
+  expect(result[1]).toMatchObject({ league: "NFL", market: "winner", sample: 1, wins: 1, losses: 0 });
+});
+
 it("keeps PGA models separate and excludes ungraded outcomes", () => {
   const base: PgaResultRow = { event_key: "event", season: 2026, player_name: "Player", model_version: "v1", win_prob: 0.1, top10_prob: 0.4, top20_prob: 0.7, final_position: "1", final_position_numeric: 1, top10_hit: true, top20_hit: true, winner_hit: true, evaluated_at: "2026-09-01" };
   const result = summarizePga([base, { ...base, top10_hit: null, winner_hit: null }, { ...base, model_version: "v2", top10_hit: false, winner_hit: false }]);

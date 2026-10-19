@@ -13,8 +13,11 @@ from src.models.nfl_v2 import FEATURE_COLUMNS
 
 
 class ConstantProbabilityModel:
+    def __init__(self, value=0.6):
+        self.value = value
+
     def predict_probability(self, frame):
-        return np.full(len(frame), 0.6)
+        return np.full(len(frame), self.value)
 
 
 class ConstantMarginModel:
@@ -22,12 +25,12 @@ class ConstantMarginModel:
         return np.full(len(frame), 3.5)
 
 
-def _artifact(path: Path) -> None:
+def _artifact(path: Path, probability: float = 0.6) -> None:
     joblib.dump(
         {
             "model_version": LIVE_MODEL_VERSION,
             "feature_columns": FEATURE_COLUMNS,
-            "probability_model": ConstantProbabilityModel(),
+            "probability_model": ConstantProbabilityModel(probability),
             "margin_model": ConstantMarginModel(),
             "trained_through": 2025,
             "dataset_fingerprint": "test",
@@ -60,7 +63,17 @@ def test_live_prediction_uses_betting_spread_convention_and_lineage(tmp_path):
     result = predict_live_games(_schedules(), _stats(), ["live"], artifact_path=artifact)
     assert result.iloc[0]["home_win_probability"] == pytest.approx(0.6)
     assert result.iloc[0]["predicted_spread"] == pytest.approx(-3.5)
+    assert not bool(result.iloc[0]["is_toss_up"])
+    assert result.iloc[0]["moneyline_pick"] == "KC"
     assert len(result.iloc[0]["input_hash"]) == 64
+
+
+def test_live_prediction_withholds_moneyline_in_toss_up_band(tmp_path):
+    artifact = tmp_path / "model.joblib"
+    _artifact(artifact, probability=0.494)
+    result = predict_live_games(_schedules(), _stats(), ["live"], artifact_path=artifact)
+    assert bool(result.iloc[0]["is_toss_up"])
+    assert result.iloc[0]["moneyline_pick"] is None
 
 
 def test_live_prediction_fails_closed_on_incomplete_pbp(tmp_path):
