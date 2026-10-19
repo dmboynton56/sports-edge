@@ -189,9 +189,12 @@ def add_rest_features(games_df: pd.DataFrame, historical_games: pd.DataFrame) ->
     # 1. Melt history to get all games per team
     if 'game_id' not in hist.columns or 'game_id' not in df.columns:
         raise ValueError("Rest features require game_id to preserve one-row-per-game grain.")
+    hist = hist.drop_duplicates(subset=['game_id'], keep='last')
+    df = df.drop_duplicates(subset=['game_id'], keep='last')
     h_games = hist[['game_id', 'game_date', 'season', 'home_team']].rename(columns={'home_team': 'team'})
     a_games = hist[['game_id', 'game_date', 'season', 'away_team']].rename(columns={'away_team': 'team'})
     team_games = pd.concat([h_games, a_games]).sort_values(['team', 'game_date', 'game_id'])
+    team_games = team_games.drop_duplicates(subset=['team', 'game_id'], keep='last')
     
     # 2. Compute rest days
     team_games['prev_game_date'] = team_games.groupby(['team', 'season'])['game_date'].shift(1)

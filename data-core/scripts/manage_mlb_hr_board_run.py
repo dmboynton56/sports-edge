@@ -23,7 +23,7 @@ from scripts.mlb_hr_board_contract import (  # noqa: E402
     parse_timestamp,
     schedule_confirms_slate_over,
 )
-from src.data.mlb_fetcher import fetch_mlb_schedule  # noqa: E402
+from src.data.mlb_fetcher import MLB_SLATE_GAME_TYPES, fetch_mlb_schedule  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
 
@@ -113,7 +113,7 @@ def _official_schedule_confirms_slate_over(slate_date: str, expected_game_ids: l
     slate_year = datetime.fromisoformat(slate_date).year
     schedule = fetch_mlb_schedule(
         slate_year,
-        game_types=("R", "F", "D", "L", "W"),
+        game_types=MLB_SLATE_GAME_TYPES,
         start_date=slate_date,
         end_date=slate_date,
         include_uncompleted=True,

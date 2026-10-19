@@ -5,11 +5,14 @@ from unittest.mock import patch
 import pytest
 import requests
 
+import psycopg
+
 from scripts.sync_odds import (
     NFL_MAPPING,
     OddsSyncResult,
     canonical_team_code,
     fetch_odds_data,
+    filter_supported_odds_snapshots,
     odds_window_days,
     pick_featured_market_outcomes,
     should_fail_zero_odds_match,
@@ -46,6 +49,10 @@ class FakeCursor:
         raise AssertionError(f"Unexpected SQL: {sql}")
 
     def executemany(self, sql, params=None):
+        if "INSERT INTO odds_snapshots" in sql and any(
+            row[2] in self.conn.reject_markets for row in params or []
+        ):
+            raise psycopg.errors.CheckViolation("odds_snapshots_market_check")
         self.conn.bulk_updates.append((sql, params))
 
     def fetchall(self):
@@ -55,19 +62,24 @@ class FakeCursor:
 
 
 class FakeConnection:
-    def __init__(self, games):
+    def __init__(self, games, reject_markets=()):
         self.games = games
         self.bulk_updates = []
         self.select_params = None
         self.latest_select_params = None
         self.latest_snapshots = []
         self.commits = 0
+        self.rollbacks = 0
+        self.reject_markets = set(reject_markets)
 
     def cursor(self):
         return FakeCursor(self)
 
     def commit(self):
         self.commits += 1
+
+    def rollback(self):
+        self.rollbacks += 1
 
 
 def test_should_not_fail_zero_odds_match_when_dates_do_not_overlap():
@@ -397,3 +409,54 @@ def test_cached_capture_is_not_inserted_twice_but_new_unchanged_capture_is():
     sync_odds_to_supabase(conn, 'NFL', [event], now_utc=now)
     assert len(conn.bulk_updates[0][1]) == 4
     assert all(row[5] == now for row in conn.bulk_updates[0][1])
+
+
+def _featured_and_team_total_event():
+    event = _team_total_event()
+    team_totals = event['bookmakers'][0]['markets'][0]
+    event['bookmakers'][0]['markets'] = [
+        {'key': 'h2h', 'outcomes': [
+            {'name': 'Seattle Seahawks', 'price': -150},
+            {'name': 'New England Patriots', 'price': 130},
+        ]},
+        {'key': 'spreads', 'outcomes': [
+            {'name': 'Seattle Seahawks', 'point': -3.5, 'price': -110},
+            {'name': 'New England Patriots', 'point': 3.5, 'price': -110},
+        ]},
+        {'key': 'totals', 'outcomes': [
+            {'name': 'Over', 'point': 44.5, 'price': -110},
+            {'name': 'Under', 'point': 44.5, 'price': -110},
+        ]},
+        team_totals,
+    ]
+    event['_snapshot_ts'] = '2026-10-04T13:05:00+00:00'
+    return event
+
+
+def test_filter_supported_odds_snapshots_drops_unknown_markets():
+    kept = filter_supported_odds_snapshots([
+        ('game', 'fanduel', 'moneyline', None, -110, 'home', 'evt', None, None),
+        ('game', 'fanduel', 'player_prop', 1.5, -110, 'over', 'evt', None, None),
+        ('game', 'fanduel', 'team_total', 24.5, -110, 'home_over', 'evt', None, None),
+    ])
+    assert [row[2] for row in kept] == ['moneyline', 'team_total']
+
+
+def test_rejected_team_total_does_not_block_main_lines():
+    event = _featured_and_team_total_event()
+    conn = FakeConnection(
+        [('game', 'SEA', 'NE', datetime(2026, 10, 4, 20, tzinfo=timezone.utc), datetime(2026, 10, 4).date())],
+        reject_markets=('team_total',),
+    )
+
+    result = sync_odds_to_supabase(conn, 'NFL', [event], now_utc=datetime(2026, 10, 4, 13, tzinfo=timezone.utc))
+
+    inserted_markets = [row[2] for _sql, rows in conn.bulk_updates if 'INSERT INTO odds_snapshots' in _sql for row in rows]
+    assert set(inserted_markets) == {'moneyline', 'spread', 'total'}
+    assert 'team_total' not in inserted_markets
+    assert result.market_counts['moneyline'] == 1
+    assert result.market_counts['spread'] == 1
+    assert result.market_counts['total'] == 1
+    assert result.market_counts['team_total'] == 1
+    assert conn.rollbacks == 1
+    assert any('UPDATE games SET book_spread' in sql for sql, _rows in conn.bulk_updates)

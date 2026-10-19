@@ -42,6 +42,14 @@ LOGGER = logging.getLogger("sync_odds")
 PREFERRED_BOOKMAKERS = ["draftkings", "betmgm", "fanduel"]
 ODDS_WINDOW_DAYS = {"NFL": 7, "NBA": 10}
 SERVING_TIMEZONE = ZoneInfo("America/Denver")
+SUPPORTED_ODDS_SNAPSHOT_MARKETS = frozenset({"spread", "moneyline", "total", "team_total"})
+ODDS_SNAPSHOT_INSERT_SQL = """
+                    INSERT INTO odds_snapshots (
+                        game_id, book, market, line, price, snapshot_ts,
+                        selection, provider_event_id, commence_time_utc
+                    )
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    """
 
 
 @dataclass(frozen=True)
@@ -60,6 +68,57 @@ class FeaturedMarketOutcome:
     line: Optional[float]
     price: int
     book: str
+
+
+def snapshot_insert_row(snapshot: tuple) -> tuple:
+    """Map an in-memory snapshot tuple onto the odds_snapshots insert order."""
+    return (*snapshot[:5], snapshot[8], *snapshot[5:8])
+
+
+def filter_supported_odds_snapshots(snapshots: list) -> list:
+    """Drop markets the shared odds_snapshots check constraint does not allow."""
+    kept = []
+    skipped: dict[str, int] = {}
+    for snapshot in snapshots:
+        market = snapshot[2]
+        if market not in SUPPORTED_ODDS_SNAPSHOT_MARKETS:
+            skipped[market] = skipped.get(market, 0) + 1
+            continue
+        kept.append(snapshot)
+    if skipped:
+        LOGGER.warning(
+            "Skipping unsupported odds_snapshots markets (constraint allows %s): %s",
+            sorted(SUPPORTED_ODDS_SNAPSHOT_MARKETS),
+            skipped,
+        )
+    return kept
+
+
+def insert_odds_snapshots(conn, snapshots: list) -> int:
+    """Insert snapshots so one rejected market cannot roll back the others."""
+    snapshots = filter_supported_odds_snapshots(snapshots)
+    if not snapshots:
+        return 0
+    by_market: dict[str, list] = {}
+    for snapshot in snapshots:
+        by_market.setdefault(snapshot[2], []).append(snapshot_insert_row(snapshot))
+
+    inserted = 0
+    for market, rows in by_market.items():
+        try:
+            with conn.cursor() as cur:
+                cur.executemany(ODDS_SNAPSHOT_INSERT_SQL, rows)
+            conn.commit()
+            inserted += len(rows)
+        except psycopg.errors.CheckViolation as exc:
+            conn.rollback()
+            LOGGER.warning(
+                "Skipping %s odds_snapshots (%s rows) due to check constraint: %s",
+                market,
+                len(rows),
+                exc,
+            )
+    return inserted
 
 
 def odds_window_days(league: str) -> int:
@@ -582,25 +641,16 @@ def sync_odds_to_supabase(
             != (snapshot[1], snapshot[3], snapshot[4], snapshot[6], snapshot[8])
         ]
 
-    if updates or snapshots:
+    if updates:
         with conn.cursor() as cur:
-            if updates:
-                cur.executemany(
-                    "UPDATE games SET book_spread = %s WHERE id = %s",
-                    [(spread, gid) for spread, _price, _book, gid in updates],
-                )
-            if snapshots:
-                cur.executemany(
-                    """
-                    INSERT INTO odds_snapshots (
-                        game_id, book, market, line, price, snapshot_ts,
-                        selection, provider_event_id, commence_time_utc
-                    )
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """,
-                    [(*s[:5], s[8], *s[5:8]) for s in snapshots],
-                )
+            cur.executemany(
+                "UPDATE games SET book_spread = %s WHERE id = %s",
+                [(spread, gid) for spread, _price, _book, gid in updates],
+            )
         conn.commit()
+    if snapshots:
+        insert_odds_snapshots(conn, snapshots)
+    if updates or snapshots:
         LOGGER.info(
             "%s: synced %d unique games and %d paired market outcomes; coverage=%s",
             league,
