@@ -361,6 +361,9 @@ def main() -> None:
         if slate.empty:
             slate = result.run_line
         games_df = mlb_schedule_to_games_df(slate, season=season)
+        if games_df.empty:
+            print(f"Empty MLB research slate for {game_date}; skipping serving writes.")
+            return
         game_ids = upsert_games_pg(pg_conn, games_df)
         print(f"Upserted {len(game_ids)} MLB slate games into serving table.")
         print("Fetching latest odds from Supabase...")

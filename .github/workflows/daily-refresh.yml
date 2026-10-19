@@ -445,7 +445,7 @@ jobs:
           RUN_NBA: ${{ steps.plan.outputs.run_nba }}
           RUN_NFL: ${{ steps.plan.outputs.run_nfl_odds }}
         run: |
-          python scripts/apply_supabase_sql_files.py sql/020_team_market_odds.sql sql/023_odds_api_usage.sql
+          python scripts/apply_supabase_sql_files.py sql/020_team_market_odds.sql sql/023_odds_api_usage.sql sql/024_odds_snapshots_team_total.sql
           # sync_odds.py exits 0 on Odds API quota/auth exhaustion (OUT_OF_USAGE_CREDITS
           # / 429) so this retry loop does not re-hit an empty Starter-plan key for ~7.5m.
           # Transient network / 5xx failures still exit 1 and retry here.

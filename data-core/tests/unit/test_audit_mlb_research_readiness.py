@@ -23,10 +23,10 @@ def test_readiness_accepts_complete_research_feed():
     assert readiness_issues(_healthy_report()) == []
 
 
-def test_readiness_rejects_empty_serving_slate():
+def test_readiness_skips_empty_serving_slate():
     report = _healthy_report()
     report["scheduled_games"] = 0
-    assert readiness_issues(report) == ["No MLB games found for the requested date."]
+    assert readiness_issues(report) == []
 
 
 def test_readiness_rejects_missing_stale_or_invalid_rows():

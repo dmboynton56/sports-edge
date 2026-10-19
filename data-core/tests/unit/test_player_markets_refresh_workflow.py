@@ -40,6 +40,7 @@ def test_sync_market_odds_retries_transient_failures_without_continue_on_error()
     assert "sync_odds.py" in step["run"]
     assert "max_attempts=5" in step["run"]
     assert "OUT_OF_USAGE_CREDITS" in step["run"]
+    assert "sql/024_odds_snapshots_team_total.sql" in step["run"]
 
 
 def _daily_step(name: str) -> dict:

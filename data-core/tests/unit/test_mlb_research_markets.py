@@ -8,6 +8,8 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
+from unittest.mock import patch
+
 from src.pipeline.mlb_research_markets import (
     load_mlb_moneyline_v3,
     load_mlb_runline_v1,
@@ -15,6 +17,7 @@ from src.pipeline.mlb_research_markets import (
     score_mlb_moneyline_v3,
     score_mlb_runline_v1,
     score_mlb_totals_v1,
+    score_research_markets_for_date,
 )
 
 
@@ -331,4 +334,22 @@ def test_runline_v1_scores_uncompleted_games():
     missing_markers = expected_v2_markers.difference(feature_cols)
     if missing_markers:
         pytest.fail(f"Run-line v1 pickle expects v2 features but missing: {missing_markers}")
+
+
+@patch("src.pipeline.mlb_research_markets.fetch_mlb_schedule")
+def test_score_research_markets_empty_schedule_is_a_skip(mock_fetch):
+    mock_fetch.return_value = pd.DataFrame()
+
+    result = score_research_markets_for_date(
+        game_date=date(2026, 10, 16),
+        season=2026,
+        moneyline_artifact={},
+        totals_artifact={},
+        runline_artifact={},
+    )
+
+    assert result.moneyline.empty
+    assert result.run_line.empty
+    assert result.totals.empty
+    assert result.score_date == date(2026, 10, 16)
 

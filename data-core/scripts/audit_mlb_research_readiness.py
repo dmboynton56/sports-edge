@@ -51,7 +51,9 @@ def readiness_issues(report: dict[str, Any]) -> list[str]:
     issues: list[str] = []
     scheduled = int(report.get("scheduled_games") or 0)
     if scheduled == 0:
-        return ["No MLB games found for the requested date."]
+        # Off day / offseason. A missing postseason slate is a fetch bug, not
+        # an audit failure — serving fetches must include F/D/L/W.
+        return []
 
     coverage = report.get("market_coverage") or {}
     for market in REQUIRED_MARKETS:
@@ -101,6 +103,7 @@ def audit(conn, game_date: date) -> dict[str, Any]:
             prepare=False,
         )
         report["scheduled_games"] = int(cur.fetchone()[0])
+        report["empty_slate"] = report["scheduled_games"] == 0
 
         cur.execute(
             f"""

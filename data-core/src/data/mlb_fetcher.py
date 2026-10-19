@@ -16,6 +16,11 @@ import requests
 
 MLB_SCHEDULE_URL = "https://statsapi.mlb.com/api/v1/schedule"
 
+# Official serving slate: regular season plus the four postseason rounds.
+# Spring training (S), All-Star (A), and exhibition (E) stay out.
+# F=Wild Card, D=Division Series, L=LCS, W=World Series.
+MLB_SLATE_GAME_TYPES = ("R", "F", "D", "L", "W")
+
 
 def _format_date(value: Optional[object]) -> Optional[str]:
     if value is None:
@@ -36,7 +41,7 @@ def _probable_pitcher(team: dict) -> dict:
 def fetch_mlb_schedule(
     season: int,
     *,
-    game_types: Iterable[str] = ("R",),
+    game_types: Optional[Iterable[str]] = None,
     start_date: Optional[object] = None,
     end_date: Optional[object] = None,
     include_uncompleted: bool = False,
@@ -47,7 +52,9 @@ def fetch_mlb_schedule(
 
     Args:
         season: MLB season year.
-        game_types: MLB game type codes. "R" is regular season.
+        game_types: MLB game type codes. Defaults to regular season plus
+            postseason (R/F/D/L/W). Pass ``("R",)`` to restrict to the
+            regular season.
         start_date: Optional YYYY-MM-DD lower bound.
         end_date: Optional YYYY-MM-DD upper bound.
         include_uncompleted: Include scheduled/in-progress games without scores.
@@ -57,7 +64,7 @@ def fetch_mlb_schedule(
         DataFrame with completed games and target columns.
     """
     frames = []
-    for game_type in game_types:
+    for game_type in tuple(game_types) if game_types is not None else MLB_SLATE_GAME_TYPES:
         params = {
             "sportId": 1,
             "season": season,
@@ -247,7 +254,7 @@ def mlb_schedule_to_games_df(
 def fetch_mlb_games_for_seasons(
     seasons: Iterable[int],
     *,
-    game_types: Iterable[str] = ("R",),
+    game_types: Optional[Iterable[str]] = None,
     timeout: int = 30,
 ) -> pd.DataFrame:
     """Fetch completed MLB games for multiple seasons."""

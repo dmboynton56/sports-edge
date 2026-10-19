@@ -222,7 +222,32 @@ def score_research_markets_for_date(
         include_uncompleted=True,
     )
     if schedule.empty:
-        raise ValueError(f"No MLB schedule rows found for season={season} through {game_date}")
+        print(
+            f"No MLB schedule rows found for season={season} through {game_date}; "
+            "treating as an empty slate."
+        )
+        return ResearchMarketPredictions(
+            moneyline=pd.DataFrame(
+                columns=[
+                    "game_pk", "game_date", "game_datetime", "home_team", "away_team",
+                    "home_win_prob", "away_win_prob",
+                ]
+            ),
+            run_line=pd.DataFrame(
+                columns=[
+                    "game_pk", "game_date", "game_datetime", "home_team", "away_team",
+                    "p_home_cover_15", "p_away_cover_plus_15",
+                ]
+            ),
+            totals=pd.DataFrame(
+                columns=[
+                    "game_pk", "game_date", "game_datetime", "home_team", "away_team",
+                    "predicted_total", "p_over_8_5", "p_over_9_5",
+                ]
+            ),
+            score_date=game_date,
+            season=season,
+        )
 
     # Moneyline v3 uses v1 features (schedule-only, no boxscores needed)
     moneyline = score_mlb_moneyline_v3(

@@ -1143,8 +1143,10 @@ def main() -> None:
         include_uncompleted=True,
     )
     if schedule.empty:
-        raise SystemExit("No MLB schedule rows fetched.")
-    batting, pitching = _load_history(schedule, args.cache, history_start, args.date)
+        print(f"No MLB schedule rows fetched for {args.date}; writing an empty board.")
+        batting, pitching = pd.DataFrame(), pd.DataFrame()
+    else:
+        batting, pitching = _load_history(schedule, args.cache, history_start, args.date)
     gaps: list[str] = []
     if batting.empty:
         gaps.append("No recent batting boxscores available; MLB HR probabilities not generated.")
