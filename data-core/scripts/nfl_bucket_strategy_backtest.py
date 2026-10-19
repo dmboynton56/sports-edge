@@ -598,7 +598,14 @@ def render_report(
             "",
             "## In-sample 2025 (not an edge)",
             "",
-            "Frozen `nfl-v2-live-20260906` scored on 2025 REG. Trained through 2025. Do not read ROI here as a tradable rule. The in-sample toss-up dog ML printed **+46%**; the same rule is **−4.1%** out of sample. That is the reason this appendix exists.",
+            (
+                "Frozen `nfl-v2-live-20260906` scored on 2025 REG. Trained through 2025. "
+                "Do not read ROI here as a tradable rule. The in-sample toss-up dog ML printed "
+                f"**{_fmt_pct(next((row.get('roi') for row in (payload.get('in_sample_2025_rules') or []) if row.get('rule_id') == 'q1_toss_up_book_dog_ml'), None))}**; "
+                "the same rule is "
+                f"**{_fmt_pct(next((row.get('roi') for row in (payload.get('oos_rules') or []) if row.get('rule_id') == 'q1_toss_up_book_dog_ml'), None))}** "
+                "out of sample. That is the reason this appendix exists."
+            ),
             "",
             *_table(
                 [
