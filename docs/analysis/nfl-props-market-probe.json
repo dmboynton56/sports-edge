@@ -1,0 +1,805 @@
+{
+  "generated_at": "2026-10-19T21:49:32.332157+00:00",
+  "purpose": "NFL player-prop data-availability check. Analysis only.",
+  "markets": [
+    "player_reception_yds",
+    "player_receptions",
+    "player_rush_yds",
+    "player_pass_yds",
+    "player_anytime_td"
+  ],
+  "propline": {
+    "nfl_sports": [
+      {
+        "key": "football_nfl",
+        "title": "NFL",
+        "active": true
+      }
+    ],
+    "upcoming_events": 32,
+    "score_rows": 118,
+    "market_discovery": {
+      "requested_present": [
+        "player_anytime_td",
+        "player_pass_yds",
+        "player_reception_yds",
+        "player_receptions",
+        "player_rush_yds"
+      ],
+      "other": [
+        "both_teams_to_score_points",
+        "correct_score_range",
+        "first_team_to_score",
+        "h2h",
+        "half_time_full_time",
+        "odd_even_total_points",
+        "overtime",
+        "player_1st_td",
+        "player_2plus_td",
+        "player_3plus_td",
+        "player_assists",
+        "player_defensive_interceptions",
+        "player_extra_points_made",
+        "player_field_goals_made",
+        "player_fumbles_lost",
+        "player_kicking_points",
+        "player_last_td",
+        "player_longest_completion",
+        "player_pass_attempts",
+        "player_pass_completions",
+        "player_pass_interceptions",
+        "player_pass_rush_reception_tds",
+        "player_pass_rush_yds",
+        "player_pass_tds",
+        "player_reception_longest",
+        "player_reception_targets",
+        "player_reception_tds",
+        "player_rush_attempts",
+        "player_rush_longest",
+        "player_rush_reception_yds",
+        "player_rush_tds",
+        "player_sacks",
+        "player_solo_tackles",
+        "player_tackles_assists",
+        "spreads",
+        "team_first_td_scorer",
+        "to_win_without_conceding",
+        "total_points_range",
+        "totals",
+        "winning_margin"
+      ]
+    },
+    "event_summaries": [
+      {
+        "event_id": "53249",
+        "sport_key": "football_nfl",
+        "home_team": "San Francisco 49ers",
+        "away_team": "Washington Commanders",
+        "commence_time": "2026-10-20T00:15:00Z",
+        "markets": [
+          {
+            "market": "player_reception_yds",
+            "present": true,
+            "book_count": 25,
+            "sportsbook_count": 14,
+            "dfs_book_count": 6,
+            "player_count": 34,
+            "outcome_count": 2822,
+            "sportsbooks": [
+              "betmgm",
+              "betonlineag",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanatics",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "lowvig",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "pick6",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "sportzino",
+              "thescorebet"
+            ]
+          },
+          {
+            "market": "player_receptions",
+            "present": true,
+            "book_count": 23,
+            "sportsbook_count": 13,
+            "dfs_book_count": 5,
+            "player_count": 32,
+            "outcome_count": 1455,
+            "sportsbooks": [
+              "betmgm",
+              "betonlineag",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "lowvig",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "sportzino",
+              "thescorebet"
+            ]
+          },
+          {
+            "market": "player_rush_yds",
+            "present": true,
+            "book_count": 25,
+            "sportsbook_count": 14,
+            "dfs_book_count": 6,
+            "player_count": 15,
+            "outcome_count": 1834,
+            "sportsbooks": [
+              "betmgm",
+              "betonlineag",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanatics",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "lowvig",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "pick6",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "sportzino",
+              "thescorebet"
+            ]
+          },
+          {
+            "market": "player_pass_yds",
+            "present": true,
+            "book_count": 25,
+            "sportsbook_count": 14,
+            "dfs_book_count": 6,
+            "player_count": 5,
+            "outcome_count": 746,
+            "sportsbooks": [
+              "betmgm",
+              "betonlineag",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanatics",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "lowvig",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "pick6",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "sportzino",
+              "thescorebet"
+            ]
+          },
+          {
+            "market": "player_anytime_td",
+            "present": true,
+            "book_count": 25,
+            "sportsbook_count": 14,
+            "dfs_book_count": 6,
+            "player_count": 68,
+            "outcome_count": 727,
+            "sportsbooks": [
+              "betmgm",
+              "betonlineag",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanatics",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "lowvig",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "pick6",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "betway",
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "thescorebet"
+            ]
+          }
+        ]
+      },
+      {
+        "event_id": "53167",
+        "sport_key": "football_nfl",
+        "home_team": "Chicago Bears",
+        "away_team": "New England Patriots",
+        "commence_time": "2026-10-23T00:15:00Z",
+        "markets": [
+          {
+            "market": "player_reception_yds",
+            "present": true,
+            "book_count": 22,
+            "sportsbook_count": 12,
+            "dfs_book_count": 6,
+            "player_count": 26,
+            "outcome_count": 2531,
+            "sportsbooks": [
+              "betmgm",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanatics",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "pick6",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "sportzino"
+            ]
+          },
+          {
+            "market": "player_receptions",
+            "present": true,
+            "book_count": 19,
+            "sportsbook_count": 10,
+            "dfs_book_count": 5,
+            "player_count": 26,
+            "outcome_count": 1117,
+            "sportsbooks": [
+              "betmgm",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "sportzino"
+            ]
+          },
+          {
+            "market": "player_rush_yds",
+            "present": true,
+            "book_count": 22,
+            "sportsbook_count": 12,
+            "dfs_book_count": 6,
+            "player_count": 11,
+            "outcome_count": 1220,
+            "sportsbooks": [
+              "betmgm",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanatics",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "pick6",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "sportzino"
+            ]
+          },
+          {
+            "market": "player_pass_yds",
+            "present": true,
+            "book_count": 22,
+            "sportsbook_count": 12,
+            "dfs_book_count": 6,
+            "player_count": 4,
+            "outcome_count": 565,
+            "sportsbooks": [
+              "betmgm",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanatics",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "novig",
+              "pinnacle",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "pick6",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "courtside",
+              "polymarket_us",
+              "rebet",
+              "sportzino"
+            ]
+          },
+          {
+            "market": "player_anytime_td",
+            "present": true,
+            "book_count": 21,
+            "sportsbook_count": 11,
+            "dfs_book_count": 6,
+            "player_count": 57,
+            "outcome_count": 604,
+            "sportsbooks": [
+              "betmgm",
+              "betrivers",
+              "bovada",
+              "draftkings",
+              "fanatics",
+              "fanduel",
+              "fliff",
+              "hardrock",
+              "kalshi",
+              "novig",
+              "prophetx"
+            ],
+            "dfs_books": [
+              "dabble",
+              "parlayplay",
+              "pick6",
+              "prizepicks",
+              "sleeper",
+              "underdog"
+            ],
+            "other_books": [
+              "betway",
+              "courtside",
+              "polymarket_us",
+              "rebet"
+            ]
+          }
+        ]
+      }
+    ],
+    "coverage": {
+      "events_sampled": 2,
+      "markets": [
+        {
+          "market": "player_reception_yds",
+          "events_sampled": 2,
+          "events_present": 2,
+          "players_per_game_mean": 30.0,
+          "players_per_game_median": 34,
+          "sportsbooks": [
+            "betmgm",
+            "betonlineag",
+            "betrivers",
+            "bovada",
+            "draftkings",
+            "fanatics",
+            "fanduel",
+            "fliff",
+            "hardrock",
+            "kalshi",
+            "lowvig",
+            "novig",
+            "pinnacle",
+            "prophetx"
+          ],
+          "dfs_books": [
+            "dabble",
+            "parlayplay",
+            "pick6",
+            "prizepicks",
+            "sleeper",
+            "underdog"
+          ],
+          "other_books": [
+            "courtside",
+            "polymarket_us",
+            "rebet",
+            "sportzino",
+            "thescorebet"
+          ]
+        },
+        {
+          "market": "player_receptions",
+          "events_sampled": 2,
+          "events_present": 2,
+          "players_per_game_mean": 29.0,
+          "players_per_game_median": 32,
+          "sportsbooks": [
+            "betmgm",
+            "betonlineag",
+            "betrivers",
+            "bovada",
+            "draftkings",
+            "fanduel",
+            "fliff",
+            "hardrock",
+            "kalshi",
+            "lowvig",
+            "novig",
+            "pinnacle",
+            "prophetx"
+          ],
+          "dfs_books": [
+            "dabble",
+            "parlayplay",
+            "prizepicks",
+            "sleeper",
+            "underdog"
+          ],
+          "other_books": [
+            "courtside",
+            "polymarket_us",
+            "rebet",
+            "sportzino",
+            "thescorebet"
+          ]
+        },
+        {
+          "market": "player_rush_yds",
+          "events_sampled": 2,
+          "events_present": 2,
+          "players_per_game_mean": 13.0,
+          "players_per_game_median": 15,
+          "sportsbooks": [
+            "betmgm",
+            "betonlineag",
+            "betrivers",
+            "bovada",
+            "draftkings",
+            "fanatics",
+            "fanduel",
+            "fliff",
+            "hardrock",
+            "kalshi",
+            "lowvig",
+            "novig",
+            "pinnacle",
+            "prophetx"
+          ],
+          "dfs_books": [
+            "dabble",
+            "parlayplay",
+            "pick6",
+            "prizepicks",
+            "sleeper",
+            "underdog"
+          ],
+          "other_books": [
+            "courtside",
+            "polymarket_us",
+            "rebet",
+            "sportzino",
+            "thescorebet"
+          ]
+        },
+        {
+          "market": "player_pass_yds",
+          "events_sampled": 2,
+          "events_present": 2,
+          "players_per_game_mean": 4.5,
+          "players_per_game_median": 5,
+          "sportsbooks": [
+            "betmgm",
+            "betonlineag",
+            "betrivers",
+            "bovada",
+            "draftkings",
+            "fanatics",
+            "fanduel",
+            "fliff",
+            "hardrock",
+            "kalshi",
+            "lowvig",
+            "novig",
+            "pinnacle",
+            "prophetx"
+          ],
+          "dfs_books": [
+            "dabble",
+            "parlayplay",
+            "pick6",
+            "prizepicks",
+            "sleeper",
+            "underdog"
+          ],
+          "other_books": [
+            "courtside",
+            "polymarket_us",
+            "rebet",
+            "sportzino",
+            "thescorebet"
+          ]
+        },
+        {
+          "market": "player_anytime_td",
+          "events_sampled": 2,
+          "events_present": 2,
+          "players_per_game_mean": 62.5,
+          "players_per_game_median": 68,
+          "sportsbooks": [
+            "betmgm",
+            "betonlineag",
+            "betrivers",
+            "bovada",
+            "draftkings",
+            "fanatics",
+            "fanduel",
+            "fliff",
+            "hardrock",
+            "kalshi",
+            "lowvig",
+            "novig",
+            "pinnacle",
+            "prophetx"
+          ],
+          "dfs_books": [
+            "dabble",
+            "parlayplay",
+            "pick6",
+            "prizepicks",
+            "sleeper",
+            "underdog"
+          ],
+          "other_books": [
+            "betway",
+            "courtside",
+            "polymarket_us",
+            "rebet",
+            "thescorebet"
+          ]
+        }
+      ]
+    },
+    "history": {
+      "attempted": true,
+      "redacted": false,
+      "notes": "Free/demo history is structure-only when redacted=true. Paid tiers keep 30\u2013365 days; the CSV archive starts April 2026 and NFL grading starts 2026.",
+      "keys": [
+        "away_team",
+        "bookmakers",
+        "commence_time",
+        "home_team",
+        "id",
+        "live",
+        "sport_key",
+        "upgrade_url"
+      ],
+      "bookmaker_count": 26,
+      "has_upgrade_url": true,
+      "closing_redacted": false,
+      "closing_keys": [
+        "away_team",
+        "bookmakers",
+        "commence_time",
+        "home_team",
+        "id",
+        "sport_key",
+        "upgrade_url"
+      ],
+      "event_id": "53166",
+      "home_team": "Green Bay Packers",
+      "away_team": "Dallas Cowboys",
+      "commence_time": "2026-10-19T00:20:00Z",
+      "closing_sample_source": "odds_history_last_tick",
+      "closing_sample": [],
+      "closing_sample_rows": 0
+    },
+    "calls": [
+      {
+        "provider": "propline",
+        "endpoint": "/v1/sports",
+        "estimated_cost": 1,
+        "x_requests_remaining": "330",
+        "x_requests_used": null,
+        "x_requests_last": null,
+        "notes": "sport catalog"
+      },
+      {
+        "provider": "propline",
+        "endpoint": "/v1/sports/football_nfl/events",
+        "estimated_cost": 1,
+        "x_requests_remaining": "330",
+        "x_requests_used": null,
+        "x_requests_last": null,
+        "notes": "32 upcoming/in-play events"
+      },
+      {
+        "provider": "propline",
+        "endpoint": "/v1/sports/football_nfl/scores",
+        "estimated_cost": 1,
+        "x_requests_remaining": "330",
+        "x_requests_used": null,
+        "x_requests_last": null,
+        "notes": "118 score rows"
+      },
+      {
+        "provider": "propline",
+        "endpoint": "/v1/sports/football_nfl/events/{id}/markets",
+        "estimated_cost": 1,
+        "x_requests_remaining": "328",
+        "x_requests_used": null,
+        "x_requests_last": null,
+        "notes": "discovery before odds pull"
+      },
+      {
+        "provider": "propline",
+        "endpoint": "/v1/sports/football_nfl/events/{id}/odds",
+        "estimated_cost": 1,
+        "x_requests_remaining": "326",
+        "x_requests_used": null,
+        "x_requests_last": null,
+        "notes": "markets=player_reception_yds,player_receptions,player_rush_yds,player_pass_yds,player_anytime_td"
+      },
+      {
+        "provider": "propline",
+        "endpoint": "/v1/sports/football_nfl/events/{id}/odds",
+        "estimated_cost": 1,
+        "x_requests_remaining": "325",
+        "x_requests_used": null,
+        "x_requests_last": null,
+        "notes": "markets=player_reception_yds,player_receptions,player_rush_yds,player_pass_yds,player_anytime_td"
+      },
+      {
+        "provider": "propline",
+        "endpoint": "/v1/sports/football_nfl/events/{id}/odds/history",
+        "estimated_cost": 1,
+        "x_requests_remaining": "329",
+        "x_requests_used": null,
+        "x_requests_last": null,
+        "notes": "receiving yards only"
+      },
+      {
+        "provider": "propline",
+        "endpoint": "/v1/sports/football_nfl/events/{id}/odds/closing",
+        "estimated_cost": 1,
+        "x_requests_remaining": "323",
+        "x_requests_used": null,
+        "x_requests_last": null,
+        "notes": "CLV helper"
+      }
+    ],
+    "request_count": 8,
+    "rate_limit_remaining": "323"
+  },
+  "odds_api": {
+    "skipped": true,
+    "reason": "ODDS_API_KEY not set in this environment. Live current-odds sample not spent.",
+    "calls": [],
+    "docs_markets": [
+      "player_reception_yds",
+      "player_receptions",
+      "player_rush_yds",
+      "player_pass_yds",
+      "player_anytime_td"
+    ]
+  },
+  "historical_cost": {
+    "market": "player_reception_yds",
+    "region": "us",
+    "seasons": "2023-2025 REG",
+    "games": 816,
+    "credits_per_event_close": 10,
+    "close_credits": 8160,
+    "weekly_event_discovery_credits": 51,
+    "total_credits_one_snapshot_near_close": 8211,
+    "one_week_sample_credits": 161,
+    "two_week_sample_credits": 322,
+    "starter_monthly_limit": 500,
+    "nfl_monthly_allocation": 140,
+    "contingency": 50,
+    "sampled": false,
+    "sample_reason": "A 1-week receiving-yards close sample is ~161 credits. Daily Refresh on 2026-10-19 showed account used=63 remaining=437 and NFL ledger 63/140. 161 credits would blow the NFL allocation and eat a third of the remaining Starter month. Not cheap. Not run.",
+    "propline_backfill": "PropLine CSV/history archive starts April 2026. NFL player-prop grading starts with the 2026 season. 2023-2025 closing lines are not in PropLine."
+  }
+}
