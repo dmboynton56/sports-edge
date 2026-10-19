@@ -1,0 +1,673 @@
+{
+  "generated_at": "2026-10-19T22:39:04.715739+00:00",
+  "model": "nfl-prop-fair-odds-residual-v0",
+  "live_site_touched": false,
+  "predictions_published": false,
+  "spread_total_source": "v2 predicted margin + nflverse closing total",
+  "history_seasons": [
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025,
+    2026
+  ],
+  "eval_seasons": [
+    2023,
+    2024,
+    2025
+  ],
+  "receiving_yards": {
+    "n": 14963,
+    "mae": 17.121342943702828,
+    "baseline_mae": 17.390054071081604,
+    "mae_lift": 0.26871112737877567,
+    "crps": 12.205606888075966,
+    "pinball_10": 2.661331283833456,
+    "pinball_50": 8.277551293189868,
+    "pinball_90": 5.672498830448439,
+    "median_over_rate": 0.4599345051126111,
+    "median_p_over_mean": 0.47510826319835425,
+    "median_calibration": [
+      {
+        "lo": 0.125,
+        "hi": 0.25,
+        "n": 45,
+        "mean_p": 0.22825708386045868,
+        "empirical": 0.35555555555555557
+      },
+      {
+        "lo": 0.25,
+        "hi": 0.375,
+        "n": 333,
+        "mean_p": 0.33158045278907367,
+        "empirical": 0.3843843843843844
+      },
+      {
+        "lo": 0.375,
+        "hi": 0.5,
+        "n": 14585,
+        "mean_p": 0.4791468688847784,
+        "empirical": 0.4619814878299623
+      }
+    ],
+    "synthetic_lines": [
+      {
+        "line": 24.5,
+        "n": 14963,
+        "mean_p_over": 0.31833480560416566,
+        "empirical_over": 0.36723919000200494,
+        "abs_gap": 0.048904384397839284,
+        "calibration": [
+          {
+            "lo": 0.0,
+            "hi": 0.125,
+            "n": 5766,
+            "mean_p": 0.026224703623144514,
+            "empirical": 0.12192160943461672
+          },
+          {
+            "lo": 0.125,
+            "hi": 0.25,
+            "n": 1644,
+            "mean_p": 0.18455651083501598,
+            "empirical": 0.25121654501216545
+          },
+          {
+            "lo": 0.25,
+            "hi": 0.375,
+            "n": 1504,
+            "mean_p": 0.313150976275406,
+            "empirical": 0.32978723404255317
+          },
+          {
+            "lo": 0.375,
+            "hi": 0.5,
+            "n": 1374,
+            "mean_p": 0.43736949981321444,
+            "empirical": 0.4395924308588064
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.625,
+            "n": 1446,
+            "mean_p": 0.5630653289139849,
+            "empirical": 0.5587828492392808
+          },
+          {
+            "lo": 0.625,
+            "hi": 0.75,
+            "n": 1630,
+            "mean_p": 0.6868619742044338,
+            "empirical": 0.6773006134969325
+          },
+          {
+            "lo": 0.75,
+            "hi": 0.875,
+            "n": 1434,
+            "mean_p": 0.8057324195545938,
+            "empirical": 0.8458856345885635
+          },
+          {
+            "lo": 0.875,
+            "hi": 1.0,
+            "n": 165,
+            "mean_p": 0.893931012640053,
+            "empirical": 0.9333333333333333
+          }
+        ]
+      },
+      {
+        "line": 49.5,
+        "n": 14963,
+        "mean_p_over": 0.14329360869396723,
+        "empirical_over": 0.17289313640312773,
+        "abs_gap": 0.029599527709160495,
+        "calibration": [
+          {
+            "lo": 0.0,
+            "hi": 0.125,
+            "n": 9598,
+            "mean_p": 0.020670038749252984,
+            "empirical": 0.05761617003542405
+          },
+          {
+            "lo": 0.125,
+            "hi": 0.25,
+            "n": 1663,
+            "mean_p": 0.1834256679775926,
+            "empirical": 0.19903788334335537
+          },
+          {
+            "lo": 0.25,
+            "hi": 0.375,
+            "n": 1357,
+            "mean_p": 0.3099542970414859,
+            "empirical": 0.3220338983050847
+          },
+          {
+            "lo": 0.375,
+            "hi": 0.5,
+            "n": 1107,
+            "mean_p": 0.43538035071133546,
+            "empirical": 0.45076784101174344
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.625,
+            "n": 850,
+            "mean_p": 0.5570222849965795,
+            "empirical": 0.58
+          },
+          {
+            "lo": 0.625,
+            "hi": 0.75,
+            "n": 352,
+            "mean_p": 0.6725447787120075,
+            "empirical": 0.6988636363636364
+          },
+          {
+            "lo": 0.75,
+            "hi": 0.875,
+            "n": 36,
+            "mean_p": 0.7748782069250337,
+            "empirical": 0.7777777777777778
+          }
+        ]
+      },
+      {
+        "line": 74.5,
+        "n": 14963,
+        "mean_p_over": 0.07232869427076563,
+        "empirical_over": 0.07939584307959634,
+        "abs_gap": 0.007067148808830706,
+        "calibration": [
+          {
+            "lo": 0.0,
+            "hi": 0.125,
+            "n": 11766,
+            "mean_p": 0.016052708583578053,
+            "empirical": 0.028811830698623152
+          },
+          {
+            "lo": 0.125,
+            "hi": 0.25,
+            "n": 1537,
+            "mean_p": 0.1808554085674169,
+            "empirical": 0.17631750162654522
+          },
+          {
+            "lo": 0.25,
+            "hi": 0.375,
+            "n": 989,
+            "mean_p": 0.3090882610109664,
+            "empirical": 0.29322548028311424
+          },
+          {
+            "lo": 0.375,
+            "hi": 0.5,
+            "n": 498,
+            "mean_p": 0.4287352792024337,
+            "empirical": 0.39156626506024095
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.625,
+            "n": 157,
+            "mean_p": 0.5461238159964228,
+            "empirical": 0.5414012738853503
+          },
+          {
+            "lo": 0.625,
+            "hi": 0.75,
+            "n": 15,
+            "mean_p": 0.6461026646375212,
+            "empirical": 0.5333333333333333
+          },
+          {
+            "lo": 0.75,
+            "hi": 0.875,
+            "n": 1,
+            "mean_p": 0.7718819473080811,
+            "empirical": 0.0
+          }
+        ]
+      }
+    ],
+    "by_season": [
+      {
+        "season": 2023,
+        "n": 4954,
+        "mae": 17.46541342176251,
+        "baseline_mae": 17.687761865015094,
+        "crps": 12.409353233680454
+      },
+      {
+        "season": 2024,
+        "n": 4965,
+        "mae": 17.189408874305183,
+        "baseline_mae": 17.470470349311388,
+        "crps": 12.312564460523667
+      },
+      {
+        "season": 2025,
+        "n": 5044,
+        "mae": 16.716411838677384,
+        "baseline_mae": 17.018501487307336,
+        "crps": 11.900213600342527
+      }
+    ],
+    "by_position": [
+      {
+        "position": "WR",
+        "n": 7101,
+        "mae": 21.80374782659716,
+        "baseline_mae": 22.146612233790258
+      },
+      {
+        "position": "TE",
+        "n": 3656,
+        "mae": 15.211660342487194,
+        "baseline_mae": 15.43559871365185
+      },
+      {
+        "position": "RB",
+        "n": 4206,
+        "mae": 10.875989286216306,
+        "baseline_mae": 11.058425272548321
+      }
+    ],
+    "roi_clv": {
+      "status": "small_sample",
+      "label": "small-sample \u2014 2026-09-18..29 PropLine CC-BY sample, not 2023-2025, not a strategy",
+      "n": 335,
+      "market": "player_reception_yds",
+      "unique_players": 218,
+      "books": [
+        "betmgm",
+        "betrivers",
+        "draftkings",
+        "fanatics",
+        "fanduel",
+        "fliff",
+        "pinnacle"
+      ],
+      "flat_roi": -0.07003932776523915,
+      "units": -23.463174801355116,
+      "win": 163,
+      "loss": 172,
+      "push": 0,
+      "clv_mean_line_move_toward_side": -0.473015873015873,
+      "clv_n": 315
+    },
+    "stat": "receiving_yards",
+    "trailing_median_calibration": {
+      "n": 14654,
+      "mean_p_over": 0.382250714508689,
+      "empirical_over": 0.3850825713115873,
+      "abs_gap": 0.0028318568028982694
+    },
+    "alpha_by_season": {
+      "2023": 0.5681154793005914,
+      "2024": 0.5600886139046022,
+      "2025": 0.5607346594107805
+    }
+  },
+  "receptions": {
+    "n": 14963,
+    "mae": 1.335950311862772,
+    "baseline_mae": 1.3405344794855356,
+    "mae_lift": 0.004584167622763591,
+    "crps": 0.9099324432342117,
+    "pinball_10": 0.20858116687829983,
+    "pinball_50": 0.6524426919735348,
+    "pinball_90": 0.3597874757735748,
+    "median_over_rate": 0.3362293657688966,
+    "median_p_over_mean": 0.34082322841561086,
+    "median_calibration": [
+      {
+        "lo": 0.125,
+        "hi": 0.25,
+        "n": 3676,
+        "mean_p": 0.18669927301392275,
+        "empirical": 0.1999455930359086
+      },
+      {
+        "lo": 0.25,
+        "hi": 0.375,
+        "n": 4446,
+        "mean_p": 0.3223658638649495,
+        "empirical": 0.3173639226270805
+      },
+      {
+        "lo": 0.375,
+        "hi": 0.5,
+        "n": 6841,
+        "mean_p": 0.43563701336647276,
+        "empirical": 0.4217219704721532
+      }
+    ],
+    "synthetic_lines": [
+      {
+        "line": 2.5,
+        "n": 14963,
+        "mean_p_over": 0.35352521861530334,
+        "empirical_over": 0.3654347390229232,
+        "abs_gap": 0.011909520407619889,
+        "calibration": [
+          {
+            "lo": 0.0,
+            "hi": 0.125,
+            "n": 4772,
+            "mean_p": 0.06465889941802762,
+            "empirical": 0.08612740989103101
+          },
+          {
+            "lo": 0.125,
+            "hi": 0.25,
+            "n": 2039,
+            "mean_p": 0.18433526263469904,
+            "empirical": 0.2005885237861697
+          },
+          {
+            "lo": 0.25,
+            "hi": 0.375,
+            "n": 1735,
+            "mean_p": 0.3119992858461331,
+            "empirical": 0.3371757925072046
+          },
+          {
+            "lo": 0.375,
+            "hi": 0.5,
+            "n": 1632,
+            "mean_p": 0.43826733630208525,
+            "empirical": 0.4534313725490196
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.625,
+            "n": 1546,
+            "mean_p": 0.5621369433910752,
+            "empirical": 0.556921086675291
+          },
+          {
+            "lo": 0.625,
+            "hi": 0.75,
+            "n": 1550,
+            "mean_p": 0.6883768800063489,
+            "empirical": 0.6748387096774193
+          },
+          {
+            "lo": 0.75,
+            "hi": 0.875,
+            "n": 1224,
+            "mean_p": 0.8086938263047269,
+            "empirical": 0.8047385620915033
+          },
+          {
+            "lo": 0.875,
+            "hi": 1.0,
+            "n": 465,
+            "mean_p": 0.9095178536093171,
+            "empirical": 0.9268817204301075
+          }
+        ]
+      },
+      {
+        "line": 4.5,
+        "n": 14963,
+        "mean_p_over": 0.15619453112740267,
+        "empirical_over": 0.15758871883980485,
+        "abs_gap": 0.001394187712402184,
+        "calibration": [
+          {
+            "lo": 0.0,
+            "hi": 0.125,
+            "n": 9088,
+            "mean_p": 0.028588191930268205,
+            "empirical": 0.04148327464788732
+          },
+          {
+            "lo": 0.125,
+            "hi": 0.25,
+            "n": 2138,
+            "mean_p": 0.18276628866139963,
+            "empirical": 0.1796071094480823
+          },
+          {
+            "lo": 0.25,
+            "hi": 0.375,
+            "n": 1401,
+            "mean_p": 0.31010121945823477,
+            "empirical": 0.2926481084939329
+          },
+          {
+            "lo": 0.375,
+            "hi": 0.5,
+            "n": 1089,
+            "mean_p": 0.4319601541396482,
+            "empirical": 0.40587695133149676
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.625,
+            "n": 678,
+            "mean_p": 0.5570378483671289,
+            "empirical": 0.5206489675516224
+          },
+          {
+            "lo": 0.625,
+            "hi": 0.75,
+            "n": 432,
+            "mean_p": 0.6836251623014376,
+            "empirical": 0.6828703703703703
+          },
+          {
+            "lo": 0.75,
+            "hi": 0.875,
+            "n": 129,
+            "mean_p": 0.7872559741662188,
+            "empirical": 0.7209302325581395
+          },
+          {
+            "lo": 0.875,
+            "hi": 1.0,
+            "n": 8,
+            "mean_p": 0.8955984431669757,
+            "empirical": 0.5
+          }
+        ]
+      },
+      {
+        "line": 6.5,
+        "n": 14963,
+        "mean_p_over": 0.06799913418261813,
+        "empirical_over": 0.05901223016774711,
+        "abs_gap": 0.008986904014871025,
+        "calibration": [
+          {
+            "lo": 0.0,
+            "hi": 0.125,
+            "n": 12115,
+            "mean_p": 0.019841526691327993,
+            "empirical": 0.020883202641353692
+          },
+          {
+            "lo": 0.125,
+            "hi": 0.25,
+            "n": 1551,
+            "mean_p": 0.17961401533779922,
+            "empirical": 0.1399097356544165
+          },
+          {
+            "lo": 0.25,
+            "hi": 0.375,
+            "n": 713,
+            "mean_p": 0.30494226413925424,
+            "empirical": 0.2608695652173913
+          },
+          {
+            "lo": 0.375,
+            "hi": 0.5,
+            "n": 372,
+            "mean_p": 0.43184477670605087,
+            "empirical": 0.3575268817204301
+          },
+          {
+            "lo": 0.5,
+            "hi": 0.625,
+            "n": 179,
+            "mean_p": 0.5467178958266753,
+            "empirical": 0.45251396648044695
+          },
+          {
+            "lo": 0.625,
+            "hi": 0.75,
+            "n": 30,
+            "mean_p": 0.6723328919464782,
+            "empirical": 0.4
+          },
+          {
+            "lo": 0.75,
+            "hi": 0.875,
+            "n": 3,
+            "mean_p": 0.8023432476138527,
+            "empirical": 0.3333333333333333
+          }
+        ]
+      }
+    ],
+    "by_season": [
+      {
+        "season": 2023,
+        "n": 4954,
+        "mae": 1.3500433262323304,
+        "baseline_mae": 1.3634060467146876,
+        "crps": 0.9265640323640468
+      },
+      {
+        "season": 2024,
+        "n": 4965,
+        "mae": 1.3559882623897743,
+        "baseline_mae": 1.358541224041031,
+        "crps": 0.9275457195496277
+      },
+      {
+        "season": 2025,
+        "n": 5044,
+        "mae": 1.302384646209847,
+        "baseline_mae": 1.3003462894040032,
+        "crps": 0.8762601971090646
+      }
+    ],
+    "by_position": [
+      {
+        "position": "WR",
+        "n": 7101,
+        "mae": 1.4598608226887972,
+        "baseline_mae": 1.4684249533148817
+      },
+      {
+        "position": "TE",
+        "n": 3656,
+        "mae": 1.270535902926043,
+        "baseline_mae": 1.2811120556687956
+      },
+      {
+        "position": "RB",
+        "n": 4206,
+        "mae": 1.183612352209201,
+        "baseline_mae": 1.176268698889202
+      }
+    ],
+    "roi_clv": {
+      "status": "small_sample",
+      "label": "small-sample \u2014 2026-09-18..29 PropLine CC-BY sample, not 2023-2025, not a strategy",
+      "n": 332,
+      "market": "player_receptions",
+      "unique_players": 217,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "fliff",
+        "kalshi",
+        "pinnacle"
+      ],
+      "flat_roi": -0.15040540774238023,
+      "units": -49.93459537047024,
+      "win": 155,
+      "loss": 177,
+      "push": 0,
+      "clv_mean_line_move_toward_side": -0.05501618122977346,
+      "clv_n": 309
+    },
+    "stat": "receptions",
+    "trailing_median_calibration": {
+      "n": 14654,
+      "mean_p_over": 0.42513219972042066,
+      "empirical_over": 0.40753377917292205,
+      "abs_gap": 0.017598420547498606
+    },
+    "alpha_by_season": {
+      "2023": 0.14966081938554254,
+      "2024": 0.13815098186583877,
+      "2025": 0.1371354561094757
+    }
+  },
+  "historical_lines": {
+    "source": "docs/analysis/nfl-propline-graded-14d-compact.json",
+    "coverage": "2026-09-18 to 2026-09-29 only. Not 2023-2025.",
+    "yards_roi": {
+      "status": "small_sample",
+      "label": "small-sample \u2014 2026-09-18..29 PropLine CC-BY sample, not 2023-2025, not a strategy",
+      "n": 335,
+      "market": "player_reception_yds",
+      "unique_players": 218,
+      "books": [
+        "betmgm",
+        "betrivers",
+        "draftkings",
+        "fanatics",
+        "fanduel",
+        "fliff",
+        "pinnacle"
+      ],
+      "flat_roi": -0.07003932776523915,
+      "units": -23.463174801355116,
+      "win": 163,
+      "loss": 172,
+      "push": 0,
+      "clv_mean_line_move_toward_side": -0.473015873015873,
+      "clv_n": 315
+    },
+    "receptions_roi": {
+      "status": "small_sample",
+      "label": "small-sample \u2014 2026-09-18..29 PropLine CC-BY sample, not 2023-2025, not a strategy",
+      "n": 332,
+      "market": "player_receptions",
+      "unique_players": 217,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "fliff",
+        "kalshi",
+        "pinnacle"
+      ],
+      "flat_roi": -0.15040540774238023,
+      "units": -49.93459537047024,
+      "win": 155,
+      "loss": 177,
+      "push": 0,
+      "clv_mean_line_move_toward_side": -0.05501618122977346,
+      "clv_n": 309
+    }
+  },
+  "notes": [
+    "Mean is season-to-date blended with trailing-8. Opportunity is a residual scale.",
+    "Baseline remains plain season-average (career / trail fallback) for the 17.63 comparison.",
+    "Live comparison is analysis-only and is not a board, edge, or published prediction."
+  ]
+}

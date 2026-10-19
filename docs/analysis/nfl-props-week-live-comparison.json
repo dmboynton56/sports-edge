@@ -1,0 +1,2926 @@
+{
+  "generated_at": "2026-10-19T22:38:56.540518+00:00",
+  "live_site_published": false,
+  "predictions_published": false,
+  "skipped": false,
+  "rescored": true,
+  "request_count": 16,
+  "rate_limit_remaining": "272",
+  "events": [
+    {
+      "event_id": "53249",
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "event_id": "53167",
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "event_id": "32691",
+      "home_team": "New Orleans Saints",
+      "away_team": "Pittsburgh Steelers",
+      "commence_time": "2026-10-25T13:30:00Z"
+    },
+    {
+      "event_id": "56778",
+      "home_team": "Baltimore Ravens",
+      "away_team": "Cincinnati Bengals",
+      "commence_time": "2026-10-25T17:00:00Z"
+    },
+    {
+      "event_id": "53250",
+      "home_team": "Houston Texans",
+      "away_team": "New York Giants",
+      "commence_time": "2026-10-25T17:00:00Z"
+    },
+    {
+      "event_id": "53253",
+      "home_team": "Carolina Panthers",
+      "away_team": "Tampa Bay Buccaneers",
+      "commence_time": "2026-10-25T17:00:00Z"
+    },
+    {
+      "event_id": "53252",
+      "home_team": "Atlanta Falcons",
+      "away_team": "San Francisco 49ers",
+      "commence_time": "2026-10-25T17:00:00Z"
+    },
+    {
+      "event_id": "53251",
+      "home_team": "Tennessee Titans",
+      "away_team": "Cleveland Browns",
+      "commence_time": "2026-10-25T17:00:00Z"
+    },
+    {
+      "event_id": "56767",
+      "home_team": "Minnesota Vikings",
+      "away_team": "Indianapolis Colts",
+      "commence_time": "2026-10-25T17:00:00Z"
+    },
+    {
+      "event_id": "56768",
+      "home_team": "New York Jets",
+      "away_team": "Miami Dolphins",
+      "commence_time": "2026-10-25T17:00:00Z"
+    },
+    {
+      "event_id": "56769",
+      "home_team": "Arizona Cardinals",
+      "away_team": "Denver Broncos",
+      "commence_time": "2026-10-25T20:05:00Z"
+    },
+    {
+      "event_id": "56771",
+      "home_team": "Las Vegas Raiders",
+      "away_team": "Los Angeles Rams",
+      "commence_time": "2026-10-25T20:25:00Z"
+    },
+    {
+      "event_id": "56770",
+      "home_team": "Detroit Lions",
+      "away_team": "Green Bay Packers",
+      "commence_time": "2026-10-25T20:25:00Z"
+    },
+    {
+      "event_id": "53168",
+      "home_team": "Seattle Seahawks",
+      "away_team": "Kansas City Chiefs",
+      "commence_time": "2026-10-26T00:20:00Z"
+    },
+    {
+      "event_id": "56772",
+      "home_team": "Philadelphia Eagles",
+      "away_team": "Dallas Cowboys",
+      "commence_time": "2026-10-27T00:15:00Z"
+    }
+  ],
+  "lines": [
+    {
+      "player": "Christian McCaffrey",
+      "market": "player_reception_yds",
+      "line": 40.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "betmgm",
+      "best_over_price": -108,
+      "best_under_price": -111,
+      "book_novig_p_over": 0.49673031650536237,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "George Kittle",
+      "market": "player_reception_yds",
+      "line": 66.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "best_over_price": -113,
+      "best_under_price": -113,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "betmgm",
+        "fanduel"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Rachaad White",
+      "market": "player_reception_yds",
+      "line": 14.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "draftkings",
+      "best_over_price": -113,
+      "best_under_price": -109,
+      "book_novig_p_over": 0.5042704018448135,
+      "books": [
+        "draftkings",
+        "fanduel"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Chig Okonkwo",
+      "market": "player_reception_yds",
+      "line": 24.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "betmgm",
+      "best_over_price": -103,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.48681028797537923,
+      "books": [
+        "betmgm",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Terry McLaurin",
+      "market": "player_reception_yds",
+      "line": 49.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "pinnacle",
+      "best_over_price": -110,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Stefon Diggs",
+      "market": "player_reception_yds",
+      "line": 38.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "pinnacle",
+      "best_over_price": -110,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Antonio Williams",
+      "market": "player_reception_yds",
+      "line": 21.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "best_over_price": -111,
+      "best_under_price": -113,
+      "book_novig_p_over": 0.4978941161605526,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Austin Ekeler",
+      "market": "player_reception_yds",
+      "line": 7.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "pinnacle",
+      "best_over_price": -110,
+      "best_under_price": -105,
+      "book_novig_p_over": 0.5056053811659194,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Rachaad White (WAS)",
+      "market": "player_reception_yds",
+      "line": 13.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5101214574898786,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Chig Okonkwo (WAS)",
+      "market": "player_reception_yds",
+      "line": 24.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -110,
+      "best_under_price": -120,
+      "book_novig_p_over": 0.48987854251012153,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Mike Evans (SF)",
+      "market": "player_reception_yds",
+      "line": 65.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Antonio Williams (WAS)",
+      "market": "player_reception_yds",
+      "line": 23.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -110,
+      "best_under_price": -120,
+      "book_novig_p_over": 0.48987854251012153,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Stefon Diggs (WAS)",
+      "market": "player_reception_yds",
+      "line": 38.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Christian McCaffrey (SF)",
+      "market": "player_reception_yds",
+      "line": 40.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Terry McLaurin (WAS)",
+      "market": "player_reception_yds",
+      "line": 49.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Austin Ekeler (WAS)",
+      "market": "player_reception_yds",
+      "line": 7.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5101214574898786,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "George Kittle (SF)",
+      "market": "player_reception_yds",
+      "line": 67.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5101214574898786,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Mike Evans",
+      "market": "player_reception_yds",
+      "line": 63.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "best_over_price": -114,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5042122999157539,
+      "books": [
+        "draftkings"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Chigoziem Okonkwo",
+      "market": "player_reception_yds",
+      "line": 24.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "best_over_price": -113,
+      "best_under_price": -113,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "fanduel"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Christian McCaffrey",
+      "market": "player_receptions",
+      "line": 4.5,
+      "best_over_book": "betmgm",
+      "best_under_book": "fanduel",
+      "best_over_price": -125,
+      "best_under_price": 112,
+      "book_novig_p_over": 0.5408163265306123,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "George Kittle",
+      "market": "player_receptions",
+      "line": 5.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "draftkings",
+      "best_over_price": 106,
+      "best_under_price": -123,
+      "book_novig_p_over": 0.46811369075108106,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Rachaad White",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "draftkings",
+      "best_over_price": 102,
+      "best_under_price": -122,
+      "book_novig_p_over": 0.4739134147382802,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Chig Okonkwo",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "pinnacle",
+      "best_over_price": -147,
+      "best_under_price": 121,
+      "book_novig_p_over": 0.5680836553762219,
+      "books": [
+        "betmgm",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Stefon Diggs",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "fanduel",
+      "best_over_price": -151,
+      "best_under_price": 124,
+      "book_novig_p_over": 0.5740275609259384,
+      "books": [
+        "betmgm",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Antonio Williams",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "draftkings",
+      "best_over_price": 133,
+      "best_under_price": -159,
+      "book_novig_p_over": 0.41145725769297975,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Austin Ekeler",
+      "market": "player_receptions",
+      "line": 1.5,
+      "best_over_book": "betmgm",
+      "best_under_book": "pinnacle",
+      "best_over_price": 120,
+      "best_under_price": -142,
+      "book_novig_p_over": 0.43650793650793646,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Christian McCaffrey (SF)",
+      "market": "player_receptions",
+      "line": 4.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -130,
+      "best_under_price": 100,
+      "book_novig_p_over": 0.5306122448979592,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "George Kittle (SF)",
+      "market": "player_receptions",
+      "line": 5.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 105,
+      "best_under_price": -135,
+      "book_novig_p_over": 0.4592085979482169,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Mike Evans (SF)",
+      "market": "player_receptions",
+      "line": 5.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 120,
+      "best_under_price": -160,
+      "book_novig_p_over": 0.4248366013071895,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Rachaad White (WAS)",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 100,
+      "best_under_price": -130,
+      "book_novig_p_over": 0.4693877551020409,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Chig Okonkwo (WAS)",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -150,
+      "best_under_price": 115,
+      "book_novig_p_over": 0.5633187772925764,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Stefon Diggs (WAS)",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -160,
+      "best_under_price": 120,
+      "book_novig_p_over": 0.5751633986928104,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Terry McLaurin (WAS)",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -135,
+      "best_under_price": 105,
+      "book_novig_p_over": 0.5407914020517831,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Antonio Williams (WAS)",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 130,
+      "best_under_price": -170,
+      "book_novig_p_over": 0.40847201210287437,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Austin Ekeler (WAS)",
+      "market": "player_receptions",
+      "line": 1.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 115,
+      "best_under_price": -150,
+      "book_novig_p_over": 0.43668122270742354,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Mike Evans",
+      "market": "player_receptions",
+      "line": 5.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "fanduel",
+      "best_over_price": 136,
+      "best_under_price": -160,
+      "book_novig_p_over": 0.4077791718946047,
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Chigoziem Okonkwo",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "fanduel",
+      "best_over_price": -142,
+      "best_under_price": 116,
+      "book_novig_p_over": 0.5589736113136026,
+      "books": [
+        "draftkings",
+        "fanduel"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Terry McLaurin",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "draftkings",
+      "best_over_price": -133,
+      "best_under_price": 112,
+      "book_novig_p_over": 0.5475376728289576,
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "San Francisco 49ers",
+      "away_team": "Washington Commanders",
+      "commence_time": "2026-10-20T00:15:00Z"
+    },
+    {
+      "player": "Cole Kmet",
+      "market": "player_reception_yds",
+      "line": 8.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "best_over_price": -111,
+      "best_under_price": -113,
+      "book_novig_p_over": 0.4978941161605526,
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Colston Loveland",
+      "market": "player_reception_yds",
+      "line": 44.5,
+      "best_over_book": "betmgm",
+      "best_under_book": "fanduel",
+      "best_over_price": -111,
+      "best_under_price": -114,
+      "book_novig_p_over": 0.4968624497991968,
+      "books": [
+        "betmgm",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Hunter Henry",
+      "market": "player_reception_yds",
+      "line": 33.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "best_over_price": -110,
+      "best_under_price": -114,
+      "book_novig_p_over": 0.495787700084246,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Kalif Raymond",
+      "market": "player_reception_yds",
+      "line": 25.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "best_over_price": -114,
+      "best_under_price": -114,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Luther Burden III",
+      "market": "player_reception_yds",
+      "line": 56.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "best_over_price": -112,
+      "best_under_price": -112,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "betmgm",
+        "draftkings"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Rhamondre Stevenson",
+      "market": "player_reception_yds",
+      "line": 18.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "best_over_price": -114,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5042122999157539,
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Rome Odunze",
+      "market": "player_reception_yds",
+      "line": 45.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "best_over_price": -114,
+      "best_under_price": -114,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "betmgm",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "A.J. Brown",
+      "market": "player_reception_yds",
+      "line": 67.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "pinnacle",
+      "best_over_price": -114,
+      "best_under_price": 102,
+      "book_novig_p_over": 0.5183217790582515,
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Demario Douglas",
+      "market": "player_reception_yds",
+      "line": 29.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "best_over_price": -114,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5042122999157539,
+      "books": [
+        "draftkings"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Efton Chism III",
+      "market": "player_reception_yds",
+      "line": 19.5,
+      "best_over_book": "betmgm",
+      "best_under_book": "betmgm",
+      "best_over_price": -111,
+      "best_under_price": -118,
+      "book_novig_p_over": 0.4928711096627016,
+      "books": [
+        "betmgm"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "A.J. Brown (NE)",
+      "market": "player_reception_yds",
+      "line": 68.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Cole Kmet (CHI)",
+      "market": "player_reception_yds",
+      "line": 8.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Colston Loveland (CHI)",
+      "market": "player_reception_yds",
+      "line": 42.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5101214574898786,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "D'Andre Swift (CHI)",
+      "market": "player_reception_yds",
+      "line": 19.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -110,
+      "best_under_price": -120,
+      "book_novig_p_over": 0.48987854251012153,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Demario Douglas (NE)",
+      "market": "player_reception_yds",
+      "line": 29.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Hunter Henry (NE)",
+      "market": "player_reception_yds",
+      "line": 33.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Kalif Raymond (CHI)",
+      "market": "player_reception_yds",
+      "line": 28.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Luther Burden III (CHI)",
+      "market": "player_reception_yds",
+      "line": 56.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Rhamondre Stevenson (NE)",
+      "market": "player_reception_yds",
+      "line": 18.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Rome Odunze (CHI)",
+      "market": "player_reception_yds",
+      "line": 44.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "D'Andre Swift",
+      "market": "player_reception_yds",
+      "line": 19.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "fanduel",
+      "best_over_price": -109,
+      "best_under_price": -114,
+      "book_novig_p_over": 0.49469799796403124,
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Luther Burden",
+      "market": "player_reception_yds",
+      "line": 57.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "pinnacle",
+      "best_over_price": -114,
+      "best_under_price": -114,
+      "book_novig_p_over": 0.5,
+      "books": [
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Cole Kmet",
+      "market": "player_receptions",
+      "line": 1.5,
+      "best_over_book": "betmgm",
+      "best_under_book": "draftkings",
+      "best_over_price": 170,
+      "best_under_price": -205,
+      "book_novig_p_over": 0.35527082119976705,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Colston Loveland",
+      "market": "player_receptions",
+      "line": 4.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "fanduel",
+      "best_over_price": 122,
+      "best_under_price": -144,
+      "book_novig_p_over": 0.4328697133125177,
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Hunter Henry",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "betmgm",
+      "best_over_price": 123,
+      "best_under_price": -155,
+      "book_novig_p_over": 0.4245400815782902,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Kalif Raymond",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "draftkings",
+      "best_over_price": -114,
+      "best_under_price": 102,
+      "book_novig_p_over": 0.5183217790582515,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Luther Burden III",
+      "market": "player_receptions",
+      "line": 4.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "betmgm",
+      "best_over_price": -118,
+      "best_under_price": -105,
+      "book_novig_p_over": 0.513806287170773,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Rhamondre Stevenson",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "betmgm",
+      "best_over_price": -130,
+      "best_under_price": 115,
+      "book_novig_p_over": 0.5485770363101079,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Rome Odunze",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "betmgm",
+      "best_under_book": "draftkings",
+      "best_over_price": 120,
+      "best_under_price": -143,
+      "book_novig_p_over": 0.43579626972740315,
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "A.J. Brown",
+      "market": "player_receptions",
+      "line": 4.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "best_over_price": -158,
+      "best_under_price": 118,
+      "book_novig_p_over": 0.571741584224155,
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Efton Chism III",
+      "market": "player_receptions",
+      "line": 1.5,
+      "best_over_book": "betmgm",
+      "best_under_book": "betmgm",
+      "best_over_price": -200,
+      "best_under_price": 145,
+      "book_novig_p_over": 0.6202531645569621,
+      "books": [
+        "betmgm"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "A.J. Brown (NE)",
+      "market": "player_receptions",
+      "line": 5.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 120,
+      "best_under_price": -160,
+      "book_novig_p_over": 0.4248366013071895,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Cole Kmet (CHI)",
+      "market": "player_receptions",
+      "line": 1.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 155,
+      "best_under_price": -210,
+      "book_novig_p_over": 0.3666469544648137,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Colston Loveland (CHI)",
+      "market": "player_receptions",
+      "line": 4.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 120,
+      "best_under_price": -160,
+      "book_novig_p_over": 0.4248366013071895,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "D'Andre Swift (CHI)",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -150,
+      "best_under_price": 115,
+      "book_novig_p_over": 0.5633187772925764,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Demario Douglas (NE)",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 135,
+      "best_under_price": -180,
+      "book_novig_p_over": 0.3982930298719772,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Hunter Henry (NE)",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 120,
+      "best_under_price": -160,
+      "book_novig_p_over": 0.4248366013071895,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Kalif Raymond (CHI)",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -130,
+      "best_under_price": 100,
+      "book_novig_p_over": 0.5306122448979592,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Luther Burden III (CHI)",
+      "market": "player_receptions",
+      "line": 4.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "book_novig_p_over": 0.5101214574898786,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Rhamondre Stevenson (NE)",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": -135,
+      "best_under_price": 105,
+      "book_novig_p_over": 0.5407914020517831,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Rome Odunze (CHI)",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "best_over_price": 110,
+      "best_under_price": -145,
+      "book_novig_p_over": 0.4458598726114649,
+      "books": [
+        "bovada"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Demario Douglas",
+      "market": "player_receptions",
+      "line": 3.5,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "best_over_price": 135,
+      "best_under_price": -173,
+      "book_novig_p_over": 0.4017364432344934,
+      "books": [
+        "draftkings"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "D'Andre Swift",
+      "market": "player_receptions",
+      "line": 2.5,
+      "best_over_book": "fanduel",
+      "best_under_book": "draftkings",
+      "best_over_price": -146,
+      "best_under_price": 117,
+      "book_novig_p_over": 0.5629153192850289,
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    },
+    {
+      "player": "Luther Burden",
+      "market": "player_receptions",
+      "line": 4.5,
+      "best_over_book": "pinnacle",
+      "best_under_book": "pinnacle",
+      "best_over_price": -130,
+      "best_under_price": -102,
+      "book_novig_p_over": 0.5281576830249397,
+      "books": [
+        "pinnacle"
+      ],
+      "home_team": "Chicago Bears",
+      "away_team": "New England Patriots",
+      "commence_time": "2026-10-23T00:15:00Z"
+    }
+  ],
+  "comparison": [
+    {
+      "player": "A.J. Brown",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 67.5,
+      "our_mu": 35.28459838664721,
+      "our_p_over": 0.0841784640355473,
+      "our_fair_over": 1088,
+      "our_fair_under": -1088,
+      "book_novig_p_over": 0.5183217790582515,
+      "best_over_price": -114,
+      "best_under_price": 102,
+      "best_over_book": "fanduel",
+      "best_under_book": "pinnacle",
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.4341433150227042,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "A.J. Brown",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 68.5,
+      "our_mu": 35.28459838664721,
+      "our_p_over": 0.07961438716457314,
+      "our_fair_over": 1156,
+      "our_fair_under": -1156,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.42038561283542686,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Colston Loveland",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 44.5,
+      "our_mu": 26.630137122912725,
+      "our_p_over": 0.13598751713615154,
+      "our_fair_over": 635,
+      "our_fair_under": -635,
+      "book_novig_p_over": 0.4968624497991968,
+      "best_over_price": -111,
+      "best_under_price": -114,
+      "best_over_book": "betmgm",
+      "best_under_book": "fanduel",
+      "books": [
+        "betmgm",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.36087493266304527,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Colston Loveland",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 42.5,
+      "our_mu": 26.630137122912725,
+      "our_p_over": 0.1560731811711551,
+      "our_fair_over": 541,
+      "our_fair_under": -541,
+      "book_novig_p_over": 0.5101214574898786,
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.3540482763187235,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Chig Okonkwo",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 24.5,
+      "our_mu": 14.545681253652113,
+      "our_p_over": 0.13916340129458526,
+      "our_fair_over": 619,
+      "our_fair_under": -619,
+      "book_novig_p_over": 0.48681028797537923,
+      "best_over_price": -103,
+      "best_under_price": -115,
+      "best_over_book": "pinnacle",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.34764688668079397,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Kalif Raymond",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 25.5,
+      "our_mu": 47.97517731188277,
+      "our_p_over": 0.7658379422937696,
+      "our_fair_over": -327,
+      "our_fair_under": 327,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -114,
+      "best_under_price": -114,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.26583794229376956,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Austin Ekeler",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "RB",
+      "market": "player_reception_yds",
+      "line": 7.5,
+      "our_mu": 14.389796601149866,
+      "our_p_over": 0.7517098954857444,
+      "our_fair_over": -303,
+      "our_fair_under": 303,
+      "book_novig_p_over": 0.5056053811659194,
+      "best_over_price": -110,
+      "best_under_price": -105,
+      "best_over_book": "draftkings",
+      "best_under_book": "pinnacle",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.24610451431982505,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Christian McCaffrey",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "RB",
+      "market": "player_reception_yds",
+      "line": 40.5,
+      "our_mu": 31.05246821996194,
+      "our_p_over": 0.2592529264015617,
+      "our_fair_over": 286,
+      "our_fair_under": -286,
+      "book_novig_p_over": 0.49673031650536237,
+      "best_over_price": -108,
+      "best_under_price": -111,
+      "best_over_book": "pinnacle",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.23747739010380065,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Kalif Raymond",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 28.5,
+      "our_mu": 47.97517731188277,
+      "our_p_over": 0.7179076520431136,
+      "our_fair_over": -254,
+      "our_fair_under": 254,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": 0.21790765204311358,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Mike Evans",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 65.5,
+      "our_mu": 53.644752067192854,
+      "our_p_over": 0.2959197882566107,
+      "our_fair_over": 238,
+      "our_fair_under": -238,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.2040802117433893,
+      "availability": 0.88,
+      "live_site_published": false
+    },
+    {
+      "player": "Mike Evans",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 63.5,
+      "our_mu": 53.644752067192854,
+      "our_p_over": 0.314840919049183,
+      "our_fair_over": 218,
+      "our_fair_under": -218,
+      "book_novig_p_over": 0.5042122999157539,
+      "best_over_price": -114,
+      "best_under_price": -110,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "books": [
+        "draftkings"
+      ],
+      "delta_p_over": -0.1893713808665709,
+      "availability": 0.88,
+      "live_site_published": false
+    },
+    {
+      "player": "Terry McLaurin",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 49.5,
+      "our_mu": 44.39761885555004,
+      "our_p_over": 0.35244874343365984,
+      "our_fair_over": 184,
+      "our_fair_under": -184,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -110,
+      "best_under_price": -110,
+      "best_over_book": "pinnacle",
+      "best_under_book": "pinnacle",
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.14755125656634016,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Efton Chism III",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 19.5,
+      "our_mu": 27.974937878787884,
+      "our_p_over": 0.633352880070976,
+      "our_fair_over": -173,
+      "our_fair_under": 173,
+      "book_novig_p_over": 0.4928711096627016,
+      "best_over_price": -111,
+      "best_under_price": -118,
+      "best_over_book": "betmgm",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm"
+      ],
+      "delta_p_over": 0.14048177040827442,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Antonio Williams",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 21.5,
+      "our_mu": 30.360149450018827,
+      "our_p_over": 0.6257840799028968,
+      "our_fair_over": -167,
+      "our_fair_under": 167,
+      "book_novig_p_over": 0.4978941161605526,
+      "best_over_price": -111,
+      "best_under_price": -113,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel"
+      ],
+      "delta_p_over": 0.12788996374234413,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "George Kittle",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 67.5,
+      "our_mu": 63.789179899943626,
+      "our_p_over": 0.3850710742290263,
+      "our_fair_over": 160,
+      "our_fair_under": -160,
+      "book_novig_p_over": 0.5101214574898786,
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.12505038326085227,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Cole Kmet",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 8.5,
+      "our_mu": 12.155321814703958,
+      "our_p_over": 0.6186279372466701,
+      "our_fair_over": -162,
+      "our_fair_under": 162,
+      "book_novig_p_over": 0.4978941161605526,
+      "best_over_price": -111,
+      "best_under_price": -113,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.12073382108611747,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "George Kittle",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 66.5,
+      "our_mu": 63.789179899943626,
+      "our_p_over": 0.3946130302912232,
+      "our_fair_over": 153,
+      "our_fair_under": -153,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -113,
+      "best_under_price": -113,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "books": [
+        "betmgm",
+        "fanduel"
+      ],
+      "delta_p_over": -0.10538696970877681,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Antonio Williams",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 23.5,
+      "our_mu": 30.360149450018827,
+      "our_p_over": 0.5764608046302625,
+      "our_fair_over": -136,
+      "our_fair_under": 136,
+      "book_novig_p_over": 0.48987854251012153,
+      "best_over_price": -110,
+      "best_under_price": -120,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": 0.08658226212014097,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Demario Douglas",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 29.5,
+      "our_mu": 29.434567210808595,
+      "our_p_over": 0.4197982503181241,
+      "our_fair_over": 138,
+      "our_fair_under": -138,
+      "book_novig_p_over": 0.5042122999157539,
+      "best_over_price": -114,
+      "best_under_price": -110,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "books": [
+        "draftkings"
+      ],
+      "delta_p_over": -0.08441404959762977,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Rhamondre Stevenson",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "RB",
+      "market": "player_reception_yds",
+      "line": 18.5,
+      "our_mu": 23.71724366624798,
+      "our_p_over": 0.5700611584382642,
+      "our_fair_over": -133,
+      "our_fair_under": 133,
+      "book_novig_p_over": 0.5042122999157539,
+      "best_over_price": -114,
+      "best_under_price": -110,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.06584885852251032,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Luther Burden III",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 56.5,
+      "our_mu": 58.07228588180509,
+      "our_p_over": 0.43880750308678806,
+      "our_fair_over": 128,
+      "our_fair_under": -128,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -112,
+      "best_under_price": -112,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings"
+      ],
+      "delta_p_over": -0.061192496913211936,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Stefon Diggs",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 38.5,
+      "our_mu": 47.193330595573876,
+      "our_p_over": 0.5480981969217416,
+      "our_fair_over": -121,
+      "our_fair_under": 121,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -110,
+      "best_under_price": -110,
+      "best_over_book": "pinnacle",
+      "best_under_book": "pinnacle",
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.048098196921741554,
+      "availability": 0.88,
+      "live_site_published": false
+    },
+    {
+      "player": "Rome Odunze",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 44.5,
+      "our_mu": 53.621978940587404,
+      "our_p_over": 0.5382175930954494,
+      "our_fair_over": -117,
+      "our_fair_under": 117,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": 0.038217593095449365,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Rachaad White",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "RB",
+      "market": "player_reception_yds",
+      "line": 14.5,
+      "our_mu": 15.824565193880352,
+      "our_p_over": 0.4732660460251902,
+      "our_fair_over": 111,
+      "our_fair_under": -111,
+      "book_novig_p_over": 0.5042704018448135,
+      "best_over_price": -113,
+      "best_under_price": -109,
+      "best_over_book": "fanduel",
+      "best_under_book": "draftkings",
+      "books": [
+        "draftkings",
+        "fanduel"
+      ],
+      "delta_p_over": -0.031004355819623353,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "D'Andre Swift",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "RB",
+      "market": "player_reception_yds",
+      "line": 19.5,
+      "our_mu": 22.871696693752742,
+      "our_p_over": 0.518124381488094,
+      "our_fair_over": -108,
+      "our_fair_under": 108,
+      "book_novig_p_over": 0.48987854251012153,
+      "best_over_price": -110,
+      "best_under_price": -120,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": 0.028245838977972504,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Rome Odunze",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 45.5,
+      "our_mu": 53.621978940587404,
+      "our_p_over": 0.5246470464719375,
+      "our_fair_over": -110,
+      "our_fair_under": 110,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -114,
+      "best_under_price": -114,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "books": [
+        "betmgm",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.024647046471937495,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Hunter Henry",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 33.5,
+      "our_mu": 36.971757772762274,
+      "our_p_over": 0.4830764548548262,
+      "our_fair_over": 107,
+      "our_fair_under": -107,
+      "book_novig_p_over": 0.495787700084246,
+      "best_over_price": -110,
+      "best_under_price": -114,
+      "best_over_book": "draftkings",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.012711245229419799,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Rachaad White",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "RB",
+      "market": "player_reception_yds",
+      "line": 13.5,
+      "our_mu": 15.824565193880352,
+      "our_p_over": 0.5151299160666909,
+      "our_fair_over": -106,
+      "our_fair_under": 106,
+      "book_novig_p_over": 0.5101214574898786,
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": 0.0050084585768123135,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "A.J. Brown",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 4.5,
+      "our_mu": 3.410277584768029,
+      "our_p_over": 0.2826087393684744,
+      "our_fair_over": 254,
+      "our_fair_under": -254,
+      "book_novig_p_over": 0.571741584224155,
+      "best_over_price": -158,
+      "best_under_price": 118,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.2891328448556806,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "A.J. Brown",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 5.5,
+      "our_mu": 3.410277584768029,
+      "our_p_over": 0.19203612528449754,
+      "our_fair_over": 421,
+      "our_fair_under": -421,
+      "book_novig_p_over": 0.4248366013071895,
+      "best_over_price": 120,
+      "best_under_price": -160,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.23280047602269194,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Colston Loveland",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "TE",
+      "market": "player_receptions",
+      "line": 4.5,
+      "our_mu": 2.9277005427798954,
+      "our_p_over": 0.2176747705722485,
+      "our_fair_over": 359,
+      "our_fair_under": -359,
+      "book_novig_p_over": 0.4328697133125177,
+      "best_over_price": 122,
+      "best_under_price": -144,
+      "best_over_book": "draftkings",
+      "best_under_book": "fanduel",
+      "books": [
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.21519494274026923,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Kalif Raymond",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 2.5,
+      "our_mu": 4.920200169864308,
+      "our_p_over": 0.7132429171128143,
+      "our_fair_over": -249,
+      "our_fair_under": 249,
+      "book_novig_p_over": 0.5183217790582515,
+      "best_over_price": -114,
+      "best_under_price": 102,
+      "best_over_book": "fanduel",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.1949211380545628,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Chig Okonkwo",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "TE",
+      "market": "player_receptions",
+      "line": 2.5,
+      "our_mu": 2.290697421918683,
+      "our_p_over": 0.374677665653271,
+      "our_fair_over": 167,
+      "our_fair_under": -167,
+      "book_novig_p_over": 0.5680836553762219,
+      "best_over_price": -147,
+      "best_under_price": 121,
+      "best_over_book": "pinnacle",
+      "best_under_book": "pinnacle",
+      "books": [
+        "betmgm",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.19340598972295087,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Terry McLaurin",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 3.5,
+      "our_mu": 3.082661292764157,
+      "our_p_over": 0.35574556078263564,
+      "our_fair_over": 181,
+      "our_fair_under": -181,
+      "book_novig_p_over": 0.5407914020517831,
+      "best_over_price": -135,
+      "best_under_price": 105,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.18504584126914747,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "George Kittle",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "TE",
+      "market": "player_receptions",
+      "line": 5.5,
+      "our_mu": 4.338779340035895,
+      "our_p_over": 0.2974930981448546,
+      "our_fair_over": 236,
+      "our_fair_under": -236,
+      "book_novig_p_over": 0.46811369075108106,
+      "best_over_price": 106,
+      "best_under_price": -123,
+      "best_over_book": "pinnacle",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.17062059260622647,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Christian McCaffrey",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "RB",
+      "market": "player_receptions",
+      "line": 4.5,
+      "our_mu": 4.127032584570041,
+      "our_p_over": 0.3741403893029214,
+      "our_fair_over": 167,
+      "our_fair_under": -167,
+      "book_novig_p_over": 0.5408163265306123,
+      "best_over_price": -125,
+      "best_under_price": 112,
+      "best_over_book": "betmgm",
+      "best_under_book": "fanduel",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.16667593722769092,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Mike Evans",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 5.5,
+      "our_mu": 4.204790887275089,
+      "our_p_over": 0.2825003961139829,
+      "our_fair_over": 254,
+      "our_fair_under": -254,
+      "book_novig_p_over": 0.4248366013071895,
+      "best_over_price": 120,
+      "best_under_price": -160,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.14233620519320656,
+      "availability": 0.88,
+      "live_site_published": false
+    },
+    {
+      "player": "Demario Douglas",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 3.5,
+      "our_mu": 2.6038108616273954,
+      "our_p_over": 0.28014983443682084,
+      "our_fair_over": 257,
+      "our_fair_under": -257,
+      "book_novig_p_over": 0.3982930298719772,
+      "best_over_price": 135,
+      "best_under_price": -180,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.11814319543515633,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "D'Andre Swift",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "RB",
+      "market": "player_receptions",
+      "line": 2.5,
+      "our_mu": 2.789637361173336,
+      "our_p_over": 0.4636836594768171,
+      "our_fair_over": 116,
+      "our_fair_under": -116,
+      "book_novig_p_over": 0.5633187772925764,
+      "best_over_price": -150,
+      "best_under_price": 115,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.09963511781575929,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Antonio Williams",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 2.5,
+      "our_mu": 2.9380789790340804,
+      "our_p_over": 0.48762036831150457,
+      "our_fair_over": 105,
+      "our_fair_under": -105,
+      "book_novig_p_over": 0.41145725769297975,
+      "best_over_price": 133,
+      "best_under_price": -159,
+      "best_over_book": "pinnacle",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.07616311061852482,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Stefon Diggs",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 3.5,
+      "our_mu": 4.268330525032442,
+      "our_p_over": 0.5146974315645271,
+      "our_fair_over": -106,
+      "our_fair_under": 106,
+      "book_novig_p_over": 0.5740275609259384,
+      "best_over_price": -151,
+      "best_under_price": 124,
+      "best_over_book": "pinnacle",
+      "best_under_book": "fanduel",
+      "books": [
+        "betmgm",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.059330129361411355,
+      "availability": 0.88,
+      "live_site_published": false
+    },
+    {
+      "player": "Luther Burden III",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 4.5,
+      "our_mu": 4.833800474748989,
+      "our_p_over": 0.4551332283995084,
+      "our_fair_over": 120,
+      "our_fair_under": -120,
+      "book_novig_p_over": 0.513806287170773,
+      "best_over_price": -118,
+      "best_under_price": -105,
+      "best_over_book": "draftkings",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel"
+      ],
+      "delta_p_over": -0.05867305877126461,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Austin Ekeler",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "RB",
+      "market": "player_receptions",
+      "line": 1.5,
+      "our_mu": 1.4105787457706118,
+      "our_p_over": 0.3821585341917696,
+      "our_fair_over": 162,
+      "our_fair_under": -162,
+      "book_novig_p_over": 0.43650793650793646,
+      "best_over_price": 120,
+      "best_under_price": -142,
+      "best_over_book": "betmgm",
+      "best_under_book": "pinnacle",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.05434940231616686,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Hunter Henry",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "TE",
+      "market": "player_receptions",
+      "line": 3.5,
+      "our_mu": 3.208739877224947,
+      "our_p_over": 0.3746795367793797,
+      "our_fair_over": 167,
+      "our_fair_under": -167,
+      "book_novig_p_over": 0.4245400815782902,
+      "best_over_price": 123,
+      "best_under_price": -155,
+      "best_over_book": "draftkings",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.0498605447989105,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Rhamondre Stevenson",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "RB",
+      "market": "player_receptions",
+      "line": 2.5,
+      "our_mu": 3.026574120496148,
+      "our_p_over": 0.5013446880385957,
+      "our_fair_over": -101,
+      "our_fair_under": 101,
+      "book_novig_p_over": 0.5485770363101079,
+      "best_over_price": -130,
+      "best_under_price": 115,
+      "best_over_book": "fanduel",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.04723234827151224,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Cole Kmet",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "TE",
+      "market": "player_receptions",
+      "line": 1.5,
+      "our_mu": 1.1545152660519058,
+      "our_p_over": 0.30898128904660493,
+      "our_fair_over": 224,
+      "our_fair_under": -224,
+      "book_novig_p_over": 0.35527082119976705,
+      "best_over_price": 170,
+      "best_under_price": -205,
+      "best_over_book": "betmgm",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.046289532153162116,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Rome Odunze",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 3.5,
+      "our_mu": 3.3623027014636877,
+      "our_p_over": 0.39711713432105533,
+      "our_fair_over": 152,
+      "our_fair_under": -152,
+      "book_novig_p_over": 0.43579626972740315,
+      "best_over_price": 120,
+      "best_under_price": -143,
+      "best_over_book": "betmgm",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.03867913540634782,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Efton Chism III",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_receptions",
+      "line": 1.5,
+      "our_mu": 2.371740909090909,
+      "our_p_over": 0.5916531987515794,
+      "our_fair_over": -145,
+      "our_fair_under": 145,
+      "book_novig_p_over": 0.6202531645569621,
+      "best_over_price": -200,
+      "best_under_price": 145,
+      "best_over_book": "betmgm",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm"
+      ],
+      "delta_p_over": -0.02859996580538271,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Rachaad White",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "RB",
+      "market": "player_receptions",
+      "line": 2.5,
+      "our_mu": 2.775974346331765,
+      "our_p_over": 0.461422152989469,
+      "our_fair_over": 117,
+      "our_fair_under": -117,
+      "book_novig_p_over": 0.4739134147382802,
+      "best_over_price": 102,
+      "best_under_price": -122,
+      "best_over_book": "pinnacle",
+      "best_under_book": "draftkings",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.012491261748811211,
+      "availability": 1.0,
+      "live_site_published": false
+    }
+  ],
+  "example_rows": [
+    {
+      "player": "A.J. Brown",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 67.5,
+      "our_mu": 35.28459838664721,
+      "our_p_over": 0.0841784640355473,
+      "our_fair_over": 1088,
+      "our_fair_under": -1088,
+      "book_novig_p_over": 0.5183217790582515,
+      "best_over_price": -114,
+      "best_under_price": 102,
+      "best_over_book": "fanduel",
+      "best_under_book": "pinnacle",
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.4341433150227042,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "A.J. Brown",
+      "team": "NE",
+      "opponent": "CHI",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 68.5,
+      "our_mu": 35.28459838664721,
+      "our_p_over": 0.07961438716457314,
+      "our_fair_over": 1156,
+      "our_fair_under": -1156,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.42038561283542686,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Colston Loveland",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 44.5,
+      "our_mu": 26.630137122912725,
+      "our_p_over": 0.13598751713615154,
+      "our_fair_over": 635,
+      "our_fair_under": -635,
+      "book_novig_p_over": 0.4968624497991968,
+      "best_over_price": -111,
+      "best_under_price": -114,
+      "best_over_book": "betmgm",
+      "best_under_book": "fanduel",
+      "books": [
+        "betmgm",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.36087493266304527,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Colston Loveland",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 42.5,
+      "our_mu": 26.630137122912725,
+      "our_p_over": 0.1560731811711551,
+      "our_fair_over": 541,
+      "our_fair_under": -541,
+      "book_novig_p_over": 0.5101214574898786,
+      "best_over_price": -120,
+      "best_under_price": -110,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.3540482763187235,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Chig Okonkwo",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "TE",
+      "market": "player_reception_yds",
+      "line": 24.5,
+      "our_mu": 14.545681253652113,
+      "our_p_over": 0.13916340129458526,
+      "our_fair_over": 619,
+      "our_fair_under": -619,
+      "book_novig_p_over": 0.48681028797537923,
+      "best_over_price": -103,
+      "best_under_price": -115,
+      "best_over_book": "pinnacle",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.34764688668079397,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Kalif Raymond",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 25.5,
+      "our_mu": 47.97517731188277,
+      "our_p_over": 0.7658379422937696,
+      "our_fair_over": -327,
+      "our_fair_under": 327,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -114,
+      "best_under_price": -114,
+      "best_over_book": "fanduel",
+      "best_under_book": "fanduel",
+      "books": [
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.26583794229376956,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Austin Ekeler",
+      "team": "WAS",
+      "opponent": "SF",
+      "position": "RB",
+      "market": "player_reception_yds",
+      "line": 7.5,
+      "our_mu": 14.389796601149866,
+      "our_p_over": 0.7517098954857444,
+      "our_fair_over": -303,
+      "our_fair_under": 303,
+      "book_novig_p_over": 0.5056053811659194,
+      "best_over_price": -110,
+      "best_under_price": -105,
+      "best_over_book": "draftkings",
+      "best_under_book": "pinnacle",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "pinnacle"
+      ],
+      "delta_p_over": 0.24610451431982505,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Christian McCaffrey",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "RB",
+      "market": "player_reception_yds",
+      "line": 40.5,
+      "our_mu": 31.05246821996194,
+      "our_p_over": 0.2592529264015617,
+      "our_fair_over": 286,
+      "our_fair_under": -286,
+      "book_novig_p_over": 0.49673031650536237,
+      "best_over_price": -108,
+      "best_under_price": -111,
+      "best_over_book": "pinnacle",
+      "best_under_book": "betmgm",
+      "books": [
+        "betmgm",
+        "draftkings",
+        "fanduel",
+        "pinnacle"
+      ],
+      "delta_p_over": -0.23747739010380065,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Kalif Raymond",
+      "team": "CHI",
+      "opponent": "NE",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 28.5,
+      "our_mu": 47.97517731188277,
+      "our_p_over": 0.7179076520431136,
+      "our_fair_over": -254,
+      "our_fair_under": 254,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": 0.21790765204311358,
+      "availability": 1.0,
+      "live_site_published": false
+    },
+    {
+      "player": "Mike Evans",
+      "team": "SF",
+      "opponent": "WAS",
+      "position": "WR",
+      "market": "player_reception_yds",
+      "line": 65.5,
+      "our_mu": 53.644752067192854,
+      "our_p_over": 0.2959197882566107,
+      "our_fair_over": 238,
+      "our_fair_under": -238,
+      "book_novig_p_over": 0.5,
+      "best_over_price": -115,
+      "best_under_price": -115,
+      "best_over_book": "bovada",
+      "best_under_book": "bovada",
+      "books": [
+        "bovada"
+      ],
+      "delta_p_over": -0.2040802117433893,
+      "availability": 0.88,
+      "live_site_published": false
+    }
+  ],
+  "n": 49,
+  "join_rule": "Name match after stripping book team suffixes; player team must be one of the event's two teams. Duplicate Player (TEAM) rows collapsed."
+}
