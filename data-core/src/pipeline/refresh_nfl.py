@@ -63,7 +63,13 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--injury-aware",
         action="store_true",
-        help="Load player_impact_estimates from Supabase and adjust features.",
+        help="Load posted-starter snapshots for v2, or player_impact_estimates for v1.",
+    )
+    parser.add_argument(
+        "--game-ids",
+        nargs="*",
+        default=None,
+        help="Optional nflverse/BQ game_id list. When set, only these remaining games are scored.",
     )
     parser.add_argument(
         "--include-explanations",
@@ -75,6 +81,35 @@ def _parse_args() -> argparse.Namespace:
 
 def _nfl_week_start(today: datetime.date) -> datetime.date:
     return nfl_week_window(today)[0]
+
+
+def _load_posted_starters_optional(provider_game_ids: List[str]) -> dict | None:
+    """Load ESPN/Sleeper posted starters. Fail closed to last-3 mode if Supabase is missing."""
+    try:
+        from src.data.nfl_injury_snapshots import load_posted_starters
+        from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials
+
+        creds = load_supabase_credentials()
+        if not creds.get("db_password"):
+            print("Posted-starter snapshots unavailable (no Supabase password); using last-3 QB mode.")
+            return None
+        conn = create_pg_connection(
+            supabase_url=creds["url"],
+            password=creds["db_password"],
+            host_override=creds.get("db_host"),
+            port=creds["db_port"],
+            database=creds["db_name"],
+            user=creds["db_user"],
+        )
+        try:
+            mapping = load_posted_starters(conn, provider_game_ids)
+        finally:
+            conn.close()
+        print(f"Loaded posted-starter overrides for {len(mapping)} team-games.")
+        return mapping or None
+    except Exception as exc:  # noqa: BLE001
+        print(f"Posted-starter snapshots unavailable ({type(exc).__name__}: {exc}); using last-3 QB mode.")
+        return None
 
 
 def _query_games(client: bigquery.Client, project: str, start_date: datetime.date, end_date: datetime.date) -> pd.DataFrame:
@@ -211,6 +246,13 @@ def main() -> None:
     print(f"Building predictions for games between {start_date} and {end_date}. Target season={season}.")
 
     games_df = _query_games(client, args.project, start_date, end_date)
+    if args.game_ids:
+        wanted = {str(game_id) for game_id in args.game_ids if str(game_id).strip()}
+        present = set(games_df["game_id"].astype(str)) if not games_df.empty else set()
+        missing = sorted(wanted - present)
+        games_df = games_df[games_df["game_id"].astype(str).isin(wanted)] if not games_df.empty else games_df
+        if missing:
+            print(f"Skipping missing or already-played game_ids: {missing}")
     if games_df.empty:
         print("No NFL games scheduled in the requested window. Exiting.")
         return
@@ -219,13 +261,17 @@ def main() -> None:
     historical_games = _query_historical_games(client, args.project, hist_seasons)
     if args.model_version == LIVE_MODEL_VERSION:
         pbp = _query_pbp(client, args.project, hist_seasons, aggregate=True)
+        posted_starters = None
+        if args.injury_aware:
+            posted_starters = _load_posted_starters_optional(
+                [str(game_id) for game_id in games_df["game_id"].dropna()]
+            )
         predictions = predict_live_games(
             historical_games,
             pbp,
             [str(game_id) for game_id in games_df["game_id"].dropna()],
+            posted_starters=posted_starters,
         )
-        if args.injury_aware:
-            print("NFL v2 excludes injuries until historical point-in-time coverage passes its gate.")
     else:
         pbp = _query_pbp(client, args.project, hist_seasons)
         predictor = GamePredictor("NFL", model_version=args.model_version)

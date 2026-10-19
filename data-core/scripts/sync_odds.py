@@ -384,7 +384,13 @@ def pick_team_total_outcomes(event, home_code, away_code, mapping) -> list[Featu
             break
     return selected
 
-def fetch_odds_data(api_key: str, league: str, *, now_utc: datetime | None = None) -> List[Dict[str, Any]]:
+def fetch_odds_data(
+    api_key: str,
+    league: str,
+    *,
+    now_utc: datetime | None = None,
+    cache_period: str | None = None,
+) -> List[Dict[str, Any]]:
     """Fetch odds from The Odds API for a given league."""
     sport_key = 'americanfootball_nfl' if league == 'NFL' else 'basketball_nba'
     url = f"https://api.the-odds-api.com/v4/sports/{sport_key}/odds/"
@@ -398,7 +404,7 @@ def fetch_odds_data(api_key: str, league: str, *, now_utc: datetime | None = Non
     }
     params.update(request_bounds(league, now_utc or datetime.now(timezone.utc)))
     
-    resp = budgeted_get(url, params=params, source=league.lower())
+    resp = budgeted_get(url, params=params, source=league.lower(), cache_period=cache_period)
     check_odds_api_response(resp, context=f"{league} odds")
     events = resp.json()
     for event in events:
@@ -483,6 +489,7 @@ def sync_odds_to_supabase(
     odds_data: List[Dict[str, Any]],
     *,
     now_utc: Optional[datetime] = None,
+    only_game_ids: Optional[set] = None,
 ) -> OddsSyncResult:
     """Update Supabase games table with book spreads."""
     mapping = NFL_MAPPING if league == 'NFL' else NBA_MAPPING
@@ -559,6 +566,8 @@ def sync_odds_to_supabase(
 
         key = (schedule_date, home_code, away_code)
         gid = game_map.get(key)
+        if only_game_ids is not None and (gid is None or str(gid) not in only_game_ids):
+            continue
 
         if gid:
             outcomes = pick_featured_market_outcomes(event, home_code, away_code, mapping)
@@ -769,6 +778,22 @@ def main():
     parser = argparse.ArgumentParser(description="Sync market odds to Supabase and BigQuery.")
     parser.add_argument("--project", help="GCP project ID.")
     parser.add_argument("--league", choices=["NFL", "NBA"], help="League to sync (default: both).")
+    parser.add_argument(
+        "--game-ids",
+        nargs="*",
+        default=None,
+        help="Optional Supabase game UUIDs. Featured odds are written only for these games.",
+    )
+    parser.add_argument(
+        "--cache-period",
+        default=None,
+        help="Override Odds API request-cache period (injury windows use nfl-injury-{date}-{window}).",
+    )
+    parser.add_argument(
+        "--skip-team-totals",
+        action="store_true",
+        help="Do not spend a per-event team_totals request (already captured for the NFL cycle).",
+    )
     args = parser.parse_args()
     
     api_key = os.getenv("ODDS_API_KEY")
@@ -801,7 +826,7 @@ def main():
                 LOGGER.info("No upcoming %s serving games; skipping paid odds requests", league)
                 continue
             try:
-                odds_data = fetch_odds_data(api_key, league)
+                odds_data = fetch_odds_data(api_key, league, cache_period=args.cache_period)
             except RuntimeError as exc:
                 if not is_odds_api_quota_error(exc):
                     raise
@@ -823,11 +848,12 @@ def main():
                 continue
                 
             LOGGER.info(f"Retrieved {len(odds_data)} games from The Odds API for {league}")
-            result = sync_odds_to_supabase(pg_conn, league, odds_data)
-            if league == "NFL":
+            only_ids = {str(game_id) for game_id in args.game_ids} if args.game_ids else None
+            result = sync_odds_to_supabase(pg_conn, league, odds_data, only_game_ids=only_ids)
+            if league == "NFL" and not args.skip_team_totals:
                 team_totals = fetch_nfl_team_totals(api_key, odds_data)
                 if team_totals:
-                    sync_odds_to_supabase(pg_conn, league, team_totals)
+                    sync_odds_to_supabase(pg_conn, league, team_totals, only_game_ids=only_ids)
             if result.supabase_games > 0 and result.matched_count == 0:
                 overlapping_dates = result.supabase_dates & result.odds_dates
                 message = (

@@ -21,7 +21,7 @@ export default async function NflMarketsPage() {
     <div>
       <PageHeader
         title="NFL Markets"
-        description="This week's model win probabilities and projected spreads stay visible while sportsbook prices are unavailable. Priced markets and guarded touchdown probabilities appear below when available."
+        description="This week's model win probabilities and projected spreads stay visible while sportsbook prices are unavailable. NFL games inside ±5 points of a coin flip are toss-ups with no moneyline pick. Priced markets and guarded touchdown probabilities appear below when available."
         meta={feed.generatedAt}
       />
       {slate.games.length > 0 ? (

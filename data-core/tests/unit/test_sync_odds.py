@@ -195,6 +195,37 @@ def test_nfl_schedule_la_alias_matches_odds_api_lar_identity():
     assert conn.bulk_updates[0][1] == [(-2.5, "rams-opener")]
 
 
+def test_sync_odds_can_write_only_requested_game_ids():
+    conn = FakeConnection(
+        games=[
+            (
+                "rams-opener",
+                "LA",
+                "SF",
+                datetime(2026, 9, 10, tzinfo=timezone.utc),
+                datetime(2026, 9, 10, tzinfo=timezone.utc).date(),
+            )
+        ]
+    )
+    odds_data = [
+        _spread_event(
+            "Los Angeles Rams",
+            "San Francisco 49ers",
+            "2026-09-11T00:35:00Z",
+            line=-2.5,
+        )
+    ]
+    skipped = sync_odds_to_supabase(
+        conn,
+        "NFL",
+        odds_data,
+        now_utc=datetime(2026, 9, 8, 13, tzinfo=timezone.utc),
+        only_game_ids={"other-game"},
+    )
+    assert skipped.matched_count == 0
+    assert conn.bulk_updates == []
+
+
 def test_future_rematch_cannot_overwrite_an_in_window_game():
     conn = FakeConnection(
         games=[
@@ -332,6 +363,13 @@ def test_fetch_odds_data_returns_events_on_success():
     payload = [{"id": "evt-1", "home_team": "Seattle Seahawks"}]
     with patch("scripts.sync_odds.budgeted_get", return_value=_ApiResponse(200, payload)):
         assert fetch_odds_data("key", "NFL") == payload
+
+
+def test_fetch_odds_data_forwards_injury_cache_period():
+    payload = []
+    with patch("scripts.sync_odds.budgeted_get", return_value=_ApiResponse(200, payload)) as fetch:
+        fetch_odds_data("key", "NFL", cache_period="nfl-injury-2026-10-15-thu-am")
+    assert fetch.call_args.kwargs["cache_period"] == "nfl-injury-2026-10-15-thu-am"
 
 
 def test_nfl_request_bounds_stop_at_monday_in_denver():

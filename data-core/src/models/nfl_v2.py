@@ -324,6 +324,7 @@ def build_nfl_feature_store(
     team_game_stats: pd.DataFrame,
     *,
     include_unplayed: bool = False,
+    posted_starters: Mapping[tuple[str, str], str] | None = None,
 ) -> pd.DataFrame:
     """Build one leakage-safe pregame row per NFL game.
 
@@ -354,8 +355,21 @@ def build_nfl_feature_store(
             game.get("neutral_site", False)
         )
         location = None if neutral else _team_coordinates(home_team)
-        home_qb = home.expected_qb()
-        away_qb = away.expected_qb()
+        posted = posted_starters or {}
+        home_posted = posted.get((str(game["game_id"]), home_team)) or posted.get((str(game["game_id"]), str(game["home_team"])))
+        away_posted = posted.get((str(game["game_id"]), away_team)) or posted.get((str(game["game_id"]), str(game["away_team"])))
+        home_recent = [qb for qb in home.recent_qbs[-3:] if qb]
+        away_recent = [qb for qb in away.recent_qbs[-3:] if qb]
+        home_qb = str(home_posted) if home_posted else home.expected_qb()
+        away_qb = str(away_posted) if away_posted else away.expected_qb()
+        home_stability = (
+            (sum(qb == home_qb for qb in home_recent) / len(home_recent)) if home_posted and home_recent
+            else (0.0 if home_posted else home.qb_stability())
+        )
+        away_stability = (
+            (sum(qb == away_qb for qb in away_recent) / len(away_recent)) if away_posted and away_recent
+            else (0.0 if away_posted else away.qb_stability())
+        )
         home_qb_epa = float(np.mean(qb_history[home_qb][-10:])) if home_qb and qb_history[home_qb] else 0.0
         away_qb_epa = float(np.mean(qb_history[away_qb][-10:])) if away_qb and qb_history[away_qb] else 0.0
         completed = pd.notna(game.get("home_score")) and pd.notna(game.get("away_score"))
@@ -376,7 +390,7 @@ def build_nfl_feature_store(
             "rest_diff": home.rest_days(game_date) - away.rest_days(game_date),
             "travel_advantage_km": away.travel_km(location) - home.travel_km(location),
             "games_before_diff": float(home.games - away.games),
-            "qb_stability_diff": home.qb_stability() - away.qb_stability(),
+            "qb_stability_diff": home_stability - away_stability,
             "qb_prior_epa_diff": home_qb_epa - away_qb_epa,
             "closing_market_home_prob": no_vig_home_probability(
                 game.get("home_moneyline"), game.get("away_moneyline")

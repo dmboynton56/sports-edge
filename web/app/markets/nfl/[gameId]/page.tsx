@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getGameExplanation } from "@/lib/data/explanations";
 import { getTeamSlateGame } from "@/lib/data/team-markets";
+import { isNflTossUp, nflMoneylinePick } from "@/lib/data/nfl-toss-up";
 import { formatPct } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -66,6 +67,14 @@ export default async function NflGamePage({ params }: { params: Promise<{ gameId
             <div className="flex justify-between">
               <span>Home win prob</span>
               <span>{formatPct(game.homeWinProb)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Moneyline pick</span>
+              <span>
+                {isNflTossUp(game.homeWinProb)
+                  ? "Toss-up"
+                  : nflMoneylinePick(game.homeTeam, game.awayTeam, game.homeWinProb) ?? "n/a"}
+              </span>
             </div>
             <div className="flex flex-wrap gap-2 pt-2">
               <Badge variant={game.freshnessStatus === "fresh" ? "accent" : "missing"}>

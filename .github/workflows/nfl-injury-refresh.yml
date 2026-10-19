@@ -1,0 +1,217 @@
+name: NFL Injury Refresh
+
+# Re-price remaining NFL games after injury / starter / inactives news.
+# Cron is the real trigger: cloud `gh workflow run` 403s. workflow_dispatch is
+# for a human in the Actions UI, not a cloud agent.
+
+on:
+  schedule:
+    # GitHub cron is UTC. MDT times are the NFL-season default (Sep–early Nov).
+    # Each post-inactives window has an MST companion one UTC hour later so we
+    # never run 45–60 min before inactives after the fall-back. Extra fires are
+    # cheap: change detection skips Odds API and re-predict when nothing moved.
+    - cron: "15 13 * * 4"  # Thu 7:15 AM MDT / 6:15 AM MST, before TNF.
+    - cron: "0 23 * * 4"   # Thu 5:00 PM MDT, ~15 min after TNF inactives (~4:45 PM MT).
+    - cron: "0 0 * * 5"    # Thu 5:00 PM MST companion (6:00 PM MDT).
+    - cron: "15 13 * * 0"  # Sun 7:15 AM MDT / 6:15 AM MST, before the early slate.
+    - cron: "45 15 * * 0"  # Sun 9:45 AM MDT, ~15 min after 1:00 PM ET inactives (9:30 AM MT).
+    - cron: "45 16 * * 0"  # Sun 9:45 AM MST companion (10:45 AM MDT).
+    - cron: "0 19 * * 0"   # Sun 1:00 PM MDT, 4:05/4:25 PM ET inactives (~12:35 PM MT).
+    - cron: "0 20 * * 0"   # Sun 1:00 PM MST companion (2:00 PM MDT).
+    - cron: "15 23 * * 0"  # Sun 5:15 PM MDT, SNF inactives (~4:50 PM MT).
+    - cron: "15 0 * * 1"   # Sun 5:15 PM MST companion (6:15 PM MDT; Monday 00:15 UTC).
+    - cron: "0 23 * * 1"   # Mon 5:00 PM MDT, MNF inactives (~4:45 PM MT).
+    - cron: "0 0 * * 2"    # Mon 5:00 PM MST companion (6:00 PM MDT).
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Skip Supabase writes and targeted re-predict"
+        required: false
+        default: "false"
+
+concurrency:
+  group: sports-edge-nfl-injury-refresh
+  cancel-in-progress: false
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  PYTHONPATH: ${{ github.workspace }}/data-core
+  DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: data-core
+    env:
+      GOOGLE_APPLICATION_CREDENTIALS: ${{ github.workspace }}/gcp-key.json
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            data-core/requirements.txt
+            data-core/requirements-nba-nfl.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt google-cloud-bigquery nflreadpy supabase
+
+      - name: Configure GCP credentials
+        shell: bash
+        run: echo "$GCP_SERVICE_ACCOUNT_KEY" > "$GOOGLE_APPLICATION_CREDENTIALS"
+        env:
+          GCP_SERVICE_ACCOUNT_KEY: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Plan league refresh gates
+        id: plan
+        shell: bash
+        run: |
+          python scripts/plan_daily_refresh.py \
+            --project "$PROJECT_ID" \
+            --lookback-days 1 \
+            --lookahead-days 14 \
+            --github-output | tee /tmp/sports_edge_injury_plan.json
+
+      - name: Apply injury snapshot migration
+        if: ${{ env.DRY_RUN != 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: python scripts/apply_supabase_sql_files.py sql/025_nfl_injury_prediction_snapshots.sql
+
+      - name: Snapshot NFL injury news and detect changes
+        id: news
+        if: ${{ steps.plan.outputs.run_nfl == 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          ARGS=(--project "$PROJECT_ID" --season "${{ steps.plan.outputs.nfl_season }}" --start-date "${{ steps.plan.outputs.nfl_start_date }}" --lookahead-days 6 --snapshot --detect --github-output)
+          if [ "$DRY_RUN" = "true" ]; then
+            ARGS+=(--dry-run)
+          fi
+          case "${{ github.event.schedule }}" in
+            "15 13 * * 4") ARGS+=(--window-name thu-am) ;;
+            "0 23 * * 4"|"0 0 * * 5") ARGS+=(--window-name thu-tnf) ;;
+            "15 13 * * 0") ARGS+=(--window-name sun-am) ;;
+            "45 15 * * 0"|"45 16 * * 0") ARGS+=(--window-name sun-inactives) ;;
+            "0 19 * * 0"|"0 20 * * 0") ARGS+=(--window-name sun-late) ;;
+            "15 23 * * 0"|"15 0 * * 1") ARGS+=(--window-name sun-snf) ;;
+            "0 23 * * 1"|"0 0 * * 2") ARGS+=(--window-name mon-mnf) ;;
+          esac
+          python scripts/refresh_nfl_injury_news.py "${ARGS[@]}" | tee /tmp/nfl_injury_news.json
+          echo "### NFL injury news" >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`json" >> "$GITHUB_STEP_SUMMARY"
+          cat /tmp/nfl_injury_news.json >> "$GITHUB_STEP_SUMMARY"
+          echo "\`\`\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prepare isolated NBA/NFL model artifact runtime
+        if: ${{ steps.news.outputs.dirty == 'true' && steps.news.outputs.dirty_provider_game_ids != '' && env.DRY_RUN != 'true' }}
+        shell: bash
+        run: |
+          python -m venv --system-site-packages .venv-nba-nfl
+          .venv-nba-nfl/bin/python -m pip install -r requirements-nba-nfl.txt
+          .venv-nba-nfl/bin/python -c "import sklearn; assert sklearn.__version__ == '1.7.2', sklearn.__version__"
+
+      - name: Re-predict changed NFL games
+        id: nfl_predictions
+        if: ${{ steps.news.outputs.dirty == 'true' && steps.news.outputs.dirty_provider_game_ids != '' && env.DRY_RUN != 'true' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          .venv-nba-nfl/bin/python -m src.pipeline.refresh_nfl \
+            --project "$PROJECT_ID" \
+            --model-version nfl-v2-live-20260906 \
+            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
+            --window-days 6 \
+            --season "${{ steps.plan.outputs.nfl_season }}" \
+            --injury-aware \
+            --include-explanations \
+            --game-ids ${{ steps.news.outputs.dirty_provider_game_ids }}
+
+      - name: Sync changed NFL predictions to Supabase
+        if: ${{ env.DRY_RUN != 'true' && steps.news.outputs.dirty == 'true' && steps.news.outputs.dirty_provider_game_ids != '' && steps.nfl_predictions.outcome == 'success' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/sync_bq_to_supabase.py \
+            --project "$PROJECT_ID" \
+            --league NFL \
+            --season "${{ steps.plan.outputs.nfl_season }}" \
+            --model-version nfl-v2-live-20260906 \
+            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
+            --window-days 6
+
+      - name: Refetch odds for changed NFL games
+        if: ${{ env.DRY_RUN != 'true' && steps.news.outputs.reload_odds == 'true' && steps.news.outputs.dirty_supabase_game_ids != '' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+          ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
+        run: |
+          python scripts/apply_supabase_sql_files.py sql/020_team_market_odds.sql sql/023_odds_api_usage.sql sql/024_odds_snapshots_team_total.sql
+          python scripts/sync_odds.py \
+            --project "$PROJECT_ID" \
+            --league NFL \
+            --skip-team-totals \
+            --cache-period "nfl-injury-${{ steps.plan.outputs.anchor_date }}-${{ steps.news.outputs.window_name }}" \
+            --game-ids ${{ steps.news.outputs.dirty_supabase_game_ids }}
+
+      - name: Mark injury snapshots used for republished games
+        if: ${{ env.DRY_RUN != 'true' && steps.news.outputs.dirty == 'true' && steps.news.outputs.dirty_provider_game_ids != '' && steps.nfl_predictions.outcome == 'success' }}
+        shell: bash
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          supabaseDBpass: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_DB_HOST: ${{ secrets.SUPABASE_DB_HOST }}
+          SUPABASE_DB_NAME: ${{ secrets.SUPABASE_DB_NAME }}
+          SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
+          SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
+        run: |
+          python scripts/refresh_nfl_injury_news.py \
+            --project "$PROJECT_ID" \
+            --season "${{ steps.plan.outputs.nfl_season }}" \
+            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
+            --lookahead-days 6 \
+            --mark-latest-used \
+            --mark-used ${{ steps.news.outputs.dirty_provider_game_ids }}

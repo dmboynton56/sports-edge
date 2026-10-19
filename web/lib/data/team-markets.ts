@@ -1,5 +1,6 @@
 import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 import { isFiniteNumber } from "@/lib/data/json";
+import { isNflTossUp } from "@/lib/data/nfl-toss-up";
 import type { Prediction } from "@/lib/data/types";
 import { nflPredictionIsCurrent, nflWeekWindow } from "@/lib/nfl-week";
 
@@ -342,7 +343,8 @@ export function buildTeamMarketPredictions(
           modelVersion = `${prediction.model_version ?? "unknown"}-residual`;
         }
 
-        const edge = modelProbability != null && impliedProbability != null
+        const tossUp = league === "NFL" && row.market === "moneyline" && isNflTossUp(prediction?.my_home_win_prob);
+        const edge = !tossUp && modelProbability != null && impliedProbability != null
           ? modelProbability - impliedProbability
           : null;
         const subjectTeam = selection === "home" || selection.startsWith("home_") ? game.home_team : game.away_team;
@@ -368,8 +370,8 @@ export function buildTeamMarketPredictions(
           modelProbability,
           impliedProbability,
           edge,
-          ev: expectedValue(modelProbability, row.price),
-          kelly: quarterKelly(modelProbability, row.price),
+          ev: tossUp ? null : expectedValue(modelProbability, row.price),
+          kelly: tossUp ? null : quarterKelly(modelProbability, row.price),
           confidence: modelProbability == null ? null : Math.abs(modelProbability - 0.5) * 2,
           modelVersion,
           marketStatus: modelProbability == null || row.price == null ? "model_only" : "research",

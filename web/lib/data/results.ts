@@ -1,5 +1,6 @@
 import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 import { isFiniteNumber, isJsonString } from "@/lib/data/json";
+import { isNflTossUp } from "@/lib/data/nfl-toss-up";
 
 export type GameResultRow = {
   league: string;
@@ -127,8 +128,9 @@ export function summarizeGameResults(rows: GameResultRow[]): ResultsSummary[] {
     const spreadLosses = group.filter((row) => row.spread_result === "loss").length;
     const spreadPushes = group.filter((row) => row.spread_result === "push").length;
     const units = group.reduce((sum, row) => sum + (row.flat_ats_units ?? 0), 0);
-    const winnerWins = group.filter((row) => row.winner_result === "win").length;
-    const winnerLosses = group.filter((row) => row.winner_result === "loss").length;
+    const winnerRows = group.filter((row) => !(row.league === "NFL" && isNflTossUp(row.my_home_win_prob)));
+    const winnerWins = winnerRows.filter((row) => row.winner_result === "win").length;
+    const winnerLosses = winnerRows.filter((row) => row.winner_result === "loss").length;
     return [
       {
         league,

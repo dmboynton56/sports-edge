@@ -66,6 +66,20 @@ describe("team market normalization", () => {
     expect(home + away).toBeCloseTo(1, 5);
   });
 
+  it("withholds moneyline edge on NFL toss-ups without dropping probabilities", () => {
+    const rows = buildTeamMarketPredictions(
+      "NFL",
+      [game],
+      [{ ...prediction, my_home_win_prob: 0.494 }],
+      odds,
+    );
+    const moneylines = rows.filter((row) => row.market === "moneyline");
+    expect(moneylines).toHaveLength(2);
+    expect(moneylines.every((row) => row.edge == null && row.ev == null && row.kelly == null)).toBe(true);
+    expect(moneylines.find((row) => row.subject.startsWith("SEA"))?.modelProbability).toBe(0.494);
+    expect(rows.filter((row) => row.market === "spread")[0].edge).not.toBeNull();
+  });
+
   it("publishes priced moneyline/spread rows and keeps unmodeled totals honest", () => {
     const rows = buildTeamMarketPredictions("NFL", [game], [prediction], odds);
     expect(rows).toHaveLength(6);

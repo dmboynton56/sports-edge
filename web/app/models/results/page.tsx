@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { isNflTossUp } from "@/lib/data/nfl-toss-up";
 import { getResultsData } from "@/lib/data/results";
 import { formatDate, formatNumber, formatPct } from "@/lib/format";
 
@@ -123,9 +124,13 @@ export default async function ResultsPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
+                      {row.league === "NFL" && isNflTossUp(row.my_home_win_prob) ? (
+                        <Badge variant="outline">toss-up</Badge>
+                      ) : (
                       <Badge variant={row.winner_result === "win" ? "accent" : row.winner_result ? "missing" : "outline"}>
                         {row.winner_result ?? "n/a"}
                       </Badge>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
