@@ -169,3 +169,56 @@ Performance History Refresh runs this after `grade_nfl_v2_live.py`. With Supabas
 
 Artifacts: `data-core/notebooks/cache/nfl_model_health_2026.json`, `nfl_model_health_2026_games.csv`.
 
+## Smoother calibrator candidate (2026-10-19)
+
+**Decision: NOT SHIPPED.** 2026 Brier/log loss are not better outside noise, and walk-forward is not clearly better on both.
+
+Same frozen `hgb_small` + `ridge_a50` as `nfl-v2-live-20260906`. Only the probability calibrator was a candidate, selected the PR #44 way on OOF seasons [2021, 2022, 2023, 2024, 2025] (n=1359, 2026 never used to fit). Selected: **sigmoid**.
+
+### 2026 weeks 1–6 holdout (n=92, never used in fitting)
+
+| Metric | Frozen isotonic | Candidate | Δ (candidate − frozen) |
+| --- | ---: | ---: | ---: |
+| n | 92 | 92 | — |
+| Brier | 0.2414 | 0.2404 | -0.0010 |
+| Log loss | 0.677 | 0.673 | -0.004 |
+| ECE (10-bin) | 0.0884 | 0.0747 | -0.0137 |
+| Margin MAE | 9.61 | 9.61 | 0.00 |
+| Unique p | 17 | 92 | 75 |
+
+Brier paired Δ 95% CI -0.0080 to 0.0058. Log-loss paired Δ 95% CI -0.020 to 0.011.
+
+### 2021–2025 walk-forward (isotonic vs auto)
+
+| Metric | Frozen isotonic | Candidate | Δ (candidate − frozen) |
+| --- | ---: | ---: | ---: |
+| n | 1359 | 1359 | — |
+| Brier | 0.2277 | 0.2273 | -0.0004 |
+| Log loss | 0.680 | 0.647 | -0.033 |
+| ECE (10-bin) | 0.0285 | 0.0309 | 0.0023 |
+| Margin MAE | 10.25 | 10.25 | 0.00 |
+| Unique p | 348 | 1230 | 882 |
+
+Brier paired Δ 95% CI -0.0032 to 0.0021. Log-loss paired Δ 95% CI -0.072 to -0.003.
+
+### Toss-up band (±0.05) on 2026
+
+Frozen toss-up games: 25. Candidate: 21. Entered 0, exited 4, stayed 21, net -4.
+
+Live serving is unchanged (`nfl-v2-live-20260906`). The candidate joblib was not written. Daily Refresh, NFL Injury Refresh, and posted-QB overrides still load the frozen isotonic artifact. Rollback switch `NFL_V2_LIVE_VERSION` is unused because nothing shipped.
+
+Reproduce:
+
+```bash
+PYTHONPATH=data-core python data-core/scripts/eval_nfl_v2_calibrator_candidate.py
+```
+
+OOF calibrator selection on seasons through 2025 (negative Δ vs identity is better):
+
+| Method | Folds | Brier | Δ Brier | Log loss | Δ Log loss | Unique p |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| none | 4 | 0.2290 | 0.0000 | 0.652 | 0.000 | 1085 |
+| sigmoid | 4 | 0.2270 | -0.0020 | 0.646 | -0.006 | 1084 |
+| temperature | 4 | 0.2272 | -0.0017 | 0.646 | -0.006 | 1086 |
+| isotonic | 4 | 0.2290 | -0.0000 | 0.691 | 0.038 | 59 |
+| isotonic_min_bin_40 | 4 | 0.2284 | -0.0005 | 0.649 | -0.003 | 502 |
