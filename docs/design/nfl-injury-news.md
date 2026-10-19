@@ -76,12 +76,38 @@ New workflow `.github/workflows/nfl-injury-refresh.yml`, not Daily. Daily at
 07:05 already runs MLB/NBA; stuffing TNF/Sunday reopens into it would rerun
 those leagues and fight the Odds budget.
 
-| UTC cron | MT (MDT / MST) | Window | Why |
-| --- | --- | --- | --- |
-| `15 13 * * 4` | Thu **7:15 AM** / 6:15 AM | `thu-am` | After Wednesday TNF designations, before Thursday night |
-| `0 21 * * 4` | Thu **3:00 PM** / 2:00 PM | `thu-tnf` | ~90 min after typical TNF inactives (1pm ET inactives analog for 6:15 PM ET kick) |
-| `15 13 * * 0` | Sun **7:15 AM** / 6:15 AM | `sun-am` | After Friday practice reports, before the early slate |
-| `45 15 * * 0` | Sun **9:45 AM** / 8:45 AM | `sun-inactives` | ~15 min after 1:00 PM ET inactives (~9:30 AM MT) |
+GitHub Actions cron is UTC and does not follow `America/Denver`. The times
+below are **MDT** (UTC−6, most of the regular season through early November).
+MST (UTC−7, November–January) shifts a single UTC cron **one hour earlier**.
+Morning pre-slate windows can absorb that; **post-inactives windows cannot** —
+TNF/MNF inactives land ~4:45 PM MT, and a 4:00 PM MST fire would miss them.
+
+So each post-inactives window is **two UTC crons**: the MDT time, plus an MST
+companion one UTC hour later. During the other DST period that companion is a
+cheap extra look (5–6 PM MT, still before typical 6:15 PM MT kicks). Change
+detection is unchanged, so the extra fires spend **zero Odds API credits** when
+QB/injury/line fingerprints match the last used snapshot.
+
+ET and MT both observe DST, so kickoff and inactives stay at the same **MT
+clock time** year-round. TNF is 8:15 PM ET = **6:15 PM MT**; inactives ~90
+minutes prior ≈ **4:45 PM MT**. Early Sunday 1:00 PM ET inactives ≈ **9:30 AM
+MT**. 4:05/4:25 PM ET inactives ≈ **12:35–12:55 PM MT**. SNF ~8:20 PM ET
+inactives ≈ **4:50 PM MT**. MNF matches TNF.
+
+| UTC cron | MDT (MT) | MST (MT) | Window | Why |
+| --- | --- | --- | --- | --- |
+| `15 13 * * 4` | Thu **7:15 AM** | 6:15 AM | `thu-am` | After Wednesday TNF designations. Morning; MST hour-early is still before kick |
+| `0 23 * * 4` | Thu **5:00 PM** | 4:00 PM | `thu-tnf` | ~15 min after TNF inactives (MDT). 4:00 PM MST is the too-early extra |
+| `0 0 * * 5` | Thu 6:00 PM | Thu **5:00 PM** | `thu-tnf` | MST companion |
+| `15 13 * * 0` | Sun **7:15 AM** | 6:15 AM | `sun-am` | After Friday practice reports, before the early slate |
+| `45 15 * * 0` | Sun **9:45 AM** | 8:45 AM | `sun-inactives` | ~15 min after 1:00 PM ET inactives (MDT) |
+| `45 16 * * 0` | Sun 10:45 AM | Sun **9:45 AM** | `sun-inactives` | MST companion |
+| `0 19 * * 0` | Sun **1:00 PM** | 12:00 PM | `sun-late` | 4:05/4:25 PM ET inactives (MDT) |
+| `0 20 * * 0` | Sun 2:00 PM | Sun **1:00 PM** | `sun-late` | MST companion |
+| `15 23 * * 0` | Sun **5:15 PM** | 4:15 PM | `sun-snf` | SNF inactives (MDT) |
+| `15 0 * * 1` | Sun 6:15 PM | Sun **5:15 PM** | `sun-snf` | MST companion (Monday 00:15 UTC) |
+| `0 23 * * 1` | Mon **5:00 PM** | 4:00 PM | `mon-mnf` | MNF inactives (MDT) |
+| `0 0 * * 2` | Mon 6:00 PM | Mon **5:00 PM** | `mon-mnf` | MST companion |
 
 Tuesday 07:05 Daily still publishes the cycle. It snapshots ESPN/Sleeper
 **before** `refresh_nfl` so the first write is not last-3-blind.

@@ -145,8 +145,14 @@ def window_name_for(now: datetime) -> str:
         return "thu-tnf"
     if weekday == 6 and hour < 9:
         return "sun-am"
-    if weekday == 6:
+    if weekday == 6 and hour < 12:
         return "sun-inactives"
+    if weekday == 6 and hour < 16:
+        return "sun-late"
+    if weekday == 6:
+        return "sun-snf"
+    if weekday == 0:
+        return "mon-mnf"
     if weekday == 1 and hour < 12:
         return "tue-am"
     return "adhoc"

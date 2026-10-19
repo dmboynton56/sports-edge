@@ -187,11 +187,17 @@ def test_initial_snapshot_is_dirty():
 
 
 def test_window_name_denver():
-    # 2026-10-15 13:15 UTC = Thu 7:15 AM MDT
+    # 2026-10-15/18 are MDT. TNF inactives window is 23:00 UTC = 5:00 PM MT, not 21:00.
     assert window_name_for(datetime(2026, 10, 15, 13, 15, tzinfo=timezone.utc)) == "thu-am"
-    assert window_name_for(datetime(2026, 10, 15, 21, 0, tzinfo=timezone.utc)) == "thu-tnf"
+    assert window_name_for(datetime(2026, 10, 15, 23, 0, tzinfo=timezone.utc)) == "thu-tnf"
+    assert window_name_for(datetime(2026, 10, 16, 0, 0, tzinfo=timezone.utc)) == "thu-tnf"
     assert window_name_for(datetime(2026, 10, 18, 13, 15, tzinfo=timezone.utc)) == "sun-am"
     assert window_name_for(datetime(2026, 10, 18, 15, 45, tzinfo=timezone.utc)) == "sun-inactives"
+    assert window_name_for(datetime(2026, 10, 18, 19, 0, tzinfo=timezone.utc)) == "sun-late"
+    assert window_name_for(datetime(2026, 10, 18, 23, 15, tzinfo=timezone.utc)) == "sun-snf"
+    assert window_name_for(datetime(2026, 10, 19, 23, 0, tzinfo=timezone.utc)) == "mon-mnf"
+    # MST companion: 2026-11-05 00:00 UTC = Thu 5:00 PM MST after the fall-back.
+    assert window_name_for(datetime(2026, 11, 6, 0, 0, tzinfo=timezone.utc)) == "thu-tnf"
 
 
 def test_toss_up_band():

@@ -14,7 +14,7 @@ Short ownership map. Read the workflow YAML if a step name matters.
 | Research MLB missing / audit fail (`audit_mlb_research_readiness`) | **Daily Refresh** | PMR |
 | MLB HR probabilities / fair odds / 2pm board gate | **Player Market Refresh** | Daily (`run_mlb_hr` is a deprecated escape hatch) |
 | NBA / NFL / CFB slate, injuries, team predictions | Daily Refresh | PMR |
-| NFL starter/injury news after Tuesday, TNF/Sunday reopen | **NFL Injury Refresh** (`nfl-injury-refresh.yml`) | Daily (Tuesday freeze is the full slate; injury cron re-prices changed games only) |
+| NFL starter/injury news after Tuesday, TNF/Sunday/MNF reopen | **NFL Injury Refresh** (`nfl-injury-refresh.yml`) | Daily (Tuesday freeze is the full slate; injury cron re-prices changed games only) |
 | PGA tournament board | `pga-tournament-refresh.yml` | Daily / PMR unless you also need those |
 
 ## Player probabilities and game odds
