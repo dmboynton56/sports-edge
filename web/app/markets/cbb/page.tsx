@@ -424,17 +424,20 @@ export default function CBBPage() {
     [probMatrix],
   );
 
-  const [currentResult, setCurrentResult] = useState<SimResult | null>(null);
-
-  useEffect(() => {
-    setCurrentResult(baselineResult);
-  }, [baselineResult]);
+  // User-run sims override the baseline until the probability matrix changes.
+  const [overrideResult, setOverrideResult] = useState<SimResult | null>(null);
+  const [prevBaseline, setPrevBaseline] = useState(baselineResult);
+  if (baselineResult !== prevBaseline) {
+    setPrevBaseline(baselineResult);
+    setOverrideResult(null);
+  }
+  const currentResult = overrideResult ?? baselineResult;
 
   const handleRunSimulation = useCallback(() => {
     setIsRunning(true);
     setTimeout(() => {
       const result = runClientSimulation(BRACKET_2026_RAW, probMatrix, simCount, constraints);
-      setCurrentResult(result);
+      setOverrideResult(result);
       setIsRunning(false);
       if (selectedTeam) {
         const updated = result.teams.find(t => t.team === selectedTeam.team);
@@ -448,7 +451,6 @@ export default function CBBPage() {
   }, []);
 
   const topContenders = useMemo(() => {
-    if (!currentResult) return [];
     return [...currentResult.teams]
       .sort((a, b) => b.probabilities.Winner - a.probabilities.Winner)
       .slice(0, 8);
@@ -597,10 +599,6 @@ export default function CBBPage() {
       {/* ======================== SIMULATION TAB ======================== */}
       {activeTab === 'simulation' && (
         <>
-          {!currentResult ? (
-            <div className="text-center py-20 text-muted-foreground">Loading simulation...</div>
-          ) : (
-            <>
               {/* Dashboard stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
                 {[
@@ -701,8 +699,6 @@ export default function CBBPage() {
                   )}
                 </div>
               </div>
-            </>
-          )}
         </>
       )}
     </div>
