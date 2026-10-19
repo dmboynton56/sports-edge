@@ -45,10 +45,12 @@ from src.models.nfl_prop_fair_odds import (  # noqa: E402
     _norm_name,
     apply_name_availability,
     apply_residual_mean,
+    advance_priors_for_next_game,
     attach_distribution,
     attach_injury_availability,
     consensus_sportsbook_line,
     project_upcoming_rows,
+    refresh_live_mu,
     reject_dfs_rows,
     score_live_lines,
     walk_forward_stat,
@@ -262,17 +264,29 @@ def main() -> None:
                     normalize_team_name(event.get("away_team"))
                     for event in live.get("events") or []
                 }
-                projections = apply_name_availability(
+                latest_yards = advance_priors_for_next_game(
                     modeled[modeled["team"].isin(teams)].sort_values("game_date").groupby("player_id", sort=False).tail(1),
-                    statuses,
+                    stat="receiving_yards",
                 )
-                rec_proj = apply_name_availability(
+                latest_rec = advance_priors_for_next_game(
                     rec_modeled[rec_modeled["team"].isin(teams)].sort_values("game_date").groupby("player_id", sort=False).tail(1),
-                    statuses,
+                    stat="receptions",
+                )
+                projections = refresh_live_mu(
+                    apply_name_availability(latest_yards, statuses), stat="receiving_yards"
+                )
+                rec_proj = refresh_live_mu(
+                    apply_name_availability(latest_rec, statuses), stat="receptions"
                 )
             else:
-                projections = apply_name_availability(project_upcoming_rows(modeled, upcoming), statuses)
-                rec_proj = apply_name_availability(project_upcoming_rows(rec_modeled, upcoming), statuses)
+                projections = refresh_live_mu(
+                    apply_name_availability(project_upcoming_rows(modeled, upcoming, stat="receiving_yards"), statuses),
+                    stat="receiving_yards",
+                )
+                rec_proj = refresh_live_mu(
+                    apply_name_availability(project_upcoming_rows(rec_modeled, upcoming, stat="receptions"), statuses),
+                    stat="receptions",
+                )
             yard_lines = [row for row in live.get("lines") or [] if row.get("market") == "player_reception_yds"]
             rec_lines = [row for row in live.get("lines") or [] if row.get("market") == "player_receptions"]
             comparison = reject_dfs_rows(score_live_lines(projections, yard_lines, stat="receiving_yards"))
@@ -283,7 +297,8 @@ def main() -> None:
             live_payload["skipped"] = False
             live_payload["join_rule"] = (
                 "Name match after stripping book team suffixes; player team must be "
-                "one of the event's two teams. Duplicate Player (TEAM) rows collapsed."
+                "one of the event's two teams. Duplicate Player (TEAM) rows collapsed. "
+                "|our P(over) - book no-vig| > 0.20 is flagged check_data, not an edge."
             )
 
     payload = {

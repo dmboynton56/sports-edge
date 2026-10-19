@@ -96,6 +96,123 @@ def test_residual_mean_stays_near_season_average_without_a_shock():
     assert last["mu"] > 20
 
 
+def test_thin_new_season_sample_shrinks_toward_prior_season():
+    rows = []
+    games = []
+    for week in range(1, 9):
+        games.append(
+            {
+                "game_id": f"2025w{week}",
+                "gameday": date(2025, 9, week),
+                "home_team": "PHI",
+                "away_team": "DAL",
+                "home_score": 24,
+                "away_score": 20,
+                "predicted_margin": 3,
+                "closing_total": 44,
+            }
+        )
+        rows.append(
+            {
+                "game_id": f"2025w{week}",
+                "season": 2025,
+                "week": week,
+                "player_id": "ajb",
+                "player_display_name": "A.J. Brown",
+                "position": "WR",
+                "team": "PHI",
+                "opponent_team": "DAL",
+                "targets": 9,
+                "receiving_yards": 80,
+                "receptions": 6,
+                "attempts": 0,
+                "carries": 0,
+                "target_share": 0.24,
+                "offense_pct": 0.9,
+            }
+        )
+        rows.append(
+            {
+                "game_id": f"2025w{week}",
+                "season": 2025,
+                "week": week,
+                "player_id": "qb",
+                "player_display_name": "QB",
+                "position": "QB",
+                "team": "PHI",
+                "opponent_team": "DAL",
+                "targets": 0,
+                "receiving_yards": 0,
+                "receptions": 0,
+                "attempts": 35,
+                "carries": 0,
+                "target_share": 0.0,
+                "offense_pct": 1.0,
+            }
+        )
+    for week, yards in ((1, 26), (2, 27)):
+        games.append(
+            {
+                "game_id": f"2026w{week}",
+                "gameday": date(2026, 9, week),
+                "home_team": "NE",
+                "away_team": "CHI",
+                "home_score": 21,
+                "away_score": 17,
+                "predicted_margin": 1,
+                "closing_total": 42,
+            }
+        )
+        rows.append(
+            {
+                "game_id": f"2026w{week}",
+                "season": 2026,
+                "week": week,
+                "player_id": "ajb",
+                "player_display_name": "A.J. Brown",
+                "position": "WR",
+                "team": "NE",
+                "opponent_team": "CHI",
+                "targets": 4 if week == 1 else 10,
+                "receiving_yards": yards,
+                "receptions": 3,
+                "attempts": 0,
+                "carries": 0,
+                "target_share": 0.12,
+                "offense_pct": 0.7,
+            }
+        )
+        rows.append(
+            {
+                "game_id": f"2026w{week}",
+                "season": 2026,
+                "week": week,
+                "player_id": "qb",
+                "player_display_name": "QB",
+                "position": "QB",
+                "team": "NE",
+                "opponent_team": "CHI",
+                "targets": 0,
+                "receiving_yards": 0,
+                "receptions": 0,
+                "attempts": 32,
+                "carries": 0,
+                "target_share": 0.0,
+                "offense_pct": 1.0,
+            }
+        )
+    modeled = apply_residual_mean(
+        build_feature_frame(pd.DataFrame(rows), pd.DataFrame(games)),
+        stat="receiving_yards",
+    )
+    week2 = modeled[(modeled.player_id == "ajb") & (modeled.season == 2026) & (modeled.week == 2)].iloc[0]
+    assert week2["season_games_before"] == 1
+    assert week2["season_avg_receiving_yards"] == pytest.approx(26.0)
+    assert week2["prior_season_mean"] == pytest.approx(80.0)
+    assert week2["mu"] > 55
+    assert week2["mu"] - week2["season_avg_receiving_yards"] > 25
+
+
 def test_consensus_line_drops_dfs_and_uses_sportsbook_two_way():
     payload = {
         "bookmakers": [
@@ -147,7 +264,27 @@ def test_consensus_line_drops_dfs_and_uses_sportsbook_two_way():
     assert live[0]["opponent"] == "KC"
     assert live[0]["our_p_over"] > 0.4
     assert live[0]["live_site_published"] is False
+    assert live[0]["status"] == "ok"
     assert reject_dfs_rows([{**live[0], "books": ["prizepicks"]}]) == []
+    flagged = score_live_lines(
+        pd.DataFrame(
+            [
+                {
+                    "player_display_name": "Courtland Sutton",
+                    "team": "DEN",
+                    "opponent_team": "KC",
+                    "position": "WR",
+                    "mu": 20.0,
+                    "alpha": 0.3,
+                    "availability": 1.0,
+                }
+            ]
+        ),
+        [{**rows[0], "line": 67.5, "home_team": "Denver Broncos", "away_team": "Kansas City Chiefs"}],
+        stat="receiving_yards",
+    )
+    assert flagged[0]["status"] == "check_data"
+    assert flagged[0]["data_check"] is True
 
 
 def test_compact_graded_csv_and_grade_label(tmp_path):

@@ -56,61 +56,81 @@ Walk-forward ROI/CLV on **2023–2025 closes: not run** (no free file). The 2026
 
 `data-core/src/models/nfl_prop_fair_odds.py`
 
-- **Mean:** season-to-date yards/receptions, blended with trailing-8 (more weight on recent form in the first three games). Baseline for the MAE comparison is still the plain season-average used in #46 (17.63 on receiving yards).
+- **Mean:** season-to-date yards/receptions, **shrunk toward last-season / career** with strength 6 games, then blended with trailing-8. Recency weight keys off **season games**, not career games. Baseline for the MAE comparison is still the plain season-average used in #46 (17.63 on receiving yards).
 - **Residual:** shrunk opportunity ratio (expected targets vs trailing target rate) and v2-implied pass-volume scale, clipped to 0.82–1.18. ESPN / nflverse injury status scales availability (Out 0.20, Doubtful 0.50, Questionable 0.88).
 - **Distribution:** same negative binomial as the first prototype. `P(over line)` and fair American odds for any line.
-- **Live:** PropLine sportsbook two-way only. Modal line, best over/under price, no-vig book `P(over)`. Never mixed with DFS. Written to `docs/analysis` only.
+- **Live:** PropLine sportsbook two-way only. Modal line, best over/under price, no-vig book `P(over)`. Never mixed with DFS. `|our P − book P| > 0.20` is flagged `check_data`, not an edge. Written to `docs/analysis` only.
 
 ### Walk-forward 2023–2025 (n=14,963, same universe as #46)
 
-| Stat | Model MAE | Season-avg MAE | Beat 17.63? | CRPS | Trailing-median P(over) vs empirical |
-| --- | ---: | ---: | --- | ---: | --- |
-| Receiving yards | **17.12** | 17.39 | **Yes** (also beats this run's 17.39 baseline) | 12.21 | 0.382 vs 0.385 (gap 0.003) |
-| Receptions | **1.336** | 1.341 | n/a (different units) | 0.91 | 0.425 vs 0.408 (gap 0.018) |
+| Stat | Model MAE | Season-avg MAE | Beat 17.63? | Trailing-median P(over) vs empirical |
+| --- | ---: | ---: | --- | --- |
+| Receiving yards | **17.04** | 17.39 | **Yes** | 0.416 vs 0.385 (gap 0.031) |
+| Receptions | **1.330** | 1.341 | n/a (different units) | 0.435 vs 0.408 (gap 0.028) |
 
 Fixed-line calibration:
 
 | Stat | Line | Mean P(over) | Empirical | \|gap\| |
 | --- | ---: | ---: | ---: | ---: |
-| Yards | 24.5 | 0.318 | 0.367 | 0.049 |
-| Yards | 49.5 | 0.143 | 0.173 | 0.030 |
-| Yards | 74.5 | 0.066 | 0.079 | 0.013 |
-| Receptions | 2.5 | 0.354 | 0.365 | 0.012 |
-| Receptions | 4.5 | 0.156 | 0.158 | 0.001 |
-| Receptions | 6.5 | 0.068 | 0.059 | 0.009 |
+| Yards | 24.5 | 0.331 | 0.367 | 0.036 |
+| Yards | 49.5 | 0.146 | 0.173 | 0.026 |
+| Yards | 74.5 | 0.073 | 0.079 | 0.007 |
+| Receptions | 2.5 | 0.362 | 0.365 | 0.003 |
+| Receptions | 4.5 | 0.157 | 0.158 | 0.000 |
+| Receptions | 6.5 | 0.066 | 0.059 | 0.007 |
 
-The residual mean is a small MAE win, not a new board. P(over) at a player's own trailing median is well calibrated for yards.
+The 24.5 yard line still **under-predicts** (0.331 vs 0.367). Shrinkage closed part of the old 0.049 gap; it did not eliminate it. Trailing-median calibration is a bit worse than the unshrunk residual (the prior pulls P(over) up). MAE still beats 17.63.
 
 ### 2026 PropLine 14-day sample — ROI / CLV (small-sample)
 
 | Market | n | Win-loss | Flat ROI | Mean close−open toward model side |
 | --- | ---: | --- | ---: | ---: |
-| Receiving yards | 335 (218 players) | 163–172 | **−7.0%** | −0.47 yd (n=315) |
-| Receptions | 332 (217 players) | 155–177 | **−15.0%** | −0.06 (n=309) |
+| Receiving yards | 335 (218 players) | 167–168 | **−4.8%** | −0.86 yd (n=315) |
+| Receptions | 332 (217 players) | 178–154 | **−0.6%** | −0.05 (n=309) |
 
 Labeled small-sample. Not 2023–2025. Not a strategy. Books are DK/FD/Pinnacle/MGM plus fallbacks; DFS excluded.
 
+### Live-table bug (fixed)
+
+The first live table showed 30–40 point gaps (A.J. Brown 0.084 vs book 0.518). That was **not an edge**.
+
+`early = games_before < 4` used **career** games, so every veteran got a 72% weight on season-to-date. A.J. Brown’s 2026 season-to-date was one 26-yard game after a team change; career / 2025 mean (~67–78) was ignored. Same pattern: Okonkwo 2-game 10.5-yard mean, Loveland a cold start vs a 44.6 2025 mean. Live also scored the last **played** game’s prior (did not roll that actual into the next-game mean).
+
+Fix: shrink season-to-date toward last-season / career (strength 6); key recency off season games; roll the last actual into the live prior. `|ΔP| > 0.20` → `check_data`.
+
+Inputs after the fix (2026 games include the last played actual):
+
+| Player | 2026 n | Season mean | Trail-8 | 2025 mean | Resid | Avail | μ | α |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| A.J. Brown | 2 | 26.5 | 52.3 | 66.9 | 0.97 | 1.00 | 53.1 | 0.35 |
+| Colston Loveland | 6 | 29.2 | 44.7 | 44.6 | 0.96 | 1.00 | 37.6 | 0.35 |
+| Chig Okonkwo | 3 | 27.0 | 37.0 | 32.9 | 0.97 | 1.00 | 33.0 | 0.35 |
+| Kalif Raymond | 6 | 40.7 | 38.9 | 19.3 | 1.06 | 1.00 | 34.6 | 0.35 |
+| Austin Ekeler | 2 | 13.0 | 20.5 | 19.0 | 0.94 | 1.00 | 17.9 | 0.35 |
+
+Brown and Ekeler remain `check_data` (role / thin 2026 sample vs a sharp line). Not joins, not availability, not the wrong market.
+
 ### This week's live PropLine comparison (not published)
 
-16 PropLine event calls (cached; remaining 272). **49** sportsbook two-way rows after stripping book `Player (TEAM)` suffixes and requiring the nflverse team to be on that event. 2026 rosters (A.J. Brown NE, Mike Evans SF, Diggs/White WAS) come from nflverse, not 2025 memory. No DFS. Sorted by |our P(over) − no-vig book P(over)|.
+16 PropLine event calls (cached; remaining 272). **49** sportsbook two-way rows. 7 flagged `check_data`. 2026 rosters from nflverse. No DFS. `ok` rows first, then `|ΔP|`.
 
-| Player | Game | Market | Line | Our P(over) | Book no-vig P(over) | Fair over | Best over |
-| --- | --- | --- | ---: | ---: | ---: | ---: | ---: |
-| A.J. Brown | NE @ CHI | rec yds | 67.5 | 0.084 | 0.518 | +1088 | FD −114 |
-| Colston Loveland | CHI vs NE | rec yds | 44.5 | 0.136 | 0.497 | +635 | MGM −111 |
-| Chig Okonkwo | WAS @ SF | rec yds | 24.5 | 0.139 | 0.487 | +619 | Pinnacle −103 |
-| Kalif Raymond | CHI vs NE | rec yds | 25.5 | 0.766 | 0.500 | −327 | FD −114 |
-| Austin Ekeler | WAS @ SF | rec yds | 7.5 | 0.752 | 0.506 | −303 | DK −110 |
-| Christian McCaffrey | SF vs WAS | rec yds | 40.5 | 0.259 | 0.497 | +286 | Pinnacle −108 |
-| Mike Evans | SF vs WAS | rec yds | 65.5 | 0.296 | 0.500 | +238 | Bovada −115 |
-| Terry McLaurin | WAS @ SF | rec yds | 49.5 | 0.352 | 0.500 | +184 | Pinnacle −110 |
+| Player | Game | Market | Line | Our P(over) | Book no-vig | Fair over | Best over | Status |
+| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- |
+| Rachaad White | WAS @ SF | rec yds | 14.5 | 0.314 | 0.504 | +219 | FD −113 | ok |
+| George Kittle | SF vs WAS | rec yds | 66.5 | 0.317 | 0.500 | +216 | FD −113 | ok |
+| Colston Loveland | CHI vs NE | rec yds | 44.5 | 0.316 | 0.497 | +216 | MGM −111 | ok |
+| Efton Chism III | NE @ CHI | rec yds | 19.5 | 0.670 | 0.493 | −203 | MGM −111 | ok |
+| Antonio Williams | WAS @ SF | rec yds | 21.5 | 0.632 | 0.498 | −172 | DK −111 | ok |
+| Chig Okonkwo | WAS @ SF | rec yds | 24.5 | 0.600 | 0.487 | −150 | Pinnacle −103 | ok |
+| Christian McCaffrey | SF vs WAS | rec yds | 40.5 | 0.387 | 0.497 | +159 | Pinnacle −108 | ok |
+| Kalif Raymond | CHI vs NE | rec yds | 25.5 | 0.604 | 0.500 | −153 | FD −114 | ok |
 
-Evans availability 0.88 (ESPN Questionable). Full table: `nfl-props-week-live-comparison.json`. This is model vs book, not a slip.
+A.J. Brown 67.5 is 0.272 vs book 0.518 (`check_data`). Ekeler 7.5 is 0.830 vs 0.506 (`check_data`). Full table: `nfl-props-week-live-comparison.json`. This is model vs book, not a slip.
 
 ---
 
 ## Recommended next step
 
-1. Do not publish this board. The residual mean is only a **0.27 yard** MAE lift.
+1. Do not publish this board. The residual mean is only a **0.35 yard** MAE lift, and `|ΔP| > 0.20` still means check the data.
 2. For 2023–2025 closes: get an EndzoneAPI free key and spend the 500-credit month on a **player-history sample** (top ~50 WR/TE), not Odds API historical.
 3. Keep PropLine 2026 CC-BY samples as the cheap CLV path; they already join.

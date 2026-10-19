@@ -43,6 +43,8 @@ RECENCY_WEIGHT_EARLY = 0.50
 OPP_RESIDUAL_WEIGHT = 0.16
 VOLUME_RESIDUAL_WEIGHT = 0.10
 RESIDUAL_CLIP = (0.82, 1.18)
+SEASON_PRIOR_STRENGTH = 6.0
+CHECK_DATA_ABS_P = 0.20
 AVAIL_OUT = 0.20
 AVAIL_DOUBTFUL = 0.50
 AVAIL_QUESTIONABLE = 0.88
@@ -130,34 +132,57 @@ def attach_stat_history(features: pd.DataFrame, stat: str) -> pd.DataFrame:
     if stat not in frame.columns:
         frame[stat] = np.nan
     frame[stat] = pd.to_numeric(frame[stat], errors="coerce")
+    sort_cols = [c for c in ("player_id", "season", "week", "game_id") if c in frame.columns]
+    if sort_cols:
+        frame = frame.sort_values(sort_cols)
     frame[f"rolling_{stat}_8"] = _lagged_rolling(frame, stat, 8)
     frame[f"career_{stat}"] = _lagged_expanding(frame, stat)
-    shifted = frame.groupby(["player_id", "season"], sort=False)[stat].shift(1)
-    frame[f"season_avg_{stat}"] = shifted.groupby([frame["player_id"], frame["season"]]).transform(
-        lambda values: values.expanding(min_periods=1).mean()
-    )
+    if {"player_id", "season"}.issubset(frame.columns):
+        frame["season_games_before"] = frame.groupby(["player_id", "season"], sort=False).cumcount().astype(float)
+        shifted = frame.groupby(["player_id", "season"], sort=False)[stat].shift(1)
+        frame[f"season_avg_{stat}"] = shifted.groupby([frame["player_id"], frame["season"]]).transform(
+            lambda values: values.expanding(min_periods=1).mean()
+        )
+        prior = (
+            frame.groupby(["player_id", "season"], sort=False)[stat]
+            .mean()
+            .rename("_prior_season_mean")
+            .reset_index()
+        )
+        prior["season"] = prior["season"] + 1
+        frame = frame.merge(prior, on=["player_id", "season"], how="left")
+        frame["prior_season_mean"] = pd.to_numeric(frame["_prior_season_mean"], errors="coerce")
+        frame = frame.drop(columns=["_prior_season_mean"])
+    else:
+        frame["season_games_before"] = 0.0
+        frame[f"season_avg_{stat}"] = np.nan
+        frame["prior_season_mean"] = np.nan
     return frame
 
 
-def apply_residual_mean(
-    features: pd.DataFrame,
-    *,
-    stat: str = "receiving_yards",
-) -> pd.DataFrame:
-    """Season-to-date / trailing-8 mean with a shrunk opportunity residual."""
+def _blend_residual_mean(frame: pd.DataFrame, *, stat: str) -> pd.DataFrame:
+    """Shrink thin season-to-date toward last season / career, then apply residual."""
 
-    frame = attach_stat_history(apply_opportunity_model(features), stat)
-    season = pd.to_numeric(frame[f"season_avg_{stat}"], errors="coerce")
-    trail = pd.to_numeric(frame[f"rolling_{stat}_8"], errors="coerce")
-    career = pd.to_numeric(frame[f"career_{stat}"], errors="coerce")
-    games = pd.to_numeric(frame.get("games_before"), errors="coerce").fillna(0.0)
-    early = games < 4
+    season = pd.to_numeric(frame.get(f"season_avg_{stat}"), errors="coerce")
+    trail = pd.to_numeric(frame.get(f"rolling_{stat}_8"), errors="coerce")
+    career = pd.to_numeric(frame.get(f"career_{stat}"), errors="coerce")
+    prior = pd.to_numeric(frame.get("prior_season_mean"), errors="coerce").fillna(career)
+    season_n = pd.to_numeric(frame.get("season_games_before"), errors="coerce").fillna(0.0)
+    shrunk = season.copy()
+    have_prior = season.notna() & prior.notna()
+    shrunk = shrunk.where(
+        ~have_prior,
+        (season_n * season + SEASON_PRIOR_STRENGTH * prior) / (season_n + SEASON_PRIOR_STRENGTH),
+    )
+    shrunk = shrunk.fillna(prior)
+    early = season_n < 4
     weight = np.where(early, RECENCY_WEIGHT_EARLY, RECENCY_WEIGHT_STABLE)
-    blended = season.copy()
-    both = season.notna() & trail.notna()
-    blended = blended.where(~both, (1.0 - weight) * season + weight * trail)
-    base = blended.fillna(season).fillna(trail).fillna(career).fillna(MIN_MU)
+    blended = shrunk.copy()
+    both = shrunk.notna() & trail.notna()
+    blended = blended.where(~both, (1.0 - weight) * shrunk + weight * trail)
+    base = blended.fillna(shrunk).fillna(trail).fillna(career).fillna(MIN_MU)
 
+    games = pd.to_numeric(frame.get("games_before"), errors="coerce").fillna(season_n)
     trail_targets = pd.to_numeric(frame.get("rolling_targets_8"), errors="coerce").fillna(0.0)
     n_window = games.clip(lower=1.0, upper=8.0)
     trail_target_mean = (trail_targets / n_window).replace(0.0, np.nan).fillna(4.0)
@@ -172,12 +197,24 @@ def apply_residual_mean(
         avail = pd.to_numeric(frame["availability"], errors="coerce").fillna(1.0).clip(AVAIL_OUT, 1.0)
     else:
         avail = 1.0
-    frame["base_mu"] = base
-    frame["residual_scale"] = resid.clip(*RESIDUAL_CLIP)
-    frame["mu"] = (base * frame["residual_scale"] * avail).clip(lower=MIN_MU)
-    frame["baseline_mu"] = season.fillna(career).fillna(trail).fillna(MIN_MU)
-    frame["trailing_median"] = trail
-    return frame
+    out = frame.copy()
+    out["season_games_before"] = season_n
+    out["base_mu"] = base
+    out["residual_scale"] = resid.clip(*RESIDUAL_CLIP)
+    out["mu"] = (base * out["residual_scale"] * avail).clip(lower=MIN_MU)
+    out["baseline_mu"] = season.fillna(career).fillna(trail).fillna(MIN_MU)
+    out["trailing_median"] = trail
+    return out
+
+
+def apply_residual_mean(
+    features: pd.DataFrame,
+    *,
+    stat: str = "receiving_yards",
+) -> pd.DataFrame:
+    """Season-to-date / trailing-8 mean with a shrunk opportunity residual."""
+
+    return _blend_residual_mean(attach_stat_history(apply_opportunity_model(features), stat), stat=stat)
 
 
 def attach_injury_availability(features: pd.DataFrame, injuries: pd.DataFrame | None) -> pd.DataFrame:
@@ -287,17 +324,66 @@ def evaluate_stat(
     return metrics
 
 
-def project_upcoming_rows(history: pd.DataFrame, upcoming: pd.DataFrame) -> pd.DataFrame:
+def advance_priors_for_next_game(frame: pd.DataFrame, *, stat: str) -> pd.DataFrame:
+    """Roll the last played actual into season / trail / career for the next game."""
+
+    out = frame.copy()
+    actual = pd.to_numeric(out.get(stat), errors="coerce")
+    season = pd.to_numeric(out.get(f"season_avg_{stat}"), errors="coerce")
+    trail = pd.to_numeric(out.get(f"rolling_{stat}_8"), errors="coerce")
+    career = pd.to_numeric(out.get(f"career_{stat}"), errors="coerce")
+    season_n = pd.to_numeric(out.get("season_games_before"), errors="coerce").fillna(0.0)
+    games = pd.to_numeric(out.get("games_before"), errors="coerce").fillna(0.0)
+    played = actual.notna()
+    new_season = np.where(
+        ~played,
+        season,
+        np.where((season_n <= 0) | season.isna(), actual, (season * season_n + actual) / (season_n + 1.0)),
+    )
+    trail_n = season_n.clip(upper=8.0)
+    new_trail = np.where(
+        ~played,
+        trail,
+        np.where(
+            (trail_n <= 0) | trail.isna(),
+            actual,
+            np.where(trail_n >= 8.0, (7.0 * trail + actual) / 8.0, (trail * trail_n + actual) / (trail_n + 1.0)),
+        ),
+    )
+    new_career = np.where(
+        ~played,
+        career,
+        np.where((games <= 0) | career.isna(), actual, (career * games + actual) / (games + 1.0)),
+    )
+    targets = pd.to_numeric(out.get("targets"), errors="coerce")
+    trail_targets = pd.to_numeric(out.get("rolling_targets_8"), errors="coerce")
+    if targets.notna().any():
+        out["rolling_targets_8"] = np.where(
+            targets.isna() | trail_targets.isna(),
+            trail_targets,
+            np.where(trail_n >= 8.0, trail_targets * 0.875 + targets, trail_targets + targets),
+        )
+    out[f"season_avg_{stat}"] = new_season
+    out[f"rolling_{stat}_8"] = new_trail
+    out[f"career_{stat}"] = new_career
+    out["season_games_before"] = season_n + played.astype(float)
+    out["games_before"] = games + played.astype(float)
+    return out
+
+
+def project_upcoming_rows(history: pd.DataFrame, upcoming: pd.DataFrame, *, stat: str = "receiving_yards") -> pd.DataFrame:
     """Copy each player's last modeled row onto upcoming team games.
 
-    Lagged hats stay as-of the last played game. Only opponent, implied
-    points, and availability are refreshed so we do not rebuild priors
-    from a stub-only frame.
+    The last played actual is rolled into the prior first. Opponent, implied
+    points, and availability are then refreshed.
     """
 
     if history.empty or upcoming.empty:
         return history.iloc[0:0].copy()
-    latest = history.sort_values(["player_id", "game_date"]).groupby("player_id", sort=False).tail(1)
+    latest = advance_priors_for_next_game(
+        history.sort_values(["player_id", "game_date"]).groupby("player_id", sort=False).tail(1),
+        stat=stat,
+    )
     rows = []
     for game in upcoming.to_dict("records"):
         home = normalize_team_name(game.get("home_team"))
@@ -325,11 +411,11 @@ def project_upcoming_rows(history: pd.DataFrame, upcoming: pd.DataFrame) -> pd.D
     projected = pd.DataFrame(rows)
     if projected.empty:
         return projected
-    return refresh_live_mu(projected)
+    return refresh_live_mu(projected, stat=stat)
 
 
-def refresh_live_mu(frame: pd.DataFrame) -> pd.DataFrame:
-    """Recompute residual mu after implied points / availability change."""
+def refresh_live_mu(frame: pd.DataFrame, *, stat: str = "receiving_yards") -> pd.DataFrame:
+    """Recompute residual mu after implied points / availability / prior change."""
 
     out = frame.copy()
     rolling_pass = pd.to_numeric(out.get("rolling_team_pass_attempts"), errors="coerce").fillna(32.0)
@@ -339,18 +425,7 @@ def refresh_live_mu(frame: pd.DataFrame) -> pd.DataFrame:
     share = pd.to_numeric(out.get("target_share_hat"), errors="coerce").fillna(0.10)
     out["expected_team_pass_attempts"] = rolling_pass * volume
     out["expected_targets"] = out["expected_team_pass_attempts"] * share
-    base = pd.to_numeric(out.get("base_mu"), errors="coerce")
-    if base.isna().all():
-        base = pd.to_numeric(out.get("baseline_mu"), errors="coerce").fillna(MIN_MU)
-    games = pd.to_numeric(out.get("games_before"), errors="coerce").fillna(1.0).clip(lower=1.0, upper=8.0)
-    trail_targets = pd.to_numeric(out.get("rolling_targets_8"), errors="coerce").fillna(0.0)
-    trail_target_mean = (trail_targets / games).replace(0.0, np.nan).fillna(4.0)
-    opp_ratio = (out["expected_targets"] / trail_target_mean).clip(0.60, 1.50)
-    resid = 1.0 + OPP_RESIDUAL_WEIGHT * (opp_ratio - 1.0) + VOLUME_RESIDUAL_WEIGHT * (volume - 1.0)
-    avail = pd.to_numeric(out.get("availability"), errors="coerce").fillna(1.0).clip(AVAIL_OUT, 1.0)
-    out["residual_scale"] = resid.clip(*RESIDUAL_CLIP)
-    out["mu"] = (base * out["residual_scale"] * avail).clip(lower=MIN_MU)
-    return out
+    return _blend_residual_mean(out, stat=stat)
 
 
 def apply_name_availability(frame: pd.DataFrame, status_by_name: Mapping[str, str]) -> pd.DataFrame:
@@ -476,6 +551,9 @@ def score_live_lines(
         if key in seen:
             continue
         seen.add(key)
+        book_p = line.get("book_novig_p_over")
+        delta = None if book_p is None else float(p_over) - float(book_p)
+        check_data = delta is not None and abs(delta) > CHECK_DATA_ABS_P
         scored.append(
             {
                 "player": player,
@@ -488,22 +566,28 @@ def score_live_lines(
                 "our_p_over": p_over,
                 "our_fair_over": probability_to_american(p_over),
                 "our_fair_under": probability_to_american(1.0 - p_over),
-                "book_novig_p_over": line.get("book_novig_p_over"),
+                "book_novig_p_over": book_p,
                 "best_over_price": line.get("best_over_price"),
                 "best_under_price": line.get("best_under_price"),
                 "best_over_book": line.get("best_over_book"),
                 "best_under_book": line.get("best_under_book"),
                 "books": line.get("books"),
-                "delta_p_over": (
-                    None
-                    if line.get("book_novig_p_over") is None
-                    else float(p_over) - float(line["book_novig_p_over"])
-                ),
+                "delta_p_over": delta,
+                "status": "check_data" if check_data else "ok",
+                "data_check": check_data,
+                "season_games": match.get("season_games_before"),
+                "season_avg": match.get(f"season_avg_{stat}"),
+                "trailing_8": match.get(f"rolling_{stat}_8"),
+                "prior_season_mean": match.get("prior_season_mean"),
+                "residual_scale": match.get("residual_scale"),
                 "availability": match.get("availability"),
+                "alpha": alpha,
                 "live_site_published": False,
             }
         )
-    scored.sort(key=lambda row: abs(row.get("delta_p_over") or 0.0), reverse=True)
+    scored.sort(
+        key=lambda row: (bool(row.get("data_check")), -abs(row.get("delta_p_over") or 0.0))
+    )
     return scored
 
 
