@@ -5,12 +5,14 @@ import pandas as pd
 import pytest
 
 from src.models.nfl_experiment import (
+    CALIBRATOR_CANDIDATES,
     CalibratedProbabilityModel,
     bootstrap_improvement_probability,
     fit_calibrator,
     fit_candidate,
     market_track_status,
     run_experiment,
+    select_calibrator_walk_forward,
 )
 from src.models.nfl_v2 import (
     FEATURE_COLUMNS,
@@ -205,6 +207,59 @@ def test_calibration_and_bootstrap_are_deterministic():
     first = bootstrap_improvement_probability(y, raw, np.full(len(y), 0.5), samples=100, seed=8)
     second = bootstrap_improvement_probability(y, raw, np.full(len(y), 0.5), samples=100, seed=8)
     assert first == second
+
+
+def _adjacent_plateau_sample():
+    """Binary labels whose PAV map jumps across 40–60 on a tiny raw-x sliver.
+
+    Ones-then-zeros inside each cluster is anti-monotone, so PAV pools each
+    half to its mean (0.34 then 0.64) and the jump sits on a 0.001 raw-x gap.
+    """
+    raw = np.concatenate([np.linspace(0.30, 0.499, 100), np.linspace(0.500, 0.70, 100)])
+    y = np.concatenate([np.array([1] * 34 + [0] * 66), np.array([1] * 64 + [0] * 36)])
+    return y, raw
+
+
+def test_unregularized_isotonic_skips_mid_band_on_two_cluster_scores():
+    y, raw = _adjacent_plateau_sample()
+    isotonic = fit_calibrator("isotonic", y, raw)
+    test_raw = np.concatenate([np.linspace(0.30, 0.495, 80), np.linspace(0.505, 0.70, 80)])
+    pred = isotonic.predict(test_raw)
+    assert not np.any((pred >= 0.40) & (pred <= 0.60))
+    assert len(np.unique(np.round(pred, 5))) <= 6
+
+    binned = fit_calibrator("isotonic_min_bin_40", y, raw)
+    grid = np.linspace(0.30, 0.70, 81)
+    binned_pred = binned.predict(grid)
+    assert np.any((binned_pred >= 0.40) & (binned_pred <= 0.60))
+    assert len(np.unique(np.round(binned_pred, 5))) > len(np.unique(np.round(isotonic.predict(grid), 5)))
+
+    sigmoid = fit_calibrator("sigmoid", y, raw)
+    sigmoid_pred = sigmoid.predict(np.linspace(0.2, 0.8, 61))
+    assert np.any((sigmoid_pred >= 0.40) & (sigmoid_pred <= 0.60))
+
+    temperature = fit_calibrator("temperature", y, raw)
+    temperature_pred = temperature.predict(np.linspace(0.2, 0.8, 61))
+    assert np.any((temperature_pred >= 0.40) & (temperature_pred <= 0.60))
+
+
+def test_select_calibrator_records_uniques_and_can_reject_overfit_isotonic():
+    rng = np.random.default_rng(21)
+    rows = []
+    for week in range(1, 16):
+        true_p = rng.uniform(0.2, 0.8, 30)
+        y = rng.binomial(1, true_p)
+        for probability, label in zip(true_p, y):
+            rows.append({"week": week, "raw_probability": float(probability), "home_win": int(label)})
+    result = select_calibrator_walk_forward(pd.DataFrame(rows), min_train_rows=60)
+    methods = {row["method"] for row in result["candidates"]}
+    assert set(CALIBRATOR_CANDIDATES) <= methods
+    isotonic = next(row for row in result["candidates"] if row["method"] == "isotonic")
+    identity = next(row for row in result["candidates"] if row["method"] == "none")
+    assert isotonic["unique_probabilities"] < identity["unique_probabilities"]
+    if isotonic.get("delta_brier", 0) >= 0 or isotonic.get("delta_log_loss", 0) >= 0:
+        assert result["selected"] != "isotonic"
+    assert result["selected"] in set(CALIBRATOR_CANDIDATES)
 
 
 def test_audit_detects_future_history():

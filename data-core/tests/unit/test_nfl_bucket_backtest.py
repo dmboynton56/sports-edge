@@ -11,11 +11,13 @@ from src.models.nfl_bucket_backtest import (
     ci_excludes_zero,
     define_rules,
     evaluate_rules,
+    frozen_isotonic_map_diagnostics,
     grade_ats,
     grade_moneyline,
     home_prob_bucket,
     in_toss_up_band,
     line_shopping_note,
+    load_live_specs,
     model_side,
     model_side_edge,
     score_rule_rows,
@@ -24,6 +26,7 @@ from src.models.nfl_bucket_backtest import (
     train_walk_forward_bundle,
     walk_forward_predictions,
 )
+from src.models.nfl_live import DEFAULT_ARTIFACT, LIVE_MODEL_VERSION
 from src.models.nfl_v2 import FEATURE_COLUMNS
 
 
@@ -234,6 +237,73 @@ def test_evaluate_rules_labels_oos_and_counts_tests():
     note = line_shopping_note(frame)
     assert note["can_measure_1pt5_disagreement"] is False
     assert note["multi_book_rows"] == 0
+
+
+def _clustered_seasons(rng, seasons=(2020, 2021, 2022), n=90):
+    rows = []
+    for season in seasons:
+        for index in range(n):
+            high = index % 2 == 0
+            won = rng.random() < (0.78 if high else 0.22)
+            row = {column: float(rng.normal()) for column in FEATURE_COLUMNS}
+            row["margin_diff_3"] = 1.8 if high else -1.8
+            row["home_field"] = 1.0
+            row.update(
+                {
+                    "game_id": f"{season}_{index}",
+                    "season": season,
+                    "week": (index % 17) + 1,
+                    "game_type": "REG",
+                    "home_team": "KC",
+                    "away_team": "DEN",
+                    "home_win": int(won),
+                    "home_margin": 7.0 if won else -7.0,
+                    "home_score": 27 if won else 17,
+                    "away_score": 17 if won else 27,
+                }
+            )
+            rows.append(row)
+    return pd.DataFrame(rows)
+
+
+def test_auto_walk_forward_fills_mid_band_that_unregularized_isotonic_skips():
+    rng = np.random.default_rng(9)
+    train = _clustered_seasons(rng, seasons=(2020, 2021), n=100)
+    test = _clustered_seasons(rng, seasons=(2022,), n=80)
+    specs = {
+        "kind": "logistic",
+        "C": 1.0,
+        "features": list(FEATURE_COLUMNS),
+    }
+    margin = {"kind": "ridge", "alpha": 10.0, "features": list(FEATURE_COLUMNS)}
+    before = DEFAULT_ARTIFACT.stat().st_mtime_ns
+    isotonic = train_walk_forward_bundle(
+        train, probability_spec=specs, margin_spec=margin, calibration_method="isotonic"
+    )
+    auto = train_walk_forward_bundle(
+        train, probability_spec=specs, margin_spec=margin, calibration_method="auto"
+    )
+    assert DEFAULT_ARTIFACT.stat().st_mtime_ns == before
+    iso_p = np.asarray(isotonic["probability_model"].predict_probability(test), dtype=float)
+    auto_p = np.asarray(auto["probability_model"].predict_probability(test), dtype=float)
+    iso_band = int(((iso_p >= 0.40) & (iso_p <= 0.60)).sum())
+    auto_band = int(((auto_p >= 0.40) & (auto_p <= 0.60)).sum())
+    assert auto["calibration"] != "isotonic" or auto_band >= iso_band
+    if iso_band == 0:
+        assert auto_band > 0 or auto["calibration"] == "none"
+        if auto["calibration"] == "none":
+            assert len(np.unique(np.round(auto_p, 5))) > len(np.unique(np.round(iso_p, 5)))
+
+
+def test_frozen_live_artifact_is_still_coarse_unregularized_isotonic():
+    specs = load_live_specs()
+    assert specs["calibration_method"] == "isotonic"
+    payload = frozen_isotonic_map_diagnostics()
+    assert payload["model_version"] == LIVE_MODEL_VERSION
+    assert payload["is_unregularized_isotonic"] is True
+    assert payload["n_thresholds"] >= 20
+    assert payload["unique_y"] <= 20
+    assert payload["grid_40_60_unique"] >= 1
 
 
 def test_define_rules_covers_requested_questions():
