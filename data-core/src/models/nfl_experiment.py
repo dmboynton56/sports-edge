@@ -17,7 +17,8 @@ import yaml
 from sklearn.ensemble import HistGradientBoostingClassifier, HistGradientBoostingRegressor
 from sklearn.isotonic import IsotonicRegression
 from sklearn.linear_model import LogisticRegression, Ridge
-from scipy.optimize import minimize
+from sklearn.metrics import brier_score_loss, log_loss
+from scipy.optimize import minimize, minimize_scalar
 
 from src.models.nfl_v2 import (
     FEATURE_COLUMNS,
@@ -32,6 +33,38 @@ from src.models.nfl_v2 import (
 def _logit(probability: np.ndarray) -> np.ndarray:
     p = np.clip(np.asarray(probability, dtype=float), 1e-6, 1 - 1e-6)
     return np.log(p / (1 - p))
+
+
+def _sigmoid(logit: np.ndarray) -> np.ndarray:
+    z = np.clip(np.asarray(logit, dtype=float), -30.0, 30.0)
+    return 1.0 / (1.0 + np.exp(-z))
+
+
+@dataclass
+class TemperatureScaler:
+    temperature: float
+
+    def predict(self, raw_probability: Sequence[float]) -> np.ndarray:
+        temperature = max(float(self.temperature), 1e-3)
+        return _sigmoid(_logit(raw_probability) / temperature)
+
+
+@dataclass
+class BinnedIsotonic:
+    """Monotone map from equal-count bins, then linear interpolation.
+
+    Unregularized isotonic on binary labels is piecewise-constant PAV. With one
+    OOF season it can jump from ~0.37 to ~0.64 and emit no 40–60 probabilities.
+    Binning first forces a minimum sample size per step.
+    """
+
+    x: np.ndarray
+    y: np.ndarray
+    min_bin: int
+
+    def predict(self, raw_probability: Sequence[float]) -> np.ndarray:
+        raw = np.asarray(raw_probability, dtype=float)
+        return np.clip(np.interp(raw, self.x, self.y, left=float(self.y[0]), right=float(self.y[-1])), 1e-6, 1 - 1e-6)
 
 
 @dataclass
@@ -96,6 +129,8 @@ class ProbabilityCalibrator:
             return np.clip(raw, 1e-6, 1 - 1e-6)
         if self.method == "sigmoid":
             calibrated = self.estimator.predict_proba(_logit(raw).reshape(-1, 1))[:, 1]
+        elif self.method == "temperature":
+            calibrated = self.estimator.predict(raw)
         else:
             calibrated = np.asarray(self.estimator.predict(raw), dtype=float)
         return np.clip(calibrated, 1e-6, 1 - 1e-6)
@@ -137,11 +172,123 @@ def fit_calibrator(method: str, y: Sequence[int], raw_probability: Sequence[floa
         return ProbabilityCalibrator(method="none")
     if method == "sigmoid":
         estimator = LogisticRegression(C=1e6, solver="lbfgs").fit(_logit(raw).reshape(-1, 1), target)
+    elif method == "temperature":
+        def nll(temperature: float) -> float:
+            calibrated = _sigmoid(_logit(raw) / max(temperature, 1e-3))
+            return float(log_loss(target, calibrated, labels=[0, 1]))
+
+        fitted = minimize_scalar(nll, bounds=(0.25, 4.0), method="bounded")
+        estimator = TemperatureScaler(float(fitted.x) if fitted.success else 1.0)
     elif method == "isotonic":
         estimator = IsotonicRegression(out_of_bounds="clip").fit(raw, target)
+    elif method.startswith("isotonic_min_bin"):
+        min_bin = 40
+        if "_" in method[len("isotonic_min_bin") :]:
+            min_bin = int(method.rsplit("_", 1)[1])
+        estimator = fit_binned_isotonic(target, raw, min_bin=min_bin)
+        method = "isotonic_min_bin"
     else:
         raise ValueError(f"Unknown calibration method: {method}")
     return ProbabilityCalibrator(method=method, estimator=estimator)
+
+
+def fit_binned_isotonic(y: Sequence[int], raw_probability: Sequence[float], *, min_bin: int = 40) -> BinnedIsotonic:
+    raw = np.asarray(raw_probability, dtype=float)
+    target = np.asarray(y, dtype=float)
+    if raw.size == 0:
+        raise ValueError("Cannot fit binned isotonic on an empty sample.")
+    order = np.argsort(raw, kind="mergesort")
+    raw_sorted = raw[order]
+    y_sorted = target[order]
+    bin_size = max(1, min(int(min_bin), int(raw.size)))
+    starts = list(range(0, int(raw.size), bin_size))
+    if len(starts) >= 2 and int(raw.size) - starts[-1] < bin_size:
+        starts.pop()
+    xs: list[float] = []
+    ys: list[float] = []
+    for index, start in enumerate(starts):
+        end = int(raw.size) if index == len(starts) - 1 else starts[index + 1]
+        xs.append(float(raw_sorted[start:end].mean()))
+        ys.append(float(y_sorted[start:end].mean()))
+    iso = IsotonicRegression(out_of_bounds="clip", increasing=True)
+    y_hat = np.clip(iso.fit_transform(np.asarray(xs), np.asarray(ys)), 1e-6, 1 - 1e-6)
+    return BinnedIsotonic(x=np.asarray(xs, dtype=float), y=np.asarray(y_hat, dtype=float), min_bin=bin_size)
+
+
+CALIBRATOR_CANDIDATES = ("none", "sigmoid", "temperature", "isotonic", "isotonic_min_bin_40")
+
+
+def select_calibrator_walk_forward(
+    frame: pd.DataFrame,
+    *,
+    raw_column: str = "raw_probability",
+    target_column: str = "home_win",
+    group_column: str = "week",
+    candidates: Sequence[str] = CALIBRATOR_CANDIDATES,
+    min_train_rows: int = 80,
+) -> dict[str, Any]:
+    """Pick a calibrator by expanding-group OOS Brier and log loss.
+
+    A method must beat identity on both Brier and log loss. Among those, lowest
+    Brier wins. Unregularized isotonic is a candidate; it often loses this gate
+    because PAV overfits binary OOF labels into a handful of plateaus.
+    """
+    ordered = frame.sort_values(group_column).reset_index(drop=True)
+    groups = pd.to_numeric(ordered[group_column], errors="coerce")
+    unique_groups = [int(value) for value in sorted(groups.dropna().unique().tolist())]
+    results: list[dict[str, Any]] = []
+    for method in candidates:
+        oos_y: list[np.ndarray] = []
+        oos_p: list[np.ndarray] = []
+        oos_raw: list[np.ndarray] = []
+        folds = 0
+        for group in unique_groups:
+            train = ordered[groups < group]
+            test = ordered[groups == group]
+            if len(train) < min_train_rows or test.empty:
+                continue
+            calibrator = fit_calibrator(method, train[target_column], train[raw_column])
+            oos_y.append(np.asarray(test[target_column], dtype=int))
+            oos_p.append(calibrator.predict(test[raw_column]))
+            oos_raw.append(np.asarray(test[raw_column], dtype=float))
+            folds += 1
+        if not oos_y:
+            results.append({"method": method, "status": "insufficient_oof", "oos_rows": 0})
+            continue
+        y = np.concatenate(oos_y)
+        p = np.clip(np.concatenate(oos_p), 1e-6, 1 - 1e-6)
+        identity = np.clip(np.concatenate(oos_raw), 1e-6, 1 - 1e-6)
+        brier = float(brier_score_loss(y, p))
+        nll = float(log_loss(y, p, labels=[0, 1]))
+        identity_brier = float(brier_score_loss(y, identity))
+        identity_nll = float(log_loss(y, identity, labels=[0, 1]))
+        results.append(
+            {
+                "method": method,
+                "status": "ok",
+                "oos_rows": int(len(y)),
+                "folds": folds,
+                "brier": brier,
+                "log_loss": nll,
+                "delta_brier": brier - identity_brier,
+                "delta_log_loss": nll - identity_nll,
+                "unique_probabilities": int(len(np.unique(np.round(p, 6)))),
+            }
+        )
+    eligible = [
+        row
+        for row in results
+        if row.get("status") == "ok" and row.get("delta_brier", 0) < 0 and row.get("delta_log_loss", 0) < 0
+    ]
+    if eligible:
+        selected = min(eligible, key=lambda row: (row["brier"], row["log_loss"]))
+        reason = "improved OOS Brier and log loss versus identity"
+    else:
+        selected = next((row for row in results if row.get("method") == "none" and row.get("status") == "ok"), None)
+        if selected is None:
+            selected = {"method": "none", "status": "fallback"}
+        reason = "no candidate beat identity on both Brier and log loss; using raw probabilities"
+    return {"selected": selected["method"], "reason": reason, "candidates": results}
 
 
 def candidate_specs(config: Mapping[str, Any], task: str) -> list[dict[str, Any]]:

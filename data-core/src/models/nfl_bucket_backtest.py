@@ -21,8 +21,10 @@ from src.models.nfl_experiment import (
     CalibratedProbabilityModel,
     ProbabilityCalibrator,
     candidate_specs,
+    fit_calibrator,
     fit_candidate,
     fit_production_shadow_bundle,
+    select_calibrator_walk_forward,
 )
 from src.models.nfl_health import american_profit
 from src.models.nfl_v2 import FEATURE_COLUMNS, no_vig_home_probability
@@ -225,51 +227,114 @@ def load_live_specs(config_path: Path = DEFAULT_CONFIG) -> dict[str, Any]:
     }
 
 
+def _oof_probability_frame(
+    train: pd.DataFrame,
+    probability_spec: Mapping[str, Any],
+    first_oof_season: int,
+) -> pd.DataFrame:
+    parts: list[pd.DataFrame] = []
+    seasons = sorted(int(value) for value in pd.to_numeric(train["season"], errors="coerce").dropna().unique())
+    for season in seasons:
+        if int(season) < int(first_oof_season):
+            continue
+        fold_train = train[pd.to_numeric(train["season"], errors="coerce") < int(season)]
+        validation = train[pd.to_numeric(train["season"], errors="coerce") == int(season)]
+        if fold_train.empty or validation.empty:
+            continue
+        model = fit_candidate(probability_spec, fold_train, task="probability")
+        chunk = validation.copy()
+        chunk["raw_probability"] = model.predict_probability(validation)
+        parts.append(chunk)
+    if not parts:
+        return train.iloc[0:0].copy()
+    return pd.concat(parts, ignore_index=True)
+
+
 def train_walk_forward_bundle(
     train: pd.DataFrame,
     *,
     probability_spec: Mapping[str, Any],
     margin_spec: Mapping[str, Any],
-    calibration_method: str = "isotonic",
+    calibration_method: str = "auto",
 ) -> dict[str, Any]:
     """Fit the live v2 candidate on prior seasons only.
 
-    Isotonic uses rolling out-of-fold seasons inside ``train``. A single prior
-    season cannot support OOF calibration; that fold uses raw probabilities.
+    ``calibration_method="auto"`` (backtest default) picks among identity,
+    Platt, temperature, unregularized isotonic, and min-bin isotonic using
+    expanding-group OOS Brier and log loss. The frozen live artifact still
+    uses unregularized isotonic; this path does not rewrite it.
     """
     if train.empty:
         raise ValueError("Walk-forward train frame is empty.")
     seasons = sorted(int(value) for value in pd.to_numeric(train["season"], errors="coerce").dropna().unique())
-    if len(seasons) >= 2:
-        first_oof = int(seasons[1])
+    if len(seasons) < 2:
+        probability_model = fit_candidate(probability_spec, train, task="probability")
+        return {
+            "probability_model": CalibratedProbabilityModel(probability_model, ProbabilityCalibrator(method="none")),
+            "margin_model": fit_candidate(margin_spec, train, task="margin"),
+            "calibrator": ProbabilityCalibrator(method="none"),
+            "calibration": "none",
+            "calibration_mode": "single_prior_season_no_oof",
+            "oof_seasons": [],
+            "trained_through": int(train["season"].max()),
+            "train_seasons": seasons,
+            "train_rows": int(len(train)),
+            "calibrator_selection": None,
+            "oof_unique_raw": 0,
+            "oof_unique_calibrated": None,
+        }
+
+    first_oof = int(seasons[1])
+    selection = None
+    chosen = calibration_method
+    oof = train.iloc[0:0].copy()
+    if calibration_method == "auto":
+        oof = _oof_probability_frame(train, probability_spec, first_oof)
+        if oof.empty:
+            chosen = "none"
+            selection = {"selected": "none", "reason": "no OOF rows", "candidates": []}
+        else:
+            group_column = "week" if int(oof["season"].nunique()) <= 1 and "week" in oof.columns else "season"
+            selection = select_calibrator_walk_forward(oof, group_column=group_column)
+            chosen = str(selection["selected"])
+        calibrator = (
+            ProbabilityCalibrator(method="none")
+            if chosen == "none" or oof.empty
+            else fit_calibrator(chosen, oof["home_win"], oof["raw_probability"])
+        )
+        probability_model = fit_candidate(probability_spec, train, task="probability")
+        bundle = {
+            "probability_model": CalibratedProbabilityModel(probability_model, calibrator),
+            "margin_model": fit_candidate(margin_spec, train, task="margin"),
+            "calibrator": calibrator,
+            "oof_seasons": sorted(int(value) for value in pd.to_numeric(oof["season"], errors="coerce").dropna().unique())
+            if len(oof)
+            else [],
+        }
+    else:
         bundle = fit_production_shadow_bundle(
             train,
             probability_spec,
             margin_spec,
-            calibration_method,
+            chosen,
             first_oof_season=first_oof,
         )
-        return {
-            **bundle,
-            "calibration": calibration_method,
-            "calibration_mode": "oof_seasons",
-            "oof_seasons": bundle.get("oof_seasons"),
-            "trained_through": int(train["season"].max()),
-            "train_seasons": seasons,
-            "train_rows": int(len(train)),
-        }
 
-    probability_model = fit_candidate(probability_spec, train, task="probability")
+    unique_calibrated = None
+    unique_raw = 0
+    if len(oof):
+        unique_raw = int(len(np.unique(np.round(oof["raw_probability"].to_numpy(dtype=float), 6))))
+        unique_calibrated = int(len(np.unique(np.round(bundle["calibrator"].predict(oof["raw_probability"]), 6))))
     return {
-        "probability_model": CalibratedProbabilityModel(probability_model, ProbabilityCalibrator(method="none")),
-        "margin_model": fit_candidate(margin_spec, train, task="margin"),
-        "calibrator": ProbabilityCalibrator(method="none"),
-        "calibration": "none",
-        "calibration_mode": "single_prior_season_no_oof",
-        "oof_seasons": [],
+        **bundle,
+        "calibration": chosen,
+        "calibration_mode": "oof_seasons_selected" if calibration_method == "auto" else "oof_seasons",
         "trained_through": int(train["season"].max()),
         "train_seasons": seasons,
         "train_rows": int(len(train)),
+        "calibrator_selection": selection,
+        "oof_unique_raw": unique_raw,
+        "oof_unique_calibrated": unique_calibrated,
     }
 
 
@@ -619,6 +684,7 @@ def walk_forward_predictions(
     test_seasons: Sequence[int],
     specs: Mapping[str, Any],
     predict_season: Callable[[pd.DataFrame, Mapping[str, Any], int], pd.DataFrame] | None = None,
+    fit_log: list[dict[str, Any]] | None = None,
 ) -> pd.DataFrame:
     """Train on prior seasons and predict each test season.
 
@@ -644,6 +710,22 @@ def walk_forward_predictions(
             predicted["trained_through"] = bundle["trained_through"]
             predicted["calibration"] = bundle["calibration"]
             predicted["calibration_mode"] = bundle["calibration_mode"]
+            predicted["oof_unique_raw"] = bundle.get("oof_unique_raw")
+            predicted["oof_unique_calibrated"] = bundle.get("oof_unique_calibrated")
+            if fit_log is not None:
+                fit_log.append(
+                    {
+                        "test_season": int(season),
+                        "calibration": bundle["calibration"],
+                        "calibration_mode": bundle["calibration_mode"],
+                        "oof_seasons": bundle.get("oof_seasons"),
+                        "oof_unique_raw": bundle.get("oof_unique_raw"),
+                        "oof_unique_calibrated": bundle.get("oof_unique_calibrated"),
+                        "calibrator_selection": bundle.get("calibrator_selection"),
+                        "train_rows": bundle.get("train_rows"),
+                        "trained_through": bundle.get("trained_through"),
+                    }
+                )
         predicted["prediction_source"] = "walk_forward_prior_seasons"
         predicted["sample_kind"] = "out_of_sample"
         predicted["test_season"] = int(season)
@@ -651,6 +733,109 @@ def walk_forward_predictions(
     if not parts:
         return features.iloc[0:0].copy()
     return pd.concat(parts, ignore_index=True)
+
+
+def frozen_isotonic_map_diagnostics(artifact: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """Describe the frozen live PAV map without modifying the joblib."""
+    from sklearn.isotonic import IsotonicRegression
+
+    from src.models.nfl_live import LIVE_MODEL_VERSION, load_live_artifact
+
+    art = dict(artifact) if artifact is not None else load_live_artifact()
+    calibrator = art["probability_model"].calibrator
+    estimator = calibrator.estimator
+    payload: dict[str, Any] = {
+        "model_version": art.get("model_version", LIVE_MODEL_VERSION),
+        "trained_through": art.get("trained_through"),
+        "oof_seasons": list(art.get("oof_seasons") or []),
+        "calibration_method": getattr(calibrator, "method", None),
+        "estimator_type": type(estimator).__name__,
+        "is_unregularized_isotonic": isinstance(estimator, IsotonicRegression),
+    }
+    if not isinstance(estimator, IsotonicRegression):
+        return payload
+    x = np.asarray(estimator.X_thresholds_, dtype=float)
+    y = np.asarray(estimator.y_thresholds_, dtype=float)
+    grid = np.linspace(0.01, 0.99, 99)
+    pred = np.asarray(estimator.predict(grid), dtype=float)
+    band = (pred >= TOSS_UP_LOW) & (pred <= TOSS_UP_HIGH)
+    jumps = [
+        {
+            "from_x": float(x[index]),
+            "to_x": float(x[index + 1]),
+            "from_y": float(y[index]),
+            "to_y": float(y[index + 1]),
+            "delta_y": float(y[index + 1] - y[index]),
+        }
+        for index in range(len(y) - 1)
+        if float(y[index + 1] - y[index]) >= 0.05
+    ]
+    payload.update(
+        {
+            "n_thresholds": int(len(x)),
+            "unique_y": int(len(np.unique(np.round(y, 6)))),
+            "y_values": [float(value) for value in np.unique(np.round(y, 6))],
+            "grid_unique_probabilities": int(len(np.unique(np.round(pred, 6)))),
+            "grid_40_60_points": int(band.sum()),
+            "grid_40_60_unique": int(len(np.unique(np.round(pred[band], 6)))) if band.any() else 0,
+            "largest_jump": float(max((row["delta_y"] for row in jumps), default=0.0)),
+            "jumps_ge_5pp": jumps,
+        }
+    )
+    return payload
+
+
+# PR #43 unregularized-PAV walk-forward occupancy. Kept as the before-fix snapshot.
+PAV_WALK_FORWARD_OCCUPANCY: tuple[dict[str, Any], ...] = (
+    {
+        "season": 2021,
+        "n": 272,
+        "unique_probabilities": 272,
+        "calibration": "none",
+        "calibration_mode": "single_prior_season_no_oof",
+        "buckets": {"0-20": 26, "20-30": 46, "30-40": 33, "40-60": 71, "60-70": 23, "70-80": 35, "80+": 38},
+    },
+    {
+        "season": 2022,
+        "n": 271,
+        "unique_probabilities": 15,
+        "calibration": "isotonic",
+        "calibration_mode": "oof_seasons",
+        "buckets": {"0-20": 0, "20-30": 0, "30-40": 159, "40-60": 0, "60-70": 74, "70-80": 24, "80+": 14},
+    },
+    {
+        "season": 2023,
+        "n": 272,
+        "unique_probabilities": 22,
+        "calibration": "isotonic",
+        "calibration_mode": "oof_seasons",
+        "buckets": {"0-20": 0, "20-30": 0, "30-40": 79, "40-60": 83, "60-70": 27, "70-80": 79, "80+": 4},
+    },
+    {
+        "season": 2024,
+        "n": 272,
+        "unique_probabilities": 14,
+        "calibration": "isotonic",
+        "calibration_mode": "oof_seasons",
+        "buckets": {"0-20": 0, "20-30": 0, "30-40": 73, "40-60": 82, "60-70": 56, "70-80": 54, "80+": 7},
+    },
+    {
+        "season": 2025,
+        "n": 272,
+        "unique_probabilities": 21,
+        "calibration": "isotonic",
+        "calibration_mode": "oof_seasons",
+        "buckets": {"0-20": 0, "20-30": 0, "30-40": 64, "40-60": 83, "60-70": 75, "70-80": 41, "80+": 9},
+    },
+    {
+        "season": 2026,
+        "n": 92,
+        "unique_probabilities": 17,
+        "calibration": "isotonic",
+        "calibration_mode": "frozen_live_artifact",
+        "buckets": {"0-20": 0, "20-30": 0, "30-40": 21, "40-60": 38, "60-70": 13, "70-80": 20, "80+": 0},
+    },
+)
 
 
 def line_shopping_note(frame: pd.DataFrame) -> dict[str, Any]:

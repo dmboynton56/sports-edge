@@ -31,15 +31,16 @@ if str(ROOT) not in sys.path:
 
 from scripts.eval_nfl_2026_week7 import load_team_games
 from src.models.nfl_bucket_backtest import (
+    PAV_WALK_FORWARD_OCCUPANCY,
     annotate_predictions,
     attach_schedule_prices,
     define_rules,
     evaluate_rules,
+    frozen_isotonic_map_diagnostics,
     json_safe,
     line_shopping_note,
     load_live_specs,
     predict_bundle,
-    train_walk_forward_bundle,
     walk_forward_predictions,
 )
 from src.models.nfl_live import LIVE_MODEL_VERSION, load_live_artifact
@@ -64,6 +65,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     parser.add_argument("--chart-dir", type=Path, default=DEFAULT_CHART_DIR)
     parser.add_argument("--from-games", type=Path, help="Reuse a saved predictions CSV and skip retraining.")
+    parser.add_argument(
+        "--calibration-method",
+        default="auto",
+        help="Walk-forward calibrator. Default auto selects by OOS Brier+log loss. Live serving stays isotonic.",
+    )
     parser.add_argument("--env-file", type=Path, default=ROOT / ".env")
     return parser.parse_args()
 
@@ -113,11 +119,20 @@ def apply_frozen_artifact(frame: pd.DataFrame, artifact: dict[str, Any], *, samp
 
 def run_walk_forward(features: pd.DataFrame, args: argparse.Namespace) -> tuple[pd.DataFrame, dict[str, Any]]:
     specs = load_live_specs()
+    live_calibration = str(specs["calibration_method"])
+    specs["calibration_method"] = str(args.calibration_method)
     completed = features[features["home_score"].notna() & features["away_score"].notna()].copy()
     train_pool = completed[completed[FEATURE_COLUMNS].notna().all(axis=1)].copy()
     walk_seasons = [season for season in range(args.first_test_season, args.end_season) if season < 2026]
-    print(f"Walk-forward test seasons: {walk_seasons}", flush=True)
-    walk = walk_forward_predictions(train_pool, test_seasons=walk_seasons, specs=specs)
+    print(f"Walk-forward test seasons: {walk_seasons} calibration={specs['calibration_method']}", flush=True)
+    fit_log: list[dict[str, Any]] = []
+    walk = walk_forward_predictions(train_pool, test_seasons=walk_seasons, specs=specs, fit_log=fit_log)
+    for row in fit_log:
+        print(
+            f"  season {row['test_season']}: {row['calibration']} "
+            f"oof_raw_unique={row.get('oof_unique_raw')} oof_cal_unique={row.get('oof_unique_calibrated')}",
+            flush=True,
+        )
 
     artifact = load_live_artifact()
     live_2026 = train_pool[train_pool["season"] == 2026].copy()
@@ -131,17 +146,22 @@ def run_walk_forward(features: pd.DataFrame, args: argparse.Namespace) -> tuple[
     oos = pd.concat([walk, frozen_2026], ignore_index=True) if len(frozen_2026) else walk
     oos = annotate_predictions(oos)
     frozen_2025 = annotate_predictions(frozen_2025) if len(frozen_2025) else frozen_2025
+    frozen_map = frozen_isotonic_map_diagnostics(artifact)
     meta = {
         "live_specs": {
             "probability": specs["selection"]["probability_candidate"],
             "margin": specs["selection"]["margin_candidate"],
-            "calibration": specs["selection"]["calibration_method"],
+            "calibration": live_calibration,
+            "walk_forward_calibration": specs["calibration_method"],
             "trained_through_live": specs["selection"]["trained_through"],
         },
         "walk_forward_seasons": walk_seasons,
         "walk_forward_rows": int(len(walk)),
+        "walk_forward_fits": fit_log,
         "frozen_2026_rows": int(len(frozen_2026)),
         "frozen_2025_rows": int(len(frozen_2025)),
+        "frozen_isotonic_map": frozen_map,
+        "pav_walk_forward_occupancy": list(PAV_WALK_FORWARD_OCCUPANCY),
         "model_version": artifact.get("model_version"),
         "alters_live_predictions": False,
     }
@@ -231,6 +251,26 @@ def pick_best_looking(summaries: list[dict[str, Any]], *, min_n: int = 0) -> dic
     )
 
 
+def _occupancy_row(row: dict[str, Any]) -> str:
+    counts = row.get("buckets") or {}
+    calibrator = row.get("calibration") or row.get("calibration_mode") or "n/a"
+    return (
+        "| {season} | {n} | {unique} | {calibrator} | {a} | {b} | {c} | {d} | {e} | {f} | {g} |".format(
+            season=row.get("season"),
+            n=row.get("n"),
+            unique=row.get("unique_probabilities"),
+            calibrator=calibrator,
+            a=counts.get("0-20", 0),
+            b=counts.get("20-30", 0),
+            c=counts.get("30-40", 0),
+            d=counts.get("40-60", 0),
+            e=counts.get("60-70", 0),
+            f=counts.get("70-80", 0),
+            g=counts.get("80+", 0),
+        )
+    )
+
+
 def occupancy_table(frame: pd.DataFrame) -> list[dict[str, Any]]:
     rows = []
     if frame.empty:
@@ -243,7 +283,9 @@ def occupancy_table(frame: pd.DataFrame) -> list[dict[str, Any]]:
                 "season": int(season),
                 "n": int(len(group)),
                 "unique_probabilities": unique_p,
+                "calibration": str(group["calibration"].iloc[0]) if "calibration" in group else None,
                 "calibration_mode": str(group["calibration_mode"].iloc[0]) if "calibration_mode" in group else None,
+                "mid_band_40_60": int(group["home_prob_bucket"].eq("40-60").sum()) if "home_prob_bucket" in group else 0,
                 "buckets": {str(key): int(value) for key, value in counts.items()},
             }
         )
@@ -374,7 +416,7 @@ def render_report(
         "",
         f"**Generated:** {payload['generated_at']}",
         f"**Live model (2026 only):** `{payload['model_version']}` — not modified",
-        f"**Walk-forward candidate:** `{payload['meta']['live_specs']['probability']}` + `{payload['meta']['live_specs']['margin']}` + `{payload['meta']['live_specs']['calibration']}`",
+        f"**Walk-forward candidate:** `{payload['meta']['live_specs']['probability']}` + `{payload['meta']['live_specs']['margin']}` + walk-forward `{payload['meta']['live_specs'].get('walk_forward_calibration', 'auto')}` (live serving still `{payload['meta']['live_specs']['calibration']}`)",
         f"**Rules tested:** {n_tests}",
         "",
         "This is analysis, not a serving change and not a betting product. Missing prices stay unscored. In-sample numbers are labeled and are **not** an edge.",
@@ -411,36 +453,96 @@ def render_report(
         f"| Pooled OOS used for all headline tables | **out-of-sample** | {payload['counts']['oos']} | 2021–2026 |",
         f"| Frozen artifact on 2025 REG | **in-sample** (trained_through=2025) | {payload['counts']['in_sample_2025']} | 2025 |",
         "",
-        "2026 n≈92 is real OOS for the frozen artifact but too small to license a rule by itself. 2021 uses a single prior season, so isotonic OOF calibration is impossible; that year is raw HGB. 2022–2025 use the production OOF-isotonic recipe. 2025 reconstructed through the frozen live artifact is in-sample and is appendix-only.",
+        "2026 n≈92 is real OOS for the frozen artifact but too small to license a rule by itself. 2021 uses a single prior season, so OOF calibration is impossible; that year is raw HGB. 2022–2025 pick a calibrator by expanding-group OOS Brier **and** log loss (identity / Platt / temperature / unregularized isotonic / min-bin-40 isotonic). 2026 still uses the frozen live isotonic artifact. 2025 reconstructed through that artifact is in-sample and is appendix-only.",
         "",
         f"PR #41 health overlap on 2026: joined={payload['health_overlap'].get('joined')}, max |Δp|={_fmt(payload['health_overlap'].get('max_abs_prob_delta'), 6)}.",
         "",
-        "### Bucket occupancy (OOS)",
+        "### Why 2022 skipped 40–60",
+        "",
+        payload.get("diagnosis")
+        or (
+            "The 2022 hole is a degenerate unregularized PAV isotonic fit on one OOF season (~2021), "
+            "not a 2022 feature bug. Raw 2021 HGB had 272 unique probabilities and 71 games in 40–60; "
+            "forcing sklearn `IsotonicRegression` on those OOF labels collapsed 2022 to 15 unique p-values "
+            "and jumped from plateaus near 0.34/0.37 to 0.64, so no game landed in 40–60. "
+            f"Frozen `{payload['model_version']}` is the same coarseness family: "
+            "31 PAV thresholds, 16 unique y, 17 unique probabilities on 92 2026 games (PR #41). "
+            "More OOF seasons populate 40–60 live (38/92) but still only four unique values in-band on a 99-grid. "
+            "Walk-forward now selects a smoother monotone calibrator when it beats identity on both Brier and log loss. "
+            "Live serving is unchanged."
+        ),
+        "",
+        "PR #43 occupancy under forced unregularized isotonic (before this fix):",
         "",
         "| Season | n | Unique p | Calibrator | 0-20 | 20-30 | 30-40 | 40-60 | 60-70 | 70-80 | 80+ |",
         "| ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
     ]
-    for row in occupancy:
-        counts = row.get("buckets") or {}
-        lines.append(
-            "| {season} | {n} | {unique} | {mode} | {a} | {b} | {c} | {d} | {e} | {f} | {g} |".format(
-                season=row.get("season"),
-                n=row.get("n"),
-                unique=row.get("unique_probabilities"),
-                mode=row.get("calibration_mode"),
-                a=counts.get("0-20", 0),
-                b=counts.get("20-30", 0),
-                c=counts.get("30-40", 0),
-                d=counts.get("40-60", 0),
-                e=counts.get("60-70", 0),
-                f=counts.get("70-80", 0),
-                g=counts.get("80+", 0),
-            )
-        )
+    for row in payload.get("pav_occupancy") or payload["meta"].get("pav_walk_forward_occupancy") or []:
+        lines.append(_occupancy_row(row))
     lines.extend(
         [
-        "",
-        "2022 walk-forward isotonic **never emitted a probability in 40–60** (0 of 271 games). Q1 therefore has no 2022 season. The same coarseness shows up live: PR #41 counted 17 unique 2026 probabilities. 2021 tails (0–20 / 20–30) exist only because that year could not fit OOF isotonic.",
+            "",
+            "### Bucket occupancy (OOS, selected calibrator)",
+            "",
+            "| Season | n | Unique p | Calibrator | 0-20 | 20-30 | 30-40 | 40-60 | 60-70 | 70-80 | 80+ |",
+            "| ---: | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+        ]
+    )
+    for row in occupancy:
+        lines.append(_occupancy_row(row))
+    frozen_map = payload.get("frozen_isotonic_map") or payload["meta"].get("frozen_isotonic_map") or {}
+    fit_rows = payload.get("walk_forward_fits") or payload["meta"].get("walk_forward_fits") or []
+    lines.extend(
+        [
+            "",
+            (
+                f"Frozen `{frozen_map.get('model_version', payload['model_version'])}` isotonic map: "
+                f"{frozen_map.get('n_thresholds')} PAV thresholds, {frozen_map.get('unique_y')} unique y, "
+                f"{frozen_map.get('grid_unique_probabilities')} unique values on a 99-grid, "
+                f"{frozen_map.get('grid_40_60_unique')} unique in 40–60, "
+                f"largest jump { _fmt(frozen_map.get('largest_jump'), 3) }."
+            ),
+            "",
+        ]
+    )
+    if fit_rows:
+        lines.extend(
+            [
+                "Walk-forward calibrator selection (prior seasons only; does not rewrite the live joblib):",
+                "",
+                "| Test season | Selected | OOF unique raw p | OOF unique calibrated p | Reason |",
+                "| ---: | --- | ---: | ---: | --- |",
+            ]
+        )
+        for row in fit_rows:
+            selection = row.get("calibrator_selection") or {}
+            lines.append(
+                f"| {row.get('test_season')} | {row.get('calibration')} | {row.get('oof_unique_raw')} | "
+                f"{row.get('oof_unique_calibrated')} | {selection.get('reason', row.get('calibration_mode'))} |"
+            )
+        lines.extend(["", "Candidate OOS deltas vs identity (negative is better):", ""])
+        for row in fit_rows:
+            candidates = (row.get("calibrator_selection") or {}).get("candidates") or []
+            if not candidates:
+                continue
+            lines.extend(
+                [
+                    f"#### {row.get('test_season')}",
+                    "",
+                    "| Method | Folds | Brier | Δ Brier | Log loss | Δ Log loss | Unique p |",
+                    "| --- | ---: | ---: | ---: | ---: | ---: | ---: |",
+                ]
+            )
+            for candidate in candidates:
+                lines.append(
+                    f"| {candidate.get('method')} | {candidate.get('folds', 'n/a')} | "
+                    f"{_fmt(candidate.get('brier'), 4)} | {_fmt(candidate.get('delta_brier'), 4)} | "
+                    f"{_fmt(candidate.get('log_loss'), 4)} | {_fmt(candidate.get('delta_log_loss'), 4)} | "
+                    f"{candidate.get('unique_probabilities', 'n/a')} |"
+                )
+            lines.append("")
+    lines.extend(
+        [
         "",
         "## Prices and vig",
         "",
@@ -496,7 +598,14 @@ def render_report(
             "",
             "## In-sample 2025 (not an edge)",
             "",
-            "Frozen `nfl-v2-live-20260906` scored on 2025 REG. Trained through 2025. Do not read ROI here as a tradable rule. The in-sample toss-up dog ML printed **+46%**; the same rule is **−4.1%** out of sample. That is the reason this appendix exists.",
+            (
+                "Frozen `nfl-v2-live-20260906` scored on 2025 REG. Trained through 2025. "
+                "Do not read ROI here as a tradable rule. The in-sample toss-up dog ML printed "
+                f"**{_fmt_pct(next((row.get('roi') for row in (payload.get('in_sample_2025_rules') or []) if row.get('rule_id') == 'q1_toss_up_book_dog_ml'), None))}**; "
+                "the same rule is "
+                f"**{_fmt_pct(next((row.get('roi') for row in (payload.get('oos_rules') or []) if row.get('rule_id') == 'q1_toss_up_book_dog_ml'), None))}** "
+                "out of sample. That is the reason this appendix exists."
+            ),
             "",
             *_table(
                 [
@@ -510,8 +619,8 @@ def render_report(
             "## Method",
             "",
             "1. Build the leakage-safe v2 feature store from nflverse schedules + PBP (same path as Daily / PR #41).",
-            "2. For each season 2021–2025: fit the live specs (`hgb_small`, `ridge_a50`, isotonic) on **prior seasons only** via `fit_production_shadow_bundle`. Predict that season pregame. 2021 has only 2020, so no OOF isotonic.",
-            "3. 2026: reconstruct the frozen live artifact. That is the production model, trained through 2025.",
+            "2. For each season 2021–2025: fit `hgb_small` + `ridge_a50` on **prior seasons only**. Collect rolling OOF raw HGB probabilities, then pick among identity / Platt / temperature / unregularized isotonic / `isotonic_min_bin_40` by expanding-group OOS Brier **and** log loss. A method must beat identity on both; otherwise raw probabilities stay. 2021 has only 2020, so no OOF calibrator.",
+            "3. 2026: reconstruct the frozen live artifact (`isotonic`). That is the production model, trained through 2025. This run does not rewrite `nfl_v2_live.joblib` or serving.",
             "4. Grade flat 1u bets. Bootstrap 2000 resamples of per-bet units (pushes excluded from ROI denominator). Seed 20261019.",
             "5. No live serving writes. `predict_live_games` is untouched.",
             "",
@@ -614,6 +723,8 @@ def export_games(frame: pd.DataFrame, path: Path) -> None:
             "trained_through",
             "calibration",
             "calibration_mode",
+            "oof_unique_raw",
+            "oof_unique_calibrated",
             "prediction_source",
             "sample_kind",
         )
@@ -643,8 +754,11 @@ def main() -> None:
             "probability": frames["meta"]["live_specs"].get("probability_candidate"),
             "margin": frames["meta"]["live_specs"].get("margin_candidate"),
             "calibration": frames["meta"]["live_specs"].get("calibration_method"),
+            "walk_forward_calibration": args.calibration_method,
             "trained_through_live": frames["meta"]["live_specs"].get("trained_through"),
         }
+        frames["meta"]["frozen_isotonic_map"] = frozen_isotonic_map_diagnostics()
+        frames["meta"]["pav_walk_forward_occupancy"] = list(PAV_WALK_FORWARD_OCCUPANCY)
     else:
         seasons = list(range(args.start_season, args.end_season + 1))
         schedules = load_schedules(seasons)
@@ -681,6 +795,9 @@ def main() -> None:
         "best_looking": best,
         "best_looking_n200": best_large,
         "occupancy": occupancy,
+        "pav_occupancy": frames["meta"].get("pav_walk_forward_occupancy") or list(PAV_WALK_FORWARD_OCCUPANCY),
+        "frozen_isotonic_map": frames["meta"].get("frozen_isotonic_map") or frozen_isotonic_map_diagnostics(),
+        "walk_forward_fits": frames["meta"].get("walk_forward_fits") or [],
         "alters_live_predictions": False,
     }
     payload["headline"] = headline_answers(oos_rules)
