@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,11 @@ from src.models.nfl_v2 import FEATURE_COLUMNS, audit_nfl_feature_store, build_nf
 
 LIVE_MODEL_VERSION = "nfl-v2-live-20260906"
 DEFAULT_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_live.joblib"
+DEFAULT_POSTHOC_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_posthoc_calibration.json"
+POSTHOC_CALIBRATION_ENV = "NFL_V2_POSTHOC_CALIBRATION"
+# Default-off rollback: the frozen 20260906 path stays live unless this is
+# explicitly enabled after a walk-forward health check ships a calibrator.
+POSTHOC_DISABLE_ENV = "NFL_V2_DISABLE_POSTHOC_CALIBRATION"
 
 
 def load_live_artifact(path: Path = DEFAULT_ARTIFACT) -> dict[str, Any]:
@@ -33,6 +39,48 @@ def load_live_artifact(path: Path = DEFAULT_ARTIFACT) -> dict[str, Any]:
     if list(artifact["feature_columns"]) != FEATURE_COLUMNS:
         raise ValueError("NFL v2 artifact feature contract does not match runtime FEATURE_COLUMNS.")
     return artifact
+
+
+def posthoc_calibration_enabled(env: dict[str, str] | None = None) -> bool:
+    source = env if env is not None else os.environ
+    disable = str(source.get(POSTHOC_DISABLE_ENV, "")).strip().lower()
+    if disable in {"1", "true", "on", "yes"}:
+        return False
+    enabled = str(source.get(POSTHOC_CALIBRATION_ENV, "")).strip().lower()
+    return enabled in {"1", "true", "on", "yes"}
+
+
+def load_posthoc_artifact(path: Path = DEFAULT_POSTHOC_ARTIFACT) -> dict[str, Any]:
+    if not path.exists():
+        raise FileNotFoundError(f"NFL v2 post-hoc calibration artifact is missing: {path}")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict) or not payload.get("enabled"):
+        raise ValueError("NFL v2 post-hoc calibration artifact is missing or not enabled.")
+    if payload.get("base_model_version") != LIVE_MODEL_VERSION:
+        raise ValueError(
+            f"Post-hoc artifact base version {payload.get('base_model_version')!r} "
+            f"does not match {LIVE_MODEL_VERSION!r}."
+        )
+    return payload
+
+
+def apply_posthoc_calibration(
+    probability: np.ndarray,
+    margin: np.ndarray,
+    payload: dict[str, Any],
+    *,
+    market_probability: np.ndarray | None = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    from src.models.nfl_recalibration import calibrators_from_artifact
+
+    prob_calibrator, margin_calibrator = calibrators_from_artifact(payload)
+    calibrated_probability = prob_calibrator.transform(probability, market_probability)
+    calibrated_margin = margin_calibrator.transform(margin)
+    if not np.isfinite(calibrated_probability).all() or not np.isfinite(calibrated_margin).all():
+        raise ValueError("NFL v2 post-hoc calibration produced non-finite predictions.")
+    if ((calibrated_probability <= 0) | (calibrated_probability >= 1)).any():
+        raise ValueError("NFL v2 post-hoc calibration produced probabilities outside the open unit interval.")
+    return np.asarray(calibrated_probability, dtype=float), np.asarray(calibrated_margin, dtype=float)
 
 
 def _row_hash(row: pd.Series, artifact: dict[str, Any]) -> str:
@@ -87,6 +135,14 @@ def predict_live_games(
         raise ValueError("NFL v2 produced non-finite predictions.")
     if ((probability <= 0) | (probability >= 1)).any():
         raise ValueError("NFL v2 produced probabilities outside the open unit interval.")
+    if posthoc_calibration_enabled():
+        posthoc = load_posthoc_artifact()
+        market = None
+        if "closing_market_home_prob" in targets.columns:
+            market_series = pd.to_numeric(targets["closing_market_home_prob"], errors="coerce")
+            if market_series.notna().all():
+                market = market_series.to_numpy(dtype=float)
+        probability, margin = apply_posthoc_calibration(probability, margin, posthoc, market_probability=market)
 
     output = targets[["game_id", "season", "week", "game_date", "home_team", "away_team"]].copy()
     output = output.rename(columns={"week": "season_week"})
