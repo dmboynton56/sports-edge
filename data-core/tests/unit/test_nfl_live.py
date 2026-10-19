@@ -54,6 +54,15 @@ def _stats() -> pd.DataFrame:
     )
 
 
+def test_live_prediction_keeps_frozen_outputs_when_posthoc_flag_is_off(tmp_path, monkeypatch):
+    monkeypatch.delenv("NFL_V2_POSTHOC_CALIBRATION", raising=False)
+    artifact = tmp_path / "model.joblib"
+    _artifact(artifact)
+    result = predict_live_games(_schedules(), _stats(), ["live"], artifact_path=artifact)
+    assert result.iloc[0]["home_win_probability"] == pytest.approx(0.6)
+    assert result.iloc[0]["predicted_spread"] == pytest.approx(-3.5)
+
+
 def test_live_prediction_uses_betting_spread_convention_and_lineage(tmp_path):
     artifact = tmp_path / "model.joblib"
     _artifact(artifact)
