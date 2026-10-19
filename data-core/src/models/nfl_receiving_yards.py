@@ -222,14 +222,16 @@ def build_feature_frame(
 
     stats = _attach_schedule(_prepare_player_games(player_games), schedule)
     team_games = _team_volume(player_games, schedule)
-    team_games["rolling_team_pass_attempts"] = _lagged_rolling(team_games, "team_pass_attempts", 5, group="team")
-    team_games["rolling_team_plays"] = team_games.groupby("team", sort=False)["team_pass_attempts"].transform(
-        lambda values: values.shift(1).rolling(5, min_periods=1).mean()
-    ) + team_games.groupby("team", sort=False)["team_carries"].transform(
-        lambda values: values.shift(1).rolling(5, min_periods=1).mean()
-    )
     stats = stats.merge(
-        team_games[["game_id", "team", "team_pass_attempts", "rolling_team_pass_attempts", "rolling_team_plays"]],
+        team_games[
+            [
+                "game_id",
+                "team",
+                "team_pass_attempts",
+                "rolling_team_pass_attempts",
+                "rolling_team_plays",
+            ]
+        ],
         on=["game_id", "team"],
         how="left",
     )
@@ -257,14 +259,22 @@ def build_feature_frame(
         for margin, total, is_home in zip(stats["predicted_margin"], stats["closing_total"], stats["is_home"])
     ]
     stats["implied_team_points"] = pd.to_numeric(stats["implied_team_points"], errors="coerce")
-    team_points = np.where(
-        stats["is_home"].eq(1),
-        pd.to_numeric(stats.get("home_score"), errors="coerce"),
-        pd.to_numeric(stats.get("away_score"), errors="coerce"),
-    )
     if "home_score" in stats.columns:
-        stats["_team_points_actual"] = team_points
-        stats["rolling_team_points"] = _lagged_rolling(stats, "_team_points_actual", 5, group="team")
+        team_points = stats.drop_duplicates(["game_id", "team"]).copy()
+        team_points["_team_points_actual"] = np.where(
+            team_points["is_home"].eq(1),
+            pd.to_numeric(team_points.get("home_score"), errors="coerce"),
+            pd.to_numeric(team_points.get("away_score"), errors="coerce"),
+        )
+        team_points = team_points.sort_values(["team", "game_date", "game_id"])
+        team_points["rolling_team_points"] = _lagged_rolling(
+            team_points, "_team_points_actual", 5, group="team"
+        )
+        stats = stats.merge(
+            team_points[["game_id", "team", "rolling_team_points"]],
+            on=["game_id", "team"],
+            how="left",
+        )
     else:
         stats["rolling_team_points"] = np.nan
     return stats

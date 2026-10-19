@@ -101,7 +101,7 @@ ROI/CLV on historical lines: **not run** (small-sample label in the prototype me
 
 `data-core/src/models/nfl_receiving_yards.py` + `data-core/scripts/nfl_receiving_yards_prototype.py`
 
-- WR/TE/RB only. Features lagged (`shift(1)` before rolling). QB attempts feed team pass volume.
+- WR/TE/RB only. Features lagged (`shift(1)` before rolling), including team points at **team-game** grain so same-game teammate order cannot leak. QB attempts feed team pass volume.
 - Mean: `expected_targets = expected_team_pass_attempts × shrunk target share`; `mu = expected_targets × shrunk YPT`. Team pass volume scales lagged attempts by implied team points from **v2 margin + nflverse closing total**.
 - Distribution: negative binomial, `var = mu + α mu²`. `α` fit on prior seasons only (≈0.60).
 - Baseline: player's season-to-date receiving yards (then career / 5-game roll).

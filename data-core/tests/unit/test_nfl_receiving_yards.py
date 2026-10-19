@@ -51,6 +51,29 @@ def test_feature_frame_lags_yards_before_the_next_game():
     assert week3["implied_team_points"] == pytest.approx(21.5)
 
 
+def test_rolling_team_points_is_lagged_at_team_grain_not_teammate_order():
+    stats = pd.DataFrame(
+        [
+            {"game_id": "g1", "season": 2022, "week": 1, "player_id": "p1", "player_display_name": "A", "position": "WR", "team": "DEN", "opponent_team": "KC", "targets": 8, "receiving_yards": 80, "receptions": 5, "attempts": 0, "carries": 0, "target_share": 0.25, "offense_pct": 0.9},
+            {"game_id": "g1", "season": 2022, "week": 1, "player_id": "p2", "player_display_name": "B", "position": "WR", "team": "DEN", "opponent_team": "KC", "targets": 6, "receiving_yards": 40, "receptions": 4, "attempts": 0, "carries": 0, "target_share": 0.18, "offense_pct": 0.8},
+            {"game_id": "g2", "season": 2022, "week": 2, "player_id": "p1", "player_display_name": "A", "position": "WR", "team": "DEN", "opponent_team": "KC", "targets": 7, "receiving_yards": 60, "receptions": 4, "attempts": 0, "carries": 0, "target_share": 0.22, "offense_pct": 0.9},
+            {"game_id": "g2", "season": 2022, "week": 2, "player_id": "p2", "player_display_name": "B", "position": "WR", "team": "DEN", "opponent_team": "KC", "targets": 5, "receiving_yards": 30, "receptions": 3, "attempts": 0, "carries": 0, "target_share": 0.16, "offense_pct": 0.75},
+        ]
+    )
+    schedule = pd.DataFrame(
+        [
+            {"game_id": "g1", "gameday": date(2022, 9, 11), "home_team": "DEN", "away_team": "KC", "home_score": 27, "away_score": 17, "predicted_margin": 3, "closing_total": 44},
+            {"game_id": "g2", "gameday": date(2022, 9, 18), "home_team": "DEN", "away_team": "KC", "home_score": 20, "away_score": 17, "predicted_margin": 3, "closing_total": 41},
+        ]
+    )
+    features = build_feature_frame(stats, schedule)
+    week1 = features[features["game_id"].eq("g1")]
+    week2 = features[features["game_id"].eq("g2")]
+    assert week1["rolling_team_points"].isna().all()
+    assert week2["rolling_team_points"].nunique() == 1
+    assert week2["rolling_team_points"].iloc[0] == pytest.approx(27.0)
+
+
 def test_opportunity_model_shrinks_extreme_ypt_toward_position_prior():
     rows = []
     for week in range(1, 12):

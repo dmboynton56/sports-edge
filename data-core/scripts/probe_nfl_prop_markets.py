@@ -174,12 +174,13 @@ def probe_propline(client: PropLineClient) -> dict[str, Any]:
                 event_summaries.append(summarize_event_odds(odds))
 
     history = {"attempted": False, "redacted": None, "notes": "no completed event sampled"}
+    history_payload: Any = None
     completed = [row for row in scores if row.get("completed") or str(row.get("status") or "").lower() in {"final", "completed"}]
     if completed:
         event_id = str(completed[0].get("id") or completed[0].get("event_id"))
         history["attempted"] = True
         try:
-            payload = client.get(
+            history_payload = client.get(
                 f"/sports/{SPORT}/events/{event_id}/odds/history",
                 {"markets": "player_reception_yds"},
             )
@@ -192,15 +193,15 @@ def probe_propline(client: PropLineClient) -> dict[str, Any]:
                     notes="receiving yards only",
                 )
             )
-            history["redacted"] = bool(payload.get("redacted")) if isinstance(payload, dict) else False
+            history["redacted"] = bool(history_payload.get("redacted")) if isinstance(history_payload, dict) else False
             history["notes"] = (
                 "Free/demo history is structure-only when redacted=true. Paid tiers keep 30–365 days; "
                 "the CSV archive starts April 2026 and NFL grading starts 2026."
             )
-            if isinstance(payload, dict):
-                history["keys"] = sorted(payload.keys())
-                history["bookmaker_count"] = len(payload.get("bookmakers") or [])
-                history["has_upgrade_url"] = bool(payload.get("upgrade_url"))
+            if isinstance(history_payload, dict):
+                history["keys"] = sorted(history_payload.keys())
+                history["bookmaker_count"] = len(history_payload.get("bookmakers") or [])
+                history["has_upgrade_url"] = bool(history_payload.get("upgrade_url"))
         except PropLineError as exc:
             history["notes"] = str(exc)
             calls.append(
@@ -233,13 +234,14 @@ def probe_propline(client: PropLineClient) -> dict[str, Any]:
                 history["home_team"] = closing.get("home_team")
                 history["away_team"] = closing.get("away_team")
                 history["commence_time"] = closing.get("commence_time")
-                sample_payload = closing
-                sample = compact_closing_rows(sample_payload, market="player_reception_yds")
-                if not sample:
-                    sample = compact_closing_rows(payload, market="player_reception_yds")
-                    history["closing_sample_source"] = "odds_history_last_tick"
-                else:
-                    history["closing_sample_source"] = "odds_closing"
+                sample = compact_closing_rows(closing, market="player_reception_yds")
+                source = "odds_closing" if sample else "empty"
+                if not sample and isinstance(history_payload, dict):
+                    history_sample = compact_closing_rows(history_payload, market="player_reception_yds")
+                    if history_sample:
+                        sample = history_sample
+                        source = "odds_history_last_tick"
+                history["closing_sample_source"] = source
                 history["closing_sample"] = sample
                 history["closing_sample_rows"] = len(sample)
         except PropLineError as exc:
