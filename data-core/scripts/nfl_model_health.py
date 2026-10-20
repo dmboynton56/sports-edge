@@ -44,7 +44,7 @@ from src.models.nfl_health import (
     segmented_health,
     staleness_report,
 )
-from src.models.nfl_live import DEFAULT_POSTHOC_ARTIFACT, LIVE_MODEL_VERSION, load_live_artifact
+from src.models.nfl_live import DEFAULT_POSTHOC_ARTIFACT, LIVE_MODEL_VERSION, load_live_artifact, score_live_features
 from src.models.nfl_recalibration import (
     evaluate_margin_method,
     evaluate_probability_method,
@@ -188,13 +188,11 @@ def reconstruct_live(seasons: list[int], model_version: str) -> pd.DataFrame:
     if needed.isna().any().any():
         missing = needed.isna().sum()
         raise SystemExit(f"Missing live features: {missing[missing > 0].to_dict()}")
-    probability = np.asarray(artifact["probability_model"].predict_probability(scorable), dtype=float)
-    margin = np.asarray(artifact["margin_model"].predict_margin(scorable), dtype=float)
-    features = scorable
-    features = features.copy()
-    features["reconstructed_home_win_prob"] = probability
-    features["reconstructed_margin"] = margin
-    features["reconstructed_spread"] = -margin
+    scored = score_live_features(artifact, scorable)
+    features = scorable.copy()
+    features["reconstructed_home_win_prob"] = scored["home_win_probability"]
+    features["reconstructed_margin"] = scored["predicted_margin"]
+    features["reconstructed_spread"] = scored["predicted_spread"]
     meta_cols = [
         col
         for col in (
@@ -710,7 +708,7 @@ def render_report(report: dict[str, Any], scored: pd.DataFrame, chart_paths: lis
         "",
         "Temperature, Platt, extra isotonic, and market-shrink all failed the Brier+log-loss gate. Margin scale/affine can trim OOS MAE; that is not enough to ship without a probability win.",
         "",
-        "Code for those transforms lives behind `NFL_V2_POSTHOC_CALIBRATION` (default **off**). Rollback if a later run ships: `NFL_V2_DISABLE_POSTHOC_CALIBRATION=1`. Live Daily Refresh still publishes frozen `nfl-v2-live-20260906` outputs.",
+        "Code for those transforms lives behind `NFL_V2_POSTHOC_CALIBRATION` (default **off**). Rollback if a later run ships: `NFL_V2_DISABLE_POSTHOC_CALIBRATION=1`. Live Daily Refresh publishes `nfl-v2-live-20261020` (`Phi(-spread/σ)`); HGB/ridge stay the 20260906 pickle.",
         "",
         live_change["description"],
         "",
@@ -791,7 +789,7 @@ def main() -> None:
     decision = calibration["decision"]
     live_impact = {
         "alters_live_predictions": False,
-        "description": "No serving change. `predict_live_games` still emits the frozen 20260906 isotonic/ridge outputs unless `NFL_V2_POSTHOC_CALIBRATION` is explicitly enabled *and* a shipped artifact exists.",
+        "description": "No serving change. `predict_live_games` still emits frozen ridge spreads and margin-normal win probability (`nfl-v2-live-20261020`) unless `NFL_V2_POSTHOC_CALIBRATION` is explicitly enabled *and* a shipped artifact exists.",
     }
     if write_posthoc and decision.get("ship"):
         payload = fit_production_calibrators(completed, decision["probability_method"], decision["margin_method"])

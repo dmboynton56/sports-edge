@@ -20,7 +20,8 @@ from src.models.nfl_v2 import FEATURE_COLUMNS, audit_nfl_feature_store, build_nf
 LOGGER = logging.getLogger("nfl_live")
 
 PARENT_LIVE_MODEL_VERSION = "nfl-v2-live-20260906"
-# Frozen HGB/ridge stay 20260906. Live win prob is Phi(-spread/sigma).
+# Frozen HGB/ridge pickle stays 20260906. load_live_artifact stamps this live
+# version and attaches Phi(-spread/sigma) from the win_prob sidecar.
 LIVE_MODEL_VERSION = "nfl-v2-live-20261020"
 LIVE_VERSION_ENV = "NFL_V2_LIVE_VERSION"
 DEFAULT_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_live.joblib"
@@ -44,6 +45,47 @@ def artifact_path_for_version(version: str, *, default: Path = DEFAULT_ARTIFACT)
     return default
 
 
+def _is_default_live_path(path: Path) -> bool:
+    resolved = path.resolve()
+    return resolved in {DEFAULT_ARTIFACT.resolve(), LEGACY_ARTIFACT.resolve()}
+
+
+def apply_live_serving_stamp(
+    artifact: dict[str, Any],
+    *,
+    expected: str,
+    sidecar: bool,
+) -> dict[str, Any]:
+    """Align pickle metadata with the live serving version without retraining.
+
+    The joblib still contains frozen 20260906 HGB/ridge. Live win prob lives in
+    ``win_prob`` / the sidecar. Health checks and publishers read model_version.
+    """
+    from src.models.nfl_margin_probability import load_win_prob_sidecar
+
+    pickle_version = str(artifact.get("model_version"))
+    if sidecar:
+        payload = dict(artifact.get("win_prob") or {}) or load_win_prob_sidecar()
+        if payload:
+            artifact["win_prob"] = dict(payload)
+    if expected == PARENT_LIVE_MODEL_VERSION:
+        artifact["model_version"] = PARENT_LIVE_MODEL_VERSION
+        if isinstance(artifact.get("win_prob"), dict):
+            artifact["win_prob"] = {**artifact["win_prob"], "method": "isotonic"}
+        return artifact
+    if expected == LIVE_MODEL_VERSION:
+        method = str((artifact.get("win_prob") or {}).get("method") or "")
+        if sidecar and method != "margin_normal":
+            raise ValueError(
+                "Live serving stamp requires win_prob.method='margin_normal' "
+                f"from the sidecar; got {method!r}."
+            )
+        if pickle_version == PARENT_LIVE_MODEL_VERSION:
+            artifact["parent_model_version"] = artifact.get("parent_model_version") or pickle_version
+        artifact["model_version"] = LIVE_MODEL_VERSION
+    return artifact
+
+
 def load_live_artifact(
     path: Path | None = None,
     *,
@@ -65,7 +107,11 @@ def load_live_artifact(
         )
     if list(artifact["feature_columns"]) != FEATURE_COLUMNS:
         raise ValueError("NFL v2 artifact feature contract does not match runtime FEATURE_COLUMNS.")
-    return artifact
+    return apply_live_serving_stamp(
+        artifact,
+        expected=expected,
+        sidecar=_is_default_live_path(resolved),
+    )
 
 
 def posthoc_calibration_enabled(env: dict[str, str] | None = None) -> bool:
@@ -124,6 +170,81 @@ def _row_hash(row: pd.Series, artifact: dict[str, Any]) -> str:
     return sha256(json.dumps(payload, separators=(",", ":"), sort_keys=True).encode()).hexdigest()
 
 
+def score_live_features(
+    artifact: Mapping[str, Any],
+    frame: pd.DataFrame,
+    *,
+    env: Mapping[str, str] | None = None,
+) -> dict[str, np.ndarray]:
+    """Score a feature frame with the same win-prob path Daily Refresh publishes."""
+    classifier_probability = np.asarray(artifact["probability_model"].predict_probability(frame), dtype=float)
+    margin = np.asarray(artifact["margin_model"].predict_margin(frame), dtype=float)
+    if not np.isfinite(classifier_probability).all() or not np.isfinite(margin).all():
+        raise ValueError("NFL v2 produced non-finite predictions.")
+    if ((classifier_probability <= 0) | (classifier_probability >= 1)).any():
+        raise ValueError("NFL v2 produced probabilities outside the open unit interval.")
+    if posthoc_calibration_enabled(dict(env) if env is not None else None):
+        posthoc = load_posthoc_artifact()
+        market = None
+        if "closing_market_home_prob" in frame.columns:
+            market_series = pd.to_numeric(frame["closing_market_home_prob"], errors="coerce")
+            if market_series.notna().all():
+                market = market_series.to_numpy(dtype=float)
+        classifier_probability, margin = apply_posthoc_calibration(
+            classifier_probability, margin, posthoc, market_probability=market
+        )
+
+    from src.models.nfl_margin_probability import (
+        choose_published_probability,
+        classifier_raw_probability,
+        logit,
+        reconcile_published_probability,
+        win_prob_config_from_artifact,
+    )
+
+    win_prob = win_prob_config_from_artifact(artifact, sidecar=False)
+    if resolved_live_model_version(env) == PARENT_LIVE_MODEL_VERSION:
+        win_prob["method"] = "isotonic"
+    try:
+        raw_logit = logit(classifier_raw_probability(artifact, frame))
+    except Exception:  # noqa: BLE001
+        raw_logit = logit(classifier_probability)
+    probability, margin_probability = choose_published_probability(
+        classifier_p=classifier_probability,
+        margin=margin,
+        method=str(win_prob["method"]),
+        sigma=float(win_prob["residual_sigma"]),
+        blend=win_prob["blend"],
+        classifier_logit=raw_logit,
+    )
+    game_ids = frame["game_id"].astype(str).tolist() if "game_id" in frame.columns else None
+    probability, reconciled = reconcile_published_probability(
+        probability,
+        margin,
+        margin_probability,
+        game_ids=game_ids,
+        log=True,
+    )
+    if not np.isfinite(probability).all():
+        raise ValueError("NFL v2 published win probability is non-finite.")
+    if ((probability <= 0) | (probability >= 1)).any():
+        raise ValueError("NFL v2 published win probability is outside the open unit interval.")
+    if reconciled.any():
+        LOGGER.warning(
+            "NFL live serving fell back to margin-implied p on %s game(s).",
+            int(reconciled.sum()),
+        )
+    return {
+        "home_win_probability": probability,
+        "home_win_probability_classifier": classifier_probability,
+        "home_win_probability_margin": margin_probability,
+        "predicted_margin": margin,
+        "predicted_spread": -margin,
+        "win_prob_method": np.array([str(win_prob["method"])] * len(frame), dtype=object),
+        "win_prob_reconciled": reconciled,
+    }
+
+
 def predict_live_games(
     schedules: pd.DataFrame,
     team_game_stats: pd.DataFrame,
@@ -162,82 +283,22 @@ def predict_live_games(
         missing = targets[FEATURE_COLUMNS].isna().sum()
         raise ValueError(f"NFL v2 live features contain missing values: {missing[missing > 0].to_dict()}")
 
-    classifier_probability = np.asarray(artifact["probability_model"].predict_probability(targets), dtype=float)
-    margin = np.asarray(artifact["margin_model"].predict_margin(targets), dtype=float)
-    if not np.isfinite(classifier_probability).all() or not np.isfinite(margin).all():
-        raise ValueError("NFL v2 produced non-finite predictions.")
-    if ((classifier_probability <= 0) | (classifier_probability >= 1)).any():
-        raise ValueError("NFL v2 produced probabilities outside the open unit interval.")
-    if posthoc_calibration_enabled():
-        posthoc = load_posthoc_artifact()
-        market = None
-        if "closing_market_home_prob" in targets.columns:
-            market_series = pd.to_numeric(targets["closing_market_home_prob"], errors="coerce")
-            if market_series.notna().all():
-                market = market_series.to_numpy(dtype=float)
-        classifier_probability, margin = apply_posthoc_calibration(
-            classifier_probability, margin, posthoc, market_probability=market
-        )
-
-    from src.models.nfl_margin_probability import (
-        choose_published_probability,
-        classifier_raw_probability,
-        logit,
-        reconcile_published_probability,
-        win_prob_config_from_artifact,
-    )
-
-    resolved_path = Path(artifact_path) if artifact_path is not None else artifact_path_for_version(
-        resolved_live_model_version()
-    )
-    use_sidecar = resolved_path in {DEFAULT_ARTIFACT, LEGACY_ARTIFACT}
-    win_prob = win_prob_config_from_artifact(artifact, sidecar=use_sidecar)
-    if resolved_live_model_version() == PARENT_LIVE_MODEL_VERSION:
-        win_prob["method"] = "isotonic"
-    try:
-        raw_logit = logit(classifier_raw_probability(artifact, targets))
-    except Exception:  # noqa: BLE001
-        raw_logit = logit(classifier_probability)
-    probability, margin_probability = choose_published_probability(
-        classifier_p=classifier_probability,
-        margin=margin,
-        method=str(win_prob["method"]),
-        sigma=float(win_prob["residual_sigma"]),
-        blend=win_prob["blend"],
-        classifier_logit=raw_logit,
-    )
-    probability, reconciled = reconcile_published_probability(
-        probability,
-        margin,
-        margin_probability,
-        game_ids=targets["game_id"].astype(str).tolist(),
-        log=True,
-    )
-    if not np.isfinite(probability).all():
-        raise ValueError("NFL v2 published win probability is non-finite.")
-    if ((probability <= 0) | (probability >= 1)).any():
-        raise ValueError("NFL v2 published win probability is outside the open unit interval.")
-    if reconciled.any():
-        LOGGER.warning(
-            "NFL live serving fell back to margin-implied p on %s game(s).",
-            int(reconciled.sum()),
-        )
-
+    scored = score_live_features(artifact, targets)
     output = targets[["game_id", "season", "week", "game_date", "home_team", "away_team"]].copy()
     output = output.rename(columns={"week": "season_week"})
-    output["home_win_probability"] = probability
-    output["home_win_probability_classifier"] = classifier_probability
-    output["home_win_probability_margin"] = margin_probability
-    output["win_prob_method"] = str(win_prob["method"])
-    output["win_prob_reconciled"] = reconciled
-    output["is_toss_up"] = [bool(is_nfl_toss_up(value)) for value in probability]
+    output["home_win_probability"] = scored["home_win_probability"]
+    output["home_win_probability_classifier"] = scored["home_win_probability_classifier"]
+    output["home_win_probability_margin"] = scored["home_win_probability_margin"]
+    output["win_prob_method"] = scored["win_prob_method"]
+    output["win_prob_reconciled"] = scored["win_prob_reconciled"]
+    output["is_toss_up"] = [bool(is_nfl_toss_up(value)) for value in output["home_win_probability"]]
     output["moneyline_pick"] = [
         nfl_moneyline_pick(str(row.home_team), str(row.away_team), float(row.home_win_probability))
         for row in output.itertuples(index=False)
     ]
-    output["predicted_margin"] = margin
+    output["predicted_margin"] = scored["predicted_margin"]
     # Existing serving tables use betting-spread convention: negative means
     # the home team is favored, the inverse of predicted home margin.
-    output["predicted_spread"] = -margin
+    output["predicted_spread"] = scored["predicted_spread"]
     output["input_hash"] = targets.apply(lambda row: _row_hash(row, artifact), axis=1).to_numpy()
     return output
