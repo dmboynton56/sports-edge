@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Read-only NFL v2 live forecasts for the upcoming slate.
 
-Uses the frozen ``nfl-v2-live-20260906`` artifact, leakage-safe nflverse
-pregame features, ESPN/Sleeper posted-QB overrides, and free ESPN DK lines.
+Uses the live NFL v2 artifact (frozen HGB/ridge, margin-reconciled win
+probability when shipped), leakage-safe nflverse pregame features, ESPN/Sleeper
+posted-QB overrides, and free ESPN DK lines.
 This is the no-credentials stand-in for Daily Refresh ``refresh_nfl``.
 Does not write BigQuery or Supabase.
 """
@@ -271,6 +272,8 @@ def main() -> None:
         news_row = news_by_game.get(str(row.game_id))
         dk = dk_by_matchup.get((away, home), {})
         home_win = float(row.home_win_probability)
+        old_p = float(getattr(row, "home_win_probability_classifier", home_win))
+        margin_p = getattr(row, "home_win_probability_margin", None)
         model_spread = float(row.predicted_spread)
         dk_spread = dk.get("dk_spread")
         dk_home_pct = dk.get("dk_no_vig_home_pct")
@@ -289,6 +292,10 @@ def main() -> None:
                 ),
                 "model_spread": round(model_spread, 2),
                 "home_win_prob": round(home_win, 4),
+                "home_win_prob_old": round(old_p, 4),
+                "home_win_prob_margin": None if margin_p is None else round(float(margin_p), 4),
+                "win_prob_method": getattr(row, "win_prob_method", None),
+                "win_prob_reconciled": bool(getattr(row, "win_prob_reconciled", False)),
                 "toss_up": bool(is_nfl_toss_up(home_win)),
                 "home_qb": None if news_row is None else news_row.home_starter.name,
                 "away_qb": None if news_row is None else news_row.away_starter.name,
