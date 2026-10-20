@@ -20,8 +20,8 @@ from src.models.nfl_v2 import FEATURE_COLUMNS, audit_nfl_feature_store, build_nf
 LOGGER = logging.getLogger("nfl_live")
 
 PARENT_LIVE_MODEL_VERSION = "nfl-v2-live-20260906"
-# Default stays the frozen isotonic artifact until the margin-winprob gate ships.
-LIVE_MODEL_VERSION = "nfl-v2-live-20260906"
+# Frozen HGB/ridge stay 20260906. Live win prob is Phi(-spread/sigma).
+LIVE_MODEL_VERSION = "nfl-v2-live-20261020"
 LIVE_VERSION_ENV = "NFL_V2_LIVE_VERSION"
 DEFAULT_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_live.joblib"
 LEGACY_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_live_20260906.joblib"
@@ -192,6 +192,8 @@ def predict_live_games(
     )
     use_sidecar = resolved_path in {DEFAULT_ARTIFACT, LEGACY_ARTIFACT}
     win_prob = win_prob_config_from_artifact(artifact, sidecar=use_sidecar)
+    if resolved_live_model_version() == PARENT_LIVE_MODEL_VERSION:
+        win_prob["method"] = "isotonic"
     try:
         raw_logit = logit(classifier_raw_probability(artifact, targets))
     except Exception:  # noqa: BLE001

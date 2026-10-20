@@ -267,7 +267,7 @@ jobs:
           # Keep NBA/NFL artifact dependencies isolated from the MLB runtime.
           .venv-nba-nfl/bin/python -m src.pipeline.refresh_nfl \
             --project "$PROJECT_ID" \
-            --model-version nfl-v2-live-20260906 \
+            --model-version nfl-v2-live-20261020 \
             --start-date "${{ steps.plan.outputs.nfl_forecast_start_date }}" \
             --window-days "${{ steps.plan.outputs.nfl_forecast_window_days }}" \
             --season "${{ steps.plan.outputs.nfl_season }}" \
@@ -414,7 +414,7 @@ jobs:
               --project "$PROJECT_ID" \
               --league NFL \
               --season "${{ steps.plan.outputs.nfl_season }}" \
-              --model-version nfl-v2-live-20260906 \
+              --model-version nfl-v2-live-20261020 \
               --start-date "${{ steps.plan.outputs.nfl_forecast_start_date }}" \
               --window-days "${{ steps.plan.outputs.nfl_forecast_window_days }}"
           fi

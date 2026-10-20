@@ -149,4 +149,4 @@ def test_posthoc_calibration_is_off_unless_explicitly_enabled(monkeypatch):
     assert posthoc_calibration_enabled(
         {"NFL_V2_POSTHOC_CALIBRATION": "on", "NFL_V2_DISABLE_POSTHOC_CALIBRATION": "1"}
     ) is False
-    assert LIVE_MODEL_VERSION == "nfl-v2-live-20260906"
+    assert LIVE_MODEL_VERSION == "nfl-v2-live-20261020"

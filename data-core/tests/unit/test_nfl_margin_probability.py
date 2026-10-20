@@ -182,6 +182,21 @@ def test_live_margin_method_uses_phi_and_drives_toss_up(tmp_path):
     assert result.iloc[0]["win_prob_method"] == "margin_normal"
 
 
+def test_rollback_env_keeps_classifier_p(tmp_path, monkeypatch):
+    monkeypatch.setenv("NFL_V2_LIVE_VERSION", "nfl-v2-live-20260906")
+    artifact = tmp_path / "model.joblib"
+    _artifact(
+        artifact,
+        probability=0.494,
+        margin=7.2,
+        win_prob={"method": "margin_normal", "residual_sigma": 13.21},
+    )
+    result = predict_live_games(_schedules(), _stats(), ["live"], artifact_path=artifact)
+    assert result.iloc[0]["home_win_probability"] == pytest.approx(0.494)
+    assert bool(result.iloc[0]["is_toss_up"])
+    assert result.iloc[0]["win_prob_method"] == "isotonic"
+
+
 def test_live_agreeing_rows_keep_classifier_p(tmp_path):
     artifact = tmp_path / "model.joblib"
     _artifact(artifact, probability=0.6, margin=3.5)

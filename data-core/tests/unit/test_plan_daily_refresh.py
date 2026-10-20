@@ -192,7 +192,7 @@ def test_nfl_predictions_run_midweek_when_upcoming_games_missing(monkeypatch):
             'min_game_date': '2026-10-22',
             'max_game_date': '2026-10-26',
             'stale_hours': 48,
-            'model_version': 'nfl-v2-live-20260906',
+            'model_version': 'nfl-v2-live-20261020',
         },
     )
     plan = plan_daily_refresh.build_plan(
@@ -205,7 +205,7 @@ def test_nfl_predictions_run_midweek_when_upcoming_games_missing(monkeypatch):
     assert plan['run_nfl_predictions'] is True
     assert plan['run_nfl_odds'] is False
     assert plan['run_espn_dk_odds'] is True
-    assert 'no nfl-v2-live-20260906 prediction' in plan['nfl_prediction_reason']
+    assert 'no nfl-v2-live-20261020 prediction' in plan['nfl_prediction_reason']
     assert plan['nfl_missing_predictions'] == 14
 
 
@@ -224,7 +224,7 @@ def test_nfl_predictions_run_when_existing_rows_are_stale(monkeypatch):
             'min_game_date': '2026-10-19',
             'max_game_date': '2026-10-19',
             'stale_hours': 48,
-            'model_version': 'nfl-v2-live-20260906',
+            'model_version': 'nfl-v2-live-20261020',
         },
     )
     plan = plan_daily_refresh.build_plan(
@@ -254,7 +254,7 @@ def test_nfl_predictions_skip_midweek_when_upcoming_rows_are_fresh(monkeypatch):
             'min_game_date': '2026-10-22',
             'max_game_date': '2026-10-26',
             'stale_hours': 48,
-            'model_version': 'nfl-v2-live-20260906',
+            'model_version': 'nfl-v2-live-20261020',
         },
     )
     plan = plan_daily_refresh.build_plan(
@@ -275,7 +275,7 @@ def test_should_run_nfl_predictions_helpers():
         'upcoming_games': 2,
         'missing_count': 2,
         'stale_count': 0,
-        'model_version': 'nfl-v2-live-20260906',
+        'model_version': 'nfl-v2-live-20261020',
         'stale_hours': 48,
     }
     assert plan_daily_refresh.should_run_nfl_predictions(

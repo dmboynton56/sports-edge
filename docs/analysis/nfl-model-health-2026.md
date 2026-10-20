@@ -222,3 +222,41 @@ OOF calibrator selection on seasons through 2025 (negative Δ vs identity is bet
 | temperature | 4 | 0.2272 | -0.0017 | 0.646 | -0.006 | 1086 |
 | isotonic | 4 | 0.2290 | -0.0000 | 0.691 | 0.038 | 59 |
 | isotonic_min_bin_40 | 4 | 0.2284 | -0.0005 | 0.649 | -0.003 | 502 |
+
+## Margin-consistent win probability (2026-10-20)
+
+**Decision: SHIPPED.** ship margin_normal: walk-forward Brier and log loss not clearly worse than frozen isotonic, and sign contradictions outside the toss-up band are 0.
+
+Frozen HGB + ridge stay `nfl-v2-live-20260906`. Win probability candidates: Phi(-spread/σ) with walk-forward OOF residual σ=13.21, and a logistic stack of that p plus the classifier logit. 2026 was never used to fit σ or the stack.
+
+### Walk-forward 2021–2025
+
+| Method | n | Brier | Log loss | ECE | Unique p | Sign contradictions |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| frozen_isotonic | 1359 | 0.2277 | 0.680 | 0.0296 | 331 | 170 |
+| pr45_sigmoid | 1359 | 0.2262 | 0.645 | 0.0376 | 1356 | 104 |
+| margin_normal | 1359 | 0.2257 | 0.644 | 0.0173 | 1359 | 0 |
+| blend | 1359 | 0.2253 | 0.643 | 0.0284 | 1358 | 28 |
+
+pr45_sigmoid vs frozen: Brier Δ 95% CI -0.0045 to 0.0013; log-loss Δ 95% CI -0.075 to -0.006.
+margin_normal vs frozen: Brier Δ 95% CI -0.0081 to 0.0039; log-loss Δ 95% CI -0.079 to -0.002.
+blend vs frozen: Brier Δ 95% CI -0.0069 to 0.0020; log-loss Δ 95% CI -0.077 to -0.005.
+
+### 2026 holdout
+
+| Method | n | Brier | Log loss | ECE | Unique p | Sign contradictions |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| frozen_isotonic | 92 | 0.2414 | 0.677 | 0.0884 | 17 | 3 |
+| pr45_sigmoid | 92 | 0.2412 | 0.674 | 0.0805 | 92 | 3 |
+| margin_normal | 92 | 0.2360 | 0.664 | 0.1172 | 92 | 0 |
+| blend | 92 | 0.2388 | 0.669 | 0.0933 | 92 | 0 |
+
+pr45_sigmoid vs frozen: Brier Δ 95% CI -0.0070 to 0.0066; log-loss Δ 95% CI -0.018 to 0.013.
+margin_normal vs frozen: Brier Δ 95% CI -0.0202 to 0.0095; log-loss Δ 95% CI -0.046 to 0.019.
+blend vs frozen: Brier Δ 95% CI -0.0130 to 0.0080; log-loss Δ 95% CI -0.029 to 0.015.
+
+Sign contradictions count games where p and the model spread disagree on the side outside the ±0.05 toss-up band. The serving guard falls back to the margin-implied p on any remaining disagreement, including if this candidate does not ship.
+
+Live default is now `nfl-v2-live-20261020` with `win_prob.method=margin_normal`.
+
+Rollback: `NFL_V2_LIVE_VERSION=nfl-v2-live-20260906` (loads `data-core/models/nfl_v2_live_20260906.joblib`).
