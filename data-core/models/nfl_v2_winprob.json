@@ -1,0 +1,17 @@
+{
+  "blend": {
+    "coef_classifier_logit": 0.37281441593687986,
+    "coef_margin_p": 2.2386334535786476,
+    "intercept": -1.0528255014696348
+  },
+  "gate": {
+    "reason": "ship margin_normal: walk-forward Brier and log loss not clearly worse than frozen isotonic, and sign contradictions outside the toss-up band are 0",
+    "selected_method": "margin_normal",
+    "ship": true
+  },
+  "guard": "fallback_to_margin_implied_on_sign_contradiction",
+  "method": "margin_normal",
+  "model_version": "nfl-v2-live-20261020",
+  "parent_model_version": "nfl-v2-live-20260906",
+  "residual_sigma": 13.213690747277226
+}

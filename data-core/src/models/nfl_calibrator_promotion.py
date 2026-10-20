@@ -30,13 +30,12 @@ from src.models.nfl_experiment import (
     fit_calibrator,
     select_calibrator_walk_forward,
 )
-from src.models.nfl_live import DEFAULT_ARTIFACT, LIVE_MODEL_VERSION, load_live_artifact
+from src.models.nfl_live import DEFAULT_ARTIFACT, LIVE_MODEL_VERSION, LIVE_VERSION_ENV, load_live_artifact
 from src.models.nfl_toss_up import NFL_TOSS_UP_BAND, is_nfl_toss_up
 from src.models.nfl_v2 import FEATURE_COLUMNS, margin_metrics, probability_metrics, write_json
 
 
 CANDIDATE_LIVE_MODEL_VERSION = "nfl-v2-live-20261019"
-LIVE_VERSION_ENV = "NFL_V2_LIVE_VERSION"
 BOOTSTRAP_SAMPLES = 2000
 BOOTSTRAP_SEED = 20261019
 MAE_ECE_TOLERANCE = 1e-9

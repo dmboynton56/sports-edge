@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from hashlib import sha256
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Any, Mapping
@@ -16,8 +17,14 @@ from src.models.nfl_toss_up import is_nfl_toss_up, nfl_moneyline_pick
 from src.models.nfl_v2 import FEATURE_COLUMNS, audit_nfl_feature_store, build_nfl_feature_store
 
 
-LIVE_MODEL_VERSION = "nfl-v2-live-20260906"
+LOGGER = logging.getLogger("nfl_live")
+
+PARENT_LIVE_MODEL_VERSION = "nfl-v2-live-20260906"
+# Frozen HGB/ridge stay 20260906. Live win prob is Phi(-spread/sigma).
+LIVE_MODEL_VERSION = "nfl-v2-live-20261020"
+LIVE_VERSION_ENV = "NFL_V2_LIVE_VERSION"
 DEFAULT_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_live.joblib"
+LEGACY_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_live_20260906.joblib"
 DEFAULT_POSTHOC_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_posthoc_calibration.json"
 POSTHOC_CALIBRATION_ENV = "NFL_V2_POSTHOC_CALIBRATION"
 # Default-off rollback: the frozen 20260906 path stays live unless this is
@@ -25,17 +32,36 @@ POSTHOC_CALIBRATION_ENV = "NFL_V2_POSTHOC_CALIBRATION"
 POSTHOC_DISABLE_ENV = "NFL_V2_DISABLE_POSTHOC_CALIBRATION"
 
 
-def load_live_artifact(path: Path = DEFAULT_ARTIFACT) -> dict[str, Any]:
-    if not path.exists():
-        raise FileNotFoundError(f"NFL v2 live artifact is missing: {path}")
-    artifact = joblib.load(path)
+def resolved_live_model_version(env: Mapping[str, str] | None = None) -> str:
+    source = env if env is not None else os.environ
+    override = str(source.get(LIVE_VERSION_ENV, "")).strip()
+    return override or LIVE_MODEL_VERSION
+
+
+def artifact_path_for_version(version: str, *, default: Path = DEFAULT_ARTIFACT) -> Path:
+    if version == PARENT_LIVE_MODEL_VERSION and version != LIVE_MODEL_VERSION and LEGACY_ARTIFACT.exists():
+        return LEGACY_ARTIFACT
+    return default
+
+
+def load_live_artifact(
+    path: Path | None = None,
+    *,
+    env: Mapping[str, str] | None = None,
+) -> dict[str, Any]:
+    expected = resolved_live_model_version(env)
+    resolved = Path(path) if path is not None else artifact_path_for_version(expected)
+    if not resolved.exists():
+        raise FileNotFoundError(f"NFL v2 live artifact is missing: {resolved}")
+    artifact = joblib.load(resolved)
     required = {"model_version", "feature_columns", "probability_model", "margin_model", "trained_through"}
     missing = sorted(required - set(artifact))
     if missing:
         raise ValueError(f"NFL v2 live artifact is missing fields: {missing}")
-    if artifact["model_version"] != LIVE_MODEL_VERSION:
+    allowed_versions = {LIVE_MODEL_VERSION, PARENT_LIVE_MODEL_VERSION, expected}
+    if artifact["model_version"] not in allowed_versions:
         raise ValueError(
-            f"NFL v2 artifact version {artifact['model_version']!r} does not match {LIVE_MODEL_VERSION!r}."
+            f"NFL v2 artifact version {artifact['model_version']!r} does not match {sorted(allowed_versions)!r}."
         )
     if list(artifact["feature_columns"]) != FEATURE_COLUMNS:
         raise ValueError("NFL v2 artifact feature contract does not match runtime FEATURE_COLUMNS.")
@@ -103,7 +129,7 @@ def predict_live_games(
     team_game_stats: pd.DataFrame,
     target_game_ids: list[str],
     *,
-    artifact_path: Path = DEFAULT_ARTIFACT,
+    artifact_path: Path | None = None,
     posted_starters: Mapping[tuple[str, str], str] | None = None,
 ) -> pd.DataFrame:
     """Score target games from a chronological schedule containing prior results."""
@@ -136,11 +162,11 @@ def predict_live_games(
         missing = targets[FEATURE_COLUMNS].isna().sum()
         raise ValueError(f"NFL v2 live features contain missing values: {missing[missing > 0].to_dict()}")
 
-    probability = np.asarray(artifact["probability_model"].predict_probability(targets), dtype=float)
+    classifier_probability = np.asarray(artifact["probability_model"].predict_probability(targets), dtype=float)
     margin = np.asarray(artifact["margin_model"].predict_margin(targets), dtype=float)
-    if not np.isfinite(probability).all() or not np.isfinite(margin).all():
+    if not np.isfinite(classifier_probability).all() or not np.isfinite(margin).all():
         raise ValueError("NFL v2 produced non-finite predictions.")
-    if ((probability <= 0) | (probability >= 1)).any():
+    if ((classifier_probability <= 0) | (classifier_probability >= 1)).any():
         raise ValueError("NFL v2 produced probabilities outside the open unit interval.")
     if posthoc_calibration_enabled():
         posthoc = load_posthoc_artifact()
@@ -149,11 +175,61 @@ def predict_live_games(
             market_series = pd.to_numeric(targets["closing_market_home_prob"], errors="coerce")
             if market_series.notna().all():
                 market = market_series.to_numpy(dtype=float)
-        probability, margin = apply_posthoc_calibration(probability, margin, posthoc, market_probability=market)
+        classifier_probability, margin = apply_posthoc_calibration(
+            classifier_probability, margin, posthoc, market_probability=market
+        )
+
+    from src.models.nfl_margin_probability import (
+        choose_published_probability,
+        classifier_raw_probability,
+        logit,
+        reconcile_published_probability,
+        win_prob_config_from_artifact,
+    )
+
+    resolved_path = Path(artifact_path) if artifact_path is not None else artifact_path_for_version(
+        resolved_live_model_version()
+    )
+    use_sidecar = resolved_path in {DEFAULT_ARTIFACT, LEGACY_ARTIFACT}
+    win_prob = win_prob_config_from_artifact(artifact, sidecar=use_sidecar)
+    if resolved_live_model_version() == PARENT_LIVE_MODEL_VERSION:
+        win_prob["method"] = "isotonic"
+    try:
+        raw_logit = logit(classifier_raw_probability(artifact, targets))
+    except Exception:  # noqa: BLE001
+        raw_logit = logit(classifier_probability)
+    probability, margin_probability = choose_published_probability(
+        classifier_p=classifier_probability,
+        margin=margin,
+        method=str(win_prob["method"]),
+        sigma=float(win_prob["residual_sigma"]),
+        blend=win_prob["blend"],
+        classifier_logit=raw_logit,
+    )
+    probability, reconciled = reconcile_published_probability(
+        probability,
+        margin,
+        margin_probability,
+        game_ids=targets["game_id"].astype(str).tolist(),
+        log=True,
+    )
+    if not np.isfinite(probability).all():
+        raise ValueError("NFL v2 published win probability is non-finite.")
+    if ((probability <= 0) | (probability >= 1)).any():
+        raise ValueError("NFL v2 published win probability is outside the open unit interval.")
+    if reconciled.any():
+        LOGGER.warning(
+            "NFL live serving fell back to margin-implied p on %s game(s).",
+            int(reconciled.sum()),
+        )
 
     output = targets[["game_id", "season", "week", "game_date", "home_team", "away_team"]].copy()
     output = output.rename(columns={"week": "season_week"})
     output["home_win_probability"] = probability
+    output["home_win_probability_classifier"] = classifier_probability
+    output["home_win_probability_margin"] = margin_probability
+    output["win_prob_method"] = str(win_prob["method"])
+    output["win_prob_reconciled"] = reconciled
     output["is_toss_up"] = [bool(is_nfl_toss_up(value)) for value in probability]
     output["moneyline_pick"] = [
         nfl_moneyline_pick(str(row.home_team), str(row.away_team), float(row.home_win_probability))

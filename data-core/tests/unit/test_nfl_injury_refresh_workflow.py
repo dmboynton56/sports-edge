@@ -60,10 +60,11 @@ def test_daily_snapshots_starters_before_nfl_predict_and_applies_025():
     assert names.index("Refresh NFL roster and availability context") < names.index("Generate NFL Predictions")
 
 
-def test_live_workflows_still_pin_frozen_isotonic_artifact():
-    """Smoother-calibrator candidate did not ship; serving stays nfl-v2-live-20260906."""
-    assert "--model-version nfl-v2-live-20260906" in INJURY.read_text(encoding="utf-8")
-    assert "--model-version nfl-v2-live-20260906" in DAILY.read_text(encoding="utf-8")
+def test_live_workflows_pin_margin_consistent_winprob():
+    """Margin-normal win prob shipped; HGB/ridge stay the 20260906 pickle."""
+    assert "--model-version nfl-v2-live-20261020" in INJURY.read_text(encoding="utf-8")
+    assert "--model-version nfl-v2-live-20261020" in DAILY.read_text(encoding="utf-8")
+    assert "NFL_V2_LIVE_VERSION" not in INJURY.read_text(encoding="utf-8")
 
 
 def test_snapshot_migration_has_used_for_prediction():

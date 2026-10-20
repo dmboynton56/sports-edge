@@ -12,7 +12,7 @@ from src.models.nfl_calibrator_promotion import (
     wrap_frozen_artifact,
 )
 from src.models.nfl_experiment import ProbabilityCalibrator
-from src.models.nfl_live import LIVE_MODEL_VERSION, load_live_artifact
+from src.models.nfl_live import PARENT_LIVE_MODEL_VERSION, load_live_artifact
 from src.models.nfl_toss_up import is_nfl_toss_up
 
 
@@ -127,7 +127,7 @@ def test_wrap_frozen_artifact_keeps_hgb_and_ridge():
         selection={"selected": "none", "reason": "test", "candidates": []},
     )
     assert wrapped["model_version"] == CANDIDATE_LIVE_MODEL_VERSION
-    assert wrapped["parent_model_version"] == LIVE_MODEL_VERSION
+    assert wrapped["parent_model_version"] == frozen["model_version"] == PARENT_LIVE_MODEL_VERSION
     assert wrapped["margin_model"] is frozen["margin_model"]
     assert wrapped["probability_model"].model is frozen["probability_model"].model
     assert wrapped["probability_model"].calibrator.method == "none"
