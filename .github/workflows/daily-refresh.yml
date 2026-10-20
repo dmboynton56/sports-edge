@@ -142,7 +142,8 @@ jobs:
         shell: bash
         run: |
           SEASON="${{ steps.plan.outputs.nfl_season }}"
-          ANCHOR_DATE="${{ steps.plan.outputs.nfl_start_date }}"
+          ANCHOR_DATE="${{ steps.plan.outputs.nfl_forecast_start_date }}"
+          LOOKAHEAD="${{ steps.plan.outputs.nfl_forecast_window_days }}"
           if [ "$FORCE_FULL_REBUILD" = "true" ]; then
             python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NFL --seasons "$SEASON" --replace
           else
@@ -152,7 +153,7 @@ jobs:
               --seasons "$SEASON" \
               --date "$ANCHOR_DATE" \
               --lookback-days 0 \
-              --lookahead-days 6
+              --lookahead-days "$LOOKAHEAD"
           fi
 
       - name: Apply dashboard serving migrations
@@ -209,13 +210,13 @@ jobs:
           python scripts/refresh_nfl_availability.py \
             --project "$PROJECT_ID" \
             --season "${{ steps.plan.outputs.nfl_season }}" \
-            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
-            --lookahead-days 6
+            --start-date "${{ steps.plan.outputs.nfl_forecast_start_date }}" \
+            --lookahead-days "${{ steps.plan.outputs.nfl_forecast_window_days }}"
           python scripts/refresh_nfl_injury_news.py \
             --project "$PROJECT_ID" \
             --season "${{ steps.plan.outputs.nfl_season }}" \
-            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
-            --lookahead-days 6 \
+            --start-date "${{ steps.plan.outputs.nfl_forecast_start_date }}" \
+            --lookahead-days "${{ steps.plan.outputs.nfl_forecast_window_days }}" \
             --snapshot
 
       - name: Prepare isolated NBA/NFL model artifact runtime
@@ -267,16 +268,16 @@ jobs:
           .venv-nba-nfl/bin/python -m src.pipeline.refresh_nfl \
             --project "$PROJECT_ID" \
             --model-version nfl-v2-live-20260906 \
-            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
-            --window-days 6 \
+            --start-date "${{ steps.plan.outputs.nfl_forecast_start_date }}" \
+            --window-days "${{ steps.plan.outputs.nfl_forecast_window_days }}" \
             --season "${{ steps.plan.outputs.nfl_season }}" \
             --injury-aware \
             --include-explanations
           python scripts/refresh_nfl_injury_news.py \
             --project "$PROJECT_ID" \
             --season "${{ steps.plan.outputs.nfl_season }}" \
-            --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
-            --lookahead-days 6 \
+            --start-date "${{ steps.plan.outputs.nfl_forecast_start_date }}" \
+            --lookahead-days "${{ steps.plan.outputs.nfl_forecast_window_days }}" \
             --mark-latest-used
 
       - name: Generate MLB Predictions
@@ -414,8 +415,8 @@ jobs:
               --league NFL \
               --season "${{ steps.plan.outputs.nfl_season }}" \
               --model-version nfl-v2-live-20260906 \
-              --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
-              --window-days 6
+              --start-date "${{ steps.plan.outputs.nfl_forecast_start_date }}" \
+              --window-days "${{ steps.plan.outputs.nfl_forecast_window_days }}"
           fi
           if [ "$RUN_MLB" = "true" ]; then
             python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --window-days 0
@@ -444,7 +445,7 @@ jobs:
           fi
 
       - name: Sync Market Odds
-        if: ${{ always() && env.DRY_RUN != 'true' && steps.plan.outputs.run_market_odds == 'true' }}
+        if: ${{ always() && env.DRY_RUN != 'true' && (steps.plan.outputs.run_market_odds == 'true' || steps.plan.outputs.run_espn_dk_odds == 'true') }}
         shell: bash
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
@@ -457,11 +458,14 @@ jobs:
           ODDS_API_KEY: ${{ secrets.ODDS_API_KEY }}
           RUN_NBA: ${{ steps.plan.outputs.run_nba }}
           RUN_NFL: ${{ steps.plan.outputs.run_nfl_odds }}
+          RUN_NFL_ESPN_DK: ${{ steps.plan.outputs.run_espn_dk_odds }}
         run: |
           python scripts/apply_supabase_sql_files.py sql/020_team_market_odds.sql sql/023_odds_api_usage.sql sql/024_odds_snapshots_team_total.sql
           # sync_odds.py exits 0 on Odds API quota/auth exhaustion (OUT_OF_USAGE_CREDITS
           # / 429) so this retry loop does not re-hit an empty Starter-plan key for ~7.5m.
           # Transient network / 5xx failures still exit 1 and retry here.
+          # ESPN DK (espn_dk) is free: extra snapshot after paid odds, and the
+          # fallback when quota/empty. It does not spend Odds API credits.
           run_sync_odds() {
             status=0
             if [ "$RUN_NBA" = "true" ]; then
@@ -469,8 +473,10 @@ jobs:
             fi
             if [ "$RUN_NFL" = "true" ]; then
               python scripts/sync_odds.py --project "$PROJECT_ID" --league NFL || status=$?
+            elif [ "$RUN_NFL_ESPN_DK" = "true" ]; then
+              python scripts/sync_odds.py --project "$PROJECT_ID" --league NFL --espn-dk-only --skip-team-totals || status=$?
             fi
-            if [ "$RUN_NBA" != "true" ] && [ "$RUN_NFL" != "true" ]; then
+            if [ "$RUN_NBA" != "true" ] && [ "$RUN_NFL" != "true" ] && [ "$RUN_NFL_ESPN_DK" != "true" ]; then
               echo "No market-odds leagues are active; skipping sync_odds."
             fi
             return "$status"

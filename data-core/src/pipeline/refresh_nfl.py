@@ -24,6 +24,8 @@ from src.utils.injury_loader import load_injury_impacts_from_supabase
 from src.utils.explanation_export import build_explanation_rows, write_explanation_cache
 from src.utils.nfl_schedule import DENVER, nfl_week_window
 
+NFL_MAX_WINDOW_DAYS = 14
+
 
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Generate NFL predictions for upcoming week.")
@@ -47,7 +49,7 @@ def _parse_args() -> argparse.Namespace:
         "--window-days",
         type=int,
         default=6,
-        help="Number of days after start date (default: 6 for Tuesday-Monday).",
+        help="Number of days after start date (default: 6 for Tuesday-Monday; max 14 for stale catch-up).",
     )
     parser.add_argument(
         "--season",
@@ -237,10 +239,11 @@ def main() -> None:
     today = datetime.now(tz=DENVER).date()
     start_date = args.start_date or _nfl_week_start(today)
     end_date = start_date + timedelta(days=args.window_days)
-    if not 0 <= args.window_days <= 6:
-        raise SystemExit("NFL forecasts are limited to one Tuesday-Monday cycle (--window-days 0..6).")
-    if end_date > nfl_week_window(start_date)[1]:
-        raise SystemExit("NFL forecasts cannot extend beyond this cycle's Monday.")
+    if not 0 <= args.window_days <= NFL_MAX_WINDOW_DAYS:
+        raise SystemExit(
+            f"NFL forecasts are limited to {NFL_MAX_WINDOW_DAYS} days "
+            f"(--window-days 0..{NFL_MAX_WINDOW_DAYS})."
+        )
     client = bigquery.Client(project=args.project)
     season = args.season or (start_date.year if start_date.month >= 8 else start_date.year - 1)
     print(f"Building predictions for games between {start_date} and {end_date}. Target season={season}.")

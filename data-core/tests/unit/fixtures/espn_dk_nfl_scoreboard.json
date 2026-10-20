@@ -1,0 +1,272 @@
+{
+  "events": [
+    {
+      "id": "401873010",
+      "date": "2026-10-23T00:15Z",
+      "name": "New England Patriots at Chicago Bears",
+      "shortName": "NE @ CHI",
+      "competitions": [
+        {
+          "id": "401873010",
+          "date": "2026-10-23T00:15Z",
+          "competitors": [
+            {
+              "homeAway": "home",
+              "team": {
+                "id": "3",
+                "abbreviation": "CHI",
+                "displayName": "Chicago Bears"
+              }
+            },
+            {
+              "homeAway": "away",
+              "team": {
+                "id": "17",
+                "abbreviation": "NE",
+                "displayName": "New England Patriots"
+              }
+            }
+          ],
+          "odds": [
+            {
+              "provider": {
+                "id": "100",
+                "name": "DraftKings",
+                "priority": 1,
+                "displayName": "DraftKings"
+              },
+              "details": "CHI -3",
+              "overUnder": 50.5,
+              "spread": -3.0,
+              "awayTeamOdds": {
+                "favorite": false,
+                "underdog": true,
+                "team": {
+                  "id": "17",
+                  "abbreviation": "NE",
+                  "name": "Patriots",
+                  "displayName": "New England Patriots"
+                },
+                "favoriteAtOpen": false
+              },
+              "homeTeamOdds": {
+                "favorite": true,
+                "underdog": false,
+                "team": {
+                  "id": "3",
+                  "abbreviation": "CHI",
+                  "name": "Bears",
+                  "displayName": "Chicago Bears"
+                },
+                "favoriteAtOpen": true
+              },
+              "moneyline": {
+                "displayName": "Moneyline",
+                "shortDisplayName": "ML",
+                "home": {
+                  "close": {
+                    "odds": "-155"
+                  },
+                  "open": {
+                    "odds": "-120"
+                  }
+                },
+                "away": {
+                  "close": {
+                    "odds": "+130"
+                  },
+                  "open": {
+                    "odds": "+100"
+                  }
+                }
+              },
+              "pointSpread": {
+                "displayName": "Spread",
+                "shortDisplayName": "Spread",
+                "home": {
+                  "close": {
+                    "line": "-3",
+                    "odds": "-105"
+                  },
+                  "open": {
+                    "line": "-1.5",
+                    "odds": "-105"
+                  }
+                },
+                "away": {
+                  "close": {
+                    "line": "+3",
+                    "odds": "-115"
+                  },
+                  "open": {
+                    "line": "+1.5",
+                    "odds": "-115"
+                  }
+                }
+              },
+              "total": {
+                "displayName": "Total",
+                "shortDisplayName": "Total",
+                "over": {
+                  "close": {
+                    "line": "o50.5",
+                    "odds": "-115"
+                  },
+                  "open": {
+                    "line": "o47.5",
+                    "odds": "-110"
+                  }
+                },
+                "under": {
+                  "close": {
+                    "line": "u50.5",
+                    "odds": "-105"
+                  },
+                  "open": {
+                    "line": "u47.5",
+                    "odds": "-110"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "401873011",
+      "date": "2026-10-25T13:30Z",
+      "name": "Pittsburgh Steelers at New Orleans Saints",
+      "shortName": "PIT VS NO",
+      "competitions": [
+        {
+          "id": "401873011",
+          "date": "2026-10-25T13:30Z",
+          "competitors": [
+            {
+              "homeAway": "home",
+              "team": {
+                "id": "18",
+                "abbreviation": "NO",
+                "displayName": "New Orleans Saints"
+              }
+            },
+            {
+              "homeAway": "away",
+              "team": {
+                "id": "23",
+                "abbreviation": "PIT",
+                "displayName": "Pittsburgh Steelers"
+              }
+            }
+          ],
+          "odds": [
+            {
+              "provider": {
+                "id": "100",
+                "name": "DraftKings",
+                "priority": 1
+              },
+              "details": "PIT -3.5",
+              "overUnder": 44.5,
+              "spread": 3.5,
+              "awayTeamOdds": {
+                "favorite": true,
+                "underdog": false,
+                "team": {
+                  "id": "23",
+                  "abbreviation": "PIT",
+                  "name": "Steelers",
+                  "displayName": "Pittsburgh Steelers"
+                },
+                "favoriteAtOpen": true
+              },
+              "homeTeamOdds": {
+                "favorite": false,
+                "underdog": true,
+                "team": {
+                  "id": "18",
+                  "abbreviation": "NO",
+                  "name": "Saints",
+                  "displayName": "New Orleans Saints"
+                },
+                "favoriteAtOpen": false
+              },
+              "moneyline": {
+                "displayName": "Moneyline",
+                "shortDisplayName": "ML",
+                "home": {
+                  "close": {
+                    "odds": "+154"
+                  },
+                  "open": {
+                    "odds": "+114"
+                  }
+                },
+                "away": {
+                  "close": {
+                    "odds": "-185"
+                  },
+                  "open": {
+                    "odds": "-135"
+                  }
+                }
+              },
+              "pointSpread": {
+                "displayName": "Spread",
+                "shortDisplayName": "Spread",
+                "home": {
+                  "close": {
+                    "line": "+3.5",
+                    "odds": "-118"
+                  },
+                  "open": {
+                    "line": "+2.5",
+                    "odds": "-115"
+                  }
+                },
+                "away": {
+                  "close": {
+                    "line": "-3.5",
+                    "odds": "-102"
+                  },
+                  "open": {
+                    "line": "-2.5",
+                    "odds": "-105"
+                  }
+                }
+              },
+              "total": {
+                "displayName": "Total",
+                "shortDisplayName": "Total",
+                "over": {
+                  "close": {
+                    "line": "o44.5",
+                    "odds": "-105"
+                  },
+                  "open": {
+                    "line": "o42.5",
+                    "odds": "-110"
+                  }
+                },
+                "under": {
+                  "close": {
+                    "line": "u44.5",
+                    "odds": "-115"
+                  },
+                  "open": {
+                    "line": "u42.5",
+                    "odds": "-110"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "week": {
+    "number": 7
+  }
+}

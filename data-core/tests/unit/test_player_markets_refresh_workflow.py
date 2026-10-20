@@ -119,9 +119,12 @@ def test_nfl_refresh_uses_weekly_gates_and_has_one_canonical_odds_path():
     workflow = yaml.safe_load(DAILY_WORKFLOW_PATH.read_text(encoding='utf-8'))
     steps = {s['name']: s for s in workflow['jobs']['refresh']['steps']}
     assert "run_nfl_predictions" in steps['Generate NFL Predictions']['if']
-    assert '--window-days 6' in steps['Generate NFL Predictions']['run']
-    assert 'nfl_start_date' in steps['Generate NFL Predictions']['run']
+    assert 'nfl_forecast_window_days' in steps['Generate NFL Predictions']['run']
+    assert 'nfl_forecast_start_date' in steps['Generate NFL Predictions']['run']
+    assert '--window-days 6' not in steps['Generate NFL Predictions']['run']
     assert 'run_nfl_odds' in steps['Sync Market Odds']['env']['RUN_NFL']
+    assert 'run_espn_dk_odds' in steps['Sync Market Odds']['env']['RUN_NFL_ESPN_DK']
+    assert '--espn-dk-only' in steps['Sync Market Odds']['run']
     assert 'always()' in steps['Sync Market Odds']['if']
     assert 'always()' in steps['Sync Predictions to Supabase']['if']
     assert 'always()' in steps['Audit NFL weekly readiness']['if']

@@ -157,3 +157,130 @@ def test_explicit_nfl_recovery_stays_in_same_cycle(monkeypatch):
     assert plan['run_nfl_predictions'] is True
     assert plan['run_nfl_odds'] is True
     assert plan['nfl_end_date'] == '2026-10-05'
+    assert plan['nfl_prediction_reason'] == 'force_nfl_refresh'
+
+
+def test_nfl_predictions_stay_tuesday_only_when_freshness_is_unknown(monkeypatch):
+    monkeypatch.setattr(plan_daily_refresh, 'nfl_schedule_available', lambda _: True)
+    plan = plan_daily_refresh.build_plan(
+        anchor=date(2026, 10, 19),
+        lookback_days=1,
+        lookahead_days=14,
+        force_full_rebuild=False,
+    )
+    assert plan['run_nfl_predictions'] is False
+    assert plan['run_nfl_odds'] is False
+    assert plan['run_espn_dk_odds'] is True
+    assert plan['nfl_prediction_reason'] == 'prediction freshness unknown; tuesday-only'
+    assert plan['nfl_forecast_start_date'] == '2026-10-13'
+    assert plan['nfl_forecast_end_date'] == '2026-10-26'
+    assert plan['nfl_forecast_window_days'] == 13
+
+
+def test_nfl_predictions_run_midweek_when_upcoming_games_missing(monkeypatch):
+    monkeypatch.setattr(plan_daily_refresh, 'nfl_schedule_available', lambda _: True)
+    monkeypatch.setattr(plan_daily_refresh, 'count_bigquery_games', lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        plan_daily_refresh,
+        'fetch_nfl_prediction_freshness',
+        lambda *args, **kwargs: {
+            'upcoming_games': 14,
+            'missing_game_ids': ['2026_07_NE_CHI'],
+            'stale_game_ids': [],
+            'missing_count': 14,
+            'stale_count': 0,
+            'min_game_date': '2026-10-22',
+            'max_game_date': '2026-10-26',
+            'stale_hours': 48,
+            'model_version': 'nfl-v2-live-20260906',
+        },
+    )
+    plan = plan_daily_refresh.build_plan(
+        anchor=date(2026, 10, 19),
+        lookback_days=1,
+        lookahead_days=14,
+        force_full_rebuild=False,
+        project='example-project',
+    )
+    assert plan['run_nfl_predictions'] is True
+    assert plan['run_nfl_odds'] is False
+    assert plan['run_espn_dk_odds'] is True
+    assert 'no nfl-v2-live-20260906 prediction' in plan['nfl_prediction_reason']
+    assert plan['nfl_missing_predictions'] == 14
+
+
+def test_nfl_predictions_run_when_existing_rows_are_stale(monkeypatch):
+    monkeypatch.setattr(plan_daily_refresh, 'nfl_schedule_available', lambda _: True)
+    monkeypatch.setattr(plan_daily_refresh, 'count_bigquery_games', lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        plan_daily_refresh,
+        'fetch_nfl_prediction_freshness',
+        lambda *args, **kwargs: {
+            'upcoming_games': 1,
+            'missing_game_ids': [],
+            'stale_game_ids': ['2026_06_WAS_SF'],
+            'missing_count': 0,
+            'stale_count': 1,
+            'min_game_date': '2026-10-19',
+            'max_game_date': '2026-10-19',
+            'stale_hours': 48,
+            'model_version': 'nfl-v2-live-20260906',
+        },
+    )
+    plan = plan_daily_refresh.build_plan(
+        anchor=date(2026, 10, 19),
+        lookback_days=1,
+        lookahead_days=14,
+        force_full_rebuild=False,
+        project='example-project',
+    )
+    assert plan['run_nfl_predictions'] is True
+    assert 'older than 48h' in plan['nfl_prediction_reason']
+    assert plan['nfl_stale_predictions'] == 1
+
+
+def test_nfl_predictions_skip_midweek_when_upcoming_rows_are_fresh(monkeypatch):
+    monkeypatch.setattr(plan_daily_refresh, 'nfl_schedule_available', lambda _: True)
+    monkeypatch.setattr(plan_daily_refresh, 'count_bigquery_games', lambda *args, **kwargs: None)
+    monkeypatch.setattr(
+        plan_daily_refresh,
+        'fetch_nfl_prediction_freshness',
+        lambda *args, **kwargs: {
+            'upcoming_games': 14,
+            'missing_game_ids': [],
+            'stale_game_ids': [],
+            'missing_count': 0,
+            'stale_count': 0,
+            'min_game_date': '2026-10-22',
+            'max_game_date': '2026-10-26',
+            'stale_hours': 48,
+            'model_version': 'nfl-v2-live-20260906',
+        },
+    )
+    plan = plan_daily_refresh.build_plan(
+        anchor=date(2026, 10, 21),
+        lookback_days=1,
+        lookahead_days=14,
+        force_full_rebuild=False,
+        project='example-project',
+    )
+    assert date(2026, 10, 21).weekday() == 2
+    assert plan['run_nfl_predictions'] is False
+    assert plan['run_nfl_odds'] is False
+    assert plan['nfl_prediction_reason'] == 'upcoming games have fresh predictions'
+
+
+def test_should_run_nfl_predictions_helpers():
+    missing = {
+        'upcoming_games': 2,
+        'missing_count': 2,
+        'stale_count': 0,
+        'model_version': 'nfl-v2-live-20260906',
+        'stale_hours': 48,
+    }
+    assert plan_daily_refresh.should_run_nfl_predictions(
+        run_nfl=True, anchor=date(2026, 10, 20), force_nfl_refresh=False, force_full_rebuild=False, freshness=missing
+    )[0] is True
+    assert plan_daily_refresh.should_run_nfl_predictions(
+        run_nfl=True, anchor=date(2026, 10, 21), force_nfl_refresh=False, force_full_rebuild=False, freshness=None
+    ) == (False, 'prediction freshness unknown; tuesday-only')

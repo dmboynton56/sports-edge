@@ -32,6 +32,10 @@ except ImportError:  # pragma: no cover - local unit tests do not need BigQuery
 LEAGUES = ("MLB", "NBA", "NFL", "CFB", "WORLD_CUP")
 SLATE_TIME_ZONE = "America/Denver"
 NFL_PROVIDER_FALLBACK_MAX_SEASON = 2025
+NFL_LIVE_MODEL_VERSION = "nfl-v2-live-20260906"
+NFL_PREDICTION_STALE_HOURS = 48
+NFL_PREDICTION_LOOKAHEAD_DAYS = 7
+NFL_MAX_FORECAST_WINDOW_DAYS = 14
 
 
 @dataclass(frozen=True)
@@ -157,6 +161,124 @@ def calendar_active(league: str, start_date: date, end_date: date, anchor: date)
     return date_ranges_intersect(start_date, end_date, season_start, season_end)
 
 
+def fetch_nfl_prediction_freshness(
+    project: str,
+    start_date: date,
+    end_date: date,
+    *,
+    now: datetime | None = None,
+    model_version: str = NFL_LIVE_MODEL_VERSION,
+) -> Optional[dict]:
+    """Return upcoming NFL games in ``[start_date, end_date]`` and prediction age.
+
+    ``None`` means BigQuery is unavailable — callers must fail closed to the
+    Tuesday freeze instead of inventing a refresh. Missing or >48h-old
+    predictions are counted so Daily Refresh can re-score without spending
+    Odds API credits.
+    """
+    if not project or bigquery is None:
+        return None
+    now = now or datetime.now(timezone.utc)
+    client = bigquery.Client(project=project)
+    query = f"""
+        WITH games AS (
+          SELECT DISTINCT CAST(game_id AS STRING) AS game_id, CAST(game_date AS DATE) AS game_date
+          FROM `{project}.sports_edge_raw.raw_schedules`
+          WHERE league = 'NFL'
+            AND game_date IS NOT NULL
+            AND CAST(game_date AS DATE) BETWEEN @start_date AND @end_date
+            AND home_score IS NULL
+            AND away_score IS NULL
+        ),
+        preds AS (
+          SELECT CAST(game_id AS STRING) AS game_id, MAX(prediction_ts) AS latest_ts
+          FROM `{project}.sports_edge_curated.model_predictions`
+          WHERE league = 'NFL'
+            AND model_version = @model_version
+          GROUP BY game_id
+        )
+        SELECT
+          g.game_id,
+          g.game_date,
+          p.latest_ts
+        FROM games g
+        LEFT JOIN preds p USING (game_id)
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
+            bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
+            bigquery.ScalarQueryParameter("model_version", "STRING", model_version),
+        ]
+    )
+    rows = list(client.query(query, job_config=job_config).result())
+    stale_before = now - timedelta(hours=NFL_PREDICTION_STALE_HOURS)
+    missing: list[str] = []
+    stale: list[str] = []
+    game_dates: list[date] = []
+    for row in rows:
+        game_dates.append(row["game_date"])
+        latest = row["latest_ts"]
+        if latest is None:
+            missing.append(str(row["game_id"]))
+            continue
+        if getattr(latest, "tzinfo", None) is None:
+            latest = latest.replace(tzinfo=timezone.utc)
+        if latest < stale_before:
+            stale.append(str(row["game_id"]))
+    return {
+        "upcoming_games": len(rows),
+        "missing_game_ids": missing,
+        "stale_game_ids": stale,
+        "missing_count": len(missing),
+        "stale_count": len(stale),
+        "min_game_date": min(game_dates).isoformat() if game_dates else None,
+        "max_game_date": max(game_dates).isoformat() if game_dates else None,
+        "stale_hours": NFL_PREDICTION_STALE_HOURS,
+        "model_version": model_version,
+    }
+
+
+def nfl_forecast_window(cycle_start: date, cycle_end: date, anchor: date) -> tuple[date, date]:
+    """Cover the Tuesday-Monday cycle plus any game in the next 7 days."""
+    lookahead_end = anchor + timedelta(days=NFL_PREDICTION_LOOKAHEAD_DAYS)
+    start = min(cycle_start, anchor)
+    end = max(cycle_end, lookahead_end)
+    if (end - start).days > NFL_MAX_FORECAST_WINDOW_DAYS:
+        end = start + timedelta(days=NFL_MAX_FORECAST_WINDOW_DAYS)
+    return start, end
+
+
+def should_run_nfl_predictions(
+    *,
+    run_nfl: bool,
+    anchor: date,
+    force_nfl_refresh: bool,
+    force_full_rebuild: bool,
+    freshness: Optional[dict],
+) -> tuple[bool, str]:
+    if not run_nfl:
+        return False, "nfl inactive"
+    if force_full_rebuild:
+        return True, "force_full_rebuild"
+    if force_nfl_refresh:
+        return True, "force_nfl_refresh"
+    if anchor.weekday() == 1:
+        return True, "tuesday freeze"
+    if freshness is None:
+        return False, "prediction freshness unknown; tuesday-only"
+    if freshness.get("missing_count"):
+        return True, f"{freshness['missing_count']} upcoming games have no {freshness.get('model_version') or 'live'} prediction"
+    if freshness.get("stale_count"):
+        return True, (
+            f"{freshness['stale_count']} upcoming games have predictions older than "
+            f"{freshness.get('stale_hours', NFL_PREDICTION_STALE_HOURS)}h"
+        )
+    if freshness.get("upcoming_games"):
+        return False, "upcoming games have fresh predictions"
+    return False, "no upcoming unplayed games in lookahead"
+
+
 def count_bigquery_games(project: str, league: str, start_date: date, end_date: date) -> Optional[int]:
     if not project or bigquery is None:
         return None
@@ -259,9 +381,40 @@ def build_plan(
     nfl_start, nfl_end = nfl_week_window(anchor)
     plan["nfl_start_date"] = nfl_start.isoformat()
     plan["nfl_end_date"] = nfl_end.isoformat()
-    plan["run_nfl_predictions"] = bool(plan["run_nfl"] and (anchor.weekday() == 1 or force_nfl_refresh or force_full_rebuild))
+    forecast_start, forecast_end = nfl_forecast_window(nfl_start, nfl_end, anchor)
+    plan["nfl_forecast_start_date"] = forecast_start.isoformat()
+    plan["nfl_forecast_end_date"] = forecast_end.isoformat()
+    plan["nfl_forecast_window_days"] = (forecast_end - forecast_start).days
+    freshness = None
+    freshness_error = None
+    if project and plan["run_nfl"]:
+        try:
+            freshness = fetch_nfl_prediction_freshness(
+                project,
+                anchor,
+                anchor + timedelta(days=NFL_PREDICTION_LOOKAHEAD_DAYS),
+            )
+        except Exception as exc:  # noqa: BLE001
+            freshness_error = str(exc)
+    run_predictions, prediction_reason = should_run_nfl_predictions(
+        run_nfl=bool(plan["run_nfl"]),
+        anchor=anchor,
+        force_nfl_refresh=force_nfl_refresh,
+        force_full_rebuild=force_full_rebuild,
+        freshness=freshness,
+    )
+    plan["run_nfl_predictions"] = run_predictions
+    plan["nfl_prediction_reason"] = prediction_reason
+    if freshness is not None:
+        plan["nfl_upcoming_games"] = freshness["upcoming_games"]
+        plan["nfl_missing_predictions"] = freshness["missing_count"]
+        plan["nfl_stale_predictions"] = freshness["stale_count"]
+    elif freshness_error:
+        plan["nfl_prediction_reason"] = f"{prediction_reason} ({freshness_error})"
     # Month-start catches the Thursday Oct 1 reset even if Tuesday's key was empty.
+    # Paid Odds API stays on this sparse cadence; ESPN DK is the free extra snapshot.
     plan["run_nfl_odds"] = bool(plan["run_nfl"] and (anchor.weekday() in {1, 6} or anchor.day == 1 or force_nfl_refresh or force_full_rebuild))
+    plan["run_espn_dk_odds"] = bool(plan["run_nfl"])
     plan["run_cfb_odds"] = bool(plan["run_cfb"] and (anchor.weekday() in {3, 5} or force_full_rebuild))
     plan["run_any"] = any(bool(plan[f"run_{league.lower()}"]) for league in LEAGUES)
     plan["run_market_odds"] = bool(plan["run_nba"] or plan["run_nfl_odds"])

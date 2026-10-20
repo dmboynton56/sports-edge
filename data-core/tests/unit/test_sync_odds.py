@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timezone
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
@@ -21,6 +22,7 @@ from scripts.sync_odds import (
     pick_team_total_outcomes,
     request_bounds,
 )
+from src.data.espn_dk_odds import ESPN_DK_BOOK, parse_espn_scoreboard_odds
 from src.data.odds_api_errors import OddsApiQuotaExhausted
 
 
@@ -469,6 +471,34 @@ def _featured_and_team_total_event():
     ]
     event['_snapshot_ts'] = '2026-10-04T13:05:00+00:00'
     return event
+
+
+def test_espn_dk_game_lines_are_valid_odds_snapshots():
+    fixture = json.loads(
+        (Path(__file__).parent / "fixtures" / "espn_dk_nfl_scoreboard.json").read_text(encoding="utf-8")
+    )
+    event = parse_espn_scoreboard_odds(fixture)[0]
+    rows = pick_featured_market_outcomes(event, "CHI", "NE", NFL_MAPPING)
+    assert {row.book for row in rows} == {ESPN_DK_BOOK}
+    assert {row.market for row in rows} <= {"spread", "moneyline", "total"}
+    assert "team_total" not in {row.market for row in rows}
+    snapshots = [
+        ("game", row.book, row.market, row.line, row.price, row.selection, event["id"], None, None)
+        for row in rows
+    ]
+    kept = filter_supported_odds_snapshots(snapshots)
+    assert {row[2] for row in kept} == {row.market for row in rows}
+    conn = FakeConnection(
+        [("game", "CHI", "NE", datetime(2026, 10, 23, 0, 15, tzinfo=timezone.utc), datetime(2026, 10, 22).date())]
+    )
+    event["_snapshot_ts"] = "2026-10-20T13:05:00+00:00"
+    result = sync_odds_to_supabase(
+        conn, "NFL", [event], now_utc=datetime(2026, 10, 20, 13, tzinfo=timezone.utc)
+    )
+    assert result.matched_count == 1
+    inserted = [row for sql, rows in conn.bulk_updates if "INSERT INTO odds_snapshots" in sql for row in rows]
+    assert {row[1] for row in inserted} == {ESPN_DK_BOOK}
+    assert {row[2] for row in inserted} <= {"spread", "moneyline", "total"}
 
 
 def test_filter_supported_odds_snapshots_drops_unknown_markets():

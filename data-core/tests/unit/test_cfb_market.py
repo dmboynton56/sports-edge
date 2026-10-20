@@ -6,7 +6,14 @@ import pandas as pd
 import pytest
 
 from scripts.audit_cfb_readiness import readiness
-from scripts.refresh_cfb_markets import american_implied_probability, match_odds_event, normalize_team, sync_rows
+from scripts.refresh_cfb_markets import (
+    american_implied_probability,
+    match_odds_event,
+    normalize_team,
+    parse_odds_rows,
+    sync_rows,
+)
+from src.data.espn_dk_odds import ESPN_DK_BOOK, espn_event_to_odds_event
 from scripts.train_cfb_market_model import (
     ESPN_SCOREBOARD_LIMIT,
     fetch_games,
@@ -177,3 +184,45 @@ def test_cfb_refresh_retains_recommendations_unless_prices_were_captured(has_cap
     assert any('INSERT INTO cfb_team_predictions' in call.args[0]
                for call in cursor.execute.call_args_list)
     conn.commit.assert_called_once()
+
+
+def test_espn_dk_cfb_scoreboard_maps_into_cfb_odds_snapshots():
+    event = {
+        "id": "401628001",
+        "date": "2026-10-24T19:30Z",
+        "competitions": [{
+            "competitors": [
+                {"homeAway": "home", "team": {"displayName": "Miami Hurricanes", "abbreviation": "MIA"}},
+                {"homeAway": "away", "team": {"displayName": "Pittsburgh Panthers", "abbreviation": "PITT"}},
+            ],
+            "odds": [{
+                "provider": {"id": "100", "name": "DraftKings"},
+                "spread": -20.5,
+                "overUnder": 55.5,
+                "pointSpread": {
+                    "home": {"close": {"line": "-20.5", "odds": "-110"}},
+                    "away": {"close": {"line": "+20.5", "odds": "-110"}},
+                },
+                "moneyline": {
+                    "home": {"close": {"odds": "-1200"}},
+                    "away": {"close": {"odds": "+750"}},
+                },
+                "total": {
+                    "over": {"close": {"line": "o55.5", "odds": "-110"}},
+                    "under": {"close": {"line": "u55.5", "odds": "-110"}},
+                },
+            }],
+        }],
+    }
+    mapped = espn_event_to_odds_event(event)
+    game = {
+        "event_id": "cfb-1",
+        "game_time_utc": "2026-10-24T19:30:00Z",
+        "home_team": "Miami Hurricanes",
+        "away_team": "Pittsburgh Panthers",
+    }
+    assert match_odds_event(game, [mapped]) == mapped
+    rows = parse_odds_rows(game, mapped, datetime(2026, 10, 20, tzinfo=timezone.utc))
+    assert {row["book"] for row in rows} == {ESPN_DK_BOOK}
+    assert {row["market"] for row in rows} == {"moneyline", "spread", "total"}
+    assert "team_total" not in {row["market"] for row in rows}
