@@ -417,6 +417,8 @@ jobs:
               --model-version nfl-v2-live-20261020 \
               --start-date "${{ steps.plan.outputs.nfl_forecast_start_date }}" \
               --window-days "${{ steps.plan.outputs.nfl_forecast_window_days }}"
+            python scripts/validate_web_live_model_version.py \
+              --synced-version nfl-v2-live-20261020
           fi
           if [ "$RUN_MLB" = "true" ]; then
             python scripts/sync_bq_to_supabase.py --project "$PROJECT_ID" --league MLB --window-days 0

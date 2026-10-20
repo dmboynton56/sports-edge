@@ -13,16 +13,18 @@ import joblib
 import numpy as np
 import pandas as pd
 
+from src.models.live_model_versions import dashboard_model_version, load_live_model_versions
 from src.models.nfl_toss_up import is_nfl_toss_up, nfl_moneyline_pick
 from src.models.nfl_v2 import FEATURE_COLUMNS, audit_nfl_feature_store, build_nfl_feature_store
 
 
 LOGGER = logging.getLogger("nfl_live")
 
-PARENT_LIVE_MODEL_VERSION = "nfl-v2-live-20260906"
-# Frozen HGB/ridge pickle stays 20260906. load_live_artifact stamps this live
-# version and attaches Phi(-spread/sigma) from the win_prob sidecar.
-LIVE_MODEL_VERSION = "nfl-v2-live-20261020"
+_LIVE_VERSIONS = load_live_model_versions()
+# Frozen HGB/ridge pickle stays NFL_PARENT. load_live_artifact stamps the live
+# dashboard version and attaches Phi(-spread/sigma) from the win_prob sidecar.
+LIVE_MODEL_VERSION = dashboard_model_version("NFL", _LIVE_VERSIONS)
+PARENT_LIVE_MODEL_VERSION = dashboard_model_version("NFL_PARENT", _LIVE_VERSIONS)
 LIVE_VERSION_ENV = "NFL_V2_LIVE_VERSION"
 DEFAULT_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_live.joblib"
 LEGACY_ARTIFACT = Path(__file__).resolve().parents[2] / "models" / "nfl_v2_live_20260906.joblib"

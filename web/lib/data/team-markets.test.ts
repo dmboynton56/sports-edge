@@ -1,9 +1,15 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import liveModelVersions from "@/lib/data/live-model-versions.json";
 import {
   americanImpliedProbability,
   buildTeamMarketPredictions,
   getTeamMarketPredictions,
+  getTeamSlateFeed,
+  PREFERRED_MODEL_VERSION,
   spreadCoverProbability,
 } from "@/lib/data/team-markets";
 import { supabaseRest } from "@/lib/data/supabase";
@@ -166,5 +172,55 @@ describe("NFL forecast publication", () => {
     expect(feed.predictions).toHaveLength(expectedRows);
     expect(feed.predictions.every((row) => row.marketStatus === "model_only" && row.ev == null)).toBe(true);
     expect(feed.gaps).toContain("NFL featured-market outcome coverage is incomplete (0/6).");
+  });
+});
+
+describe("NFL live model version", () => {
+  it("reads the shared dashboard version, not a hard-coded parent pickle stamp", () => {
+    const source = readFileSync(
+      join(dirname(fileURLToPath(import.meta.url)), "team-markets.ts"),
+      "utf8",
+    );
+    expect(PREFERRED_MODEL_VERSION.NFL).toBe(liveModelVersions.NFL);
+    expect(PREFERRED_MODEL_VERSION.NBA).toBe(liveModelVersions.NBA);
+    expect(source).toContain("live-model-versions.json");
+    expect(source).not.toContain("nfl-v2-live-20260906");
+  });
+
+  it("queries the preferred live version so the slate is not blanked by a bump", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-10-20T21:00:00Z"));
+    vi.mocked(supabaseRest).mockImplementation(async (resource) => {
+      if (resource.startsWith("games?")) {
+        return [{
+          ...game,
+          game_date: "2026-10-22",
+          game_time_utc: "2026-10-22T17:00:00Z",
+        }];
+      }
+      if (resource.startsWith("model_predictions?")) {
+        expect(resource).toContain(`model_version=eq.${PREFERRED_MODEL_VERSION.NFL}`);
+        return [{
+          ...prediction,
+          model_version: PREFERRED_MODEL_VERSION.NFL,
+          asof_ts: "2026-10-20T18:01:26Z",
+        }];
+      }
+      return [{
+        game_id: game.id,
+        book: "draftkings",
+        market: "spread",
+        selection: "home",
+        line: -3.5,
+        price: -110,
+        snapshot_ts: "2026-10-20T18:01:26Z",
+      }];
+    });
+
+    const feed = await getTeamSlateFeed("NFL");
+    expect(feed.games).toHaveLength(1);
+    expect(feed.games[0]?.modelVersion).toBe(PREFERRED_MODEL_VERSION.NFL);
+    expect(feed.games[0]?.homeWinProb).toBe(0.65);
+    expect(feed.gaps).not.toContain("All NFL games missing predictions.");
   });
 });

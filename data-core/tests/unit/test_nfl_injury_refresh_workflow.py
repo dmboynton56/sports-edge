@@ -3,6 +3,8 @@ import re
 
 import yaml
 
+from src.models.nfl_live import LIVE_MODEL_VERSION
+
 REPO = Path(__file__).resolve().parents[3]
 INJURY = REPO / ".github" / "workflows" / "nfl-injury-refresh.yml"
 DAILY = REPO / ".github" / "workflows" / "daily-refresh.yml"
@@ -62,8 +64,9 @@ def test_daily_snapshots_starters_before_nfl_predict_and_applies_025():
 
 def test_live_workflows_pin_margin_consistent_winprob():
     """Margin-normal win prob shipped; HGB/ridge stay the 20260906 pickle."""
-    assert "--model-version nfl-v2-live-20261020" in INJURY.read_text(encoding="utf-8")
-    assert "--model-version nfl-v2-live-20261020" in DAILY.read_text(encoding="utf-8")
+    pin = f"--model-version {LIVE_MODEL_VERSION}"
+    assert pin in INJURY.read_text(encoding="utf-8")
+    assert pin in DAILY.read_text(encoding="utf-8")
     assert "NFL_V2_LIVE_VERSION" not in INJURY.read_text(encoding="utf-8")
 
 

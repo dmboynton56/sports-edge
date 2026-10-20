@@ -1,5 +1,6 @@
 import { getSupabaseMissingEnv, supabaseRest } from "@/lib/data/supabase";
 import { isFiniteNumber } from "@/lib/data/json";
+import liveModelVersions from "@/lib/data/live-model-versions.json";
 import { isNflTossUp } from "@/lib/data/nfl-toss-up";
 import type { Prediction } from "@/lib/data/types";
 import { nflPredictionIsCurrent, nflWeekWindow } from "@/lib/nfl-week";
@@ -38,9 +39,9 @@ export type TeamSlateFeed = {
 
 const SLATE_TIME_ZONE = "America/Denver";
 const FRESH_HOURS = 24;
-const PREFERRED_MODEL_VERSION = {
-  NFL: "nfl-v2-live-20260906",
-  NBA: "v3",
+export const PREFERRED_MODEL_VERSION = {
+  NFL: liveModelVersions.NFL,
+  NBA: liveModelVersions.NBA,
 } satisfies Record<"NBA" | "NFL", string>;
 
 type SupabaseGameRow = {

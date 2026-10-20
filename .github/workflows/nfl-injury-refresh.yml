@@ -174,6 +174,8 @@ jobs:
             --model-version nfl-v2-live-20261020 \
             --start-date "${{ steps.plan.outputs.nfl_start_date }}" \
             --window-days 6
+          python scripts/validate_web_live_model_version.py \
+            --synced-version nfl-v2-live-20261020
 
       - name: Refetch odds for changed NFL games
         if: ${{ env.DRY_RUN != 'true' && steps.news.outputs.reload_odds == 'true' && steps.news.outputs.dirty_supabase_game_ids != '' }}
