@@ -31,6 +31,7 @@ if str(ROOT) not in sys.path:
 
 from src.data.odds_api_errors import check_odds_api_response, is_odds_api_quota_error
 from src.data.odds_api_client import budgeted_get, response_timestamp
+from src.data.espn_dk_odds import ESPN_DK_BOOK, fetch_espn_dk_events
 from src.utils.nfl_schedule import nfl_week_window
 from src.utils.supabase_pg import (
     create_pg_connection,
@@ -383,6 +384,23 @@ def pick_team_total_outcomes(event, home_code, away_code, mapping) -> list[Featu
                             for label, price in zip(("over", "under"), prices))
             break
     return selected
+
+def fetch_espn_dk_odds_data(
+    league: str,
+    *,
+    now_utc: datetime | None = None,
+) -> List[Dict[str, Any]]:
+    """Free ESPN DraftKings game lines. Empty on fetch errors; never invents prices."""
+    now = now_utc or datetime.now(timezone.utc)
+    start, end = serving_dates(league, now)
+    try:
+        events = fetch_espn_dk_events(league, start=start, end=end, now=now)
+    except Exception as exc:  # noqa: BLE001
+        LOGGER.warning("ESPN DK %s scoreboard unavailable: %s", league, exc)
+        return []
+    LOGGER.info("Retrieved %s ESPN DK game-line events for %s", len(events), league)
+    return events
+
 
 def fetch_odds_data(
     api_key: str,
@@ -794,11 +812,22 @@ def main():
         action="store_true",
         help="Do not spend a per-event team_totals request (already captured for the NFL cycle).",
     )
+    parser.add_argument(
+        "--espn-dk-only",
+        action="store_true",
+        help="Skip The Odds API and write free ESPN DraftKings game lines tagged espn_dk.",
+    )
+    parser.add_argument(
+        "--skip-espn-dk",
+        action="store_true",
+        help="Do not capture the free ESPN DraftKings extra snapshot.",
+    )
     args = parser.parse_args()
     
     api_key = os.getenv("ODDS_API_KEY")
-    if not api_key:
-        raise SystemExit("ODDS_API_KEY not found in environment")
+    if not args.espn_dk_only and not api_key:
+        LOGGER.warning("ODDS_API_KEY not found; falling back to free ESPN DK game lines")
+        args.espn_dk_only = True
         
     project = args.project or os.getenv("GCP_PROJECT_ID")
     if not project:
@@ -823,37 +852,64 @@ def main():
             LOGGER.info(f"Starting sync for {league}...")
             expected_games = count_expected_games(pg_conn, league)
             if expected_games == 0:
-                LOGGER.info("No upcoming %s serving games; skipping paid odds requests", league)
+                LOGGER.info("No upcoming %s serving games; skipping odds requests", league)
                 continue
-            try:
-                odds_data = fetch_odds_data(api_key, league, cache_period=args.cache_period)
-            except RuntimeError as exc:
-                if not is_odds_api_quota_error(exc):
-                    raise
-                LOGGER.warning(
-                    "Skipping %s market-odds sync: The Odds API quota/auth/rate-limit "
-                    "is exhausted (%s). Not writing book spreads. Remaining Daily "
-                    "Refresh steps can continue.",
-                    league,
-                    exc,
-                )
-                break
-            if not odds_data:
+            odds_data: List[Dict[str, Any]] = []
+            paid_quota_exhausted = False
+            if not args.espn_dk_only:
+                try:
+                    odds_data = fetch_odds_data(api_key, league, cache_period=args.cache_period)
+                except RuntimeError as exc:
+                    if not is_odds_api_quota_error(exc):
+                        raise
+                    paid_quota_exhausted = True
+                    LOGGER.warning(
+                        "The Odds API quota/auth/rate-limit is exhausted for %s (%s). "
+                        "Falling back to free ESPN DK game lines (%s). Remaining Daily "
+                        "Refresh steps can continue.",
+                        league,
+                        exc,
+                        ESPN_DK_BOOK,
+                    )
+            only_ids = {str(game_id) for game_id in args.game_ids} if args.game_ids else None
+            result = OddsSyncResult(matched_count=0, supabase_games=expected_games, supabase_dates=set(), odds_dates=set())
+            if odds_data:
+                LOGGER.info(f"Retrieved {len(odds_data)} games from The Odds API for {league}")
+                result = sync_odds_to_supabase(pg_conn, league, odds_data, only_game_ids=only_ids)
+                if league == "NFL" and not args.skip_team_totals:
+                    team_totals = fetch_nfl_team_totals(api_key, odds_data)
+                    if team_totals:
+                        sync_odds_to_supabase(pg_conn, league, team_totals, only_game_ids=only_ids)
+                sync_odds_to_bq(bq_client, project, league, odds_data)
+
+            espn_data: List[Dict[str, Any]] = []
+            if not args.skip_espn_dk:
+                espn_data = fetch_espn_dk_odds_data(league, now_utc=datetime.now(timezone.utc))
+                if espn_data:
+                    espn_result = sync_odds_to_supabase(pg_conn, league, espn_data, only_game_ids=only_ids)
+                    if espn_result.matched_count:
+                        result = OddsSyncResult(
+                            matched_count=max(result.matched_count, espn_result.matched_count),
+                            supabase_games=max(result.supabase_games, espn_result.supabase_games),
+                            supabase_dates=result.supabase_dates | espn_result.supabase_dates,
+                            odds_dates=result.odds_dates | espn_result.odds_dates,
+                            market_counts=espn_result.market_counts,
+                        )
+                    try:
+                        sync_odds_to_bq(bq_client, project, league, espn_data)
+                    except Exception as exc:  # noqa: BLE001
+                        LOGGER.warning("ESPN DK BigQuery spread update skipped for %s: %s", league, exc)
+
+            if not odds_data and not espn_data:
                 message = f"No odds events returned for {league}"
                 if expected_games > 0:
                     failures.append(f"{message}; {expected_games} Supabase games are in the serving window.")
                     LOGGER.error(failures[-1])
                 else:
                     LOGGER.warning(f"{message}; no Supabase games are in the serving window.")
+                if paid_quota_exhausted:
+                    break
                 continue
-                
-            LOGGER.info(f"Retrieved {len(odds_data)} games from The Odds API for {league}")
-            only_ids = {str(game_id) for game_id in args.game_ids} if args.game_ids else None
-            result = sync_odds_to_supabase(pg_conn, league, odds_data, only_game_ids=only_ids)
-            if league == "NFL" and not args.skip_team_totals:
-                team_totals = fetch_nfl_team_totals(api_key, odds_data)
-                if team_totals:
-                    sync_odds_to_supabase(pg_conn, league, team_totals, only_game_ids=only_ids)
             if result.supabase_games > 0 and result.matched_count == 0:
                 overlapping_dates = result.supabase_dates & result.odds_dates
                 message = (
@@ -866,12 +922,13 @@ def main():
                     )
                 else:
                     LOGGER.warning(
-                        "%s Supabase dates=%s Odds API dates=%s; treating as schedule drift.",
+                        "%s Supabase dates=%s Odds dates=%s; treating as schedule drift.",
                         message,
                         sorted(result.supabase_dates),
                         sorted(result.odds_dates),
                     )
-            sync_odds_to_bq(bq_client, project, league, odds_data)
+            if paid_quota_exhausted and not espn_data:
+                break
         if failures:
             for failure in failures:
                 LOGGER.error(failure)

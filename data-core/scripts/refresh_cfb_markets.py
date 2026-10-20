@@ -31,6 +31,7 @@ from src.models.cfb_market import (  # noqa: E402
 )
 from src.data.odds_api_errors import OddsApiQuotaExhausted, check_odds_api_response  # noqa: E402
 from src.data.odds_api_client import budgeted_get, response_timestamp  # noqa: E402
+from src.data.espn_dk_odds import ESPN_DK_BOOK, fetch_espn_dk_events  # noqa: E402
 from src.utils.supabase_pg import create_pg_connection, load_supabase_credentials  # noqa: E402
 
 
@@ -83,6 +84,21 @@ def fetch_odds(api_key: str) -> tuple[list[dict[str, Any]], datetime, int | None
     check_odds_api_response(response, context="CFB team-market odds")
     remaining = response.headers.get("x-requests-remaining")
     return response.json(), response_timestamp(response), int(remaining) if remaining else None
+
+
+def fetch_espn_dk_cfb_events(games: list[dict[str, Any]], *, now: datetime | None = None) -> tuple[list[dict[str, Any]], datetime]:
+    """Free ESPN DraftKings game lines for the CFB slate. Fail closed on fetch errors."""
+    now = now or datetime.now(timezone.utc)
+    if not games:
+        return [], now
+    days = []
+    for game in games:
+        stamp = pd.Timestamp(game["game_time_utc"])
+        if stamp.tzinfo is None:
+            stamp = stamp.tz_localize("UTC")
+        days.append(stamp.tz_convert("America/Denver").date())
+    events = fetch_espn_dk_events("CFB", start=min(days), end=max(days), now=now)
+    return events, now
 
 
 def match_odds_event(game: dict[str, Any], odds_events: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -396,21 +412,33 @@ def main() -> None:
     if not args.skip_odds:
         api_key = os.getenv("ODDS_API_KEY")
         if not api_key:
-            raise RuntimeError("ODDS_API_KEY is required unless --skip-odds is used.")
-        try:
-            odds_events, odds_ts, remaining = fetch_odds(api_key)
-            for game in future:
-                event = match_odds_event(game, odds_events)
-                if event:
-                    odds_rows.extend(parse_odds_rows(game, event, odds_ts))
-        except OddsApiQuotaExhausted as exc:
-            print(
-                f"WARNING: Skipping CFB odds sync: {exc}. "
-                "Not writing sportsbook lines. Predictions still publish."
-            )
-            odds_events = []
-            odds_rows = []
-            remaining = None
+            print("WARNING: ODDS_API_KEY is not set; using free ESPN DK game lines only.")
+        else:
+            try:
+                odds_events, odds_ts, remaining = fetch_odds(api_key)
+                for game in future:
+                    event = match_odds_event(game, odds_events)
+                    if event:
+                        odds_rows.extend(parse_odds_rows(game, event, odds_ts))
+            except OddsApiQuotaExhausted as exc:
+                print(
+                    f"WARNING: Skipping paid CFB odds sync: {exc}. "
+                    f"Falling back to free ESPN DK game lines ({ESPN_DK_BOOK})."
+                )
+                odds_events = []
+                remaining = None
+    try:
+        espn_events, espn_ts = fetch_espn_dk_cfb_events(future)
+        espn_matched = 0
+        for game in future:
+            event = match_odds_event(game, espn_events)
+            if event:
+                espn_matched += 1
+                odds_rows.extend(parse_odds_rows(game, event, espn_ts))
+        if espn_events:
+            print(f"ESPN DK CFB snapshot: events={len(espn_events)} matched={espn_matched} book={ESPN_DK_BOOK}")
+    except Exception as exc:  # noqa: BLE001
+        print(f"WARNING: ESPN DK CFB snapshot unavailable: {exc}")
     recommendations = build_recommendations(scored, odds_rows, model, prediction_ts)
     coverage = {
         market: len({row["event_id"] for row in odds_rows if row["market"] == market})
