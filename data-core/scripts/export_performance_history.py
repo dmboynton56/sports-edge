@@ -108,7 +108,7 @@ def build_history(cache_dir: Path) -> dict[str, Any]:
             },
             {
                 "sport": "NFL",
-                "model_version": nfl_v2_live.get("model_version", "nfl-v2-live-20260906"),
+                "model_version": nfl_v2_live.get("model_version", "nfl-v2-live-20261020"),
                 "season": "2026 live",
                 "market": "win probability + margin",
                 "data_source": "Timestamp-safe Supabase live predictions; 2025 v1 retained as comparison",

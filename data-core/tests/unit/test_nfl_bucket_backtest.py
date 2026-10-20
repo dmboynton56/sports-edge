@@ -26,7 +26,7 @@ from src.models.nfl_bucket_backtest import (
     train_walk_forward_bundle,
     walk_forward_predictions,
 )
-from src.models.nfl_live import DEFAULT_ARTIFACT, PARENT_LIVE_MODEL_VERSION
+from src.models.nfl_live import DEFAULT_ARTIFACT, LIVE_MODEL_VERSION
 from src.models.nfl_v2 import FEATURE_COLUMNS
 
 
@@ -299,7 +299,7 @@ def test_frozen_live_artifact_is_still_coarse_unregularized_isotonic():
     specs = load_live_specs()
     assert specs["calibration_method"] == "isotonic"
     payload = frozen_isotonic_map_diagnostics()
-    assert payload["model_version"] == PARENT_LIVE_MODEL_VERSION
+    assert payload["model_version"] == LIVE_MODEL_VERSION
     assert payload["is_unregularized_isotonic"] is True
     assert payload["n_thresholds"] >= 20
     assert payload["unique_y"] <= 20

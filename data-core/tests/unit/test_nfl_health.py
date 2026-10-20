@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import inspect
+
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
@@ -11,7 +14,14 @@ from src.models.nfl_health import (
     score_prediction_frame,
     segmented_health,
 )
-from src.models.nfl_live import LIVE_MODEL_VERSION, posthoc_calibration_enabled
+from src.models.nfl_live import (
+    DEFAULT_ARTIFACT,
+    LIVE_MODEL_VERSION,
+    PARENT_LIVE_MODEL_VERSION,
+    apply_live_serving_stamp,
+    load_live_artifact,
+    posthoc_calibration_enabled,
+)
 from src.models.nfl_recalibration import (
     fit_temperature,
     ship_decision,
@@ -150,3 +160,36 @@ def test_posthoc_calibration_is_off_unless_explicitly_enabled(monkeypatch):
         {"NFL_V2_POSTHOC_CALIBRATION": "on", "NFL_V2_DISABLE_POSTHOC_CALIBRATION": "1"}
     ) is False
     assert LIVE_MODEL_VERSION == "nfl-v2-live-20261020"
+
+
+def test_health_expected_version_equals_predict_written_version(monkeypatch):
+    """Health, Daily Refresh, and the loaded live artifact must share one stamp."""
+    pickle = joblib.load(DEFAULT_ARTIFACT)
+    assert pickle["model_version"] == PARENT_LIVE_MODEL_VERSION
+
+    artifact = load_live_artifact()
+    assert artifact["model_version"] == LIVE_MODEL_VERSION
+    assert artifact.get("parent_model_version") == PARENT_LIVE_MODEL_VERSION
+    assert (artifact.get("win_prob") or {}).get("method") == "margin_normal"
+
+    monkeypatch.setattr("sys.argv", ["nfl_model_health.py"])
+    from scripts.nfl_model_health import _parse_args as health_args
+    from scripts.nfl_model_health import reconstruct_live
+
+    from scripts.grade_nfl_v2_live import _parse_args as grade_args
+    from scripts.predict_nfl_upcoming import LIVE_MODEL_VERSION as predict_version
+    from src.pipeline.refresh_nfl import LIVE_MODEL_VERSION as refresh_version
+
+    assert health_args().model_version == predict_version == refresh_version == LIVE_MODEL_VERSION
+    monkeypatch.setattr("sys.argv", ["grade_nfl_v2_live.py"])
+    assert grade_args().model_version == LIVE_MODEL_VERSION
+    source = inspect.getsource(reconstruct_live)
+    assert "score_live_features" in source
+    assert 'artifact["probability_model"].predict_probability' not in source
+
+
+def test_live_stamp_fails_closed_without_margin_normal_sidecar(monkeypatch):
+    monkeypatch.setattr("src.models.nfl_margin_probability.load_win_prob_sidecar", lambda *args, **kwargs: {})
+    artifact = {"model_version": PARENT_LIVE_MODEL_VERSION}
+    with pytest.raises(ValueError, match="margin_normal"):
+        apply_live_serving_stamp(artifact, expected=LIVE_MODEL_VERSION, sidecar=True)
