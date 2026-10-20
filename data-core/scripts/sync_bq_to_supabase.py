@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
+from src.models.live_model_versions import assert_sync_matches_dashboard, dashboard_model_version
 from src.utils.supabase_pg import (
     create_pg_connection,
     game_map_key,
@@ -538,6 +539,11 @@ def main() -> None:
     load_dotenv()
     args = _parse_args()
     _configure_logging(args.log_level)
+    if args.league == "NFL":
+        try:
+            assert_sync_matches_dashboard("NFL", args.model_version)
+        except ValueError as exc:
+            raise SystemExit(str(exc)) from exc
     start_date, end_date = _resolve_date_filters(args)
     LOGGER.info(
         "Starting sync | project=%s league=%s season=%s week=%s model_version=%s model_number=%s append=%s",
@@ -589,6 +595,13 @@ def main() -> None:
             "  Date range: %s to %s", preds["game_date"].min().date(), preds["game_date"].max().date()
         )
     LOGGER.info("  Model versions: %s", preds["model_version"].unique().tolist())
+    if args.league == "NFL":
+        synced = {str(value) for value in preds["model_version"].dropna().unique()}
+        preferred = dashboard_model_version("NFL")
+        if synced != {preferred}:
+            raise SystemExit(
+                f"NFL sync wrote {sorted(synced)} but the dashboard prefers {preferred!r}."
+            )
 
     games_df = _prepare_games(preds)
     creds = load_supabase_credentials()

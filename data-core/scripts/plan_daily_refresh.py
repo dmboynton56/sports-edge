@@ -21,6 +21,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from src.models.live_model_versions import dashboard_model_version
 from src.utils.nfl_schedule import nfl_week_window
 
 try:
@@ -32,7 +33,7 @@ except ImportError:  # pragma: no cover - local unit tests do not need BigQuery
 LEAGUES = ("MLB", "NBA", "NFL", "CFB", "WORLD_CUP")
 SLATE_TIME_ZONE = "America/Denver"
 NFL_PROVIDER_FALLBACK_MAX_SEASON = 2025
-NFL_LIVE_MODEL_VERSION = "nfl-v2-live-20261020"
+NFL_LIVE_MODEL_VERSION = dashboard_model_version("NFL")
 NFL_PREDICTION_STALE_HOURS = 48
 NFL_PREDICTION_LOOKAHEAD_DAYS = 7
 NFL_MAX_FORECAST_WINDOW_DAYS = 14
