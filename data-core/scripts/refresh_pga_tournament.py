@@ -8,6 +8,7 @@ import json
 import tempfile
 import subprocess
 import sys
+from collections.abc import Sequence
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -98,31 +99,123 @@ def _write_state(state: dict[str, Any], path: Path = STATE_PATH) -> None:
     path.write_text(json.dumps(state, indent=2, sort_keys=True), encoding="utf-8")
 
 
+def _midtournament_state_key(tournament_key: str, rounds_completed: int) -> str:
+    return f"{tournament_key}:R{rounds_completed}"
+
+
+def _load_json_dict(path: Path) -> dict[str, Any] | None:
+    if not path.exists():
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+    return payload if isinstance(payload, dict) else None
+
+
+def _meta_matches_round(meta_path: Path, expected_key: str) -> bool:
+    meta = _load_json_dict(meta_path)
+    if not meta:
+        return False
+    if meta.get("score_source") != "espn_completed_round_scores_v1":
+        return False
+    return meta.get("round_state_key") == expected_key
+
+
 def _existing_midtournament_state(tournament: PgaTournament) -> str | None:
     # Check for latest round-specific file first
     for round_no in range(tournament.total_rounds, 0, -1):
         meta_path = tournament.midtournament_csv.with_name(
             f"{tournament.key}_midtournament_R{round_no}.meta.json"
         )
-        if meta_path.exists():
-            try:
-                meta = json.loads(meta_path.read_text(encoding="utf-8"))
-            except json.JSONDecodeError:
-                continue
-            if meta.get("score_source") == "espn_completed_round_scores_v1":
-                return meta.get("round_state_key")
-    
+        meta = _load_json_dict(meta_path)
+        if meta and meta.get("score_source") == "espn_completed_round_scores_v1":
+            return meta.get("round_state_key")
+
     # Fall back to legacy single-file name
-    meta_path = tournament.midtournament_csv.with_suffix(".meta.json")
-    if not meta_path.exists():
-        return None
-    try:
-        meta = json.loads(meta_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
-        return None
-    if meta.get("score_source") != "espn_completed_round_scores_v1":
+    meta = _load_json_dict(tournament.midtournament_csv.with_suffix(".meta.json"))
+    if not meta or meta.get("score_source") != "espn_completed_round_scores_v1":
         return None
     return meta.get("round_state_key")
+
+
+def _midtournament_csv_covers_round(
+    tournament: PgaTournament,
+    rounds_completed: int,
+    *,
+    midtournament_csv: Path | None = None,
+) -> bool:
+    """True when the local sim artifact for this completed round is present."""
+    if rounds_completed <= 0:
+        return False
+    base = midtournament_csv or tournament.midtournament_csv
+    expected_key = _midtournament_state_key(tournament.key, rounds_completed)
+    round_csv = base.with_name(f"{tournament.key}_midtournament_R{rounds_completed}.csv")
+    round_meta = base.with_name(f"{tournament.key}_midtournament_R{rounds_completed}.meta.json")
+    if round_csv.exists() and (not round_meta.exists() or _meta_matches_round(round_meta, expected_key)):
+        return True
+    legacy_meta = base.with_suffix(".meta.json")
+    return base.exists() and _meta_matches_round(legacy_meta, expected_key)
+
+
+def _published_json_covers_round(path: Path, tournament_key: str, rounds_completed: int) -> bool:
+    payload = _load_json_dict(path)
+    if not payload:
+        return False
+    event_key = str((payload.get("event") or {}).get("eventKey") or "")
+    if event_key != tournament_key:
+        return False
+    midtournament = payload.get("midtournament") or {}
+    mt_meta = midtournament.get("meta") or {}
+    mt_preds = midtournament.get("predictions") or []
+    mt_rounds = int(mt_meta.get("rounds_completed") or 0)
+    if mt_preds and mt_rounds >= rounds_completed:
+        return True
+    return any(int(pred.get("rounds_completed") or 0) >= rounds_completed for pred in payload.get("predictions") or [])
+
+
+def published_round_predictions_exist(
+    tournament: PgaTournament,
+    rounds_completed: int,
+    *,
+    midtournament_csv: Path | None = None,
+    published_json_paths: Sequence[Path] | None = None,
+) -> bool:
+    """True when this completed round was already simulated and published.
+
+    The skip guard only proves the sim ran once. Fail-closed still requires the
+    published dashboard JSON for this tournament/round, plus the CSV export uses.
+    """
+    if rounds_completed <= 0:
+        return False
+    if not _midtournament_csv_covers_round(
+        tournament,
+        rounds_completed,
+        midtournament_csv=midtournament_csv,
+    ):
+        return False
+    paths = (
+        tuple(published_json_paths)
+        if published_json_paths is not None
+        else (tournament.current_json, tournament.public_json)
+    )
+    return any(_published_json_covers_round(path, tournament.key, rounds_completed) for path in paths)
+
+
+def validate_live_midtournament_or_raise(
+    *,
+    rounds_completed: int,
+    sims_ran: bool,
+    published_for_round: bool,
+    dry_run: bool = False,
+) -> None:
+    """Fail closed unless this completed round was simulated now or already published."""
+    if dry_run or rounds_completed <= 0 or sims_ran or published_for_round:
+        return
+    raise SystemExit(
+        f"VALIDATION FAILURE: {rounds_completed} completed round(s) detected but midtournament simulation did not run. "
+        "Refusing to publish stale pre-tournament predictions as if they were current."
+    )
 
 
 def _field_fetch_command(tournament: PgaTournament) -> list[str] | None:
@@ -292,7 +385,7 @@ def run_midtournament_update(
         print("No completed round state yet; skipping mid-tournament simulation.")
         return False
 
-    state_key = f"{tournament.key}:R{rounds_completed}"
+    state_key = _midtournament_state_key(tournament.key, rounds_completed)
     state = _load_state()
     tournament_state = state.get(tournament.key, {})
     last_state = None
@@ -580,12 +673,18 @@ def main() -> None:
                 args=args,
                 dry_run=args.dry_run,
             )
-            # Validation: if a round is complete, the sim MUST have run
-            if rounds_done > 0 and not sims_ran and not args.dry_run:
-                raise SystemExit(
-                    f"VALIDATION FAILURE: {rounds_done} completed round(s) detected but midtournament simulation did not run. "
-                    "Refusing to publish stale pre-tournament predictions as if they were current."
+            published_for_round = published_round_predictions_exist(tournament, rounds_done)
+            if not sims_ran and published_for_round and rounds_done > 0:
+                print(
+                    f"Completed round R{rounds_done} already processed and published; "
+                    "continuing without re-sim."
                 )
+            validate_live_midtournament_or_raise(
+                rounds_completed=rounds_done,
+                sims_ran=sims_ran,
+                published_for_round=published_for_round,
+                dry_run=args.dry_run,
+            )
         elif phase == "post":
             if not tournament.predictions_csv.exists():
                 run_pretournament_predictions(tournament, args, dry_run=args.dry_run)
