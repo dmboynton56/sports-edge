@@ -1,5 +1,5 @@
 from datetime import date
-from datetime import date
+import json
 from pathlib import Path
 import subprocess
 import sys
@@ -34,6 +34,8 @@ from scripts.refresh_pga_tournament import (
     _should_preserve_last_good_output,
     _should_skip_leaderboard,
     ensure_field,
+    published_round_predictions_exist,
+    validate_live_midtournament_or_raise,
 )
 
 
@@ -478,3 +480,116 @@ def test_export_fails_when_completed_round_with_no_midtournament_predictions():
         
         assert result.returncode != 0, "Export should fail when round is complete but no midtournament data"
         assert "VALIDATION FAILURE" in result.stderr or "VALIDATION FAILURE" in result.stdout
+
+
+def _write_round_artifacts(
+    tmp_path: Path,
+    tournament_key: str,
+    *,
+    rounds_completed: int,
+    include_csv: bool = True,
+    published_rounds: int | None = None,
+    published_event_key: str | None = None,
+) -> tuple[Path, Path]:
+    base_csv = tmp_path / f"{tournament_key}_midtournament.csv"
+    if include_csv:
+        round_csv = tmp_path / f"{tournament_key}_midtournament_R{rounds_completed}.csv"
+        round_meta = tmp_path / f"{tournament_key}_midtournament_R{rounds_completed}.meta.json"
+        round_csv.write_text("player,sim_win_pct\nChandler Blanchet,21.738\n")
+        round_meta.write_text(
+            json.dumps(
+                {
+                    "round_state_key": f"{tournament_key}:R{rounds_completed}",
+                    "rounds_completed": rounds_completed,
+                    "score_source": "espn_completed_round_scores_v1",
+                    "type": "midtournament",
+                }
+            )
+        )
+    published = tmp_path / "current.json"
+    pub_rounds = rounds_completed if published_rounds is None else published_rounds
+    event_key = tournament_key if published_event_key is None else published_event_key
+    payload = {
+        "event": {"eventKey": event_key, "name": "Butterfield Bermuda Championship"},
+        "predictions": [
+            {
+                "player": "Chandler Blanchet",
+                "best_calibrated_target_win_prob": 0.21738 if pub_rounds else 0.00876,
+                "rounds_completed": pub_rounds or None,
+            }
+        ],
+    }
+    if pub_rounds:
+        payload["midtournament"] = {
+            "meta": {
+                "round_state_key": f"{event_key}:R{pub_rounds}",
+                "rounds_completed": pub_rounds,
+                "score_source": "espn_completed_round_scores_v1",
+            },
+            "predictions": [{"player": "Chandler Blanchet", "sim_win_pct": 21.738, "r1": 62}],
+        }
+    published.write_text(json.dumps(payload))
+    return base_csv, published
+
+
+def test_live_validator_passes_when_round_already_processed_and_published(tmp_path):
+    tournament = _tournament("butterfield_bermuda_championship_2026")
+    base_csv, published = _write_round_artifacts(tmp_path, tournament.key, rounds_completed=1)
+
+    assert published_round_predictions_exist(
+        tournament,
+        1,
+        midtournament_csv=base_csv,
+        published_json_paths=(published,),
+    )
+    validate_live_midtournament_or_raise(
+        rounds_completed=1,
+        sims_ran=False,
+        published_for_round=True,
+    )
+
+
+def test_live_validator_fails_when_round_processed_but_published_rows_missing(tmp_path):
+    tournament = _tournament("butterfield_bermuda_championship_2026")
+    base_csv, published = _write_round_artifacts(
+        tmp_path,
+        tournament.key,
+        rounds_completed=1,
+        published_rounds=0,
+    )
+
+    assert published_round_predictions_exist(
+        tournament,
+        1,
+        midtournament_csv=base_csv,
+        published_json_paths=(published,),
+    ) is False
+    with pytest.raises(SystemExit, match="VALIDATION FAILURE"):
+        validate_live_midtournament_or_raise(
+            rounds_completed=1,
+            sims_ran=False,
+            published_for_round=False,
+        )
+
+
+def test_live_validator_passes_when_sim_ran_fresh(tmp_path):
+    tournament = _tournament("butterfield_bermuda_championship_2026")
+    base_csv, published = _write_round_artifacts(
+        tmp_path,
+        tournament.key,
+        rounds_completed=1,
+        include_csv=False,
+        published_rounds=0,
+    )
+
+    assert published_round_predictions_exist(
+        tournament,
+        1,
+        midtournament_csv=base_csv,
+        published_json_paths=(published,),
+    ) is False
+    validate_live_midtournament_or_raise(
+        rounds_completed=1,
+        sims_ran=True,
+        published_for_round=False,
+    )
