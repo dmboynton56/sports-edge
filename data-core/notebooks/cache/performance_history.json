@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-13T20:21:06.213905+00:00",
+  "generated_at": "2026-10-27T19:35:08.393566+00:00",
   "oddspapi": {
     "api_version": "v4",
     "cumulative_api_requests": 241,
@@ -144,6 +144,7 @@
       ],
       "data_source": "Timestamp-safe Supabase live predictions; 2025 v1 retained as comparison",
       "gaps": [
+        "Four weeks and 64 graded games are required before a live-rollout decision.",
         "OddsPapi historical NFL coverage is recent-fixture limited on this key tier",
         "Injuries are excluded until historical point-in-time coverage passes its gate"
       ],
@@ -154,25 +155,25 @@
         "bigquery_brier": 0.26675504905752667,
         "bigquery_log_loss": 0.7439216892468532,
         "bigquery_spread_mae": 11.148356792670684,
-        "live_auc": 0.6270860077021821,
-        "live_brier": 0.24037419663862286,
-        "live_ece_10": 0.05446756887402185,
-        "live_home_margin_bias": 1.69154091034898,
-        "live_home_probability_bias": 0.025457617070664407,
-        "live_log_loss": 0.6743534218445189,
-        "live_margin_mae": 10.000981475458733,
-        "live_status": "alert",
+        "live_auc": 0.48888888888888893,
+        "live_brier": 0.2813867966158352,
+        "live_ece_10": 0.2812419669458924,
+        "live_home_margin_bias": 5.915382330491818,
+        "live_home_probability_bias": 0.16122890007397744,
+        "live_log_loss": 0.7627232959064453,
+        "live_margin_mae": 12.164965949693649,
+        "live_status": "monitoring",
         "supabase_ats_losses": 29,
         "supabase_ats_pushes": 0,
         "supabase_ats_roi": -0.07954545454545459,
         "supabase_ats_wins": 27
       },
-      "model_version": "nfl-v2-live-20260906",
+      "model_version": "nfl-v2-live-20261020",
       "odds_status": "partial_supabase_spread_odds",
       "sample": {
         "bigquery_scored_games": 285,
-        "live_graded_games": 79,
-        "live_graded_weeks": 5,
+        "live_graded_games": 14,
+        "live_graded_weeks": 1,
         "odds_joined_games": 56,
         "oddspapi_spread_rows": 0,
         "supabase_graded_games": 56
