@@ -10,24 +10,24 @@
     "margin": [
       {
         "baseline": {
-          "avg_actual_margin": -1.6271186440677967,
-          "avg_predicted_margin": 1.6094169006752586,
-          "home_margin_bias": 3.2365355447430546,
-          "mae": 8.934512992658144,
-          "rmse": 11.666535076047298,
-          "rows": 59
+          "avg_actual_margin": 0.3698630136986301,
+          "avg_predicted_margin": 1.9576338568443983,
+          "home_margin_bias": 1.5877708431457684,
+          "mae": 9.350786119104896,
+          "rmse": 11.927328706346959,
+          "rows": 73
         },
         "candidate": {
-          "avg_actual_margin": -1.6271186440677967,
-          "avg_predicted_margin": 0.8765160923422318,
-          "home_margin_bias": 2.5036347364100284,
-          "mae": 8.483229990921133,
-          "rmse": 11.14948094428302,
-          "rows": 59
+          "avg_actual_margin": 0.3698630136986301,
+          "avg_predicted_margin": 1.0347180158441678,
+          "home_margin_bias": 0.6648550021455377,
+          "mae": 9.0711693056474,
+          "rmse": 11.801891817886473,
+          "rows": 73
         },
         "delta": {
-          "mae": -0.45128300173701064,
-          "rmse": -0.5170541317642776
+          "mae": -0.2796168134574959,
+          "rmse": -0.12543688846048617
         },
         "folds": [
           {
@@ -74,33 +74,47 @@
               4,
               5,
               6
+            ]
+          },
+          {
+            "test_rows": 14,
+            "test_week": 8,
+            "train_rows": 107,
+            "train_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
             ]
           }
         ],
         "method": "scale",
-        "oos_rows": 59,
+        "oos_rows": 73,
         "status": "ok"
       },
       {
         "baseline": {
-          "avg_actual_margin": -1.6271186440677967,
-          "avg_predicted_margin": 1.6094169006752586,
-          "home_margin_bias": 3.2365355447430546,
-          "mae": 8.934512992658144,
-          "rmse": 11.666535076047298,
-          "rows": 59
+          "avg_actual_margin": 0.3698630136986301,
+          "avg_predicted_margin": 1.9576338568443983,
+          "home_margin_bias": 1.5877708431457684,
+          "mae": 9.350786119104896,
+          "rmse": 11.927328706346959,
+          "rows": 73
         },
         "candidate": {
-          "avg_actual_margin": -1.6271186440677967,
-          "avg_predicted_margin": 0.21404780838861726,
-          "home_margin_bias": 1.8411664524564144,
-          "mae": 8.330163123589124,
-          "rmse": 11.055829741240906,
-          "rows": 59
+          "avg_actual_margin": 0.3698630136986301,
+          "avg_predicted_margin": 0.23073030077608894,
+          "home_margin_bias": -0.1391327129225412,
+          "mae": 9.088439743426717,
+          "rmse": 11.899389840078456,
+          "rows": 73
         },
         "delta": {
-          "mae": -0.6043498690690203,
-          "rmse": -0.6107053348063918
+          "mae": -0.2623463756781792,
+          "rmse": -0.02793886626850295
         },
         "folds": [
           {
@@ -147,36 +161,50 @@
               4,
               5,
               6
+            ]
+          },
+          {
+            "test_rows": 14,
+            "test_week": 8,
+            "train_rows": 107,
+            "train_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
             ]
           }
         ],
         "method": "affine",
-        "oos_rows": 59,
+        "oos_rows": 73,
         "status": "ok"
       }
     ],
-    "market_rows": 107,
+    "market_rows": 121,
     "probability": [
       {
         "baseline": {
-          "auc": 0.6904761904761905,
-          "brier": 0.23461548077808939,
-          "ece_10": 0.2086240212244097,
-          "home_probability_bias": 0.13526730056581315,
-          "log_loss": 0.661149265463784,
-          "rows": 59
+          "auc": 0.6990950226244343,
+          "brier": 0.22772648035885767,
+          "ece_10": 0.13928010015765488,
+          "home_probability_bias": 0.08672967009731947,
+          "log_loss": 0.6458850194485709,
+          "rows": 73
         },
         "candidate": {
-          "auc": 0.6690476190476191,
-          "brier": 0.23922281076209495,
-          "ece_10": 0.17939018769007226,
-          "home_probability_bias": 0.1279943763081386,
-          "log_loss": 0.6723514271712153,
-          "rows": 59
+          "auc": 0.6817496229260935,
+          "brier": 0.23293057384415994,
+          "ece_10": 0.1731168420153522,
+          "home_probability_bias": 0.07534921091512248,
+          "log_loss": 0.6588717783468847,
+          "rows": 73
         },
         "delta": {
-          "brier": 0.004607329984005565,
-          "log_loss": 0.011202161707431268
+          "brier": 0.005204093485302264,
+          "log_loss": 0.0129867588983138
         },
         "folds": [
           {
@@ -223,33 +251,47 @@
               4,
               5,
               6
+            ]
+          },
+          {
+            "test_rows": 14,
+            "test_week": 8,
+            "train_rows": 107,
+            "train_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
             ]
           }
         ],
         "method": "temperature",
-        "oos_rows": 59,
+        "oos_rows": 73,
         "status": "ok"
       },
       {
         "baseline": {
-          "auc": 0.6904761904761905,
-          "brier": 0.23461548077808939,
-          "ece_10": 0.2086240212244097,
-          "home_probability_bias": 0.13526730056581315,
-          "log_loss": 0.661149265463784,
-          "rows": 59
+          "auc": 0.6990950226244343,
+          "brier": 0.22772648035885767,
+          "ece_10": 0.13928010015765488,
+          "home_probability_bias": 0.08672967009731947,
+          "log_loss": 0.6458850194485709,
+          "rows": 73
         },
         "candidate": {
-          "auc": 0.6583333333333334,
-          "brier": 0.24074311199456855,
-          "ece_10": 0.1640702251638056,
-          "home_probability_bias": 0.12332195411800029,
-          "log_loss": 0.6761224442548307,
-          "rows": 59
+          "auc": 0.6530920060331825,
+          "brier": 0.2371123350283885,
+          "ece_10": 0.11353301358089447,
+          "home_probability_bias": 0.06289320918948405,
+          "log_loss": 0.6678263773199108,
+          "rows": 73
         },
         "delta": {
-          "brier": 0.006127631216479162,
-          "log_loss": 0.014973178791046649
+          "brier": 0.009385854669530819,
+          "log_loss": 0.021941357871339884
         },
         "folds": [
           {
@@ -296,33 +338,47 @@
               4,
               5,
               6
+            ]
+          },
+          {
+            "test_rows": 14,
+            "test_week": 8,
+            "train_rows": 107,
+            "train_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
             ]
           }
         ],
         "method": "platt",
-        "oos_rows": 59,
+        "oos_rows": 73,
         "status": "ok"
       },
       {
         "baseline": {
-          "auc": 0.6904761904761905,
-          "brier": 0.23461548077808939,
-          "ece_10": 0.2086240212244097,
-          "home_probability_bias": 0.13526730056581315,
-          "log_loss": 0.661149265463784,
-          "rows": 59
+          "auc": 0.6990950226244343,
+          "brier": 0.22772648035885767,
+          "ece_10": 0.13928010015765488,
+          "home_probability_bias": 0.08672967009731947,
+          "log_loss": 0.6458850194485709,
+          "rows": 73
         },
         "candidate": {
-          "auc": 0.6797619047619048,
-          "brier": 0.23302196590232857,
-          "ece_10": 0.16893312906862562,
-          "home_probability_bias": 0.1292330546754391,
-          "log_loss": 0.8379320184733945,
-          "rows": 59
+          "auc": 0.6436651583710408,
+          "brier": 0.2275657716348048,
+          "ece_10": 0.16777854121123031,
+          "home_probability_bias": 0.06901874353142434,
+          "log_loss": 0.7892772042363095,
+          "rows": 73
         },
         "delta": {
-          "brier": -0.0015935148757608153,
-          "log_loss": 0.17678275300961044
+          "brier": -0.0001607087240528826,
+          "log_loss": 0.14339218478773863
         },
         "folds": [
           {
@@ -369,33 +425,47 @@
               4,
               5,
               6
+            ]
+          },
+          {
+            "test_rows": 14,
+            "test_week": 8,
+            "train_rows": 107,
+            "train_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
             ]
           }
         ],
         "method": "isotonic",
-        "oos_rows": 59,
+        "oos_rows": 73,
         "status": "ok"
       },
       {
         "baseline": {
-          "auc": 0.6904761904761905,
-          "brier": 0.23461548077808939,
-          "ece_10": 0.2086240212244097,
-          "home_probability_bias": 0.13526730056581315,
-          "log_loss": 0.661149265463784,
-          "rows": 59
+          "auc": 0.6990950226244343,
+          "brier": 0.22772648035885767,
+          "ece_10": 0.13928010015765488,
+          "home_probability_bias": 0.08672967009731947,
+          "log_loss": 0.6458850194485709,
+          "rows": 73
         },
         "candidate": {
-          "auc": 0.6511904761904762,
-          "brier": 0.24295891280865586,
-          "ece_10": 0.15094171422018798,
-          "home_probability_bias": 0.131437761465642,
-          "log_loss": 0.6786184313323512,
-          "rows": 59
+          "auc": 0.6794871794871795,
+          "brier": 0.2319509732445602,
+          "ece_10": 0.12287856412441013,
+          "home_probability_bias": 0.08671218609094467,
+          "log_loss": 0.654797613788139,
+          "rows": 73
         },
         "delta": {
-          "brier": 0.008343432030566478,
-          "log_loss": 0.01746916586856717
+          "brier": 0.0042244928857025354,
+          "log_loss": 0.008912594339568147
         },
         "folds": [
           {
@@ -443,10 +513,24 @@
               5,
               6
             ]
+          },
+          {
+            "test_rows": 14,
+            "test_week": 8,
+            "train_rows": 107,
+            "train_weeks": [
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ]
           }
         ],
         "method": "market_shrink",
-        "oos_rows": 59,
+        "oos_rows": 73,
         "status": "ok"
       }
     ]
@@ -479,14 +563,17 @@
       "20261019",
       "20261022",
       "20261025",
-      "20261026"
+      "20261026",
+      "20261029",
+      "20261101",
+      "20261102"
     ],
     "lookup_errors": [],
-    "matched_finals": 85,
+    "matched_finals": 96,
     "mismatches": []
   },
   "games_csv": "/home/runner/work/sports-edge/sports-edge/data-core/notebooks/cache/nfl_model_health_2026_games.csv",
-  "generated_at": "2026-10-27T19:35:07.960851+00:00",
+  "generated_at": "2026-11-03T20:37:41.987596+00:00",
   "leakage": {
     "duplicate_rows": 0,
     "feature_missingness": {
@@ -545,22 +632,22 @@
   },
   "live_2026": {
     "diagnosis": {
-      "actual_home_win_rate": 0.48598130841121495,
-      "ece_10": 0.12633492100204252,
+      "actual_home_win_rate": 0.512396694214876,
+      "ece_10": 0.1022196153653064,
       "favorite_overconfidence_bins": [
         {
-          "actual_rate": 0.5,
-          "avg_probability": 0.6511195161036041,
-          "bias": 0.15111951610360408,
+          "actual_rate": 0.56,
+          "avg_probability": 0.6495469982539294,
+          "bias": 0.08954699825392931,
           "bucket": "(0.6, 0.7]",
-          "rows": 20
+          "rows": 25
         },
         {
-          "actual_rate": 0.5625,
-          "avg_probability": 0.7450249304718424,
-          "bias": 0.18252493047184237,
+          "actual_rate": 0.6,
+          "avg_probability": 0.7495781928743868,
+          "bias": 0.14957819287438678,
           "bucket": "(0.7, 0.8]",
-          "rows": 16
+          "rows": 20
         }
       ],
       "flags": {
@@ -569,195 +656,195 @@
         "home_probability_bias": true,
         "isotonic_coarseness": false
       },
-      "home_margin_bias": 2.3842426534762353,
-      "home_probability_bias": 0.06510985870729152,
-      "mean_model_confidence": 0.134069397879926,
-      "mean_predicted_home_win": 0.5510911671185065,
-      "unique_win_probabilities": 107
+      "home_margin_bias": 1.4881457713368436,
+      "home_probability_bias": 0.0439442154165417,
+      "mean_model_confidence": 0.13700597310036916,
+      "mean_predicted_home_win": 0.5563409096314177,
+      "unique_win_probabilities": 121
     },
     "feature_drift": [
       {
-        "abs_mean_delta": 81.33425236127482,
+        "abs_mean_delta": 93.52474525734823,
         "feature": "travel_advantage_km",
-        "live_mean": 386.7828459294761,
-        "live_std": 1322.1363427939618,
+        "live_mean": 374.5923530334027,
+        "live_std": 1392.3879608574143,
         "reference_mean": 468.1170982907509,
-        "reference_z": -0.05788273718438284
+        "reference_z": -0.06655828378333904
       },
       {
-        "abs_mean_delta": 0.505412495085162,
-        "feature": "margin_diff_10",
-        "live_mean": 0.3533784213392989,
-        "live_std": 6.208171266392564,
-        "reference_mean": -0.15203407374586303,
-        "reference_z": 0.06986067239344014
-      },
-      {
-        "abs_mean_delta": 0.5023159608595381,
-        "feature": "points_for_diff_3",
-        "live_mean": 0.40450872151960154,
-        "live_std": 4.714240863872808,
-        "reference_mean": -0.09780723933993661,
-        "reference_z": 0.10127953470866027
-      },
-      {
-        "abs_mean_delta": 0.44364361168002747,
+        "abs_mean_delta": 0.9132260604078195,
         "feature": "margin_diff_3",
-        "live_mean": 0.23596826547316865,
-        "live_std": 6.366718655931072,
+        "live_mean": 0.7055507142009607,
+        "live_std": 6.365605618210406,
         "reference_mean": -0.20767534620685882,
-        "reference_z": 0.06113826193401597
+        "reference_z": 0.12585113955489946
       },
       {
-        "abs_mean_delta": 0.33215179160892805,
+        "abs_mean_delta": 0.8416175849560134,
+        "feature": "points_for_diff_3",
+        "live_mean": 0.7438103456160767,
+        "live_std": 4.746433117597987,
+        "reference_mean": -0.09780723933993661,
+        "reference_z": 0.1696912780973857
+      },
+      {
+        "abs_mean_delta": 0.7307177632105737,
+        "feature": "margin_diff_10",
+        "live_mean": 0.5786836894647106,
+        "live_std": 6.170523807037807,
+        "reference_mean": -0.15203407374586303,
+        "reference_z": 0.10100350656965772
+      },
+      {
+        "abs_mean_delta": 0.5638344842045565,
         "feature": "points_for_diff_10",
-        "live_mean": 0.28225299777306123,
-        "live_std": 4.78003395137592,
+        "live_mean": 0.5139356903686897,
+        "live_std": 4.7961644963696894,
         "reference_mean": -0.04989879383586683,
-        "reference_z": 0.065826059459986
+        "reference_z": 0.11174108711880285
       },
       {
-        "abs_mean_delta": 0.257320306862837,
+        "abs_mean_delta": 0.546384537155687,
         "feature": "points_for_diff_5",
-        "live_mean": 0.17650304388668034,
-        "live_std": 4.833206508096395,
+        "live_mean": 0.4655672741795303,
+        "live_std": 4.904234022388737,
         "reference_mean": -0.0808172629761567,
-        "reference_z": 0.05146306716509834
+        "reference_z": 0.10927479636732575
       },
       {
-        "abs_mean_delta": 0.17326070347623396,
-        "feature": "points_against_diff_10",
-        "live_mean": -0.0711254235662377,
-        "live_std": 4.156875174719757,
-        "reference_mean": 0.10213527990999624,
-        "reference_z": -0.041049924609023694
-      },
-      {
-        "abs_mean_delta": 0.16753464243095,
+        "abs_mean_delta": 0.4224078290761005,
         "feature": "margin_diff_5",
-        "live_mean": 0.18495495104953447,
-        "live_std": 6.30909851369948,
+        "live_mean": 0.439828137694685,
+        "live_std": 6.186899725834043,
         "reference_mean": 0.01742030861858445,
-        "reference_z": 0.02281290932848452
+        "reference_z": 0.05751856072589121
       },
       {
-        "abs_mean_delta": 0.08978566443188686,
+        "abs_mean_delta": 0.166883279006017,
+        "feature": "points_against_diff_10",
+        "live_mean": -0.06474799909602075,
+        "live_std": 4.169325397061401,
+        "reference_mean": 0.10213527990999624,
+        "reference_z": -0.03953894844160868
+      },
+      {
+        "abs_mean_delta": 0.12397670807958638,
         "feature": "points_against_diff_5",
-        "live_mean": -0.008451907162854056,
-        "live_std": 4.229068240590526,
+        "live_mean": 0.02573913648484546,
+        "live_std": 4.169847309493263,
         "reference_mean": -0.09823757159474092,
-        "reference_z": 0.019947584084050573
+        "reference_z": 0.027543771319500945
       },
       {
-        "abs_mean_delta": 0.05867234917951106,
-        "feature": "points_against_diff_3",
-        "live_mean": 0.16854045604643325,
-        "live_std": 4.318367325325939,
-        "reference_mean": 0.1098681068669222,
-        "reference_z": 0.013085110445186008
-      },
-      {
-        "abs_mean_delta": 0.030339472237493115,
-        "feature": "home_field",
-        "live_mean": 0.9439252336448598,
-        "live_std": 0.23006604906712472,
-        "reference_mean": 0.9742647058823529,
-        "reference_z": -0.19160417540546773
-      },
-      {
-        "abs_mean_delta": 0.02387415246472421,
-        "feature": "qb_stability_diff",
-        "live_mean": -0.017133956386292837,
-        "live_std": 0.17640487780507322,
-        "reference_mean": 0.006740196078431373,
-        "reference_z": -0.13320338686391178
-      },
-      {
-        "abs_mean_delta": 0.016698735568993952,
+        "abs_mean_delta": 0.07346864365580943,
         "feature": "rest_diff",
-        "live_mean": 0.009345794392523364,
-        "live_std": 2.03931144281595,
+        "live_mean": 0.06611570247933884,
+        "live_std": 2.3345608084672196,
         "reference_mean": -0.007352941176470588,
-        "reference_z": 0.007247473806300415
+        "reference_z": 0.031886370574582205
       },
       {
-        "abs_mean_delta": 0.0076463554249923925,
-        "feature": "win_diff_5",
-        "live_mean": -0.002346516474774327,
-        "live_std": 0.23006013724498264,
-        "reference_mean": 0.005299838950218066,
-        "reference_z": -0.02981141653243317
+        "abs_mean_delta": 0.07160847545180574,
+        "feature": "points_against_diff_3",
+        "live_mean": 0.038259631415116464,
+        "live_std": 4.2861695903955095,
+        "reference_mean": 0.1098681068669222,
+        "reference_z": -0.015970126016796343
       },
       {
-        "abs_mean_delta": 0.007352941176470588,
+        "abs_mean_delta": 0.0238818667963053,
         "feature": "games_before_diff",
-        "live_mean": 0.0,
-        "live_std": 0.27343437080986527,
+        "live_mean": -0.01652892561983471,
+        "live_std": 0.36326051199728776,
         "reference_mean": 0.007352941176470588,
-        "reference_z": -0.018715306490217225
+        "reference_z": -0.06078607810458984
+      },
+      {
+        "abs_mean_delta": 0.023851482741857,
+        "feature": "home_field",
+        "live_mean": 0.9504132231404959,
+        "live_std": 0.217089678290309,
+        "reference_mean": 0.9742647058823529,
+        "reference_z": -0.1506302959780446
+      },
+      {
+        "abs_mean_delta": 0.021891711229946525,
+        "feature": "qb_stability_diff",
+        "live_mean": -0.015151515151515152,
+        "live_std": 0.17141982574219336,
+        "reference_mean": 0.006740196078431373,
+        "reference_z": -0.1221425591708139
+      },
+      {
+        "abs_mean_delta": 0.015347859800936645,
+        "feature": "win_diff_3",
+        "live_mean": 0.015847731829520154,
+        "live_std": 0.2284327721769482,
+        "reference_mean": 0.0004998720285835099,
+        "reference_z": 0.06119085624254453
       }
     ],
     "metrics": {
       "book_ats": {
-        "bets": 101,
-        "hit_rate": 0.43564356435643564,
-        "losses": 57,
+        "bets": 115,
+        "hit_rate": 0.46956521739130436,
+        "losses": 61,
         "no_bet": 0,
         "pushes": 6,
-        "roi": -0.16831683168316833,
-        "units": -17.0,
-        "wins": 44
+        "roi": -0.10355731225296443,
+        "units": -11.909090909090908,
+        "wins": 54
       },
       "book_margin": {
-        "avg_actual_margin": -0.5046728971962616,
-        "avg_predicted_margin": 1.6728971962616823,
-        "home_margin_bias": 2.177570093457944,
-        "mae": 9.36448598130841,
-        "rmse": 12.010314881442612,
-        "rows": 107
+        "avg_actual_margin": 0.5702479338842975,
+        "avg_predicted_margin": 2.1735537190082646,
+        "home_margin_bias": 1.603305785123967,
+        "mae": 9.561983471074381,
+        "rmse": 12.125037275225996,
+        "rows": 121
       },
       "bootstrap": {
         "abs_margin_error": {
-          "lower_95": 8.503641476512337,
-          "mean": 9.93152652590404,
-          "n": 107,
-          "upper_95": 11.479255899162508
+          "lower_95": 8.649504512717732,
+          "mean": 10.067309573550075,
+          "n": 121,
+          "upper_95": 11.500335554316033
         },
         "book_ats_roi": {
-          "lower_95": -0.321304163126593,
-          "mean": -0.1588785046728972,
-          "n": 107,
-          "upper_95": 0.012871707731520118
+          "lower_95": -0.25770097670924114,
+          "mean": -0.09842223891810668,
+          "n": 121,
+          "upper_95": 0.06538317054845971
         },
         "brier": {
-          "lower_95": 0.21056137967990649,
-          "mean": 0.23993787731766886,
-          "n": 107,
-          "upper_95": 0.26826184744519743
+          "lower_95": 0.20946261501786007,
+          "mean": 0.23516588903537117,
+          "n": 121,
+          "upper_95": 0.26107497026874527
         },
         "moneyline_roi": {
-          "lower_95": -0.19796473858680075,
-          "mean": -0.04685966414023438,
-          "n": 107,
-          "upper_95": 0.11609155610298001
+          "lower_95": -0.17830630816099938,
+          "mean": -0.03133232046408544,
+          "n": 121,
+          "upper_95": 0.10799843615570534
         }
       },
-      "close_game_winner_hit_rate": 0.5769230769230769,
-      "close_games": 26,
+      "close_game_winner_hit_rate": 0.5555555555555556,
+      "close_games": 27,
       "margin": {
-        "avg_actual_margin": -0.5046728971962616,
-        "avg_predicted_margin": 1.8795697562799738,
-        "home_margin_bias": 2.3842426534762353,
-        "mae": 9.93152652590404,
-        "rmse": 12.704103589326785,
-        "rows": 107
+        "avg_actual_margin": 0.5702479338842975,
+        "avg_predicted_margin": 2.058393705221141,
+        "home_margin_bias": 1.4881457713368436,
+        "mae": 10.067309573550075,
+        "rmse": 12.735022170542807,
+        "rows": 121
       },
       "market_probability": {
-        "accuracy": 0.6261682242990654,
-        "actual_rate": 0.48598130841121495,
-        "auc": 0.6638111888111888,
-        "avg_probability": 0.5536468443382166,
-        "brier": 0.2346570609839066,
+        "accuracy": 0.6446280991735537,
+        "actual_rate": 0.512396694214876,
+        "auc": 0.6752323674138875,
+        "avg_probability": 0.5614533262887641,
+        "brier": 0.22845365512565655,
         "calibration": [
           {
             "actual_rate": 0.0,
@@ -767,11 +854,11 @@
             "rows": 1
           },
           {
-            "actual_rate": 0.25,
-            "avg_probability": 0.25535427261142885,
-            "bias": 0.005354272611428845,
+            "actual_rate": 0.2,
+            "avg_probability": 0.25546961506973254,
+            "bias": 0.055469615069732525,
             "bucket": "(0.2, 0.3]",
-            "rows": 4
+            "rows": 5
           },
           {
             "actual_rate": 0.25,
@@ -788,67 +875,67 @@
             "rows": 22
           },
           {
-            "actual_rate": 0.5714285714285714,
-            "avg_probability": 0.5629321856592798,
-            "bias": -0.00849638576929157,
+            "actual_rate": 0.5833333333333334,
+            "avg_probability": 0.5583798635062406,
+            "bias": -0.02495346982709279,
             "bucket": "(0.5, 0.6]",
-            "rows": 21
+            "rows": 24
           },
           {
-            "actual_rate": 0.5555555555555556,
-            "avg_probability": 0.6455444157998257,
-            "bias": 0.08998886024427011,
+            "actual_rate": 0.6086956521739131,
+            "avg_probability": 0.638455534472442,
+            "bias": 0.029759882298528884,
             "bucket": "(0.6, 0.7]",
-            "rows": 18
+            "rows": 23
           },
           {
-            "actual_rate": 0.6842105263157895,
-            "avg_probability": 0.7497107759915735,
-            "bias": 0.06550024967578405,
+            "actual_rate": 0.6956521739130435,
+            "avg_probability": 0.7472841845878512,
+            "bias": 0.051632010674807716,
             "bucket": "(0.7, 0.8]",
-            "rows": 19
+            "rows": 23
           },
           {
-            "actual_rate": 0.5,
-            "avg_probability": 0.8299906690195392,
-            "bias": 0.3299906690195392,
+            "actual_rate": 0.5714285714285714,
+            "avg_probability": 0.8332004329300968,
+            "bias": 0.2617718615015254,
             "bucket": "(0.8, 0.9]",
-            "rows": 6
+            "rows": 7
           }
         ],
-        "ece_10": 0.07100056585513495,
-        "home_probability_bias": 0.0676655359270017,
-        "log_loss": 0.6648267638114292,
-        "rows": 107,
-        "sharpness_std": 0.16268569671954083
+        "ece_10": 0.05895552919537945,
+        "home_probability_bias": 0.04905663207388811,
+        "log_loss": 0.6509262077507383,
+        "rows": 121,
+        "sharpness_std": 0.16164821814686264
       },
       "model_line_ats": {
-        "bets": 107,
-        "hit_rate": 0.40186915887850466,
-        "losses": 64,
+        "bets": 121,
+        "hit_rate": 0.4297520661157025,
+        "losses": 69,
         "pushes": 0,
-        "roi": -0.23279524214103658,
-        "units": -24.909090909090914,
-        "wins": 43
+        "roi": -0.17956423741547708,
+        "units": -21.727272727272727,
+        "wins": 52
       },
       "moneyline": {
-        "bets": 107,
-        "roi": -0.04685966414023438,
-        "units": -5.013984063005079
+        "bets": 121,
+        "roi": -0.03133232046408544,
+        "units": -3.7912107761543385
       },
       "probability": {
-        "accuracy": 0.6074766355140186,
-        "actual_rate": 0.48598130841121495,
-        "auc": 0.6423076923076922,
-        "avg_probability": 0.5510911671185065,
-        "brier": 0.23993787731766886,
+        "accuracy": 0.6198347107438017,
+        "actual_rate": 0.512396694214876,
+        "auc": 0.6511755057408419,
+        "avg_probability": 0.5563409096314177,
+        "brier": 0.23516588903537117,
         "calibration": [
           {
-            "actual_rate": 1.0,
-            "avg_probability": 0.2537193831454148,
-            "bias": -0.7462806168545852,
+            "actual_rate": 0.75,
+            "avg_probability": 0.25177267791564933,
+            "bias": -0.49822732208435067,
             "bucket": "(0.2, 0.3]",
-            "rows": 3
+            "rows": 4
           },
           {
             "actual_rate": 0.1875,
@@ -858,52 +945,52 @@
             "rows": 16
           },
           {
-            "actual_rate": 0.39285714285714285,
-            "avg_probability": 0.45360041345387125,
-            "bias": 0.060743270596728405,
+            "actual_rate": 0.41935483870967744,
+            "avg_probability": 0.4520638071079489,
+            "bias": 0.032708968398271476,
             "bucket": "(0.4, 0.5]",
-            "rows": 28
+            "rows": 31
           },
           {
-            "actual_rate": 0.5555555555555556,
-            "avg_probability": 0.5533913586790221,
-            "bias": -0.002164196876533464,
+            "actual_rate": 0.5789473684210527,
+            "avg_probability": 0.5507890015718395,
+            "bias": -0.028158366849213134,
             "bucket": "(0.5, 0.6]",
-            "rows": 18
+            "rows": 19
           },
           {
-            "actual_rate": 0.5,
-            "avg_probability": 0.6511195161036041,
-            "bias": 0.15111951610360408,
+            "actual_rate": 0.56,
+            "avg_probability": 0.6495469982539294,
+            "bias": 0.08954699825392931,
             "bucket": "(0.6, 0.7]",
+            "rows": 25
+          },
+          {
+            "actual_rate": 0.6,
+            "avg_probability": 0.7495781928743868,
+            "bias": 0.14957819287438678,
+            "bucket": "(0.7, 0.8]",
             "rows": 20
           },
           {
-            "actual_rate": 0.5625,
-            "avg_probability": 0.7450249304718424,
-            "bias": 0.18252493047184237,
-            "bucket": "(0.7, 0.8]",
-            "rows": 16
-          },
-          {
             "actual_rate": 1.0,
-            "avg_probability": 0.833709426928697,
-            "bias": -0.16629057307130302,
+            "avg_probability": 0.8337094269286968,
+            "bias": -0.16629057307130324,
             "bucket": "(0.8, 0.9]",
             "rows": 6
           }
         ],
-        "ece_10": 0.12633492100204252,
-        "home_probability_bias": 0.06510985870729152,
-        "log_loss": 0.6717769369178803,
-        "rows": 107,
-        "sharpness_std": 0.15455337790672669
+        "ece_10": 0.1022196153653064,
+        "home_probability_bias": 0.0439442154165417,
+        "log_loss": 0.6613382810545095,
+        "rows": 121,
+        "sharpness_std": 0.1554850776107711
       },
-      "rows": 107,
+      "rows": 121,
       "totals": {
         "book": {
-          "mae": 10.58411214953271,
-          "rows": 107
+          "mae": 10.648760330578513,
+          "rows": 121
         },
         "model": null
       },
@@ -914,12 +1001,13 @@
         4,
         5,
         6,
-        7
+        7,
+        8
       ],
       "winner": {
-        "hit_rate": 0.6074766355140186,
-        "losses": 42,
-        "wins": 65
+        "hit_rate": 0.6198347107438017,
+        "losses": 46,
+        "wins": 75
       }
     },
     "priors": {
@@ -1133,6 +1221,36 @@
             "observed_in_window": 5,
             "window": 5
           }
+        },
+        {
+          "mean_abs_games_before_diff": 0.5714285714285714,
+          "n": 14,
+          "typical_games_played": 7,
+          "week": 8,
+          "window_10": {
+            "current_season": 0.6363636363636364,
+            "games_played": 7,
+            "last_season": 0.2472727272727273,
+            "league_average": 0.11636363636363635,
+            "observed_in_window": 7,
+            "window": 10
+          },
+          "window_3": {
+            "current_season": 0.42857142857142855,
+            "games_played": 7,
+            "last_season": 0.38857142857142857,
+            "league_average": 0.18285714285714283,
+            "observed_in_window": 3,
+            "window": 3
+          },
+          "window_5": {
+            "current_season": 0.5555555555555556,
+            "games_played": 7,
+            "last_season": 0.3022222222222222,
+            "league_average": 0.1422222222222222,
+            "observed_in_window": 5,
+            "window": 5
+          }
         }
       ],
       "note": "Rolling features use (sum(window) + 4*prior) / (n + 4); prior shrinks last season with n/(n+8)."
@@ -1141,39 +1259,39 @@
       "confidence": [
         {
           "book_ats": {
-            "bets": 23,
-            "hit_rate": 0.4782608695652174,
-            "losses": 12,
+            "bets": 26,
+            "hit_rate": 0.5,
+            "losses": 13,
             "no_bet": 0,
             "pushes": 1,
-            "roi": -0.08695652173913043,
-            "units": -2.0,
-            "wins": 11
+            "roi": -0.04545454545454545,
+            "units": -1.1818181818181817,
+            "wins": 13
           },
           "book_margin": {
-            "avg_actual_margin": -0.25,
-            "avg_predicted_margin": -0.22916666666666666,
-            "home_margin_bias": 0.020833333333333332,
-            "mae": 7.604166666666667,
-            "rmse": 9.951444618747571,
-            "rows": 24
+            "avg_actual_margin": 0.037037037037037035,
+            "avg_predicted_margin": 0.7962962962962963,
+            "home_margin_bias": 0.7592592592592593,
+            "mae": 8.12962962962963,
+            "rmse": 10.401655851086616,
+            "rows": 27
           },
           "close_game_winner_hit_rate": 0.5714285714285714,
           "close_games": 7,
           "margin": {
-            "avg_actual_margin": -0.25,
-            "avg_predicted_margin": -0.1535459187130769,
-            "home_margin_bias": 0.09645408128692257,
-            "mae": 8.34085749744507,
-            "rmse": 10.447036410676624,
-            "rows": 24
+            "avg_actual_margin": 0.037037037037037035,
+            "avg_predicted_margin": -0.2446053981757322,
+            "home_margin_bias": -0.2816424352127696,
+            "mae": 8.937195096532033,
+            "rmse": 10.899884035936543,
+            "rows": 27
           },
           "market_probability": {
-            "accuracy": 0.625,
-            "actual_rate": 0.4583333333333333,
-            "auc": 0.6643356643356643,
-            "avg_probability": 0.49107036088753925,
-            "brier": 0.23227811040705482,
+            "accuracy": 0.6296296296296297,
+            "actual_rate": 0.48148148148148145,
+            "auc": 0.6675824175824177,
+            "avg_probability": 0.5020242860322847,
+            "brier": 0.23299304094567203,
             "calibration": [
               {
                 "actual_rate": 0.3333333333333333,
@@ -1190,74 +1308,74 @@
                 "rows": 11
               },
               {
-                "actual_rate": 0.5714285714285714,
-                "avg_probability": 0.5484880954646779,
-                "bias": -0.02294047596389348,
+                "actual_rate": 0.625,
+                "avg_probability": 0.5477700258775176,
+                "bias": -0.07722997412248245,
                 "bucket": "(0.5, 0.6]",
-                "rows": 7
+                "rows": 8
               },
               {
-                "actual_rate": 0.6666666666666666,
-                "avg_probability": 0.6415569856190041,
-                "bias": -0.025109681047662535,
+                "actual_rate": 0.6,
+                "avg_probability": 0.6301788959320727,
+                "bias": 0.03017889593207268,
                 "bucket": "(0.6, 0.7]",
-                "rows": 3
+                "rows": 5
               }
             ],
-            "ece_10": 0.05239639212839272,
-            "home_probability_bias": 0.03273702755420593,
-            "log_loss": 0.6570728254315669,
-            "rows": 24,
-            "sharpness_std": 0.08465507532754489
+            "ece_10": 0.06630871514190395,
+            "home_probability_bias": 0.020542804550803206,
+            "log_loss": 0.6585429302050992,
+            "rows": 27,
+            "sharpness_std": 0.08636469233885859
           },
           "model_line_ats": {
-            "bets": 24,
-            "hit_rate": 0.4583333333333333,
-            "losses": 13,
+            "bets": 27,
+            "hit_rate": 0.48148148148148145,
+            "losses": 14,
             "pushes": 0,
-            "roi": -0.125,
-            "units": -3.0,
-            "wins": 11
+            "roi": -0.0808080808080808,
+            "units": -2.1818181818181817,
+            "wins": 13
           },
           "moneyline": {
-            "bets": 24,
-            "roi": 0.004048773667301553,
-            "units": 0.09717056801523727
+            "bets": 27,
+            "roi": 0.04764449397207431,
+            "units": 1.2864013372460064
           },
           "probability": {
-            "accuracy": 0.5833333333333334,
-            "actual_rate": 0.4583333333333333,
-            "auc": 0.5454545454545454,
-            "avg_probability": 0.4953676634165018,
-            "brier": 0.2485117931958849,
+            "accuracy": 0.5925925925925926,
+            "actual_rate": 0.48148148148148145,
+            "auc": 0.5384615384615385,
+            "avg_probability": 0.4926257594397956,
+            "brier": 0.24897153773873554,
             "calibration": [
               {
-                "actual_rate": 0.4,
-                "avg_probability": 0.4767779750007064,
-                "bias": 0.07677797500070638,
+                "actual_rate": 0.4117647058823529,
+                "avg_probability": 0.47410556672038134,
+                "bias": 0.06234086083802842,
                 "bucket": "(0.4, 0.5]",
-                "rows": 15
+                "rows": 17
               },
               {
-                "actual_rate": 0.5555555555555556,
-                "avg_probability": 0.5263504774428274,
-                "bias": -0.02920507811272821,
+                "actual_rate": 0.6,
+                "avg_probability": 0.5241100870627999,
+                "bias": -0.07588991293720004,
                 "bucket": "(0.5, 0.6]",
-                "rows": 9
+                "rows": 10
               }
             ],
-            "ece_10": 0.05893813866771456,
-            "home_probability_bias": 0.037034330083168476,
-            "log_loss": 0.6901747490544733,
-            "rows": 24,
-            "sharpness_std": 0.027908169921695078
+            "ece_10": 0.06735902828216603,
+            "home_probability_bias": 0.01114427795831413,
+            "log_loss": 0.6910999948228993,
+            "rows": 27,
+            "sharpness_std": 0.028548031758193093
           },
-          "rows": 24,
+          "rows": 27,
           "segment": "confidence_coin",
           "totals": {
             "book": {
-              "mae": 11.791666666666666,
-              "rows": 24
+              "mae": 11.685185185185185,
+              "rows": 27
             },
             "model": null
           },
@@ -1268,49 +1386,50 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.5833333333333334,
-            "losses": 10,
-            "wins": 14
+            "hit_rate": 0.5925925925925926,
+            "losses": 11,
+            "wins": 16
           }
         },
         {
           "book_ats": {
-            "bets": 20,
-            "hit_rate": 0.35,
+            "bets": 21,
+            "hit_rate": 0.38095238095238093,
             "losses": 13,
             "no_bet": 0,
             "pushes": 2,
-            "roi": -0.3318181818181818,
-            "units": -6.636363636363636,
-            "wins": 7
+            "roi": -0.2727272727272727,
+            "units": -5.727272727272727,
+            "wins": 8
           },
           "book_margin": {
-            "avg_actual_margin": -1.0,
-            "avg_predicted_margin": 0.045454545454545456,
-            "home_margin_bias": 1.0454545454545454,
-            "mae": 9.636363636363637,
-            "rmse": 12.142150475999635,
-            "rows": 22
+            "avg_actual_margin": -0.782608695652174,
+            "avg_predicted_margin": -0.10869565217391304,
+            "home_margin_bias": 0.6739130434782609,
+            "mae": 9.543478260869565,
+            "rmse": 11.977787412721426,
+            "rows": 23
           },
           "close_game_winner_hit_rate": 0.6666666666666666,
           "close_games": 6,
           "margin": {
-            "avg_actual_margin": -1.0,
-            "avg_predicted_margin": -0.3425569527348763,
-            "home_margin_bias": 0.6574430472651236,
-            "mae": 10.215067676730563,
-            "rmse": 13.082043668048138,
-            "rows": 22
+            "avg_actual_margin": -0.782608695652174,
+            "avg_predicted_margin": -0.4657285032681939,
+            "home_margin_bias": 0.3168801923839799,
+            "mae": 10.082912674046678,
+            "rmse": 12.881677080758669,
+            "rows": 23
           },
           "market_probability": {
-            "accuracy": 0.5909090909090909,
-            "actual_rate": 0.45454545454545453,
-            "auc": 0.5541666666666667,
-            "avg_probability": 0.49404025661841133,
-            "brier": 0.24514756298947243,
+            "accuracy": 0.6086956521739131,
+            "actual_rate": 0.4782608695652174,
+            "auc": 0.5568181818181819,
+            "avg_probability": 0.49448762607282687,
+            "brier": 0.24517110341168397,
             "calibration": [
               {
                 "actual_rate": 0.0,
@@ -1334,11 +1453,11 @@
                 "rows": 5
               },
               {
-                "actual_rate": 0.7142857142857143,
-                "avg_probability": 0.5763522967368785,
-                "bias": -0.1379334175488358,
+                "actual_rate": 0.75,
+                "avg_probability": 0.5673494789035147,
+                "bias": -0.18265052109648527,
                 "bucket": "(0.5, 0.6]",
-                "rows": 7
+                "rows": 8
               },
               {
                 "actual_rate": 0.0,
@@ -1355,39 +1474,39 @@
                 "rows": 1
               }
             ],
-            "ece_10": 0.17202060942613626,
-            "home_probability_bias": 0.0394948020729568,
-            "log_loss": 0.6823083587635527,
-            "rows": 22,
-            "sharpness_std": 0.11967448113925416
+            "ece_10": 0.1860923327523926,
+            "home_probability_bias": 0.016226756507609463,
+            "log_loss": 0.6824047323349767,
+            "rows": 23,
+            "sharpness_std": 0.1170627594854178
           },
           "model_line_ats": {
-            "bets": 22,
-            "hit_rate": 0.5454545454545454,
+            "bets": 23,
+            "hit_rate": 0.5652173913043478,
             "losses": 10,
             "pushes": 0,
-            "roi": 0.04132231404958674,
-            "units": 0.9090909090909083,
-            "wins": 12
+            "roi": 0.07905138339920949,
+            "units": 1.8181818181818183,
+            "wins": 13
           },
           "moneyline": {
-            "bets": 22,
-            "roi": 0.08663882752134908,
-            "units": 1.9060542054696796
+            "bets": 23,
+            "roi": 0.039393661107377374,
+            "units": 0.9060542054696796
           },
           "probability": {
-            "accuracy": 0.5909090909090909,
-            "actual_rate": 0.45454545454545453,
-            "auc": 0.6,
-            "avg_probability": 0.48968327776976134,
-            "brier": 0.2414441174185914,
+            "accuracy": 0.5652173913043478,
+            "actual_rate": 0.4782608695652174,
+            "auc": 0.553030303030303,
+            "avg_probability": 0.4860031976233429,
+            "brier": 0.2463367946950991,
             "calibration": [
               {
-                "actual_rate": 0.38461538461538464,
-                "avg_probability": 0.42685707320752286,
-                "bias": 0.04224168859213823,
+                "actual_rate": 0.42857142857142855,
+                "avg_probability": 0.4252988132928524,
+                "bias": -0.003272615278576141,
                 "bucket": "(0.4, 0.5]",
-                "rows": 13
+                "rows": 14
               },
               {
                 "actual_rate": 0.5555555555555556,
@@ -1397,18 +1516,18 @@
                 "rows": 9
               }
             ],
-            "ece_10": 0.03513782322430666,
-            "home_probability_bias": 0.03513782322430681,
-            "log_loss": 0.6759310752987909,
-            "rows": 22,
-            "sharpness_std": 0.07625587041826244
+            "ece_10": 0.011726381440739807,
+            "home_probability_bias": 0.007742328058125469,
+            "log_loss": 0.6858369376746196,
+            "rows": 23,
+            "sharpness_std": 0.07655115479001932
           },
-          "rows": 22,
+          "rows": 23,
           "segment": "confidence_lean",
           "totals": {
             "book": {
-              "mae": 10.272727272727273,
-              "rows": 22
+              "mae": 10.282608695652174,
+              "rows": 23
             },
             "model": null
           },
@@ -1419,49 +1538,50 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.5909090909090909,
-            "losses": 9,
+            "hit_rate": 0.5652173913043478,
+            "losses": 10,
             "wins": 13
           }
         },
         {
           "book_ats": {
-            "bets": 19,
-            "hit_rate": 0.47368421052631576,
-            "losses": 10,
+            "bets": 23,
+            "hit_rate": 0.5217391304347826,
+            "losses": 11,
             "no_bet": 0,
             "pushes": 0,
-            "roi": -0.09569377990430623,
-            "units": -1.8181818181818183,
-            "wins": 9
+            "roi": -0.003952569169960476,
+            "units": -0.09090909090909094,
+            "wins": 12
           },
           "book_margin": {
-            "avg_actual_margin": -3.4210526315789473,
-            "avg_predicted_margin": 1.2894736842105263,
-            "home_margin_bias": 4.7105263157894735,
-            "mae": 12.447368421052632,
-            "rmse": 14.595871802815019,
-            "rows": 19
+            "avg_actual_margin": -1.2173913043478262,
+            "avg_predicted_margin": 1.5217391304347827,
+            "home_margin_bias": 2.739130434782609,
+            "mae": 12.0,
+            "rmse": 14.153659843182671,
+            "rows": 23
           },
           "close_game_winner_hit_rate": 1.0,
           "close_games": 2,
           "margin": {
-            "avg_actual_margin": -3.4210526315789473,
-            "avg_predicted_margin": 0.7304998397231655,
-            "home_margin_bias": 4.1515524713021135,
-            "mae": 12.264352203451608,
-            "rmse": 15.408023061287603,
-            "rows": 19
+            "avg_actual_margin": -1.2173913043478262,
+            "avg_predicted_margin": 1.363243390165284,
+            "home_margin_bias": 2.580634694513111,
+            "mae": 11.876124693743588,
+            "rmse": 14.84295313397155,
+            "rows": 23
           },
           "market_probability": {
-            "accuracy": 0.631578947368421,
-            "actual_rate": 0.42105263157894735,
-            "auc": 0.7159090909090908,
-            "avg_probability": 0.5441764363159178,
-            "brier": 0.23072578510983324,
+            "accuracy": 0.6521739130434783,
+            "actual_rate": 0.4782608695652174,
+            "auc": 0.7348484848484849,
+            "avg_probability": 0.5568121396412191,
+            "brier": 0.21958382346432356,
             "calibration": [
               {
                 "actual_rate": 0.0,
@@ -1478,25 +1598,25 @@
                 "rows": 5
               },
               {
-                "actual_rate": 0.3333333333333333,
-                "avg_probability": 0.5397109761326094,
-                "bias": 0.20637764279927612,
+                "actual_rate": 0.25,
+                "avg_probability": 0.5379001152163402,
+                "bias": 0.2879001152163402,
                 "bucket": "(0.5, 0.6]",
-                "rows": 3
+                "rows": 4
               },
               {
-                "actual_rate": 0.8,
-                "avg_probability": 0.6625177903524337,
-                "bias": -0.1374822096475663,
+                "actual_rate": 0.8571428571428571,
+                "avg_probability": 0.6496123237837063,
+                "bias": -0.20753053335915084,
                 "bucket": "(0.6, 0.7]",
-                "rows": 5
+                "rows": 7
               },
               {
-                "actual_rate": 0.5,
-                "avg_probability": 0.7257564206455832,
-                "bias": 0.2257564206455832,
+                "actual_rate": 0.6666666666666666,
+                "avg_probability": 0.7172249719484872,
+                "bias": 0.05055830528182059,
                 "bucket": "(0.7, 0.8]",
-                "rows": 2
+                "rows": 3
               },
               {
                 "actual_rate": 0.0,
@@ -1506,32 +1626,32 @@
                 "rows": 1
               }
             ],
-            "ece_10": 0.1954828624462158,
-            "home_probability_bias": 0.12312380473697049,
-            "log_loss": 0.6608134317682989,
-            "rows": 19,
-            "sharpness_std": 0.14888998260498393
+            "ece_10": 0.20487420342505014,
+            "home_probability_bias": 0.07855127007600171,
+            "log_loss": 0.6364048962572967,
+            "rows": 23,
+            "sharpness_std": 0.1403521258070895
           },
           "model_line_ats": {
-            "bets": 19,
-            "hit_rate": 0.2631578947368421,
-            "losses": 14,
+            "bets": 23,
+            "hit_rate": 0.30434782608695654,
+            "losses": 16,
             "pushes": 0,
-            "roi": -0.4976076555023924,
-            "units": -9.454545454545455,
-            "wins": 5
+            "roi": -0.4189723320158103,
+            "units": -9.636363636363637,
+            "wins": 7
           },
           "moneyline": {
-            "bets": 19,
-            "roi": 0.014118027314823233,
-            "units": 0.2682425189816414
+            "bets": 23,
+            "roi": 0.03250789203491271,
+            "units": 0.7476815168029922
           },
           "probability": {
-            "accuracy": 0.631578947368421,
-            "actual_rate": 0.42105263157894735,
-            "auc": 0.7386363636363636,
-            "avg_probability": 0.5215901097651241,
-            "brier": 0.22887650258022296,
+            "accuracy": 0.6521739130434783,
+            "actual_rate": 0.4782608695652174,
+            "auc": 0.696969696969697,
+            "avg_probability": 0.5403506477455416,
+            "brier": 0.22596820234841158,
             "calibration": [
               {
                 "actual_rate": 0.25,
@@ -1541,25 +1661,25 @@
                 "rows": 8
               },
               {
-                "actual_rate": 0.5454545454545454,
-                "avg_probability": 0.6260356259670316,
-                "bias": 0.08058108051248614,
+                "actual_rate": 0.6,
+                "avg_probability": 0.62694964654983,
+                "bias": 0.02694964654983001,
                 "bucket": "(0.6, 0.7]",
-                "rows": 11
+                "rows": 15
               }
             ],
-            "ece_10": 0.10053747818617673,
-            "home_probability_bias": 0.10053747818617675,
-            "log_loss": 0.6500067328341026,
-            "rows": 19,
-            "sharpness_std": 0.12338465441469763
+            "ece_10": 0.06208977818032434,
+            "home_probability_bias": 0.06208977818032424,
+            "log_loss": 0.6442974167197609,
+            "rows": 23,
+            "sharpness_std": 0.1194835260001306
           },
-          "rows": 19,
+          "rows": 23,
           "segment": "confidence_moderate",
           "totals": {
             "book": {
-              "mae": 9.605263157894736,
-              "rows": 19
+              "mae": 9.978260869565217,
+              "rows": 23
             },
             "model": null
           },
@@ -1570,49 +1690,50 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.631578947368421,
-            "losses": 7,
-            "wins": 12
+            "hit_rate": 0.6521739130434783,
+            "losses": 8,
+            "wins": 15
           }
         },
         {
           "book_ats": {
-            "bets": 26,
-            "hit_rate": 0.4230769230769231,
-            "losses": 15,
+            "bets": 28,
+            "hit_rate": 0.42857142857142855,
+            "losses": 16,
             "no_bet": 0,
             "pushes": 2,
-            "roi": -0.19230769230769232,
-            "units": -5.0,
-            "wins": 11
+            "roi": -0.18181818181818182,
+            "units": -5.090909090909091,
+            "wins": 12
           },
           "book_margin": {
-            "avg_actual_margin": -3.0,
-            "avg_predicted_margin": 2.2142857142857144,
-            "home_margin_bias": 5.214285714285714,
-            "mae": 9.928571428571429,
-            "rmse": 13.144797993339962,
-            "rows": 28
+            "avg_actual_margin": -2.033333333333333,
+            "avg_predicted_margin": 3.0,
+            "home_margin_bias": 5.033333333333333,
+            "mae": 10.266666666666667,
+            "rmse": 13.292228305793326,
+            "rows": 30
           },
-          "close_game_winner_hit_rate": 0.5,
-          "close_games": 8,
+          "close_game_winner_hit_rate": 0.4444444444444444,
+          "close_games": 9,
           "margin": {
-            "avg_actual_margin": -3.0,
-            "avg_predicted_margin": 2.7608609679748572,
-            "home_margin_bias": 5.760860967974858,
-            "mae": 10.4507721627156,
-            "rmse": 13.545557844335812,
-            "rows": 28
+            "avg_actual_margin": -2.033333333333333,
+            "avg_predicted_margin": 3.070183825997316,
+            "home_margin_bias": 5.103517159330649,
+            "mae": 10.756118313955335,
+            "rmse": 13.690590547662172,
+            "rows": 30
           },
           "market_probability": {
-            "accuracy": 0.5714285714285714,
-            "actual_rate": 0.35714285714285715,
-            "auc": 0.5527777777777778,
-            "avg_probability": 0.5739801401306555,
-            "brier": 0.27723907725415115,
+            "accuracy": 0.5666666666666667,
+            "actual_rate": 0.36666666666666664,
+            "auc": 0.5311004784688995,
+            "avg_probability": 0.5802914404783249,
+            "brier": 0.28192623453520704,
             "calibration": [
               {
                 "actual_rate": 0.0,
@@ -1643,18 +1764,18 @@
                 "rows": 4
               },
               {
-                "actual_rate": 0.5,
-                "avg_probability": 0.6491640495986405,
-                "bias": 0.1491640495986405,
+                "actual_rate": 0.5714285714285714,
+                "avg_probability": 0.6426773240762886,
+                "bias": 0.07124875264771724,
                 "bucket": "(0.6, 0.7]",
-                "rows": 6
+                "rows": 7
               },
               {
-                "actual_rate": 0.4444444444444444,
-                "avg_probability": 0.7475000757170217,
-                "bias": 0.3030556312725773,
+                "actual_rate": 0.4,
+                "avg_probability": 0.7461043001202411,
+                "bias": 0.34610430012024107,
                 "bucket": "(0.7, 0.8]",
-                "rows": 9
+                "rows": 10
               },
               {
                 "actual_rate": 0.0,
@@ -1664,32 +1785,32 @@
                 "rows": 1
               }
             ],
-            "ece_10": 0.23489659735873267,
-            "home_probability_bias": 0.2168372829877983,
-            "log_loss": 0.7623406461972158,
-            "rows": 28,
-            "sharpness_std": 0.1936340608650289
+            "ece_10": 0.23048013389119695,
+            "home_probability_bias": 0.2136247738116583,
+            "log_loss": 0.772422048927486,
+            "rows": 30,
+            "sharpness_std": 0.18929588481296833
           },
           "model_line_ats": {
-            "bets": 28,
-            "hit_rate": 0.32142857142857145,
-            "losses": 19,
+            "bets": 30,
+            "hit_rate": 0.3333333333333333,
+            "losses": 20,
             "pushes": 0,
-            "roi": -0.38636363636363635,
-            "units": -10.818181818181818,
-            "wins": 9
+            "roi": -0.36363636363636365,
+            "units": -10.90909090909091,
+            "wins": 10
           },
           "moneyline": {
-            "bets": 28,
-            "roi": -0.2510318662075196,
-            "units": -7.0288922538105485
+            "bets": 30,
+            "roi": -0.24802189865643007,
+            "units": -7.440656959692902
           },
           "probability": {
-            "accuracy": 0.5357142857142857,
-            "actual_rate": 0.35714285714285715,
-            "auc": 0.5666666666666668,
-            "avg_probability": 0.5787561608276937,
-            "brier": 0.2803407628638294,
+            "accuracy": 0.5333333333333333,
+            "actual_rate": 0.36666666666666664,
+            "auc": 0.5550239234449761,
+            "avg_probability": 0.5876479433060907,
+            "brier": 0.28224398948929624,
             "calibration": [
               {
                 "actual_rate": 1.0,
@@ -1706,32 +1827,32 @@
                 "rows": 8
               },
               {
-                "actual_rate": 0.4444444444444444,
-                "avg_probability": 0.6817776040483038,
-                "bias": 0.23733315960385937,
+                "actual_rate": 0.5,
+                "avg_probability": 0.6834430258100785,
+                "bias": 0.18344302581007854,
                 "bucket": "(0.6, 0.7]",
-                "rows": 9
+                "rows": 10
               },
               {
-                "actual_rate": 0.4,
-                "avg_probability": 0.7216502259608836,
-                "bias": 0.32165022596088355,
+                "actual_rate": 0.36363636363636365,
+                "avg_probability": 0.7220305667227346,
+                "bias": 0.35839420308637093,
                 "bucket": "(0.7, 0.8]",
-                "rows": 10
+                "rows": 11
               }
             ],
-            "ece_10": 0.2731992266196617,
-            "home_probability_bias": 0.2216133036848365,
-            "log_loss": 0.7614765944532728,
-            "rows": 28,
-            "sharpness_std": 0.1815245419385281
+            "ece_10": 0.2691281380452608,
+            "home_probability_bias": 0.22098127663942407,
+            "log_loss": 0.7658094593184717,
+            "rows": 30,
+            "sharpness_std": 0.1785324148237064
           },
-          "rows": 28,
+          "rows": 30,
           "segment": "confidence_strong",
           "totals": {
             "book": {
-              "mae": 10.964285714285714,
-              "rows": 28
+              "mae": 10.8,
+              "rows": 30
             },
             "model": null
           },
@@ -1742,50 +1863,58 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.5357142857142857,
-            "losses": 13,
-            "wins": 15
+            "hit_rate": 0.5333333333333333,
+            "losses": 14,
+            "wins": 16
           }
         },
         {
           "book_ats": {
-            "bets": 13,
-            "hit_rate": 0.46153846153846156,
-            "losses": 7,
+            "bets": 17,
+            "hit_rate": 0.5294117647058824,
+            "losses": 8,
             "no_bet": 0,
             "pushes": 1,
-            "roi": -0.1188811188811189,
-            "units": -1.5454545454545456,
-            "wins": 6
+            "roi": 0.010695187165775385,
+            "units": 0.18181818181818155,
+            "wins": 9
           },
           "book_margin": {
-            "avg_actual_margin": 8.785714285714286,
-            "avg_predicted_margin": 6.928571428571429,
-            "home_margin_bias": -1.8571428571428572,
-            "mae": 6.642857142857143,
-            "rmse": 8.14379693824868,
-            "rows": 14
+            "avg_actual_margin": 9.722222222222221,
+            "avg_predicted_margin": 6.611111111111111,
+            "home_margin_bias": -3.111111111111111,
+            "mae": 7.444444444444445,
+            "rmse": 9.60324019392529,
+            "rows": 18
           },
           "close_game_winner_hit_rate": 0.3333333333333333,
           "close_games": 3,
           "margin": {
-            "avg_actual_margin": 8.785714285714286,
-            "avg_predicted_margin": 8.653693919514442,
-            "home_margin_bias": -0.1320203661998422,
-            "mae": 8.008354073097186,
-            "rmse": 9.39793911870325,
-            "rows": 14
+            "avg_actual_margin": 9.722222222222221,
+            "avg_predicted_margin": 7.940090383552795,
+            "home_margin_bias": -1.7821318386694283,
+            "mae": 8.283265661964316,
+            "rmse": 10.299233768985388,
+            "rows": 18
           },
           "market_probability": {
-            "accuracy": 0.7857142857142857,
-            "actual_rate": 0.9285714285714286,
-            "auc": 0.15384615384615385,
-            "avg_probability": 0.726774415973029,
-            "brier": 0.14242145782408763,
+            "accuracy": 0.8333333333333334,
+            "actual_rate": 0.8888888888888888,
+            "auc": 0.59375,
+            "avg_probability": 0.7106977184608869,
+            "brier": 0.122496100581495,
             "calibration": [
+              {
+                "actual_rate": 0.0,
+                "avg_probability": 0.2559309849029475,
+                "bias": 0.2559309849029475,
+                "bucket": "(0.2, 0.3]",
+                "rows": 1
+              },
               {
                 "actual_rate": 1.0,
                 "avg_probability": 0.3962430290578221,
@@ -1809,80 +1938,80 @@
               },
               {
                 "actual_rate": 1.0,
-                "avg_probability": 0.7639315285076551,
-                "bias": -0.2360684714923449,
+                "avg_probability": 0.7618719785478615,
+                "bias": -0.23812802145213852,
                 "bucket": "(0.7, 0.8]",
-                "rows": 7
+                "rows": 9
               },
               {
-                "actual_rate": 0.75,
-                "avg_probability": 0.8409074536803662,
-                "bias": 0.09090745368036623,
+                "actual_rate": 0.8,
+                "avg_probability": 0.8432177662229815,
+                "bias": 0.04321776622298146,
                 "bucket": "(0.8, 0.9]",
-                "rows": 4
+                "rows": 5
               }
             ],
-            "ece_10": 0.25374412898718024,
-            "home_probability_bias": -0.20179701259839955,
-            "log_loss": 0.46106705196767567,
-            "rows": 14,
-            "sharpness_std": 0.13855616004270516
+            "ece_10": 0.23063781665220812,
+            "home_probability_bias": -0.17819117042800192,
+            "log_loss": 0.4153405053808206,
+            "rows": 18,
+            "sharpness_std": 0.1677536651021641
           },
           "model_line_ats": {
-            "bets": 14,
-            "hit_rate": 0.42857142857142855,
-            "losses": 8,
+            "bets": 18,
+            "hit_rate": 0.5,
+            "losses": 9,
             "pushes": 0,
-            "roi": -0.18181818181818185,
-            "units": -2.545454545454546,
-            "wins": 6
+            "roi": -0.04545454545454546,
+            "units": -0.8181818181818183,
+            "wins": 9
           },
           "moneyline": {
-            "bets": 14,
-            "roi": -0.018325650118649388,
-            "units": -0.2565591016610914
+            "bets": 18,
+            "roi": 0.03940606244554904,
+            "units": 0.7093091240198828
           },
           "probability": {
-            "accuracy": 0.7857142857142857,
-            "actual_rate": 0.9285714285714286,
-            "auc": 0.46153846153846156,
-            "avg_probability": 0.727822447145473,
-            "brier": 0.15707888170491874,
+            "accuracy": 0.8333333333333334,
+            "actual_rate": 0.8888888888888888,
+            "auc": 0.625,
+            "avg_probability": 0.7100432121033324,
+            "brier": 0.13347257986968977,
             "calibration": [
               {
-                "actual_rate": 1.0,
-                "avg_probability": 0.2416805352618988,
-                "bias": -0.7583194647381012,
+                "actual_rate": 0.6666666666666666,
+                "avg_probability": 0.24309787758338355,
+                "bias": -0.4235687890832831,
                 "bucket": "(0.2, 0.3]",
-                "rows": 2
+                "rows": 3
               },
               {
-                "actual_rate": 0.8333333333333334,
-                "avg_probability": 0.7839827713234403,
-                "bias": -0.04935056200989307,
+                "actual_rate": 0.8888888888888888,
+                "avg_probability": 0.7832475137264061,
+                "bias": -0.10564137516248273,
                 "bucket": "(0.7, 0.8]",
-                "rows": 6
+                "rows": 9
               },
               {
                 "actual_rate": 1.0,
-                "avg_probability": 0.833709426928697,
-                "bias": -0.16629057307130302,
+                "avg_probability": 0.8337094269286968,
+                "bias": -0.16629057307130324,
                 "bucket": "(0.8, 0.9]",
                 "rows": 6
               }
             ],
-            "ece_10": 0.20074898142595562,
-            "home_probability_bias": -0.20074898142595565,
-            "log_loss": 0.4838558605566328,
-            "rows": 14,
-            "sharpness_std": 0.20082896367679262
+            "ece_10": 0.1788456767855562,
+            "home_probability_bias": -0.1788456767855564,
+            "log_loss": 0.4330476787084692,
+            "rows": 18,
+            "sharpness_std": 0.21081436951494684
           },
-          "rows": 14,
+          "rows": 18,
           "segment": "confidence_heavy",
           "totals": {
             "book": {
-              "mae": 9.571428571428571,
-              "rows": 14
+              "mae": 10.166666666666666,
+              "rows": 18
             },
             "model": null
           },
@@ -1893,51 +2022,52 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.7857142857142857,
+            "hit_rate": 0.8333333333333334,
             "losses": 3,
-            "wins": 11
+            "wins": 15
           }
         }
       ],
       "favorite": [
         {
           "book_ats": {
-            "bets": 57,
-            "hit_rate": 0.45614035087719296,
-            "losses": 31,
+            "bets": 67,
+            "hit_rate": 0.4925373134328358,
+            "losses": 34,
             "no_bet": 0,
             "pushes": 3,
-            "roi": -0.1291866028708134,
-            "units": -7.363636363636364,
-            "wins": 26
+            "roi": -0.05970149253731342,
+            "units": -3.999999999999999,
+            "wins": 33
           },
           "book_margin": {
-            "avg_actual_margin": 1.45,
-            "avg_predicted_margin": 4.608333333333333,
-            "home_margin_bias": 3.158333333333333,
-            "mae": 10.341666666666667,
-            "rmse": 13.161021996790371,
-            "rows": 60
+            "avg_actual_margin": 3.142857142857143,
+            "avg_predicted_margin": 5.021428571428571,
+            "home_margin_bias": 1.8785714285714286,
+            "mae": 10.535714285714286,
+            "rmse": 13.209709632366208,
+            "rows": 70
           },
-          "close_game_winner_hit_rate": 0.5833333333333334,
-          "close_games": 12,
+          "close_game_winner_hit_rate": 0.5384615384615384,
+          "close_games": 13,
           "margin": {
-            "avg_actual_margin": 1.45,
-            "avg_predicted_margin": 5.873994403264671,
-            "home_margin_bias": 4.423994403264672,
-            "mae": 10.632418626770884,
-            "rmse": 13.584932428389367,
-            "rows": 60
+            "avg_actual_margin": 3.142857142857143,
+            "avg_predicted_margin": 5.938559623862094,
+            "home_margin_bias": 2.795702481004952,
+            "mae": 10.812913695762319,
+            "rmse": 13.639735423969615,
+            "rows": 70
           },
           "market_probability": {
-            "accuracy": 0.5833333333333334,
-            "actual_rate": 0.5833333333333334,
-            "auc": 0.5731428571428571,
-            "avg_probability": 0.6549519358289597,
-            "brier": 0.2467594733502743,
+            "accuracy": 0.6142857142857143,
+            "actual_rate": 0.6142857142857143,
+            "auc": 0.5779500430663221,
+            "avg_probability": 0.6572324574958939,
+            "brier": 0.23602730713977574,
             "calibration": [
               {
                 "actual_rate": 1.0,
@@ -1955,101 +2085,101 @@
               },
               {
                 "actual_rate": 0.5,
-                "avg_probability": 0.5688217190226257,
-                "bias": 0.06882171902262568,
+                "avg_probability": 0.5643622642504598,
+                "bias": 0.06436226425045977,
                 "bucket": "(0.5, 0.6]",
-                "rows": 12
+                "rows": 14
               },
               {
-                "actual_rate": 0.6,
-                "avg_probability": 0.6526911948554694,
-                "bias": 0.05269119485546947,
+                "actual_rate": 0.6666666666666666,
+                "avg_probability": 0.6460456782498887,
+                "bias": -0.020620988416777952,
                 "bucket": "(0.6, 0.7]",
-                "rows": 15
-              },
-              {
-                "actual_rate": 0.6842105263157895,
-                "avg_probability": 0.7497107759915735,
-                "bias": 0.06550024967578405,
-                "bucket": "(0.7, 0.8]",
-                "rows": 19
-              },
-              {
-                "actual_rate": 0.5,
-                "avg_probability": 0.8299906690195392,
-                "bias": 0.3299906690195392,
-                "bucket": "(0.8, 0.9]",
-                "rows": 6
-              }
-            ],
-            "ece_10": 0.09284874188543026,
-            "home_probability_bias": 0.07161860249562635,
-            "log_loss": 0.6927294765434718,
-            "rows": 60,
-            "sharpness_std": 0.12135958986008731
-          },
-          "model_line_ats": {
-            "bets": 60,
-            "hit_rate": 0.35,
-            "losses": 39,
-            "pushes": 0,
-            "roi": -0.33181818181818185,
-            "units": -19.90909090909091,
-            "wins": 21
-          },
-          "moneyline": {
-            "bets": 60,
-            "roi": -0.13340363806073743,
-            "units": -8.004218283644246
-          },
-          "probability": {
-            "accuracy": 0.5833333333333334,
-            "actual_rate": 0.5833333333333334,
-            "auc": 0.5954285714285714,
-            "avg_probability": 0.6651015037902691,
-            "brier": 0.240839697277676,
-            "calibration": [
-              {
-                "actual_rate": 0.5555555555555556,
-                "avg_probability": 0.5533913586790221,
-                "bias": -0.002164196876533464,
-                "bucket": "(0.5, 0.6]",
                 "rows": 18
               },
               {
-                "actual_rate": 0.5,
-                "avg_probability": 0.6511195161036041,
-                "bias": 0.15111951610360408,
+                "actual_rate": 0.6956521739130435,
+                "avg_probability": 0.7472841845878512,
+                "bias": 0.051632010674807716,
+                "bucket": "(0.7, 0.8]",
+                "rows": 23
+              },
+              {
+                "actual_rate": 0.5714285714285714,
+                "avg_probability": 0.8332004329300968,
+                "bias": 0.2617718615015254,
+                "bucket": "(0.8, 0.9]",
+                "rows": 7
+              }
+            ],
+            "ece_10": 0.07174908530149758,
+            "home_probability_bias": 0.04294674321017955,
+            "log_loss": 0.6687062376461304,
+            "rows": 70,
+            "sharpness_std": 0.11875732874134062
+          },
+          "model_line_ats": {
+            "bets": 70,
+            "hit_rate": 0.38571428571428573,
+            "losses": 43,
+            "pushes": 0,
+            "roi": -0.26363636363636367,
+            "units": -18.454545454545457,
+            "wins": 27
+          },
+          "moneyline": {
+            "bets": 70,
+            "roi": -0.09273285813224674,
+            "units": -6.491300069257272
+          },
+          "probability": {
+            "accuracy": 0.6142857142857143,
+            "actual_rate": 0.6142857142857143,
+            "auc": 0.5882859603789836,
+            "avg_probability": 0.6671069486467587,
+            "brier": 0.2329394790937822,
+            "calibration": [
+              {
+                "actual_rate": 0.5789473684210527,
+                "avg_probability": 0.5507890015718395,
+                "bias": -0.028158366849213134,
+                "bucket": "(0.5, 0.6]",
+                "rows": 19
+              },
+              {
+                "actual_rate": 0.56,
+                "avg_probability": 0.6495469982539294,
+                "bias": 0.08954699825392931,
                 "bucket": "(0.6, 0.7]",
+                "rows": 25
+              },
+              {
+                "actual_rate": 0.6,
+                "avg_probability": 0.7495781928743868,
+                "bias": 0.14957819287438678,
+                "bucket": "(0.7, 0.8]",
                 "rows": 20
               },
               {
-                "actual_rate": 0.5625,
-                "avg_probability": 0.7450249304718424,
-                "bias": 0.18252493047184237,
-                "bucket": "(0.7, 0.8]",
-                "rows": 16
-              },
-              {
                 "actual_rate": 1.0,
-                "avg_probability": 0.833709426928697,
-                "bias": -0.16629057307130302,
+                "avg_probability": 0.8337094269286968,
+                "bias": -0.16629057307130324,
                 "bucket": "(0.8, 0.9]",
                 "rows": 6
               }
             ],
-            "ece_10": 0.11632480319711636,
-            "home_probability_bias": 0.08176817045693574,
-            "log_loss": 0.6706400908450416,
-            "rows": 60,
-            "sharpness_std": 0.09659129137780506
+            "ece_10": 0.0966141603199834,
+            "home_probability_bias": 0.052821234361044356,
+            "log_loss": 0.6540563565926095,
+            "rows": 70,
+            "sharpness_std": 0.09538709162693221
           },
-          "rows": 60,
+          "rows": 70,
           "segment": "model_favorite",
           "totals": {
             "book": {
-              "mae": 11.05,
-              "rows": 60
+              "mae": 11.457142857142857,
+              "rows": 70
             },
             "model": null
           },
@@ -2060,49 +2190,50 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.5833333333333334,
-            "losses": 25,
-            "wins": 35
+            "hit_rate": 0.6142857142857143,
+            "losses": 27,
+            "wins": 43
           }
         },
         {
           "book_ats": {
-            "bets": 44,
-            "hit_rate": 0.4090909090909091,
-            "losses": 26,
+            "bets": 48,
+            "hit_rate": 0.4375,
+            "losses": 27,
             "no_bet": 0,
             "pushes": 3,
-            "roi": -0.21900826446280994,
-            "units": -9.636363636363637,
-            "wins": 18
+            "roi": -0.16477272727272724,
+            "units": -7.909090909090907,
+            "wins": 21
           },
           "book_margin": {
-            "avg_actual_margin": -3.0,
-            "avg_predicted_margin": -2.074468085106383,
-            "home_margin_bias": 0.925531914893617,
-            "mae": 8.117021276595745,
-            "rmse": 10.357184781384596,
-            "rows": 47
+            "avg_actual_margin": -2.9607843137254903,
+            "avg_predicted_margin": -1.7352941176470589,
+            "home_margin_bias": 1.2254901960784315,
+            "mae": 8.22549019607843,
+            "rmse": 10.454617143054218,
+            "rows": 51
           },
           "close_game_winner_hit_rate": 0.5714285714285714,
           "close_games": 14,
           "margin": {
-            "avg_actual_margin": -3.0,
-            "avg_predicted_margin": -3.219695750509002,
-            "home_margin_bias": -0.2196957505090017,
-            "mae": 9.036770652457,
-            "rmse": 11.481864693857748,
-            "rows": 47
+            "avg_actual_margin": -2.9607843137254903,
+            "avg_predicted_margin": -3.267324222325265,
+            "home_margin_bias": -0.3065399085997745,
+            "mae": 9.043931366592094,
+            "rmse": 11.376712352284562,
+            "rows": 51
           },
           "market_probability": {
-            "accuracy": 0.6808510638297872,
-            "actual_rate": 0.3617021276595745,
-            "auc": 0.6735294117647059,
-            "avg_probability": 0.42432119562663023,
-            "brier": 0.21920717285662858,
+            "accuracy": 0.6862745098039216,
+            "actual_rate": 0.37254901960784315,
+            "auc": 0.6875,
+            "avg_probability": 0.4299917736515272,
+            "brier": 0.21805844647882627,
             "calibration": [
               {
                 "actual_rate": 0.0,
@@ -2112,11 +2243,11 @@
                 "rows": 1
               },
               {
-                "actual_rate": 0.25,
-                "avg_probability": 0.25535427261142885,
-                "bias": 0.005354272611428845,
+                "actual_rate": 0.2,
+                "avg_probability": 0.25546961506973254,
+                "bias": 0.055469615069732525,
                 "bucket": "(0.2, 0.3]",
-                "rows": 4
+                "rows": 5
               },
               {
                 "actual_rate": 0.2,
@@ -2133,53 +2264,53 @@
                 "rows": 15
               },
               {
-                "actual_rate": 0.6666666666666666,
-                "avg_probability": 0.555079474508152,
-                "bias": -0.11158719215851465,
+                "actual_rate": 0.7,
+                "avg_probability": 0.5500045024643336,
+                "bias": -0.14999549753566632,
                 "bucket": "(0.5, 0.6]",
-                "rows": 9
+                "rows": 10
               },
               {
-                "actual_rate": 0.3333333333333333,
-                "avg_probability": 0.609810520521607,
-                "bias": 0.2764771871882737,
+                "actual_rate": 0.4,
+                "avg_probability": 0.6111310168736345,
+                "bias": 0.21113101687363445,
                 "bucket": "(0.6, 0.7]",
-                "rows": 3
+                "rows": 5
               }
             ],
-            "ece_10": 0.10535458836818898,
-            "home_probability_bias": 0.06261906796705574,
-            "log_loss": 0.6292062794726517,
-            "rows": 47,
-            "sharpness_std": 0.10782145859382532
+            "ece_10": 0.11626451778316102,
+            "home_probability_bias": 0.05744275404368404,
+            "log_loss": 0.6265222451492196,
+            "rows": 51,
+            "sharpness_std": 0.11297860545386407
           },
           "model_line_ats": {
-            "bets": 47,
-            "hit_rate": 0.46808510638297873,
-            "losses": 25,
+            "bets": 51,
+            "hit_rate": 0.49019607843137253,
+            "losses": 26,
             "pushes": 0,
-            "roi": -0.10638297872340426,
-            "units": -5.0,
-            "wins": 22
+            "roi": -0.06417112299465241,
+            "units": -3.2727272727272734,
+            "wins": 25
           },
           "moneyline": {
-            "bets": 47,
-            "roi": 0.06362200469445033,
-            "units": 2.9902342206391657
+            "bets": 51,
+            "roi": 0.05294292731574378,
+            "units": 2.7000892931029328
           },
           "probability": {
-            "accuracy": 0.6382978723404256,
-            "actual_rate": 0.3617021276595745,
-            "auc": 0.5215686274509804,
-            "avg_probability": 0.4055460564737034,
-            "brier": 0.23878661779425553,
+            "accuracy": 0.6274509803921569,
+            "actual_rate": 0.37254901960784315,
+            "auc": 0.53125,
+            "avg_probability": 0.4043090913750673,
+            "brier": 0.2382217458179442,
             "calibration": [
               {
-                "actual_rate": 1.0,
-                "avg_probability": 0.2537193831454148,
-                "bias": -0.7462806168545852,
+                "actual_rate": 0.75,
+                "avg_probability": 0.25177267791564933,
+                "bias": -0.49822732208435067,
                 "bucket": "(0.2, 0.3]",
-                "rows": 3
+                "rows": 4
               },
               {
                 "actual_rate": 0.1875,
@@ -2189,25 +2320,25 @@
                 "rows": 16
               },
               {
-                "actual_rate": 0.39285714285714285,
-                "avg_probability": 0.45360041345387125,
-                "bias": 0.060743270596728405,
+                "actual_rate": 0.41935483870967744,
+                "avg_probability": 0.4520638071079489,
+                "bias": 0.032708968398271476,
                 "bucket": "(0.4, 0.5]",
-                "rows": 28
+                "rows": 31
               }
             ],
-            "ece_10": 0.13911379479556524,
-            "home_probability_bias": 0.04384392881412891,
-            "log_loss": 0.6732282297768236,
-            "rows": 47,
-            "sharpness_std": 0.06850516339905816
+            "ece_10": 0.10991337719222029,
+            "home_probability_bias": 0.031760071767224174,
+            "log_loss": 0.671333079335548,
+            "rows": 51,
+            "sharpness_std": 0.07011258247157497
           },
-          "rows": 47,
+          "rows": 51,
           "segment": "model_dog",
           "totals": {
             "book": {
-              "mae": 9.98936170212766,
-              "rows": 47
+              "mae": 9.53921568627451,
+              "rows": 51
             },
             "model": null
           },
@@ -2218,105 +2349,106 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.6382978723404256,
-            "losses": 17,
-            "wins": 30
+            "hit_rate": 0.6274509803921569,
+            "losses": 19,
+            "wins": 32
           }
         },
         {
           "book_ats": {
-            "bets": 60,
-            "hit_rate": 0.4666666666666667,
-            "losses": 32,
+            "bets": 72,
+            "hit_rate": 0.5138888888888888,
+            "losses": 35,
             "no_bet": 0,
             "pushes": 3,
-            "roi": -0.1090909090909091,
-            "units": -6.545454545454546,
-            "wins": 28
+            "roi": -0.018939393939393936,
+            "units": -1.3636363636363633,
+            "wins": 37
           },
           "book_margin": {
-            "avg_actual_margin": 2.8253968253968256,
-            "avg_predicted_margin": 5.317460317460317,
-            "home_margin_bias": 2.492063492063492,
-            "mae": 9.666666666666666,
-            "rmse": 12.3574410460398,
-            "rows": 63
+            "avg_actual_margin": 4.026666666666666,
+            "avg_predicted_margin": 5.726666666666667,
+            "home_margin_bias": 1.7,
+            "mae": 10.06,
+            "rmse": 12.604099862081915,
+            "rows": 75
           },
-          "close_game_winner_hit_rate": 0.6153846153846154,
-          "close_games": 13,
+          "close_game_winner_hit_rate": 0.5714285714285714,
+          "close_games": 14,
           "margin": {
-            "avg_actual_margin": 2.8253968253968256,
-            "avg_predicted_margin": 4.836961949524697,
-            "home_margin_bias": 2.011565124127871,
-            "mae": 10.083603481121175,
-            "rmse": 12.857155454024213,
-            "rows": 63
+            "avg_actual_margin": 4.026666666666666,
+            "avg_predicted_margin": 4.865841983934491,
+            "home_margin_bias": 0.8391753172678241,
+            "mae": 10.393070238309747,
+            "rmse": 13.013246360083548,
+            "rows": 75
           },
           "market_probability": {
-            "accuracy": 0.6031746031746031,
-            "actual_rate": 0.6031746031746031,
-            "auc": 0.521578947368421,
-            "avg_probability": 0.6692300696369669,
-            "brier": 0.24857579617628428,
+            "accuracy": 0.6266666666666667,
+            "actual_rate": 0.6266666666666667,
+            "auc": 0.5368541033434651,
+            "avg_probability": 0.6679583171320967,
+            "brier": 0.2384489632306483,
             "calibration": [
               {
-                "actual_rate": 0.6,
-                "avg_probability": 0.5658623072387454,
-                "bias": -0.03413769276125456,
+                "actual_rate": 0.5909090909090909,
+                "avg_probability": 0.5632935098186289,
+                "bias": -0.027615581090462027,
                 "bucket": "(0.5, 0.6]",
-                "rows": 20
+                "rows": 22
               },
               {
-                "actual_rate": 0.5555555555555556,
-                "avg_probability": 0.6455444157998257,
-                "bias": 0.08998886024427011,
+                "actual_rate": 0.6086956521739131,
+                "avg_probability": 0.638455534472442,
+                "bias": 0.029759882298528884,
                 "bucket": "(0.6, 0.7]",
-                "rows": 18
+                "rows": 23
               },
               {
-                "actual_rate": 0.6842105263157895,
-                "avg_probability": 0.7497107759915735,
-                "bias": 0.06550024967578405,
+                "actual_rate": 0.6956521739130435,
+                "avg_probability": 0.7472841845878512,
+                "bias": 0.051632010674807716,
                 "bucket": "(0.7, 0.8]",
-                "rows": 19
+                "rows": 23
               },
               {
-                "actual_rate": 0.5,
-                "avg_probability": 0.8299906690195392,
-                "bias": 0.3299906690195392,
+                "actual_rate": 0.5714285714285714,
+                "avg_probability": 0.8332004329300968,
+                "bias": 0.2617718615015254,
                 "bucket": "(0.8, 0.9]",
-                "rows": 6
+                "rows": 7
               }
             ],
-            "ece_10": 0.08773019202506488,
-            "home_probability_bias": 0.06605546646236371,
-            "log_loss": 0.6961233649615016,
-            "rows": 63,
-            "sharpness_std": 0.09296626612776578
+            "ece_10": 0.05749279137183449,
+            "home_probability_bias": 0.04129165046543004,
+            "log_loss": 0.6733497728728094,
+            "rows": 75,
+            "sharpness_std": 0.09325451398263043
           },
           "model_line_ats": {
-            "bets": 63,
-            "hit_rate": 0.3968253968253968,
-            "losses": 38,
+            "bets": 75,
+            "hit_rate": 0.4266666666666667,
+            "losses": 43,
             "pushes": 0,
-            "roi": -0.24242424242424243,
-            "units": -15.272727272727273,
-            "wins": 25
+            "roi": -0.18545454545454546,
+            "units": -13.90909090909091,
+            "wins": 32
           },
           "moneyline": {
-            "bets": 63,
-            "roi": -0.130415985383531,
-            "units": -8.216207079162453
+            "bets": 75,
+            "roi": -0.08377718486367307,
+            "units": -6.28328886477548
           },
           "probability": {
-            "accuracy": 0.5714285714285714,
-            "actual_rate": 0.6031746031746031,
-            "auc": 0.5778947368421052,
-            "avg_probability": 0.6346708705210812,
-            "brier": 0.2414542671082321,
+            "accuracy": 0.6,
+            "actual_rate": 0.6266666666666667,
+            "auc": 0.5790273556231003,
+            "avg_probability": 0.6357838137322797,
+            "brier": 0.23438506677555296,
             "calibration": [
               {
                 "actual_rate": 0.6666666666666666,
@@ -2326,53 +2458,53 @@
                 "rows": 3
               },
               {
-                "actual_rate": 0.5555555555555556,
-                "avg_probability": 0.4567699613208415,
-                "bias": -0.09878559423471406,
+                "actual_rate": 0.5454545454545454,
+                "avg_probability": 0.45627769646576904,
+                "bias": -0.08917684898877637,
                 "bucket": "(0.4, 0.5]",
-                "rows": 9
+                "rows": 11
               },
               {
-                "actual_rate": 0.5833333333333334,
-                "avg_probability": 0.5563980261021383,
-                "bias": -0.026935307231195083,
+                "actual_rate": 0.6153846153846154,
+                "avg_probability": 0.5523632989898626,
+                "bias": -0.06302131639475284,
                 "bucket": "(0.5, 0.6]",
-                "rows": 12
+                "rows": 13
               },
               {
-                "actual_rate": 0.5294117647058824,
-                "avg_probability": 0.6587895566432104,
-                "bias": 0.129377791937328,
+                "actual_rate": 0.5909090909090909,
+                "avg_probability": 0.6552594135095786,
+                "bias": 0.06435032260048767,
                 "bucket": "(0.6, 0.7]",
-                "rows": 17
+                "rows": 22
               },
               {
-                "actual_rate": 0.5625,
-                "avg_probability": 0.7450249304718424,
-                "bias": 0.18252493047184237,
+                "actual_rate": 0.6,
+                "avg_probability": 0.7495781928743868,
+                "bias": 0.14957819287438678,
                 "bucket": "(0.7, 0.8]",
-                "rows": 16
+                "rows": 20
               },
               {
                 "actual_rate": 1.0,
-                "avg_probability": 0.833709426928697,
-                "bias": -0.16629057307130302,
+                "avg_probability": 0.8337094269286968,
+                "bias": -0.16629057307130324,
                 "bucket": "(0.8, 0.9]",
                 "rows": 6
               }
             ],
-            "ece_10": 0.13103774377999985,
-            "home_probability_bias": 0.031496267346478035,
-            "log_loss": 0.6723643625687321,
-            "rows": 63,
-            "sharpness_std": 0.13104286748679805
+            "ece_10": 0.10841007839301281,
+            "home_probability_bias": 0.009117147065612952,
+            "log_loss": 0.6575295361908544,
+            "rows": 75,
+            "sharpness_std": 0.12869744093093746
           },
-          "rows": 63,
+          "rows": 75,
           "segment": "book_home_favorite",
           "totals": {
             "book": {
-              "mae": 11.198412698412698,
-              "rows": 63
+              "mae": 11.326666666666666,
+              "rows": 75
             },
             "model": null
           },
@@ -2383,49 +2515,50 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.5714285714285714,
-            "losses": 27,
-            "wins": 36
+            "hit_rate": 0.6,
+            "losses": 30,
+            "wins": 45
           }
         },
         {
           "book_ats": {
-            "bets": 41,
-            "hit_rate": 0.3902439024390244,
-            "losses": 25,
+            "bets": 43,
+            "hit_rate": 0.3953488372093023,
+            "losses": 26,
             "no_bet": 0,
             "pushes": 3,
-            "roi": -0.25498891352549885,
-            "units": -10.454545454545453,
-            "wins": 16
+            "roi": -0.2452431289640592,
+            "units": -10.545454545454545,
+            "wins": 17
           },
           "book_margin": {
-            "avg_actual_margin": -5.2727272727272725,
-            "avg_predicted_margin": -3.5454545454545454,
-            "home_margin_bias": 1.7272727272727273,
-            "mae": 8.931818181818182,
-            "rmse": 11.495058226749599,
-            "rows": 44
+            "avg_actual_margin": -5.065217391304348,
+            "avg_predicted_margin": -3.619565217391304,
+            "home_margin_bias": 1.4456521739130435,
+            "mae": 8.75,
+            "rmse": 11.300490562649117,
+            "rows": 46
           },
           "close_game_winner_hit_rate": 0.5384615384615384,
           "close_games": 13,
           "margin": {
-            "avg_actual_margin": -5.2727272727272725,
-            "avg_predicted_margin": -2.3548781567749693,
-            "home_margin_bias": 2.9178491159523037,
-            "mae": 9.713779976388587,
-            "rmse": 12.481694246566086,
-            "rows": 44
+            "avg_actual_margin": -5.065217391304348,
+            "avg_predicted_margin": -2.518967618768016,
+            "home_margin_bias": 2.5462497725363322,
+            "mae": 9.536178054920171,
+            "rmse": 12.267872489868706,
+            "rows": 46
           },
           "market_probability": {
-            "accuracy": 0.6590909090909091,
-            "actual_rate": 0.3181818181818182,
-            "auc": 0.6273809523809525,
-            "avg_probability": 0.3881526808422793,
-            "brier": 0.21472796286754753,
+            "accuracy": 0.6739130434782609,
+            "actual_rate": 0.32608695652173914,
+            "auc": 0.6602150537634409,
+            "avg_probability": 0.38780388469637395,
+            "brier": 0.21215695712838742,
             "calibration": [
               {
                 "actual_rate": 0.0,
@@ -2435,11 +2568,11 @@
                 "rows": 1
               },
               {
-                "actual_rate": 0.25,
-                "avg_probability": 0.25535427261142885,
-                "bias": 0.005354272611428845,
+                "actual_rate": 0.2,
+                "avg_probability": 0.25546961506973254,
+                "bias": 0.055469615069732525,
                 "bucket": "(0.2, 0.3]",
-                "rows": 4
+                "rows": 5
               },
               {
                 "actual_rate": 0.25,
@@ -2456,46 +2589,46 @@
                 "rows": 22
               },
               {
-                "actual_rate": 0.0,
+                "actual_rate": 0.5,
                 "avg_probability": 0.5043297540699688,
-                "bias": 0.5043297540699688,
+                "bias": 0.0043297540699688275,
                 "bucket": "(0.5, 0.6]",
-                "rows": 1
+                "rows": 2
               }
             ],
-            "ece_10": 0.0699708626604611,
-            "home_probability_bias": 0.0699708626604611,
-            "log_loss": 0.6200157212556443,
-            "rows": 44,
-            "sharpness_std": 0.07396327438819104
+            "ece_10": 0.06171692817463487,
+            "home_probability_bias": 0.06171692817463481,
+            "log_loss": 0.6143660472256223,
+            "rows": 46,
+            "sharpness_std": 0.07685092784369103
           },
           "model_line_ats": {
-            "bets": 44,
-            "hit_rate": 0.4090909090909091,
+            "bets": 46,
+            "hit_rate": 0.43478260869565216,
             "losses": 26,
             "pushes": 0,
-            "roi": -0.21900826446280994,
-            "units": -9.636363636363637,
-            "wins": 18
+            "roi": -0.16996047430830044,
+            "units": -7.81818181818182,
+            "wins": 20
           },
           "moneyline": {
-            "bets": 44,
-            "roi": 0.07277779582175846,
-            "units": 3.2022230161573724
+            "bets": 46,
+            "roi": 0.05417561062219871,
+            "units": 2.4920780886211404
           },
           "probability": {
-            "accuracy": 0.6590909090909091,
-            "actual_rate": 0.3181818181818182,
-            "auc": 0.5357142857142857,
-            "avg_probability": 0.43142022815572906,
-            "brier": 0.23776668284481708,
+            "accuracy": 0.6521739130434783,
+            "actual_rate": 0.32608695652173914,
+            "auc": 0.5397849462365591,
+            "avg_probability": 0.4268144355539254,
+            "brier": 0.23643896880681384,
             "calibration": [
               {
-                "actual_rate": 1.0,
-                "avg_probability": 0.2537193831454148,
-                "bias": -0.7462806168545852,
+                "actual_rate": 0.75,
+                "avg_probability": 0.25177267791564933,
+                "bias": -0.49822732208435067,
                 "bucket": "(0.2, 0.3]",
-                "rows": 3
+                "rows": 4
               },
               {
                 "actual_rate": 0.07692307692307693,
@@ -2505,11 +2638,11 @@
                 "rows": 13
               },
               {
-                "actual_rate": 0.3157894736842105,
-                "avg_probability": 0.45209904867478007,
-                "bias": 0.13630957499056956,
+                "actual_rate": 0.35,
+                "avg_probability": 0.44974616796114786,
+                "bias": 0.09974616796114788,
                 "bucket": "(0.4, 0.5]",
-                "rows": 19
+                "rows": 20
               },
               {
                 "actual_rate": 0.5,
@@ -2520,24 +2653,24 @@
               },
               {
                 "actual_rate": 0.3333333333333333,
-                "avg_probability": 0.607655953045835,
-                "bias": 0.27432261971250166,
+                "avg_probability": 0.6076559530458349,
+                "bias": 0.27432261971250155,
                 "bucket": "(0.6, 0.7]",
                 "rows": 3
               }
             ],
-            "ece_10": 0.21500394863589972,
-            "home_probability_bias": 0.11323840997391088,
-            "log_loss": 0.6709358501905247,
-            "rows": 44,
-            "sharpness_std": 0.09579934196903364
+            "ece_10": 0.18737570895989938,
+            "home_probability_bias": 0.10072747903218626,
+            "log_loss": 0.6675481911582943,
+            "rows": 46,
+            "sharpness_std": 0.09757230480119965
           },
-          "rows": 44,
+          "rows": 46,
           "segment": "book_home_dog",
           "totals": {
             "book": {
-              "mae": 9.704545454545455,
-              "rows": 44
+              "mae": 9.543478260869565,
+              "rows": 46
             },
             "model": null
           },
@@ -2548,51 +2681,52 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.6590909090909091,
-            "losses": 15,
-            "wins": 29
+            "hit_rate": 0.6521739130434783,
+            "losses": 16,
+            "wins": 30
           }
         }
       ],
       "home_away": [
         {
           "book_ats": {
-            "bets": 54,
-            "hit_rate": 0.35185185185185186,
-            "losses": 35,
+            "bets": 61,
+            "hit_rate": 0.4098360655737705,
+            "losses": 36,
             "no_bet": 0,
             "pushes": 3,
-            "roi": -0.3282828282828283,
-            "units": -17.727272727272727,
-            "wins": 19
+            "roi": -0.21758569299552907,
+            "units": -13.272727272727273,
+            "wins": 25
           },
           "book_margin": {
-            "avg_actual_margin": -2.6315789473684212,
-            "avg_predicted_margin": 0.49122807017543857,
-            "home_margin_bias": 3.1228070175438596,
-            "mae": 9.421052631578947,
-            "rmse": 12.391635548988171,
-            "rows": 57
+            "avg_actual_margin": -0.921875,
+            "avg_predicted_margin": 0.8046875,
+            "home_margin_bias": 1.7265625,
+            "mae": 9.6484375,
+            "rmse": 12.541026423303636,
+            "rows": 64
           },
           "close_game_winner_hit_rate": 0.5,
           "close_games": 12,
           "margin": {
-            "avg_actual_margin": -2.6315789473684212,
-            "avg_predicted_margin": 3.20438699134507,
-            "home_margin_bias": 5.835965938713491,
-            "mae": 10.15522629885182,
-            "rmse": 13.247115296642647,
-            "rows": 57
+            "avg_actual_margin": -0.921875,
+            "avg_predicted_margin": 3.3972823348489625,
+            "home_margin_bias": 4.319157334848963,
+            "mae": 10.244924456569883,
+            "rmse": 13.261456196933274,
+            "rows": 64
           },
           "market_probability": {
-            "accuracy": 0.6491228070175439,
-            "actual_rate": 0.43859649122807015,
-            "auc": 0.719375,
-            "avg_probability": 0.5217882893533901,
-            "brier": 0.21813079766628465,
+            "accuracy": 0.671875,
+            "actual_rate": 0.484375,
+            "auc": 0.7409579667644184,
+            "avg_probability": 0.5347330668177496,
+            "brier": 0.21046160738006053,
             "calibration": [
               {
                 "actual_rate": 0.0,
@@ -2623,25 +2757,25 @@
                 "rows": 15
               },
               {
-                "actual_rate": 0.3333333333333333,
-                "avg_probability": 0.562605586312253,
-                "bias": 0.22927225297891968,
+                "actual_rate": 0.375,
+                "avg_probability": 0.5515538505513774,
+                "bias": 0.1765538505513774,
                 "bucket": "(0.5, 0.6]",
-                "rows": 6
-              },
-              {
-                "actual_rate": 0.5,
-                "avg_probability": 0.6479249834461308,
-                "bias": 0.1479249834461308,
-                "bucket": "(0.6, 0.7]",
                 "rows": 8
               },
               {
-                "actual_rate": 0.75,
-                "avg_probability": 0.7536966724534512,
-                "bias": 0.0036966724534511775,
+                "actual_rate": 0.6,
+                "avg_probability": 0.6418097182292822,
+                "bias": 0.041809718229282256,
+                "bucket": "(0.6, 0.7]",
+                "rows": 10
+              },
+              {
+                "actual_rate": 0.8,
+                "avg_probability": 0.7502566167581917,
+                "bias": -0.04974338324180838,
                 "bucket": "(0.7, 0.8]",
-                "rows": 12
+                "rows": 15
               },
               {
                 "actual_rate": 1.0,
@@ -2651,32 +2785,32 @@
                 "rows": 1
               }
             ],
-            "ece_10": 0.08836867474309384,
-            "home_probability_bias": 0.0831917981253199,
-            "log_loss": 0.62508478911208,
-            "rows": 57,
-            "sharpness_std": 0.17413796655800692
+            "ece_10": 0.07828593345005212,
+            "home_probability_bias": 0.05035806681774957,
+            "log_loss": 0.6087836574704135,
+            "rows": 64,
+            "sharpness_std": 0.17141218589045654
           },
           "model_line_ats": {
-            "bets": 57,
-            "hit_rate": 0.2807017543859649,
-            "losses": 41,
+            "bets": 64,
+            "hit_rate": 0.328125,
+            "losses": 43,
             "pushes": 0,
-            "roi": -0.46411483253588515,
-            "units": -26.454545454545453,
-            "wins": 16
+            "roi": -0.37357954545454547,
+            "units": -23.90909090909091,
+            "wins": 21
           },
           "moneyline": {
-            "bets": 57,
-            "roi": -0.009540830990400309,
-            "units": -0.5438273664528176
+            "bets": 64,
+            "roi": -0.008021487740847814,
+            "units": -0.5133752154142601
           },
           "probability": {
-            "accuracy": 0.6491228070175439,
-            "actual_rate": 0.43859649122807015,
-            "auc": 0.75625,
-            "avg_probability": 0.5873042873886927,
-            "brier": 0.22574293785748792,
+            "accuracy": 0.65625,
+            "actual_rate": 0.484375,
+            "auc": 0.7468230694037146,
+            "avg_probability": 0.5931363619957797,
+            "brier": 0.22134583503833732,
             "calibration": [
               {
                 "actual_rate": 1.0,
@@ -2693,11 +2827,11 @@
                 "rows": 6
               },
               {
-                "actual_rate": 0.26666666666666666,
-                "avg_probability": 0.4616918857359946,
-                "bias": 0.19502521906932796,
+                "actual_rate": 0.3125,
+                "avg_probability": 0.45815123252762846,
+                "bias": 0.14565123252762846,
                 "bucket": "(0.4, 0.5]",
-                "rows": 15
+                "rows": 16
               },
               {
                 "actual_rate": 0.42857142857142855,
@@ -2707,39 +2841,39 @@
                 "rows": 7
               },
               {
-                "actual_rate": 0.36363636363636365,
-                "avg_probability": 0.6507987384469309,
-                "bias": 0.2871623748105673,
+                "actual_rate": 0.4666666666666667,
+                "avg_probability": 0.6451092623684228,
+                "bias": 0.17844259570175613,
                 "bucket": "(0.6, 0.7]",
-                "rows": 11
+                "rows": 15
               },
               {
-                "actual_rate": 0.6363636363636364,
-                "avg_probability": 0.7401618274087854,
-                "bias": 0.10379819104514909,
+                "actual_rate": 0.6923076923076923,
+                "avg_probability": 0.7464052800814478,
+                "bias": 0.05409758777375551,
                 "bucket": "(0.7, 0.8]",
-                "rows": 11
+                "rows": 13
               },
               {
                 "actual_rate": 1.0,
-                "avg_probability": 0.833709426928697,
-                "bias": -0.16629057307130302,
+                "avg_probability": 0.8337094269286968,
+                "bias": -0.16629057307130324,
                 "bucket": "(0.8, 0.9]",
                 "rows": 6
               }
             ],
-            "ece_10": 0.20905679123133727,
-            "home_probability_bias": 0.14870779616062252,
-            "log_loss": 0.6379710696630807,
-            "rows": 57,
-            "sharpness_std": 0.15672392604139504
+            "ece_10": 0.1625096857306351,
+            "home_probability_bias": 0.10876136199577968,
+            "log_loss": 0.628623203245143,
+            "rows": 64,
+            "sharpness_std": 0.1537930728025561
           },
-          "rows": 57,
+          "rows": 64,
           "segment": "ats_bet_home",
           "totals": {
             "book": {
-              "mae": 11.447368421052632,
-              "rows": 57
+              "mae": 11.328125,
+              "rows": 64
             },
             "model": null
           },
@@ -2750,50 +2884,58 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.6491228070175439,
-            "losses": 20,
-            "wins": 37
+            "hit_rate": 0.65625,
+            "losses": 22,
+            "wins": 42
           }
         },
         {
           "book_ats": {
-            "bets": 47,
-            "hit_rate": 0.5319148936170213,
-            "losses": 22,
+            "bets": 54,
+            "hit_rate": 0.5370370370370371,
+            "losses": 25,
             "no_bet": 0,
             "pushes": 3,
-            "roi": 0.015473887814313352,
-            "units": 0.7272727272727275,
-            "wins": 25
+            "roi": 0.02525252525252523,
+            "units": 1.3636363636363624,
+            "wins": 29
           },
           "book_margin": {
-            "avg_actual_margin": 1.92,
-            "avg_predicted_margin": 3.02,
-            "home_margin_bias": 1.1,
-            "mae": 9.3,
-            "rmse": 11.56027681329474,
-            "rows": 50
+            "avg_actual_margin": 2.245614035087719,
+            "avg_predicted_margin": 3.710526315789474,
+            "home_margin_bias": 1.4649122807017543,
+            "mae": 9.464912280701755,
+            "rmse": 11.640258331973897,
+            "rows": 57
           },
-          "close_game_winner_hit_rate": 0.6428571428571429,
-          "close_games": 14,
+          "close_game_winner_hit_rate": 0.6,
+          "close_games": 15,
           "margin": {
-            "avg_actual_margin": 1.92,
-            "avg_predicted_margin": 0.36927810830576474,
-            "home_margin_bias": -1.5507218916942356,
-            "mae": 9.676508784743564,
-            "rmse": 12.055271798668002,
-            "rows": 50
+            "avg_actual_margin": 2.245614035087719,
+            "avg_predicted_margin": 0.5550801561653415,
+            "home_margin_bias": -1.690533878922378,
+            "mae": 9.867882336475198,
+            "rmse": 12.116711268635825,
+            "rows": 57
           },
           "market_probability": {
-            "accuracy": 0.6,
-            "actual_rate": 0.54,
-            "auc": 0.5619967793880838,
-            "avg_probability": 0.5899655970209191,
-            "brier": 0.2534970011659955,
+            "accuracy": 0.6140350877192983,
+            "actual_rate": 0.543859649122807,
+            "auc": 0.5700992555831266,
+            "avg_probability": 0.5914550211334121,
+            "brier": 0.24865525259439591,
             "calibration": [
+              {
+                "actual_rate": 0.0,
+                "avg_probability": 0.2559309849029475,
+                "bias": 0.2559309849029475,
+                "bucket": "(0.2, 0.3]",
+                "rows": 1
+              },
               {
                 "actual_rate": 0.16666666666666666,
                 "avg_probability": 0.3633155174281187,
@@ -2809,67 +2951,67 @@
                 "rows": 7
               },
               {
-                "actual_rate": 0.6666666666666666,
-                "avg_probability": 0.5630628253980905,
-                "bias": -0.10360384126857614,
+                "actual_rate": 0.6875,
+                "avg_probability": 0.5617928699836721,
+                "bias": -0.12570713001632794,
                 "bucket": "(0.5, 0.6]",
-                "rows": 15
+                "rows": 16
               },
               {
-                "actual_rate": 0.6,
-                "avg_probability": 0.6436399616827816,
-                "bias": 0.043639961682781614,
+                "actual_rate": 0.6153846153846154,
+                "avg_probability": 0.6358753931210266,
+                "bias": 0.02049077773641117,
                 "bucket": "(0.6, 0.7]",
-                "rows": 10
+                "rows": 13
               },
               {
-                "actual_rate": 0.5714285714285714,
-                "avg_probability": 0.7428778106283548,
-                "bias": 0.1714492391997834,
+                "actual_rate": 0.5,
+                "avg_probability": 0.7417108742684626,
+                "bias": 0.2417108742684626,
                 "bucket": "(0.7, 0.8]",
-                "rows": 7
+                "rows": 8
               },
               {
-                "actual_rate": 0.4,
-                "avg_probability": 0.8254969995447585,
-                "bias": 0.4254969995447585,
+                "actual_rate": 0.5,
+                "avg_probability": 0.8299906690195392,
+                "bias": 0.3299906690195392,
                 "bucket": "(0.8, 0.9]",
-                "rows": 5
+                "rows": 6
               }
             ],
-            "ece_10": 0.1477912987198331,
-            "home_probability_bias": 0.04996559702091907,
-            "log_loss": 0.7101326149686875,
-            "rows": 50,
-            "sharpness_std": 0.1399753203045483
+            "ece_10": 0.14945147740377884,
+            "home_probability_bias": 0.04759537201060504,
+            "log_loss": 0.6982441589426818,
+            "rows": 57,
+            "sharpness_std": 0.14414240633168038
           },
           "model_line_ats": {
-            "bets": 50,
-            "hit_rate": 0.54,
-            "losses": 23,
+            "bets": 57,
+            "hit_rate": 0.543859649122807,
+            "losses": 26,
             "pushes": 0,
-            "roi": 0.030909090909090865,
-            "units": 1.5454545454545432,
-            "wins": 27
+            "roi": 0.03827751196172245,
+            "units": 2.18181818181818,
+            "wins": 31
           },
           "moneyline": {
-            "bets": 50,
-            "roi": -0.08940313393104525,
-            "units": -4.470156696552262
+            "bets": 57,
+            "roi": -0.05750588703052768,
+            "units": -3.277835560740078
           },
           "probability": {
-            "accuracy": 0.56,
-            "actual_rate": 0.54,
-            "auc": 0.5668276972624798,
-            "avg_probability": 0.5098082100104941,
-            "brier": 0.2561201083022752,
+            "accuracy": 0.5789473684210527,
+            "actual_rate": 0.543859649122807,
+            "auc": 0.5856079404466501,
+            "avg_probability": 0.515026717503011,
+            "brier": 0.25068314264607583,
             "calibration": [
               {
-                "actual_rate": 1.0,
-                "avg_probability": 0.2416805352618988,
-                "bias": -0.7583194647381012,
+                "actual_rate": 0.6666666666666666,
+                "avg_probability": 0.24309787758338355,
+                "bias": -0.4235687890832831,
                 "bucket": "(0.2, 0.3]",
-                "rows": 2
+                "rows": 3
               },
               {
                 "actual_rate": 0.3,
@@ -2879,46 +3021,46 @@
                 "rows": 10
               },
               {
-                "actual_rate": 0.5384615384615384,
-                "avg_probability": 0.4442640992821904,
-                "bias": -0.09419743917934803,
+                "actual_rate": 0.5333333333333333,
+                "avg_probability": 0.44557055332695744,
+                "bias": -0.08776278000637588,
                 "bucket": "(0.4, 0.5]",
-                "rows": 13
-              },
-              {
-                "actual_rate": 0.6363636363636364,
-                "avg_probability": 0.5526099438471189,
-                "bias": -0.08375369251651743,
-                "bucket": "(0.5, 0.6]",
-                "rows": 11
+                "rows": 15
               },
               {
                 "actual_rate": 0.6666666666666666,
-                "avg_probability": 0.6515115776839824,
-                "bias": -0.01515508898268425,
-                "bucket": "(0.6, 0.7]",
-                "rows": 9
+                "avg_probability": 0.5485546629967384,
+                "bias": -0.11811200366992824,
+                "bucket": "(0.5, 0.6]",
+                "rows": 12
               },
               {
-                "actual_rate": 0.4,
-                "avg_probability": 0.7557237572105677,
-                "bias": 0.3557237572105677,
+                "actual_rate": 0.7,
+                "avg_probability": 0.6562036020821893,
+                "bias": -0.04379639791781065,
+                "bucket": "(0.6, 0.7]",
+                "rows": 10
+              },
+              {
+                "actual_rate": 0.42857142857142855,
+                "avg_probability": 0.7554707452041305,
+                "bias": 0.32689931663270194,
                 "bucket": "(0.7, 0.8]",
-                "rows": 5
+                "rows": 7
               }
             ],
-            "ece_10": 0.1217638923038373,
-            "home_probability_bias": -0.03019178998950589,
-            "log_loss": 0.7103156255883522,
-            "rows": 50,
-            "sharpness_std": 0.14112847721308422
+            "ece_10": 0.1270427206806508,
+            "home_probability_bias": -0.028832931619796054,
+            "log_loss": 0.6980709999983593,
+            "rows": 57,
+            "sharpness_std": 0.14675195925188417
           },
-          "rows": 50,
+          "rows": 57,
           "segment": "ats_bet_away",
           "totals": {
             "book": {
-              "mae": 9.6,
-              "rows": 50
+              "mae": 9.885964912280702,
+              "rows": 57
             },
             "model": null
           },
@@ -2929,49 +3071,50 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.56,
-            "losses": 22,
-            "wins": 28
+            "hit_rate": 0.5789473684210527,
+            "losses": 24,
+            "wins": 33
           }
         },
         {
           "book_ats": {
-            "bets": 57,
-            "hit_rate": 0.45614035087719296,
-            "losses": 31,
+            "bets": 67,
+            "hit_rate": 0.4925373134328358,
+            "losses": 34,
             "no_bet": 0,
             "pushes": 3,
-            "roi": -0.1291866028708134,
-            "units": -7.363636363636364,
-            "wins": 26
+            "roi": -0.05970149253731342,
+            "units": -3.999999999999999,
+            "wins": 33
           },
           "book_margin": {
-            "avg_actual_margin": 1.45,
-            "avg_predicted_margin": 4.608333333333333,
-            "home_margin_bias": 3.158333333333333,
-            "mae": 10.341666666666667,
-            "rmse": 13.161021996790371,
-            "rows": 60
+            "avg_actual_margin": 3.142857142857143,
+            "avg_predicted_margin": 5.021428571428571,
+            "home_margin_bias": 1.8785714285714286,
+            "mae": 10.535714285714286,
+            "rmse": 13.209709632366208,
+            "rows": 70
           },
-          "close_game_winner_hit_rate": 0.5833333333333334,
-          "close_games": 12,
+          "close_game_winner_hit_rate": 0.5384615384615384,
+          "close_games": 13,
           "margin": {
-            "avg_actual_margin": 1.45,
-            "avg_predicted_margin": 5.873994403264671,
-            "home_margin_bias": 4.423994403264672,
-            "mae": 10.632418626770884,
-            "rmse": 13.584932428389367,
-            "rows": 60
+            "avg_actual_margin": 3.142857142857143,
+            "avg_predicted_margin": 5.938559623862094,
+            "home_margin_bias": 2.795702481004952,
+            "mae": 10.812913695762319,
+            "rmse": 13.639735423969615,
+            "rows": 70
           },
           "market_probability": {
-            "accuracy": 0.5833333333333334,
-            "actual_rate": 0.5833333333333334,
-            "auc": 0.5731428571428571,
-            "avg_probability": 0.6549519358289597,
-            "brier": 0.2467594733502743,
+            "accuracy": 0.6142857142857143,
+            "actual_rate": 0.6142857142857143,
+            "auc": 0.5779500430663221,
+            "avg_probability": 0.6572324574958939,
+            "brier": 0.23602730713977574,
             "calibration": [
               {
                 "actual_rate": 1.0,
@@ -2989,101 +3132,101 @@
               },
               {
                 "actual_rate": 0.5,
-                "avg_probability": 0.5688217190226257,
-                "bias": 0.06882171902262568,
+                "avg_probability": 0.5643622642504598,
+                "bias": 0.06436226425045977,
                 "bucket": "(0.5, 0.6]",
-                "rows": 12
+                "rows": 14
               },
               {
-                "actual_rate": 0.6,
-                "avg_probability": 0.6526911948554694,
-                "bias": 0.05269119485546947,
+                "actual_rate": 0.6666666666666666,
+                "avg_probability": 0.6460456782498887,
+                "bias": -0.020620988416777952,
                 "bucket": "(0.6, 0.7]",
-                "rows": 15
-              },
-              {
-                "actual_rate": 0.6842105263157895,
-                "avg_probability": 0.7497107759915735,
-                "bias": 0.06550024967578405,
-                "bucket": "(0.7, 0.8]",
-                "rows": 19
-              },
-              {
-                "actual_rate": 0.5,
-                "avg_probability": 0.8299906690195392,
-                "bias": 0.3299906690195392,
-                "bucket": "(0.8, 0.9]",
-                "rows": 6
-              }
-            ],
-            "ece_10": 0.09284874188543026,
-            "home_probability_bias": 0.07161860249562635,
-            "log_loss": 0.6927294765434718,
-            "rows": 60,
-            "sharpness_std": 0.12135958986008731
-          },
-          "model_line_ats": {
-            "bets": 60,
-            "hit_rate": 0.35,
-            "losses": 39,
-            "pushes": 0,
-            "roi": -0.33181818181818185,
-            "units": -19.90909090909091,
-            "wins": 21
-          },
-          "moneyline": {
-            "bets": 60,
-            "roi": -0.13340363806073743,
-            "units": -8.004218283644246
-          },
-          "probability": {
-            "accuracy": 0.5833333333333334,
-            "actual_rate": 0.5833333333333334,
-            "auc": 0.5954285714285714,
-            "avg_probability": 0.6651015037902691,
-            "brier": 0.240839697277676,
-            "calibration": [
-              {
-                "actual_rate": 0.5555555555555556,
-                "avg_probability": 0.5533913586790221,
-                "bias": -0.002164196876533464,
-                "bucket": "(0.5, 0.6]",
                 "rows": 18
               },
               {
-                "actual_rate": 0.5,
-                "avg_probability": 0.6511195161036041,
-                "bias": 0.15111951610360408,
+                "actual_rate": 0.6956521739130435,
+                "avg_probability": 0.7472841845878512,
+                "bias": 0.051632010674807716,
+                "bucket": "(0.7, 0.8]",
+                "rows": 23
+              },
+              {
+                "actual_rate": 0.5714285714285714,
+                "avg_probability": 0.8332004329300968,
+                "bias": 0.2617718615015254,
+                "bucket": "(0.8, 0.9]",
+                "rows": 7
+              }
+            ],
+            "ece_10": 0.07174908530149758,
+            "home_probability_bias": 0.04294674321017955,
+            "log_loss": 0.6687062376461304,
+            "rows": 70,
+            "sharpness_std": 0.11875732874134062
+          },
+          "model_line_ats": {
+            "bets": 70,
+            "hit_rate": 0.38571428571428573,
+            "losses": 43,
+            "pushes": 0,
+            "roi": -0.26363636363636367,
+            "units": -18.454545454545457,
+            "wins": 27
+          },
+          "moneyline": {
+            "bets": 70,
+            "roi": -0.09273285813224674,
+            "units": -6.491300069257272
+          },
+          "probability": {
+            "accuracy": 0.6142857142857143,
+            "actual_rate": 0.6142857142857143,
+            "auc": 0.5882859603789836,
+            "avg_probability": 0.6671069486467587,
+            "brier": 0.2329394790937822,
+            "calibration": [
+              {
+                "actual_rate": 0.5789473684210527,
+                "avg_probability": 0.5507890015718395,
+                "bias": -0.028158366849213134,
+                "bucket": "(0.5, 0.6]",
+                "rows": 19
+              },
+              {
+                "actual_rate": 0.56,
+                "avg_probability": 0.6495469982539294,
+                "bias": 0.08954699825392931,
                 "bucket": "(0.6, 0.7]",
+                "rows": 25
+              },
+              {
+                "actual_rate": 0.6,
+                "avg_probability": 0.7495781928743868,
+                "bias": 0.14957819287438678,
+                "bucket": "(0.7, 0.8]",
                 "rows": 20
               },
               {
-                "actual_rate": 0.5625,
-                "avg_probability": 0.7450249304718424,
-                "bias": 0.18252493047184237,
-                "bucket": "(0.7, 0.8]",
-                "rows": 16
-              },
-              {
                 "actual_rate": 1.0,
-                "avg_probability": 0.833709426928697,
-                "bias": -0.16629057307130302,
+                "avg_probability": 0.8337094269286968,
+                "bias": -0.16629057307130324,
                 "bucket": "(0.8, 0.9]",
                 "rows": 6
               }
             ],
-            "ece_10": 0.11632480319711636,
-            "home_probability_bias": 0.08176817045693574,
-            "log_loss": 0.6706400908450416,
-            "rows": 60,
-            "sharpness_std": 0.09659129137780506
+            "ece_10": 0.0966141603199834,
+            "home_probability_bias": 0.052821234361044356,
+            "log_loss": 0.6540563565926095,
+            "rows": 70,
+            "sharpness_std": 0.09538709162693221
           },
-          "rows": 60,
+          "rows": 70,
           "segment": "home_win_prob_side",
           "totals": {
             "book": {
-              "mae": 11.05,
-              "rows": 60
+              "mae": 11.457142857142857,
+              "rows": 70
             },
             "model": null
           },
@@ -3094,49 +3237,50 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.5833333333333334,
-            "losses": 25,
-            "wins": 35
+            "hit_rate": 0.6142857142857143,
+            "losses": 27,
+            "wins": 43
           }
         },
         {
           "book_ats": {
-            "bets": 44,
-            "hit_rate": 0.4090909090909091,
-            "losses": 26,
+            "bets": 48,
+            "hit_rate": 0.4375,
+            "losses": 27,
             "no_bet": 0,
             "pushes": 3,
-            "roi": -0.21900826446280994,
-            "units": -9.636363636363637,
-            "wins": 18
+            "roi": -0.16477272727272724,
+            "units": -7.909090909090907,
+            "wins": 21
           },
           "book_margin": {
-            "avg_actual_margin": -3.0,
-            "avg_predicted_margin": -2.074468085106383,
-            "home_margin_bias": 0.925531914893617,
-            "mae": 8.117021276595745,
-            "rmse": 10.357184781384596,
-            "rows": 47
+            "avg_actual_margin": -2.9607843137254903,
+            "avg_predicted_margin": -1.7352941176470589,
+            "home_margin_bias": 1.2254901960784315,
+            "mae": 8.22549019607843,
+            "rmse": 10.454617143054218,
+            "rows": 51
           },
           "close_game_winner_hit_rate": 0.5714285714285714,
           "close_games": 14,
           "margin": {
-            "avg_actual_margin": -3.0,
-            "avg_predicted_margin": -3.219695750509002,
-            "home_margin_bias": -0.2196957505090017,
-            "mae": 9.036770652457,
-            "rmse": 11.481864693857748,
-            "rows": 47
+            "avg_actual_margin": -2.9607843137254903,
+            "avg_predicted_margin": -3.267324222325265,
+            "home_margin_bias": -0.3065399085997745,
+            "mae": 9.043931366592094,
+            "rmse": 11.376712352284562,
+            "rows": 51
           },
           "market_probability": {
-            "accuracy": 0.6808510638297872,
-            "actual_rate": 0.3617021276595745,
-            "auc": 0.6735294117647059,
-            "avg_probability": 0.42432119562663023,
-            "brier": 0.21920717285662858,
+            "accuracy": 0.6862745098039216,
+            "actual_rate": 0.37254901960784315,
+            "auc": 0.6875,
+            "avg_probability": 0.4299917736515272,
+            "brier": 0.21805844647882627,
             "calibration": [
               {
                 "actual_rate": 0.0,
@@ -3146,11 +3290,11 @@
                 "rows": 1
               },
               {
-                "actual_rate": 0.25,
-                "avg_probability": 0.25535427261142885,
-                "bias": 0.005354272611428845,
+                "actual_rate": 0.2,
+                "avg_probability": 0.25546961506973254,
+                "bias": 0.055469615069732525,
                 "bucket": "(0.2, 0.3]",
-                "rows": 4
+                "rows": 5
               },
               {
                 "actual_rate": 0.2,
@@ -3167,53 +3311,53 @@
                 "rows": 15
               },
               {
-                "actual_rate": 0.6666666666666666,
-                "avg_probability": 0.555079474508152,
-                "bias": -0.11158719215851465,
+                "actual_rate": 0.7,
+                "avg_probability": 0.5500045024643336,
+                "bias": -0.14999549753566632,
                 "bucket": "(0.5, 0.6]",
-                "rows": 9
+                "rows": 10
               },
               {
-                "actual_rate": 0.3333333333333333,
-                "avg_probability": 0.609810520521607,
-                "bias": 0.2764771871882737,
+                "actual_rate": 0.4,
+                "avg_probability": 0.6111310168736345,
+                "bias": 0.21113101687363445,
                 "bucket": "(0.6, 0.7]",
-                "rows": 3
+                "rows": 5
               }
             ],
-            "ece_10": 0.10535458836818898,
-            "home_probability_bias": 0.06261906796705574,
-            "log_loss": 0.6292062794726517,
-            "rows": 47,
-            "sharpness_std": 0.10782145859382532
+            "ece_10": 0.11626451778316102,
+            "home_probability_bias": 0.05744275404368404,
+            "log_loss": 0.6265222451492196,
+            "rows": 51,
+            "sharpness_std": 0.11297860545386407
           },
           "model_line_ats": {
-            "bets": 47,
-            "hit_rate": 0.46808510638297873,
-            "losses": 25,
+            "bets": 51,
+            "hit_rate": 0.49019607843137253,
+            "losses": 26,
             "pushes": 0,
-            "roi": -0.10638297872340426,
-            "units": -5.0,
-            "wins": 22
+            "roi": -0.06417112299465241,
+            "units": -3.2727272727272734,
+            "wins": 25
           },
           "moneyline": {
-            "bets": 47,
-            "roi": 0.06362200469445033,
-            "units": 2.9902342206391657
+            "bets": 51,
+            "roi": 0.05294292731574378,
+            "units": 2.7000892931029328
           },
           "probability": {
-            "accuracy": 0.6382978723404256,
-            "actual_rate": 0.3617021276595745,
-            "auc": 0.5215686274509804,
-            "avg_probability": 0.4055460564737034,
-            "brier": 0.23878661779425553,
+            "accuracy": 0.6274509803921569,
+            "actual_rate": 0.37254901960784315,
+            "auc": 0.53125,
+            "avg_probability": 0.4043090913750673,
+            "brier": 0.2382217458179442,
             "calibration": [
               {
-                "actual_rate": 1.0,
-                "avg_probability": 0.2537193831454148,
-                "bias": -0.7462806168545852,
+                "actual_rate": 0.75,
+                "avg_probability": 0.25177267791564933,
+                "bias": -0.49822732208435067,
                 "bucket": "(0.2, 0.3]",
-                "rows": 3
+                "rows": 4
               },
               {
                 "actual_rate": 0.1875,
@@ -3223,25 +3367,25 @@
                 "rows": 16
               },
               {
-                "actual_rate": 0.39285714285714285,
-                "avg_probability": 0.45360041345387125,
-                "bias": 0.060743270596728405,
+                "actual_rate": 0.41935483870967744,
+                "avg_probability": 0.4520638071079489,
+                "bias": 0.032708968398271476,
                 "bucket": "(0.4, 0.5]",
-                "rows": 28
+                "rows": 31
               }
             ],
-            "ece_10": 0.13911379479556524,
-            "home_probability_bias": 0.04384392881412891,
-            "log_loss": 0.6732282297768236,
-            "rows": 47,
-            "sharpness_std": 0.06850516339905816
+            "ece_10": 0.10991337719222029,
+            "home_probability_bias": 0.031760071767224174,
+            "log_loss": 0.671333079335548,
+            "rows": 51,
+            "sharpness_std": 0.07011258247157497
           },
-          "rows": 47,
+          "rows": 51,
           "segment": "away_win_prob_side",
           "totals": {
             "book": {
-              "mae": 9.98936170212766,
-              "rows": 47
+              "mae": 9.53921568627451,
+              "rows": 51
             },
             "model": null
           },
@@ -3252,12 +3396,13 @@
             4,
             5,
             6,
-            7
+            7,
+            8
           ],
           "winner": {
-            "hit_rate": 0.6382978723404256,
-            "losses": 17,
-            "wins": 30
+            "hit_rate": 0.6274509803921569,
+            "losses": 19,
+            "wins": 32
           }
         }
       ],
@@ -3286,9 +3431,9 @@
           "margin": {
             "avg_actual_margin": 0.8125,
             "avg_predicted_margin": 2.1886864275185403,
-            "home_margin_bias": 1.37618642751854,
+            "home_margin_bias": 1.3761864275185403,
             "mae": 12.483410854536451,
-            "rmse": 14.723038221005952,
+            "rmse": 14.723038221005954,
             "rows": 16
           },
           "market_probability": {
@@ -3392,7 +3537,7 @@
             ],
             "ece_10": 0.12573860036586887,
             "home_probability_bias": -0.06230869252897886,
-            "log_loss": 0.6929495070044851,
+            "log_loss": 0.6929495070044852,
             "rows": 16,
             "sharpness_std": 0.10302392361262333
           },
@@ -3565,7 +3710,7 @@
             ],
             "ece_10": 0.14955243238896004,
             "home_probability_bias": 0.1445395566999298,
-            "log_loss": 0.7308254226392962,
+            "log_loss": 0.7308254226392961,
             "rows": 16,
             "sharpness_std": 0.14493145072597236
           },
@@ -3790,7 +3935,7 @@
           "close_games": 4,
           "margin": {
             "avg_actual_margin": 0.0,
-            "avg_predicted_margin": 2.6989821735028166,
+            "avg_predicted_margin": 2.698982173502816,
             "home_margin_bias": 2.6989821735028166,
             "mae": 6.043644727669204,
             "rmse": 8.044416210977674,
@@ -3871,7 +4016,7 @@
             "actual_rate": 0.5,
             "auc": 0.84375,
             "avg_probability": 0.5722804063163742,
-            "brier": 0.18149396297349044,
+            "brier": 0.18149396297349046,
             "calibration": [
               {
                 "actual_rate": 0.0,
@@ -3896,8 +4041,8 @@
               },
               {
                 "actual_rate": 1.0,
-                "avg_probability": 0.6077680578981668,
-                "bias": -0.3922319421018332,
+                "avg_probability": 0.6077680578981667,
+                "bias": -0.3922319421018333,
                 "bucket": "(0.6, 0.7]",
                 "rows": 1
               },
@@ -3910,8 +4055,8 @@
               },
               {
                 "actual_rate": 1.0,
-                "avg_probability": 0.8100715695660895,
-                "bias": -0.1899284304339105,
+                "avg_probability": 0.8100715695660894,
+                "bias": -0.1899284304339106,
                 "bucket": "(0.8, 0.9]",
                 "rows": 2
               }
@@ -3963,8 +4108,8 @@
           "close_games": 4,
           "margin": {
             "avg_actual_margin": -1.3333333333333333,
-            "avg_predicted_margin": -0.05109866339009565,
-            "home_margin_bias": 1.2822346699432379,
+            "avg_predicted_margin": -0.051098663390095375,
+            "home_margin_bias": 1.2822346699432383,
             "mae": 10.053797192324536,
             "rmse": 13.056557867295021,
             "rows": 15
@@ -4139,7 +4284,7 @@
             "avg_predicted_margin": 3.12307212055437,
             "home_margin_bias": 3.2659292634115134,
             "mae": 7.808676410253157,
-            "rmse": 8.698497816887027,
+            "rmse": 8.698497816887029,
             "rows": 14
           },
           "market_probability": {
@@ -4210,7 +4355,7 @@
             "actual_rate": 0.42857142857142855,
             "auc": 0.5833333333333334,
             "avg_probability": 0.5802973845520165,
-            "brier": 0.2834085277309451,
+            "brier": 0.28340852773094505,
             "calibration": [
               {
                 "actual_rate": 1.0,
@@ -4266,7 +4411,7 @@
             "home_probability_bias": 0.15172595598058797,
             "log_loss": 0.7647827270912007,
             "rows": 14,
-            "sharpness_std": 0.20009643790506845
+            "sharpness_std": 0.20009643790506848
           },
           "rows": 14,
           "segment": "week_6",
@@ -4458,23 +4603,182 @@
             "losses": 7,
             "wins": 7
           }
+        },
+        {
+          "book_ats": {
+            "bets": 14,
+            "hit_rate": 0.7142857142857143,
+            "losses": 4,
+            "no_bet": 0,
+            "pushes": 0,
+            "roi": 0.36363636363636365,
+            "units": 5.090909090909091,
+            "wins": 10
+          },
+          "book_margin": {
+            "avg_actual_margin": 8.785714285714286,
+            "avg_predicted_margin": 6.0,
+            "home_margin_bias": -2.7857142857142856,
+            "mae": 11.071428571428571,
+            "rmse": 12.96836810969566,
+            "rows": 14
+          },
+          "close_game_winner_hit_rate": 0.0,
+          "close_games": 1,
+          "margin": {
+            "avg_actual_margin": 8.785714285714286,
+            "avg_predicted_margin": 3.4251196007000595,
+            "home_margin_bias": -5.360594685014226,
+            "mae": 11.105080009130486,
+            "rmse": 12.96889414521545,
+            "rows": 14
+          },
+          "market_probability": {
+            "accuracy": 0.7857142857142857,
+            "actual_rate": 0.7142857142857143,
+            "auc": 0.7,
+            "avg_probability": 0.6211171526250908,
+            "brier": 0.18104191035188863,
+            "calibration": [
+              {
+                "actual_rate": 0.0,
+                "avg_probability": 0.2559309849029475,
+                "bias": 0.2559309849029475,
+                "bucket": "(0.2, 0.3]",
+                "rows": 1
+              },
+              {
+                "actual_rate": 0.6666666666666666,
+                "avg_probability": 0.5265136084349656,
+                "bias": -0.140153058231701,
+                "bucket": "(0.5, 0.6]",
+                "rows": 3
+              },
+              {
+                "actual_rate": 0.8,
+                "avg_probability": 0.612935561693861,
+                "bias": -0.18706443830613906,
+                "bucket": "(0.6, 0.7]",
+                "rows": 5
+              },
+              {
+                "actual_rate": 0.75,
+                "avg_probability": 0.7357578754201696,
+                "bias": -0.014242124579830429,
+                "bucket": "(0.7, 0.8]",
+                "rows": 4
+              },
+              {
+                "actual_rate": 1.0,
+                "avg_probability": 0.8524590163934427,
+                "bias": -0.14754098360655732,
+                "bucket": "(0.8, 0.9]",
+                "rows": 1
+              }
+            ],
+            "ece_10": 0.1297301309324732,
+            "home_probability_bias": -0.09316856166062348,
+            "log_loss": 0.5446862435725985,
+            "rows": 14,
+            "sharpness_std": 0.13976003933115125
+          },
+          "model_line_ats": {
+            "bets": 14,
+            "hit_rate": 0.6428571428571429,
+            "losses": 5,
+            "pushes": 0,
+            "roi": 0.22727272727272727,
+            "units": 3.1818181818181817,
+            "wins": 9
+          },
+          "moneyline": {
+            "bets": 14,
+            "roi": 0.08734094906076721,
+            "units": 1.222773286850741
+          },
+          "probability": {
+            "accuracy": 0.7142857142857143,
+            "actual_rate": 0.7142857142857143,
+            "auc": 0.625,
+            "avg_probability": 0.5964639416943813,
+            "brier": 0.19869426430638132,
+            "calibration": [
+              {
+                "actual_rate": 0.0,
+                "avg_probability": 0.245932562226353,
+                "bias": 0.245932562226353,
+                "bucket": "(0.2, 0.3]",
+                "rows": 1
+              },
+              {
+                "actual_rate": 0.6666666666666666,
+                "avg_probability": 0.4377221478793407,
+                "bias": -0.2289445187873259,
+                "bucket": "(0.4, 0.5]",
+                "rows": 3
+              },
+              {
+                "actual_rate": 1.0,
+                "avg_probability": 0.503946573642553,
+                "bias": -0.496053426357447,
+                "bucket": "(0.5, 0.6]",
+                "rows": 1
+              },
+              {
+                "actual_rate": 0.8,
+                "avg_probability": 0.6432569268552306,
+                "bias": -0.15674307314476943,
+                "bucket": "(0.6, 0.7]",
+                "rows": 5
+              },
+              {
+                "actual_rate": 0.75,
+                "avg_probability": 0.7677912424845645,
+                "bias": 0.01779124248456454,
+                "bucket": "(0.7, 0.8]",
+                "rows": 4
+              }
+            ],
+            "ece_10": 0.1631214200434202,
+            "home_probability_bias": -0.11782177259133297,
+            "log_loss": 0.581557125527316,
+            "rows": 14,
+            "sharpness_std": 0.15672540542367552
+          },
+          "rows": 14,
+          "segment": "week_8",
+          "totals": {
+            "book": {
+              "mae": 11.142857142857142,
+              "rows": 14
+            },
+            "model": null
+          },
+          "weeks": [
+            8
+          ],
+          "winner": {
+            "hit_rate": 0.7142857142857143,
+            "losses": 4,
+            "wins": 10
+          }
         }
       ]
     },
     "staleness": {
       "feature_history_lag_days": {
         "away_max": 253.0,
-        "away_mean": 42.86915887850467,
+        "away_mean": 38.80165289256198,
         "home_max": 253.0,
-        "home_mean": 42.8411214953271
+        "home_mean": 38.83471074380165
       },
       "missing_book_spread": 0,
       "missing_market_probability": 0,
       "prediction_lead_time": {
-        "mean_hours": 4.591428519345238,
+        "mean_hours": 5.032096480585317,
         "min_hours": 0.41408972666666666,
         "post_kickoff_rows": 0,
-        "rows": 14
+        "rows": 28
       }
     }
   },
@@ -4484,10 +4788,10 @@
   },
   "model_version": "nfl-v2-live-20261020",
   "prediction_sources": {
-    "live_completed": 107,
-    "live_completed_stored": 14,
+    "live_completed": 121,
+    "live_completed_stored": 28,
     "reconstructed_rows": 1965,
-    "stored_rows": 28
+    "stored_rows": 43
   },
   "public_site": {
     "has_v2": true,
@@ -4544,8 +4848,8 @@
     "close_games": 73,
     "margin": {
       "avg_actual_margin": 2.0698529411764706,
-      "avg_predicted_margin": 1.6700225309155092,
-      "home_margin_bias": -0.3998304102609611,
+      "avg_predicted_margin": 1.6700225309155095,
+      "home_margin_bias": -0.39983041026096117,
       "mae": 9.988039033469182,
       "rmse": 12.636084745238234,
       "rows": 272
@@ -4650,8 +4954,8 @@
       "calibration": [
         {
           "actual_rate": 0.3333333333333333,
-          "avg_probability": 0.17977590727870685,
-          "bias": -0.15355742605462647,
+          "avg_probability": 0.17977590727870682,
+          "bias": -0.1535574260546265,
           "bucket": "(0.1, 0.2]",
           "rows": 3
         },
@@ -4712,7 +5016,7 @@
           "rows": 3
         }
       ],
-      "ece_10": 0.03353970517689258,
+      "ece_10": 0.03353970517689255,
       "home_probability_bias": 0.007673752102430598,
       "log_loss": 0.6177035806447959,
       "rows": 272,
