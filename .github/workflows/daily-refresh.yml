@@ -125,6 +125,7 @@ jobs:
         run: |
           SEASON="${{ steps.plan.outputs.nba_season }}"
           ANCHOR_DATE="${{ steps.plan.outputs.anchor_date }}"
+          LOOKAHEAD="${{ steps.plan.outputs.nba_serving_lookahead_days }}"
           if [ "$FORCE_FULL_REBUILD" = "true" ]; then
             python scripts/build_feature_snapshots.py --project "$PROJECT_ID" --league NBA --seasons "$SEASON" --replace
           else
@@ -134,7 +135,7 @@ jobs:
               --seasons "$SEASON" \
               --date "$ANCHOR_DATE" \
               --lookback-days 0 \
-              --lookahead-days 0
+              --lookahead-days "$LOOKAHEAD"
           fi
 
       - name: Build NFL Feature Snapshots
@@ -242,14 +243,21 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
+          REQUIRE_GAMES=()
+          SERVING_GAMES="${{ steps.plan.outputs.nba_serving_games }}"
+          if [ -n "$SERVING_GAMES" ] && [ "$SERVING_GAMES" -gt 0 ]; then
+            REQUIRE_GAMES=(--require-games)
+          fi
           .venv-nba-nfl/bin/python -m src.pipeline.refresh_nba \
             --project "$PROJECT_ID" \
             --model-version v3 \
             --date "${{ steps.plan.outputs.anchor_date }}" \
+            --lookahead-days "${{ steps.plan.outputs.nba_serving_lookahead_days }}" \
             --season "${{ steps.plan.outputs.nba_season }}" \
             --skip-odds \
             --injury-aware \
-            --include-explanations
+            --include-explanations \
+            "${REQUIRE_GAMES[@]}"
 
       - name: Generate NFL Predictions
         id: nfl_predictions
@@ -636,7 +644,9 @@ jobs:
           SUPABASE_DB_PORT: ${{ secrets.SUPABASE_DB_PORT }}
           SUPABASE_DB_USER: ${{ secrets.SUPABASE_DB_USER }}
         run: |
-          python scripts/validate_supabase_sync.py --strict | tee /tmp/sports_edge_validation.json
+          python scripts/validate_supabase_sync.py --strict \
+            --nba-expected-games "${{ steps.plan.outputs.nba_serving_games }}" \
+            | tee /tmp/sports_edge_validation.json
           if [ "${{ steps.plan.outputs.run_nba }}" = "true" ]; then
             python scripts/audit_season_readiness.py --league NBA --json | tee /tmp/sports_edge_nba_audit.json || true
           fi

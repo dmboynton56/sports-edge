@@ -25,7 +25,7 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 from src.pipeline.refresh import build_features
-from src.data.nba_fetcher import fetch_nba_games_for_date
+from src.data.nba_fetcher import ensure_nba_schedule_covers_dates
 
 
 FEATURE_COLUMNS = [
@@ -324,6 +324,37 @@ def _ensure_staging_schema(
         print(f"Created staging table {destination_table} with canonical schema.")
 
 
+def _nba_history_seasons(seasons: List[int]) -> List[int]:
+    """Include the prior season so mis-tagged current-year rows still load."""
+    return sorted({int(season) - 1 for season in seasons} | {int(season) for season in seasons})
+
+
+def _fetch_schedules_for_dates(
+    client: bigquery.Client,
+    project: str,
+    *,
+    league: str,
+    start_date: date,
+    end_date: date,
+) -> pd.DataFrame:
+    """Load schedule rows by local game_date, ignoring season tags."""
+    query = f"""
+        SELECT *
+        FROM `{project}.sports_edge_raw.raw_schedules`
+        WHERE league = @league
+          AND game_date IS NOT NULL
+          AND CAST(game_date AS DATE) BETWEEN @start_date AND @end_date
+    """
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("league", "STRING", league),
+            bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
+            bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
+        ]
+    )
+    return client.query(query, job_config=job_config).to_dataframe()
+
+
 def _filter_schedules_for_window(
     schedules: pd.DataFrame,
     date_window: Optional[tuple[date, date]],
@@ -344,39 +375,15 @@ def _ensure_nba_window_games(
     date_window: Optional[tuple[date, date]],
 ) -> pd.DataFrame:
     if date_window is None:
-        target_days = [datetime.now(tz=timezone.utc).date()]
+        start_date = end_date = datetime.now(tz=timezone.utc).date()
     else:
         start_date, end_date = date_window
-        target_days = [day.date() for day in pd.date_range(start=start_date, end=end_date, freq="D")]
-
-    if schedules.empty:
-        existing_dates = set()
-    else:
-        existing_dates = set(pd.to_datetime(schedules["game_date"], errors="coerce").dt.date.dropna())
-
-    fetched_frames = []
-    for target_day in target_days:
-        if target_day in existing_dates:
-            continue
-
-        target_str = target_day.strftime("%Y-%m-%d")
-        print(f"No NBA games for {target_str} found in BQ. Fetching from API...")
-        api_games = fetch_nba_games_for_date(target_str, raise_on_error=True)
-        if api_games.empty:
-            continue
-
-        print(f"Found {len(api_games)} NBA games on API for {target_str}. Adding to processing queue.")
-        api_games["game_date"] = pd.to_datetime(api_games["game_date"], utc=True).dt.tz_localize(None)
-        api_games["league"] = "NBA"
-        fetched_frames.append(api_games)
-
-    if fetched_frames:
-        schedules = pd.concat([schedules, *fetched_frames], ignore_index=True)
-        schedules = schedules.drop_duplicates(subset=["game_id"])
-        schedules = schedules.drop_duplicates(subset=["home_team", "away_team", "game_date"])
-        schedules = schedules.reset_index(drop=True)
-
-    return schedules
+    return ensure_nba_schedule_covers_dates(
+        schedules,
+        start_date,
+        end_date,
+        raise_on_error=True,
+    )
 
 
 def main() -> None:
@@ -385,7 +392,8 @@ def main() -> None:
     client = bigquery.Client(project=args.project)
     date_window = _resolve_date_window(args)
 
-    print(f"Processing {args.league} for seasons: {args.seasons}")
+    seasons = _nba_history_seasons(args.seasons) if args.league == "NBA" else list(args.seasons)
+    print(f"Processing {args.league} for seasons: {seasons}")
     if date_window is not None:
         print(f"Incremental feature window: {date_window[0]} to {date_window[1]}")
     schedules = _fetch_table(
@@ -393,9 +401,19 @@ def main() -> None:
         args.project,
         "sports_edge_raw",
         "raw_schedules",
-        args.seasons,
+        seasons,
         league=args.league,
     )
+    if args.league == "NBA" and date_window is not None:
+        window_schedules = _fetch_schedules_for_dates(
+            client,
+            args.project,
+            league="NBA",
+            start_date=date_window[0],
+            end_date=date_window[1],
+        )
+        if not window_schedules.empty:
+            schedules = pd.concat([schedules, window_schedules], ignore_index=True)
     _assert_schedule_league(schedules, args.league)
     
     # 1. Aggressive deduplication of schedules to avoid row explosion
@@ -432,7 +450,7 @@ def main() -> None:
         historical_data["play_by_play"] = pbp
     else:
         print(f"Loading raw game logs for NBA...")
-        logs = _fetch_table(client, args.project, "sports_edge_raw", "raw_nba_game_logs", args.seasons)
+        logs = _fetch_table(client, args.project, "sports_edge_raw", "raw_nba_game_logs", seasons)
         if not logs.empty:
             logs["game_date"] = pd.to_datetime(logs["game_date"], errors="coerce", utc=True).dt.tz_localize(None)
             # Deduplicate logs to avoid cartesian explosion in feature building

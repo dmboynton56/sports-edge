@@ -37,6 +37,7 @@ NFL_LIVE_MODEL_VERSION = dashboard_model_version("NFL")
 NFL_PREDICTION_STALE_HOURS = 48
 NFL_PREDICTION_LOOKAHEAD_DAYS = 7
 NFL_MAX_FORECAST_WINDOW_DAYS = 14
+NBA_SERVING_LOOKAHEAD_DAYS = 1
 
 
 @dataclass(frozen=True)
@@ -374,6 +375,19 @@ def build_plan(
         plan[f"{key}_season"] = season_year
         plan[f"{key}_scheduled_games"] = bq_games
         plan[f"{key}_reason"] = "; ".join(reasons)
+        if league == "NBA":
+            serving_end = anchor + timedelta(days=NBA_SERVING_LOOKAHEAD_DAYS)
+            serving_games = None
+            if project:
+                try:
+                    serving_games = count_bigquery_games(project, "NBA", anchor, serving_end)
+                except Exception as exc:  # noqa: BLE001
+                    reasons.append(f"serving-window query unavailable: {exc}")
+                    plan[f"{key}_reason"] = "; ".join(reasons)
+            plan["nba_serving_lookahead_days"] = NBA_SERVING_LOOKAHEAD_DAYS
+            plan["nba_serving_start_date"] = anchor.isoformat()
+            plan["nba_serving_end_date"] = serving_end.isoformat()
+            plan["nba_serving_games"] = serving_games
         if league == "WORLD_CUP":
             wc_start, wc_end = world_cup_tournament_window_for(int(plan[f"{key}_season"]))
             plan["world_cup_start_date"] = wc_start.isoformat()

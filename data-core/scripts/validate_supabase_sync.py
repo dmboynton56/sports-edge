@@ -57,7 +57,44 @@ def parse_args() -> argparse.Namespace:
         default=14,
         help="Lookahead window for book_spread coverage checks (default: 14).",
     )
+    parser.add_argument(
+        "--nba-expected-games",
+        type=lambda value: None if str(value).strip() == "" else int(value),
+        default=None,
+        help="BQ/planner NBA serving-window game count. Fail strict mode when >0 but zero predictions published.",
+    )
     return parser.parse_args()
+
+
+def strict_failures(
+    report: dict,
+    *,
+    nba_expected_games: int | None = None,
+    max_orphans: int = 0,
+) -> list[str]:
+    failures: list[str] = []
+    if report.get("recent_predictions", 0) <= 0:
+        failures.append("No recent model_predictions rows found.")
+    if report.get("recent_games", 0) > 0 and report.get("recent_final_scores", 0) <= 0:
+        failures.append("Recent games exist but none have final scores.")
+    if report.get("orphan_predictions", 0) > max_orphans:
+        failures.append(
+            f"Found {report['orphan_predictions']} orphan predictions (max {max_orphans})."
+        )
+    if report.get("mlb_window_games", 0) > 0 and report.get("mlb_recent_predictions", 0) <= 0:
+        failures.append("No recent MLB model_predictions rows found.")
+    expected_nba = 0 if nba_expected_games is None else int(nba_expected_games)
+    published_nba = int(report.get("nba_slate_with_prediction") or 0)
+    supabase_nba_games = int(report.get("nba_slate_window_games") or 0)
+    if expected_nba > 0 and published_nba <= 0:
+        failures.append(
+            f"NBA serving window has {expected_nba} scheduled games but 0 published predictions."
+        )
+    elif supabase_nba_games > 0 and published_nba <= 0:
+        failures.append(
+            f"NBA serving window has {supabase_nba_games} Supabase games but 0 published predictions."
+        )
+    return failures
 
 
 def main() -> None:
@@ -254,17 +291,11 @@ def main() -> None:
     print(json.dumps(report, sort_keys=True))
 
     if args.strict:
-        failures = []
-        if report["recent_predictions"] <= 0:
-            failures.append("No recent model_predictions rows found.")
-        if report["recent_games"] > 0 and report["recent_final_scores"] <= 0:
-            failures.append("Recent games exist but none have final scores.")
-        if report["orphan_predictions"] > args.max_orphans:
-            failures.append(
-                f"Found {report['orphan_predictions']} orphan predictions (max {args.max_orphans})."
-            )
-        if report.get("mlb_window_games", 0) > 0 and report.get("mlb_recent_predictions", 0) <= 0:
-            failures.append("No recent MLB model_predictions rows found.")
+        failures = strict_failures(
+            report,
+            nba_expected_games=args.nba_expected_games,
+            max_orphans=args.max_orphans,
+        )
         if failures:
             for failure in failures:
                 LOGGER.error(failure)

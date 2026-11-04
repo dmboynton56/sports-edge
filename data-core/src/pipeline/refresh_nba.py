@@ -9,7 +9,7 @@ and writes predictions to BigQuery curated tables.
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import List, Optional
 
@@ -19,7 +19,11 @@ from google.cloud import bigquery
 
 from src.pipeline.refresh import build_features
 from src.models.predictor import GamePredictor
-from src.data.nba_fetcher import fetch_nba_games_for_date, fetch_nba_schedule
+from src.data.nba_fetcher import (
+    ensure_nba_schedule_covers_dates,
+    fetch_nba_schedule,
+    nba_season_start_year,
+)
 from src.data.nba_game_logs_loader import load_nba_game_logs_from_bq
 from src.utils.injury_loader import load_injury_impacts_from_supabase
 from src.utils.explanation_export import build_explanation_rows, write_explanation_cache
@@ -42,6 +46,23 @@ def _parse_args() -> argparse.Namespace:
         type=lambda s: datetime.strptime(s, "%Y-%m-%d").date(),
         default=None,
         help="Date to predict (YYYY-MM-DD). Default: today.",
+    )
+    parser.add_argument(
+        "--lookback-days",
+        type=int,
+        default=0,
+        help="Days before --date to include. Default: 0.",
+    )
+    parser.add_argument(
+        "--lookahead-days",
+        type=int,
+        default=0,
+        help="Days after --date to include. Dashboard NBA slate is today+1.",
+    )
+    parser.add_argument(
+        "--require-games",
+        action="store_true",
+        help="Exit non-zero when the prediction window has no NBA games after BQ+ESPN lookup.",
     )
     parser.add_argument(
         "--season",
@@ -72,23 +93,36 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _query_games(client: bigquery.Client, project: str, target_date: datetime.date) -> pd.DataFrame:
+def _prediction_window(anchor: date, lookback_days: int, lookahead_days: int) -> tuple[date, date]:
+    if lookback_days < 0 or lookahead_days < 0:
+        raise ValueError("lookback-days and lookahead-days must be non-negative.")
+    return anchor - timedelta(days=lookback_days), anchor + timedelta(days=lookahead_days)
+
+
+def _query_games(
+    client: bigquery.Client,
+    project: str,
+    start_date: date,
+    end_date: date,
+) -> pd.DataFrame:
     query = f"""
         SELECT *
         FROM `{project}.sports_edge_raw.raw_schedules`
-        WHERE game_date = @target_date
-          AND game_date IS NOT NULL
+        WHERE game_date IS NOT NULL
           AND league = 'NBA'
+          AND CAST(game_date AS DATE) BETWEEN @start_date AND @end_date
         ORDER BY game_date
     """
     job_config = bigquery.QueryJobConfig(
         query_parameters=[
-            bigquery.ScalarQueryParameter("target_date", "DATE", target_date),
+            bigquery.ScalarQueryParameter("start_date", "DATE", start_date),
+            bigquery.ScalarQueryParameter("end_date", "DATE", end_date),
         ]
     )
     df = client.query(query, job_config=job_config).to_dataframe()
     # BigQuery DATE columns are already local gameday
-    df["game_date"] = pd.to_datetime(df["game_date"]).dt.tz_localize(None)
+    if not df.empty:
+        df["game_date"] = pd.to_datetime(df["game_date"]).dt.tz_localize(None)
     return df
 
 
@@ -141,35 +175,68 @@ def main() -> None:
     client = bigquery.Client(project=args.project)
 
     target_date = args.date or datetime.now(tz=timezone.utc).date()
-    season = args.season or (target_date.year if target_date.month >= 10 else target_date.year - 1)
-    print(f"Building NBA predictions for {target_date}. Target season={season}.")
+    start_date, end_date = _prediction_window(
+        target_date,
+        args.lookback_days,
+        args.lookahead_days,
+    )
+    season = args.season or nba_season_start_year(target_date)
+    print(
+        f"Building NBA predictions for {start_date} to {end_date}. Target season={season}."
+    )
 
     # Fetch current odds from The Odds API and load into raw_nba_odds
     if not args.skip_odds:
         try:
             from src.data.nba_odds_api import fetch_and_load_odds
-            date_str = target_date.strftime("%Y-%m-%d")
-            n_odds = fetch_and_load_odds(args.project, date_str, replace_existing=True)
-            print(f"Loaded {n_odds} odds rows for {date_str}")
+            for day in pd.date_range(start=start_date, end=end_date, freq="D"):
+                date_str = day.strftime("%Y-%m-%d")
+                n_odds = fetch_and_load_odds(args.project, date_str, replace_existing=True)
+                print(f"Loaded {n_odds} odds rows for {date_str}")
         except Exception as e:
             print(f"Odds fetch skipped: {e}")
 
-    games_df = _query_games(client, args.project, target_date)
+    games_df = _query_games(client, args.project, start_date, end_date)
     if games_df.empty:
-        print(f"No NBA games found in BigQuery for {target_date}. Trying NBA API...")
-        games_df = fetch_nba_games_for_date(target_date.strftime("%Y-%m-%d"), raise_on_error=True)
+        print(
+            f"No NBA games found in BigQuery for {start_date} to {end_date}. Trying NBA API..."
+        )
+    games_df = ensure_nba_schedule_covers_dates(
+        games_df,
+        start_date,
+        end_date,
+        raise_on_error=True,
+    )
 
     if games_df.empty:
-        print(f"No NBA games scheduled for {target_date}. Exiting.")
+        message = f"No NBA games scheduled for {start_date} to {end_date}."
+        print(f"{message} Exiting.")
+        if args.require_games:
+            raise SystemExit(message)
         return
+    games_df["season"] = [
+        nba_season_start_year(game_date) for game_date in games_df["game_date"]
+    ]
 
-    hist_seasons = [season]
-    # Use helper functions for consistency with local pipeline
-    # historical_games: ET naive from BQ or API
-    historical_games = fetch_nba_schedule(season, use_cache=True)
-    # game_logs: ET naive from BQ
+    hist_seasons = [season - 1, season]
+    # Prior season covers leftover rows tagged with ESPN's fallback/championship year.
+    # Current-season BQ may only have the incremental backfill window; pass dates so
+    # fetch_nba_schedule trusts that cache instead of scanning ESPN day-by-day.
+    schedule_frames = []
+    for hist_season in hist_seasons:
+        kwargs = {"use_cache": True}
+        if hist_season == season:
+            kwargs["date_from"] = date(season, 10, 1)
+            kwargs["date_to"] = end_date
+        frame = fetch_nba_schedule(hist_season, **kwargs)
+        if frame is not None and not frame.empty:
+            schedule_frames.append(frame)
+    historical_games = (
+        pd.concat(schedule_frames, ignore_index=True).drop_duplicates(subset=["game_id"])
+        if schedule_frames
+        else pd.DataFrame()
+    )
     game_logs = load_nba_game_logs_from_bq(hist_seasons, project_id=args.project)
-    historical_data = {"historical_games": historical_games, "game_logs": game_logs}
 
     # Predictor handles feature building automatically
     predictor = GamePredictor("NBA", model_version=args.model_version)
@@ -191,8 +258,10 @@ def main() -> None:
     )
     
     if predictions.empty:
-        print("No predictions were generated.")
-        return
+        raise SystemExit(
+            f"Found {len(games_df)} NBA games for {start_date} to {end_date} "
+            "but generated 0 predictions."
+        )
 
     # Merge with games_df to get game_id
     # Normalize dates to midnight to ensure merge matches even if times differ
@@ -215,8 +284,7 @@ def main() -> None:
         predictions = predictions.dropna(subset=["game_id"])
 
     if predictions.empty:
-        print("No predictions remaining after game_id matching. Exiting.")
-        return
+        raise SystemExit("No predictions remaining after game_id matching.")
 
     predictions["league"] = "NBA"
     predictions["model_version"] = args.model_version

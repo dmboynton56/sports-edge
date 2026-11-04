@@ -41,6 +41,75 @@ NBA_API_HEADERS = {
 }
 
 
+def nba_season_start_year(value: object) -> int:
+    """Return the pipeline NBA season key: the year the season starts.
+
+    Daily Refresh, feature snapshots, and BQ ``season`` filters use October-start
+    years (2026-27 -> 2026). ESPN scoreboard ``leagues[0].season.year`` is the
+    championship/ending year (2026-27 -> 2027), and the top-level ``season``
+    object is often missing, which previously defaulted stored rows to 2025.
+    """
+    dt = pd.to_datetime(value, errors="coerce")
+    if pd.isna(dt):
+        raise ValueError(f"Cannot infer NBA season start year from {value!r}")
+    if getattr(dt, "tzinfo", None) is not None:
+        dt = dt.tz_convert("America/New_York").tz_localize(None)
+    year = int(dt.year)
+    month = int(dt.month)
+    return year if month >= 10 else year - 1
+
+
+def ensure_nba_schedule_covers_dates(
+    schedules: pd.DataFrame,
+    start_date: date,
+    end_date: date,
+    *,
+    raise_on_error: bool = True,
+) -> pd.DataFrame:
+    """Fill any local calendar day in ``[start_date, end_date]`` from ESPN.
+
+    Feature snapshots previously queried BQ by pipeline season, missed ESPN rows
+    tagged with the fallback year, then only probed the empty anchor day.
+    """
+    if start_date > end_date:
+        raise ValueError("start_date must be on or before end_date.")
+
+    if schedules is None or schedules.empty:
+        out = pd.DataFrame()
+        covered: set[date] = set()
+    else:
+        out = schedules.copy()
+        covered = set(pd.to_datetime(out["game_date"], errors="coerce").dt.date.dropna())
+
+    fetched_frames: List[pd.DataFrame] = []
+    for target_day in pd.date_range(start=start_date, end=end_date, freq="D"):
+        target_date = target_day.date()
+        if target_date in covered:
+            continue
+        target_str = target_date.strftime("%Y-%m-%d")
+        print(f"No NBA games for {target_str} found in BQ. Fetching from API...")
+        api_games = fetch_nba_games_for_date(target_str, raise_on_error=raise_on_error)
+        if api_games is None or api_games.empty:
+            continue
+        print(f"Found {len(api_games)} NBA games on API for {target_str}. Adding to processing queue.")
+        api_games = api_games.copy()
+        api_games["game_date"] = pd.to_datetime(api_games["game_date"], errors="coerce")
+        api_games["league"] = "NBA"
+        fetched_frames.append(api_games)
+
+    if fetched_frames:
+        frames = [*fetched_frames] if out.empty else [out, *fetched_frames]
+        out = pd.concat(frames, ignore_index=True)
+        if "game_id" in out.columns:
+            out = out.drop_duplicates(subset=["game_id"])
+        identity_cols = [col for col in ("home_team", "away_team", "game_date") if col in out.columns]
+        if len(identity_cols) == 3:
+            out = out.drop_duplicates(subset=identity_cols)
+        out = out.reset_index(drop=True)
+
+    return out
+
+
 def get_team_id(team_name: str) -> Optional[int]:
     """
     Convert team name/abbreviation to NBA team ID.
@@ -317,11 +386,12 @@ def fetch_nba_games_for_date(
             if home_team_node and away_team_node:
                 h_score = pd.to_numeric(home_team_node.get("score"), errors='coerce')
                 a_score = pd.to_numeric(away_team_node.get("score"), errors='coerce')
+                game_date = pd.to_datetime(event.get("date"), utc=True).tz_convert("America/New_York").tz_localize(None)
                 
                 games.append({
                     'game_id': str(event.get("id")),
-                    'season': data.get("season", {}).get("year", 2025),
-                    'game_date': pd.to_datetime(event.get("date"), utc=True).tz_convert("America/New_York").tz_localize(None),
+                    'season': nba_season_start_year(game_date),
+                    'game_date': game_date,
                     'home_team': home_team_node.get("team", {}).get("abbreviation"),
                     'away_team': away_team_node.get("team", {}).get("abbreviation"),
                     'home_score': h_score if is_completed else None,

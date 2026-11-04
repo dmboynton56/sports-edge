@@ -258,12 +258,13 @@ def main() -> None:
             game_logs_selected = pd.DataFrame(columns=GAME_LOGS_COLUMNS)
         
         if schedule_start and schedule_end:
+            # Replace every NBA row in the window, including leftover rows tagged
+            # with a stale ESPN/default season (2025 fallback or championship year).
             _delete_date_range(
                 client,
                 f"{args.project}.sports_edge_raw.raw_schedules",
                 schedule_start,
                 schedule_end,
-                season=season,
             )
             if not game_logs_selected.empty:
                 _delete_date_range(
@@ -271,7 +272,6 @@ def main() -> None:
                     f"{args.project}.sports_edge_raw.raw_nba_game_logs",
                     schedule_start,
                     schedule_end,
-                    season=season,
                 )
         elif args.replace:
             _delete_season(client, f"{args.project}.sports_edge_raw.raw_schedules", season)

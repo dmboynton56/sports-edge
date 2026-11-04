@@ -119,6 +119,38 @@ def test_build_plan_skips_world_cup_outside_tournament_window(monkeypatch):
     assert "offseason" in plan["world_cup_reason"]
 
 
+def test_nba_serving_window_matches_slate_lookahead(monkeypatch):
+    counts = {}
+
+    def fake_count_games(project, league, start_date, end_date):
+        counts[(league, start_date, end_date)] = True
+        if league == "NBA" and start_date == date(2026, 11, 3) and end_date == date(2026, 11, 4):
+            return 14
+        if league == "NBA":
+            return 29
+        return 0
+
+    monkeypatch.setattr(plan_daily_refresh, "count_bigquery_games", fake_count_games)
+    monkeypatch.setattr(plan_daily_refresh, "nfl_schedule_available", lambda _season: True)
+
+    plan = plan_daily_refresh.build_plan(
+        anchor=date(2026, 11, 3),
+        lookback_days=1,
+        lookahead_days=14,
+        force_full_rebuild=False,
+        project="example-project",
+    )
+
+    assert plan["run_nba"] is True
+    assert plan["nba_season"] == 2026
+    assert plan["nba_scheduled_games"] == 29
+    assert plan["nba_serving_lookahead_days"] == 1
+    assert plan["nba_serving_start_date"] == "2026-11-03"
+    assert plan["nba_serving_end_date"] == "2026-11-04"
+    assert plan["nba_serving_games"] == 14
+    assert ("NBA", date(2026, 11, 3), date(2026, 11, 4)) in counts
+
+
 def test_default_anchor_date_uses_denver_slate_boundary():
     # 2026-07-16 05:30 UTC is still 2026-07-15 at 23:30 in America/Denver.
     boundary = datetime(2026, 7, 16, 5, 30, tzinfo=timezone.utc)

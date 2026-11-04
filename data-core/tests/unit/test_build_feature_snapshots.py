@@ -11,8 +11,14 @@ from scripts.build_feature_snapshots import (
     _fetch_table,
     _filter_schedules_for_window,
     _ensure_staging_schema,
+    _nba_history_seasons,
     _resolve_date_window,
 )
+
+
+def test_nba_history_seasons_includes_prior_year():
+    assert _nba_history_seasons([2026]) == [2025, 2026]
+    assert _nba_history_seasons([2025, 2026]) == [2024, 2025, 2026]
 
 
 def test_resolve_date_window_from_explicit_dates():
