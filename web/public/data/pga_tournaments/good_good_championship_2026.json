@@ -18,12 +18,12 @@
     "PGA model artifacts were unavailable; used deterministic baseline fallback.",
     "Course-fit is disabled for this non-Masters event unless full artifacts are present."
   ],
-  "generatedAt": "2026-11-12T23:28:13.356872+00:00",
+  "generatedAt": "2026-11-13T04:42:29.687611+00:00",
   "liveLeaderboard": {
     "currentRound": 1,
     "event": "Austin Championship pres. by Compliance Solutions",
     "eventDate": "2026-11-12T05:00Z",
-    "fetchedAt": "2026-11-12T23:28:04.436514+00:00",
+    "fetchedAt": "2026-11-13T04:42:19.159760+00:00",
     "isCompleted": false,
     "players": [
       {
@@ -44,7 +44,7 @@
       {
         "player": "Erik van Rooyen",
         "position": 2,
-        "positionDisplay": "2",
+        "positionDisplay": "T2",
         "roundHoles": {
           "1": 18
         },
@@ -57,24 +57,24 @@
         "totalStrokes": 64
       },
       {
-        "player": "Kristoffer Ventura",
+        "player": "Max Greyserman",
         "position": 3,
-        "positionDisplay": "T3",
+        "positionDisplay": "T2",
         "roundHoles": {
-          "1": 16
+          "1": 18
         },
         "rounds": {
-          "1": 58
+          "1": 64
         },
-        "status": "In Progress",
-        "thru": "16",
-        "toPar": "-7",
-        "totalStrokes": 58
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-8",
+        "totalStrokes": 64
       },
       {
         "player": "Blades Brown",
         "position": 4,
-        "positionDisplay": "T3",
+        "positionDisplay": "4",
         "roundHoles": {
           "1": 18
         },
@@ -87,53 +87,38 @@
         "totalStrokes": 65
       },
       {
-        "player": "Gordon Sargent",
+        "player": "Ben Kohles",
         "position": 5,
         "positionDisplay": "T5",
         "roundHoles": {
-          "1": 15
+          "1": 18
         },
         "rounds": {
-          "1": 54
+          "1": 66
         },
-        "status": "In Progress",
-        "thru": "15",
+        "status": "Finish",
+        "thru": "18",
         "toPar": "-6",
-        "totalStrokes": 54
-      },
-      {
-        "player": "Max Greyserman",
-        "position": 6,
-        "positionDisplay": "T5",
-        "roundHoles": {
-          "1": 17
-        },
-        "rounds": {
-          "1": 61
-        },
-        "status": "In Progress",
-        "thru": "17",
-        "toPar": "-6",
-        "totalStrokes": 61
-      },
-      {
-        "player": "Ben Kohles",
-        "position": 7,
-        "positionDisplay": "T5",
-        "roundHoles": {
-          "1": 17
-        },
-        "rounds": {
-          "1": 62
-        },
-        "status": "In Progress",
-        "thru": "17",
-        "toPar": "-6",
-        "totalStrokes": 62
+        "totalStrokes": 66
       },
       {
         "player": "Kevin Yu",
-        "position": 8,
+        "position": 6,
+        "positionDisplay": "T5",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 66
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-6",
+        "totalStrokes": 66
+      },
+      {
+        "player": "Kristoffer Ventura",
+        "position": 7,
         "positionDisplay": "T5",
         "roundHoles": {
           "1": 18
@@ -148,7 +133,7 @@
       },
       {
         "player": "Rafael Campos",
-        "position": 9,
+        "position": 8,
         "positionDisplay": "T5",
         "roundHoles": {
           "1": 18
@@ -163,23 +148,8 @@
       },
       {
         "player": "Jimmy Stanger",
-        "position": 10,
-        "positionDisplay": "T10",
-        "roundHoles": {
-          "1": 14
-        },
-        "rounds": {
-          "1": 51
-        },
-        "status": "In Progress",
-        "thru": "14",
-        "toPar": "-5",
-        "totalStrokes": 51
-      },
-      {
-        "player": "Nicholas Lindheim",
-        "position": 11,
-        "positionDisplay": "T10",
+        "position": 9,
+        "positionDisplay": "T9",
         "roundHoles": {
           "1": 15
         },
@@ -192,39 +162,24 @@
         "totalStrokes": 55
       },
       {
-        "player": "Austin Smotherman",
-        "position": 12,
-        "positionDisplay": "T10",
+        "player": "Nicholas Lindheim",
+        "position": 10,
+        "positionDisplay": "T9",
         "roundHoles": {
-          "1": 17
+          "1": 16
         },
         "rounds": {
-          "1": 62
+          "1": 60
         },
         "status": "In Progress",
-        "thru": "17",
+        "thru": "16",
         "toPar": "-5",
-        "totalStrokes": 62
+        "totalStrokes": 60
       },
       {
-        "player": "Brian Harman",
-        "position": 13,
-        "positionDisplay": "T10",
-        "roundHoles": {
-          "1": 17
-        },
-        "rounds": {
-          "1": 62
-        },
-        "status": "In Progress",
-        "thru": "17",
-        "toPar": "-5",
-        "totalStrokes": 62
-      },
-      {
-        "player": "Mark Hubbard",
-        "position": 14,
-        "positionDisplay": "T10",
+        "player": "Gordon Sargent",
+        "position": 11,
+        "positionDisplay": "T9",
         "roundHoles": {
           "1": 17
         },
@@ -238,8 +193,38 @@
       },
       {
         "player": "Aaron Wise",
-        "position": 15,
-        "positionDisplay": "T10",
+        "position": 12,
+        "positionDisplay": "T9",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 67
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-5",
+        "totalStrokes": 67
+      },
+      {
+        "player": "Austin Smotherman",
+        "position": 13,
+        "positionDisplay": "T9",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 67
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-5",
+        "totalStrokes": 67
+      },
+      {
+        "player": "Brian Harman",
+        "position": 14,
+        "positionDisplay": "T9",
         "roundHoles": {
           "1": 18
         },
@@ -253,8 +238,8 @@
       },
       {
         "player": "Chandler Phillips",
-        "position": 16,
-        "positionDisplay": "T10",
+        "position": 15,
+        "positionDisplay": "T9",
         "roundHoles": {
           "1": 18
         },
@@ -268,8 +253,8 @@
       },
       {
         "player": "Max McGreevy",
-        "position": 17,
-        "positionDisplay": "T10",
+        "position": 16,
+        "positionDisplay": "T9",
         "roundHoles": {
           "1": 18
         },
@@ -283,8 +268,8 @@
       },
       {
         "player": "Miles Russell",
-        "position": 18,
-        "positionDisplay": "T10",
+        "position": 17,
+        "positionDisplay": "T9",
         "roundHoles": {
           "1": 18
         },
@@ -297,54 +282,24 @@
         "totalStrokes": 67
       },
       {
-        "player": "Hayden Springer",
-        "position": 19,
-        "positionDisplay": "T19",
-        "roundHoles": {
-          "1": 14
-        },
-        "rounds": {
-          "1": 52
-        },
-        "status": "In Progress",
-        "thru": "14",
-        "toPar": "-4",
-        "totalStrokes": 52
-      },
-      {
         "player": "Will Gordon",
-        "position": 20,
-        "positionDisplay": "T19",
+        "position": 18,
+        "positionDisplay": "T18",
         "roundHoles": {
-          "1": 14
+          "1": 15
         },
         "rounds": {
-          "1": 52
+          "1": 56
         },
         "status": "In Progress",
-        "thru": "14",
+        "thru": "15",
         "toPar": "-4",
-        "totalStrokes": 52
+        "totalStrokes": 56
       },
       {
         "player": "Jordan Smith",
-        "position": 21,
-        "positionDisplay": "T19",
-        "roundHoles": {
-          "1": 16
-        },
-        "rounds": {
-          "1": 60
-        },
-        "status": "In Progress",
-        "thru": "16",
-        "toPar": "-4",
-        "totalStrokes": 60
-      },
-      {
-        "player": "Austin Eckroat",
-        "position": 22,
-        "positionDisplay": "T19",
+        "position": 19,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 17
         },
@@ -357,9 +312,9 @@
         "totalStrokes": 63
       },
       {
-        "player": "Ben Martin",
-        "position": 23,
-        "positionDisplay": "T19",
+        "player": "Marco Penge",
+        "position": 20,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 17
         },
@@ -373,8 +328,23 @@
       },
       {
         "player": "Adam Schenk",
-        "position": 24,
-        "positionDisplay": "T19",
+        "position": 21,
+        "positionDisplay": "T18",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 68
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-4",
+        "totalStrokes": 68
+      },
+      {
+        "player": "Ben Martin",
+        "position": 22,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -388,8 +358,8 @@
       },
       {
         "player": "Chandler Blanchet",
-        "position": 25,
-        "positionDisplay": "T19",
+        "position": 23,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -403,8 +373,8 @@
       },
       {
         "player": "David Lipsky",
-        "position": 26,
-        "positionDisplay": "T19",
+        "position": 24,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -418,8 +388,8 @@
       },
       {
         "player": "Haotong Li",
-        "position": 27,
-        "positionDisplay": "T19",
+        "position": 25,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -433,8 +403,8 @@
       },
       {
         "player": "Mac Meissner",
-        "position": 28,
-        "positionDisplay": "T19",
+        "position": 26,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -448,8 +418,23 @@
       },
       {
         "player": "Marcelo Rozo",
-        "position": 29,
-        "positionDisplay": "T19",
+        "position": 27,
+        "positionDisplay": "T18",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 68
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-4",
+        "totalStrokes": 68
+      },
+      {
+        "player": "Mark Hubbard",
+        "position": 28,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -463,8 +448,8 @@
       },
       {
         "player": "Matt McCarty",
-        "position": 30,
-        "positionDisplay": "T19",
+        "position": 29,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -478,8 +463,8 @@
       },
       {
         "player": "Neal Shipley",
-        "position": 31,
-        "positionDisplay": "T19",
+        "position": 30,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -493,8 +478,8 @@
       },
       {
         "player": "Nick Dunlap",
-        "position": 32,
-        "positionDisplay": "T19",
+        "position": 31,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -508,8 +493,8 @@
       },
       {
         "player": "Sami V\u00e4lim\u00e4ki",
-        "position": 33,
-        "positionDisplay": "T19",
+        "position": 32,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -523,8 +508,8 @@
       },
       {
         "player": "Tyler Duncan",
-        "position": 34,
-        "positionDisplay": "T19",
+        "position": 33,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -538,8 +523,8 @@
       },
       {
         "player": "Zecheng Dou",
-        "position": 35,
-        "positionDisplay": "T19",
+        "position": 34,
+        "positionDisplay": "T18",
         "roundHoles": {
           "1": 18
         },
@@ -553,23 +538,23 @@
       },
       {
         "player": "Isaiah Salinda",
-        "position": 36,
-        "positionDisplay": "T36",
+        "position": 35,
+        "positionDisplay": "T35",
         "roundHoles": {
-          "1": 13
+          "1": 14
         },
         "rounds": {
-          "1": 48
+          "1": 53
         },
         "status": "In Progress",
-        "thru": "13",
+        "thru": "14",
         "toPar": "-3",
-        "totalStrokes": 48
+        "totalStrokes": 53
       },
       {
         "player": "Chad Ramey",
-        "position": 37,
-        "positionDisplay": "T36",
+        "position": 36,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 15
         },
@@ -582,9 +567,24 @@
         "totalStrokes": 57
       },
       {
-        "player": "Marco Penge",
+        "player": "David Ford",
+        "position": 37,
+        "positionDisplay": "T35",
+        "roundHoles": {
+          "1": 15
+        },
+        "rounds": {
+          "1": 57
+        },
+        "status": "In Progress",
+        "thru": "15",
+        "toPar": "-3",
+        "totalStrokes": 57
+      },
+      {
+        "player": "Hayden Springer",
         "position": 38,
-        "positionDisplay": "T36",
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 15
         },
@@ -599,37 +599,7 @@
       {
         "player": "Sam Stevens",
         "position": 39,
-        "positionDisplay": "T36",
-        "roundHoles": {
-          "1": 16
-        },
-        "rounds": {
-          "1": 61
-        },
-        "status": "In Progress",
-        "thru": "16",
-        "toPar": "-3",
-        "totalStrokes": 61
-      },
-      {
-        "player": "Rasmus Neergaard-Petersen",
-        "position": 40,
-        "positionDisplay": "T36",
-        "roundHoles": {
-          "1": 16
-        },
-        "rounds": {
-          "1": 62
-        },
-        "status": "In Progress",
-        "thru": "16",
-        "toPar": "-3",
-        "totalStrokes": 62
-      },
-      {
-        "player": "Tommy Morrison",
-        "position": 41,
-        "positionDisplay": "T36",
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 17
         },
@@ -642,9 +612,24 @@
         "totalStrokes": 64
       },
       {
+        "player": "Austin Eckroat",
+        "position": 40,
+        "positionDisplay": "T35",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 69
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-3",
+        "totalStrokes": 69
+      },
+      {
         "player": "Billy Horschel",
-        "position": 42,
-        "positionDisplay": "T36",
+        "position": 41,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -658,8 +643,8 @@
       },
       {
         "player": "Brice Garnett",
-        "position": 43,
-        "positionDisplay": "T36",
+        "position": 42,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -673,8 +658,8 @@
       },
       {
         "player": "Christiaan Maas",
-        "position": 44,
-        "positionDisplay": "T36",
+        "position": 43,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -688,8 +673,8 @@
       },
       {
         "player": "Emilio Gonz\u00e1lez",
-        "position": 45,
-        "positionDisplay": "T36",
+        "position": 44,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -703,8 +688,8 @@
       },
       {
         "player": "Jeffrey Kang",
-        "position": 46,
-        "positionDisplay": "T36",
+        "position": 45,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -718,8 +703,8 @@
       },
       {
         "player": "Lee Hodges",
-        "position": 47,
-        "positionDisplay": "T36",
+        "position": 46,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -733,8 +718,8 @@
       },
       {
         "player": "Max Homa",
-        "position": 48,
-        "positionDisplay": "T36",
+        "position": 47,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -748,8 +733,8 @@
       },
       {
         "player": "Nick Hardy",
-        "position": 49,
-        "positionDisplay": "T36",
+        "position": 48,
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -763,8 +748,23 @@
       },
       {
         "player": "Rasmus H\u00f8jgaard",
+        "position": 49,
+        "positionDisplay": "T35",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 69
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-3",
+        "totalStrokes": 69
+      },
+      {
+        "player": "Rasmus Neergaard-Petersen",
         "position": 50,
-        "positionDisplay": "T36",
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -779,7 +779,7 @@
       {
         "player": "Sudarshan Yellamaraju",
         "position": 51,
-        "positionDisplay": "T36",
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -794,7 +794,7 @@
       {
         "player": "Zach Bauchou",
         "position": 52,
-        "positionDisplay": "T36",
+        "positionDisplay": "T35",
         "roundHoles": {
           "1": 18
         },
@@ -807,53 +807,23 @@
         "totalStrokes": 69
       },
       {
-        "player": "David Ford",
+        "player": "Davis Chatfield",
         "position": 53,
         "positionDisplay": "T53",
         "roundHoles": {
-          "1": 14
+          "1": 15
         },
         "rounds": {
-          "1": 54
+          "1": 58
         },
         "status": "In Progress",
-        "thru": "14",
+        "thru": "15",
         "toPar": "-2",
-        "totalStrokes": 54
+        "totalStrokes": 58
       },
       {
-        "player": "Davis Chatfield",
+        "player": "Cole Sherwood",
         "position": 54,
-        "positionDisplay": "T53",
-        "roundHoles": {
-          "1": 14
-        },
-        "rounds": {
-          "1": 54
-        },
-        "status": "In Progress",
-        "thru": "14",
-        "toPar": "-2",
-        "totalStrokes": 54
-      },
-      {
-        "player": "Thomas Rosenmueller",
-        "position": 55,
-        "positionDisplay": "T53",
-        "roundHoles": {
-          "1": 14
-        },
-        "rounds": {
-          "1": 54
-        },
-        "status": "In Progress",
-        "thru": "14",
-        "toPar": "-2",
-        "totalStrokes": 54
-      },
-      {
-        "player": "Johnny Keefer",
-        "position": 56,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 16
@@ -867,23 +837,8 @@
         "totalStrokes": 63
       },
       {
-        "player": "Jackson Koivun",
-        "position": 57,
-        "positionDisplay": "T53",
-        "roundHoles": {
-          "1": 17
-        },
-        "rounds": {
-          "1": 65
-        },
-        "status": "In Progress",
-        "thru": "17",
-        "toPar": "-2",
-        "totalStrokes": 65
-      },
-      {
         "player": "C.T. Pan",
-        "position": 58,
+        "position": 55,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -898,7 +853,22 @@
       },
       {
         "player": "Hank Lebioda",
-        "position": 59,
+        "position": 56,
+        "positionDisplay": "T53",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 70
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-2",
+        "totalStrokes": 70
+      },
+      {
+        "player": "Jackson Koivun",
+        "position": 57,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -913,7 +883,7 @@
       },
       {
         "player": "Jesper Svensson",
-        "position": 60,
+        "position": 58,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -928,7 +898,22 @@
       },
       {
         "player": "John VanDerLaan",
-        "position": 61,
+        "position": 59,
+        "positionDisplay": "T53",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 70
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-2",
+        "totalStrokes": 70
+      },
+      {
+        "player": "Johnny Keefer",
+        "position": 60,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -943,7 +928,7 @@
       },
       {
         "player": "Justin Lower",
-        "position": 62,
+        "position": 61,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -958,7 +943,7 @@
       },
       {
         "player": "Karl Vilips",
-        "position": 63,
+        "position": 62,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -973,7 +958,7 @@
       },
       {
         "player": "Kevin Roy",
-        "position": 64,
+        "position": 63,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -988,7 +973,7 @@
       },
       {
         "player": "Kevin Streelman",
-        "position": 65,
+        "position": 64,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -1003,7 +988,7 @@
       },
       {
         "player": "Mackenzie Hughes",
-        "position": 66,
+        "position": 65,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -1018,7 +1003,7 @@
       },
       {
         "player": "Matthieu Pavon",
-        "position": 67,
+        "position": 66,
         "positionDisplay": "T53",
         "roundHoles": {
           "1": 18
@@ -1033,6 +1018,21 @@
       },
       {
         "player": "Patton Kizzire",
+        "position": 67,
+        "positionDisplay": "T53",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 70
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-2",
+        "totalStrokes": 70
+      },
+      {
+        "player": "Tommy Morrison",
         "position": 68,
         "positionDisplay": "T53",
         "roundHoles": {
@@ -1077,7 +1077,7 @@
         "totalStrokes": 70
       },
       {
-        "player": "Rikuya Hoshino",
+        "player": "Paul Peterson",
         "position": 71,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1092,7 +1092,7 @@
         "totalStrokes": 55
       },
       {
-        "player": "Cole Sherwood",
+        "player": "Rikuya Hoshino",
         "position": 72,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1107,22 +1107,22 @@
         "totalStrokes": 59
       },
       {
-        "player": "Andrew Putnam",
+        "player": "Thomas Rosenmueller",
         "position": 73,
         "positionDisplay": "T71",
         "roundHoles": {
-          "1": 18
+          "1": 15
         },
         "rounds": {
-          "1": 71
+          "1": 59
         },
-        "status": "Finish",
-        "thru": "18",
+        "status": "In Progress",
+        "thru": "15",
         "toPar": "-1",
-        "totalStrokes": 71
+        "totalStrokes": 59
       },
       {
-        "player": "Christiaan Bezuidenhout",
+        "player": "Andrew Putnam",
         "position": 74,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1137,7 +1137,7 @@
         "totalStrokes": 71
       },
       {
-        "player": "Daniel Berger",
+        "player": "Christiaan Bezuidenhout",
         "position": 75,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1152,7 +1152,7 @@
         "totalStrokes": 71
       },
       {
-        "player": "Davis Thompson",
+        "player": "Daniel Berger",
         "position": 76,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1167,7 +1167,7 @@
         "totalStrokes": 71
       },
       {
-        "player": "Emiliano Grillo",
+        "player": "Davis Thompson",
         "position": 77,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1182,7 +1182,7 @@
         "totalStrokes": 71
       },
       {
-        "player": "John Parry",
+        "player": "Emiliano Grillo",
         "position": 78,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1197,7 +1197,7 @@
         "totalStrokes": 71
       },
       {
-        "player": "Peter Malnati",
+        "player": "Joel Dahmen",
         "position": 79,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1212,7 +1212,7 @@
         "totalStrokes": 71
       },
       {
-        "player": "Taylor Moore",
+        "player": "John Parry",
         "position": 80,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1227,7 +1227,7 @@
         "totalStrokes": 71
       },
       {
-        "player": "Vince Whaley",
+        "player": "Peter Malnati",
         "position": 81,
         "positionDisplay": "T71",
         "roundHoles": {
@@ -1242,69 +1242,54 @@
         "totalStrokes": 71
       },
       {
-        "player": "Paul Peterson",
+        "player": "Taylor Moore",
         "position": 82,
-        "positionDisplay": "T82",
+        "positionDisplay": "T71",
         "roundHoles": {
-          "1": 13
+          "1": 18
         },
         "rounds": {
-          "1": 51
+          "1": 71
         },
-        "status": "In Progress",
-        "thru": "13",
-        "toPar": "E",
-        "totalStrokes": 51
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-1",
+        "totalStrokes": 71
       },
       {
-        "player": "Frankie Harris",
+        "player": "Vince Whaley",
         "position": 83,
-        "positionDisplay": "T82",
+        "positionDisplay": "T71",
         "roundHoles": {
-          "1": 14
+          "1": 18
         },
         "rounds": {
-          "1": 56
+          "1": 71
         },
-        "status": "In Progress",
-        "thru": "14",
-        "toPar": "E",
-        "totalStrokes": 56
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "-1",
+        "totalStrokes": 71
       },
       {
-        "player": "Rico Hoey",
+        "player": "A.J. Ewart",
         "position": 84,
-        "positionDisplay": "T82",
+        "positionDisplay": "T84",
         "roundHoles": {
-          "1": 15
+          "1": 16
         },
         "rounds": {
-          "1": 60
+          "1": 64
         },
         "status": "In Progress",
-        "thru": "15",
+        "thru": "16",
         "toPar": "E",
-        "totalStrokes": 60
-      },
-      {
-        "player": "Joel Dahmen",
-        "position": 85,
-        "positionDisplay": "T82",
-        "roundHoles": {
-          "1": 17
-        },
-        "rounds": {
-          "1": 67
-        },
-        "status": "In Progress",
-        "thru": "17",
-        "toPar": "E",
-        "totalStrokes": 67
+        "totalStrokes": 64
       },
       {
         "player": "Pierceson Coody",
-        "position": 86,
-        "positionDisplay": "T82",
+        "position": 85,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 17
         },
@@ -1318,8 +1303,8 @@
       },
       {
         "player": "Alvaro Ortiz",
-        "position": 87,
-        "positionDisplay": "T82",
+        "position": 86,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 18
         },
@@ -1333,8 +1318,8 @@
       },
       {
         "player": "Andrew Novak",
-        "position": 88,
-        "positionDisplay": "T82",
+        "position": 87,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 18
         },
@@ -1348,8 +1333,8 @@
       },
       {
         "player": "Brendon Todd",
-        "position": 89,
-        "positionDisplay": "T82",
+        "position": 88,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 18
         },
@@ -1363,8 +1348,8 @@
       },
       {
         "player": "Cam Davis",
-        "position": 90,
-        "positionDisplay": "T82",
+        "position": 89,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 18
         },
@@ -1378,8 +1363,8 @@
       },
       {
         "player": "David Skinns",
-        "position": 91,
-        "positionDisplay": "T82",
+        "position": 90,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 18
         },
@@ -1393,8 +1378,8 @@
       },
       {
         "player": "Dylan Wu",
-        "position": 92,
-        "positionDisplay": "T82",
+        "position": 91,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 18
         },
@@ -1408,8 +1393,8 @@
       },
       {
         "player": "Luke Clanton",
-        "position": 93,
-        "positionDisplay": "T82",
+        "position": 92,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 18
         },
@@ -1423,8 +1408,8 @@
       },
       {
         "player": "Taylor Pendrith",
-        "position": 94,
-        "positionDisplay": "T82",
+        "position": 93,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 18
         },
@@ -1438,8 +1423,8 @@
       },
       {
         "player": "S\u00e9amus Power",
-        "position": 95,
-        "positionDisplay": "T82",
+        "position": 94,
+        "positionDisplay": "T84",
         "roundHoles": {
           "1": 0
         },
@@ -1453,23 +1438,8 @@
       },
       {
         "player": "William Sides",
-        "position": 96,
-        "positionDisplay": "T96",
-        "roundHoles": {
-          "1": 14
-        },
-        "rounds": {
-          "1": 57
-        },
-        "status": "In Progress",
-        "thru": "14",
-        "toPar": "+1",
-        "totalStrokes": 57
-      },
-      {
-        "player": "A.J. Ewart",
-        "position": 97,
-        "positionDisplay": "T96",
+        "position": 95,
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 15
         },
@@ -1482,9 +1452,9 @@
         "totalStrokes": 61
       },
       {
-        "player": "Eric Cole",
-        "position": 98,
-        "positionDisplay": "T96",
+        "player": "Rico Hoey",
+        "position": 96,
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 16
         },
@@ -1497,9 +1467,24 @@
         "totalStrokes": 65
       },
       {
+        "player": "Eric Cole",
+        "position": 97,
+        "positionDisplay": "T95",
+        "roundHoles": {
+          "1": 17
+        },
+        "rounds": {
+          "1": 68
+        },
+        "status": "In Progress",
+        "thru": "17",
+        "toPar": "+1",
+        "totalStrokes": 68
+      },
+      {
         "player": "Adam Svensson",
-        "position": 99,
-        "positionDisplay": "T96",
+        "position": 98,
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1513,8 +1498,8 @@
       },
       {
         "player": "Adrien Dumont de Chassart",
-        "position": 100,
-        "positionDisplay": "T96",
+        "position": 99,
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1528,8 +1513,23 @@
       },
       {
         "player": "Alejandro Tosti",
+        "position": 100,
+        "positionDisplay": "T95",
+        "roundHoles": {
+          "1": 18
+        },
+        "rounds": {
+          "1": 73
+        },
+        "status": "Finish",
+        "thru": "18",
+        "toPar": "+1",
+        "totalStrokes": 73
+      },
+      {
+        "player": "Chris Kirk",
         "position": 101,
-        "positionDisplay": "T96",
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1544,7 +1544,7 @@
       {
         "player": "Doug Ghim",
         "position": 102,
-        "positionDisplay": "T96",
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1559,7 +1559,7 @@
       {
         "player": "Jackson Suber",
         "position": 103,
-        "positionDisplay": "T96",
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1574,7 +1574,7 @@
       {
         "player": "Lucas Glover",
         "position": 104,
-        "positionDisplay": "T96",
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1589,7 +1589,7 @@
       {
         "player": "Matt Kuchar",
         "position": 105,
-        "positionDisplay": "T96",
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1604,7 +1604,7 @@
       {
         "player": "Patrick Fishburn",
         "position": 106,
-        "positionDisplay": "T96",
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1619,7 +1619,7 @@
       {
         "player": "Patrick Rodgers",
         "position": 107,
-        "positionDisplay": "T96",
+        "positionDisplay": "T95",
         "roundHoles": {
           "1": 18
         },
@@ -1632,7 +1632,7 @@
         "totalStrokes": 73
       },
       {
-        "player": "Kensei Hirata",
+        "player": "Pontus Nyholm",
         "position": 108,
         "positionDisplay": "T108",
         "roundHoles": {
@@ -1647,34 +1647,34 @@
         "totalStrokes": 58
       },
       {
-        "player": "Pontus Nyholm",
+        "player": "Frankie Harris",
         "position": 109,
         "positionDisplay": "T108",
         "roundHoles": {
-          "1": 14
+          "1": 15
         },
         "rounds": {
-          "1": 58
+          "1": 62
         },
         "status": "In Progress",
-        "thru": "14",
+        "thru": "15",
         "toPar": "+2",
-        "totalStrokes": 58
+        "totalStrokes": 62
       },
       {
-        "player": "Chris Kirk",
+        "player": "Kensei Hirata",
         "position": 110,
         "positionDisplay": "T108",
         "roundHoles": {
-          "1": 17
+          "1": 15
         },
         "rounds": {
-          "1": 69
+          "1": 62
         },
         "status": "In Progress",
-        "thru": "17",
+        "thru": "15",
         "toPar": "+2",
-        "totalStrokes": 69
+        "totalStrokes": 62
       },
       {
         "player": "Danny Walker",
@@ -1816,19 +1816,19 @@
         "position": 120,
         "positionDisplay": "120",
         "roundHoles": {
-          "1": 13
+          "1": 14
         },
         "rounds": {
-          "1": 62
+          "1": 68
         },
         "status": "In Progress",
-        "thru": "13",
-        "toPar": "+11",
-        "totalStrokes": 62
+        "thru": "14",
+        "toPar": "+12",
+        "totalStrokes": 68
       }
     ],
-    "status": "In Progress",
-    "statusState": "in"
+    "status": "Suspended",
+    "statusState": "post"
   },
   "marketOdds": {
     "books": [],
@@ -1861,7 +1861,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rasmus H\u00f8jgaard",
-      "updatedAt": "2026-11-12T23:28:13.355671+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686081+00:00"
     },
     {
       "book": "model",
@@ -1883,7 +1883,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rasmus H\u00f8jgaard",
-      "updatedAt": "2026-11-12T23:28:13.355697+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686111+00:00"
     },
     {
       "book": "model",
@@ -1905,7 +1905,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rasmus H\u00f8jgaard",
-      "updatedAt": "2026-11-12T23:28:13.355702+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686116+00:00"
     },
     {
       "book": "model",
@@ -1927,7 +1927,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rasmus H\u00f8jgaard",
-      "updatedAt": "2026-11-12T23:28:13.355705+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686120+00:00"
     },
     {
       "book": "model",
@@ -1949,7 +1949,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Christiaan Bezuidenhout",
-      "updatedAt": "2026-11-12T23:28:13.355709+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686125+00:00"
     },
     {
       "book": "model",
@@ -1971,7 +1971,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Christiaan Bezuidenhout",
-      "updatedAt": "2026-11-12T23:28:13.355712+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686129+00:00"
     },
     {
       "book": "model",
@@ -1993,7 +1993,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Christiaan Bezuidenhout",
-      "updatedAt": "2026-11-12T23:28:13.355718+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686135+00:00"
     },
     {
       "book": "model",
@@ -2015,7 +2015,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Christiaan Bezuidenhout",
-      "updatedAt": "2026-11-12T23:28:13.355724+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686140+00:00"
     },
     {
       "book": "model",
@@ -2037,7 +2037,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Taylor Pendrith",
-      "updatedAt": "2026-11-12T23:28:13.355727+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686145+00:00"
     },
     {
       "book": "model",
@@ -2059,7 +2059,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Taylor Pendrith",
-      "updatedAt": "2026-11-12T23:28:13.355730+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686148+00:00"
     },
     {
       "book": "model",
@@ -2081,7 +2081,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Taylor Pendrith",
-      "updatedAt": "2026-11-12T23:28:13.355733+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686152+00:00"
     },
     {
       "book": "model",
@@ -2103,7 +2103,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Taylor Pendrith",
-      "updatedAt": "2026-11-12T23:28:13.355735+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686155+00:00"
     },
     {
       "book": "model",
@@ -2125,7 +2125,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Daniel Berger",
-      "updatedAt": "2026-11-12T23:28:13.355738+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686159+00:00"
     },
     {
       "book": "model",
@@ -2147,7 +2147,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Daniel Berger",
-      "updatedAt": "2026-11-12T23:28:13.355741+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686162+00:00"
     },
     {
       "book": "model",
@@ -2169,7 +2169,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Daniel Berger",
-      "updatedAt": "2026-11-12T23:28:13.355743+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686165+00:00"
     },
     {
       "book": "model",
@@ -2191,7 +2191,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Daniel Berger",
-      "updatedAt": "2026-11-12T23:28:13.355746+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686168+00:00"
     },
     {
       "book": "model",
@@ -2213,7 +2213,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Taylor",
-      "updatedAt": "2026-11-12T23:28:13.355750+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686171+00:00"
     },
     {
       "book": "model",
@@ -2235,7 +2235,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Taylor",
-      "updatedAt": "2026-11-12T23:28:13.355752+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686175+00:00"
     },
     {
       "book": "model",
@@ -2257,7 +2257,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Taylor",
-      "updatedAt": "2026-11-12T23:28:13.355755+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686178+00:00"
     },
     {
       "book": "model",
@@ -2279,7 +2279,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Taylor",
-      "updatedAt": "2026-11-12T23:28:13.355758+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686181+00:00"
     },
     {
       "book": "model",
@@ -2301,7 +2301,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Chris Kirk",
-      "updatedAt": "2026-11-12T23:28:13.355761+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686184+00:00"
     },
     {
       "book": "model",
@@ -2323,7 +2323,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Chris Kirk",
-      "updatedAt": "2026-11-12T23:28:13.355763+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686188+00:00"
     },
     {
       "book": "model",
@@ -2345,7 +2345,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Chris Kirk",
-      "updatedAt": "2026-11-12T23:28:13.355766+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686191+00:00"
     },
     {
       "book": "model",
@@ -2367,7 +2367,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Chris Kirk",
-      "updatedAt": "2026-11-12T23:28:13.355768+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686194+00:00"
     },
     {
       "book": "model",
@@ -2389,7 +2389,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Greyserman",
-      "updatedAt": "2026-11-12T23:28:13.355772+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686197+00:00"
     },
     {
       "book": "model",
@@ -2411,7 +2411,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Greyserman",
-      "updatedAt": "2026-11-12T23:28:13.355774+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686201+00:00"
     },
     {
       "book": "model",
@@ -2433,7 +2433,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Greyserman",
-      "updatedAt": "2026-11-12T23:28:13.355777+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686204+00:00"
     },
     {
       "book": "model",
@@ -2455,7 +2455,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Greyserman",
-      "updatedAt": "2026-11-12T23:28:13.355779+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686207+00:00"
     },
     {
       "book": "model",
@@ -2477,7 +2477,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Thompson",
-      "updatedAt": "2026-11-12T23:28:13.355782+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686210+00:00"
     },
     {
       "book": "model",
@@ -2499,7 +2499,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Thompson",
-      "updatedAt": "2026-11-12T23:28:13.355785+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686213+00:00"
     },
     {
       "book": "model",
@@ -2521,7 +2521,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Thompson",
-      "updatedAt": "2026-11-12T23:28:13.355788+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686216+00:00"
     },
     {
       "book": "model",
@@ -2543,7 +2543,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Thompson",
-      "updatedAt": "2026-11-12T23:28:13.355791+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686219+00:00"
     },
     {
       "book": "model",
@@ -2565,7 +2565,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt McCarty",
-      "updatedAt": "2026-11-12T23:28:13.355795+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686222+00:00"
     },
     {
       "book": "model",
@@ -2587,7 +2587,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt McCarty",
-      "updatedAt": "2026-11-12T23:28:13.355797+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686225+00:00"
     },
     {
       "book": "model",
@@ -2609,7 +2609,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt McCarty",
-      "updatedAt": "2026-11-12T23:28:13.355800+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686228+00:00"
     },
     {
       "book": "model",
@@ -2631,7 +2631,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matt McCarty",
-      "updatedAt": "2026-11-12T23:28:13.355802+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686252+00:00"
     },
     {
       "book": "model",
@@ -2653,7 +2653,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Homa",
-      "updatedAt": "2026-11-12T23:28:13.355805+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686256+00:00"
     },
     {
       "book": "model",
@@ -2675,7 +2675,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Homa",
-      "updatedAt": "2026-11-12T23:28:13.355808+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686259+00:00"
     },
     {
       "book": "model",
@@ -2697,7 +2697,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Homa",
-      "updatedAt": "2026-11-12T23:28:13.355810+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686262+00:00"
     },
     {
       "book": "model",
@@ -2719,7 +2719,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Max Homa",
-      "updatedAt": "2026-11-12T23:28:13.355813+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686265+00:00"
     },
     {
       "book": "model",
@@ -2741,7 +2741,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Takumi Kanaya",
-      "updatedAt": "2026-11-12T23:28:13.355815+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686268+00:00"
     },
     {
       "book": "model",
@@ -2763,7 +2763,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Takumi Kanaya",
-      "updatedAt": "2026-11-12T23:28:13.355818+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686271+00:00"
     },
     {
       "book": "model",
@@ -2785,7 +2785,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Takumi Kanaya",
-      "updatedAt": "2026-11-12T23:28:13.355820+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686275+00:00"
     },
     {
       "book": "model",
@@ -2807,7 +2807,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Takumi Kanaya",
-      "updatedAt": "2026-11-12T23:28:13.355823+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686278+00:00"
     },
     {
       "book": "model",
@@ -2829,7 +2829,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Stephan Jaeger",
-      "updatedAt": "2026-11-12T23:28:13.355826+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686281+00:00"
     },
     {
       "book": "model",
@@ -2851,7 +2851,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Stephan Jaeger",
-      "updatedAt": "2026-11-12T23:28:13.355829+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686284+00:00"
     },
     {
       "book": "model",
@@ -2873,7 +2873,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Stephan Jaeger",
-      "updatedAt": "2026-11-12T23:28:13.355831+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686287+00:00"
     },
     {
       "book": "model",
@@ -2895,7 +2895,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Stephan Jaeger",
-      "updatedAt": "2026-11-12T23:28:13.355834+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686290+00:00"
     },
     {
       "book": "model",
@@ -2917,7 +2917,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Cole Sherwood",
-      "updatedAt": "2026-11-12T23:28:13.355836+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686294+00:00"
     },
     {
       "book": "model",
@@ -2939,7 +2939,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Cole Sherwood",
-      "updatedAt": "2026-11-12T23:28:13.355839+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686297+00:00"
     },
     {
       "book": "model",
@@ -2961,7 +2961,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Cole Sherwood",
-      "updatedAt": "2026-11-12T23:28:13.355841+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686300+00:00"
     },
     {
       "book": "model",
@@ -2983,7 +2983,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Cole Sherwood",
-      "updatedAt": "2026-11-12T23:28:13.355844+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686303+00:00"
     },
     {
       "book": "model",
@@ -3005,7 +3005,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Emiliano Grillo",
-      "updatedAt": "2026-11-12T23:28:13.355846+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686307+00:00"
     },
     {
       "book": "model",
@@ -3027,7 +3027,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Emiliano Grillo",
-      "updatedAt": "2026-11-12T23:28:13.355849+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686310+00:00"
     },
     {
       "book": "model",
@@ -3049,7 +3049,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Emiliano Grillo",
-      "updatedAt": "2026-11-12T23:28:13.355851+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686313+00:00"
     },
     {
       "book": "model",
@@ -3071,7 +3071,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Emiliano Grillo",
-      "updatedAt": "2026-11-12T23:28:13.355854+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686316+00:00"
     },
     {
       "book": "model",
@@ -3093,7 +3093,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Suber",
-      "updatedAt": "2026-11-12T23:28:13.355857+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686319+00:00"
     },
     {
       "book": "model",
@@ -3115,7 +3115,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Suber",
-      "updatedAt": "2026-11-12T23:28:13.355859+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686322+00:00"
     },
     {
       "book": "model",
@@ -3137,7 +3137,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Suber",
-      "updatedAt": "2026-11-12T23:28:13.355862+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686325+00:00"
     },
     {
       "book": "model",
@@ -3159,7 +3159,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Suber",
-      "updatedAt": "2026-11-12T23:28:13.355864+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686328+00:00"
     },
     {
       "book": "model",
@@ -3181,7 +3181,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Blades Brown",
-      "updatedAt": "2026-11-12T23:28:13.355867+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686331+00:00"
     },
     {
       "book": "model",
@@ -3203,7 +3203,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Blades Brown",
-      "updatedAt": "2026-11-12T23:28:13.355869+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686334+00:00"
     },
     {
       "book": "model",
@@ -3225,7 +3225,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Blades Brown",
-      "updatedAt": "2026-11-12T23:28:13.355871+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686337+00:00"
     },
     {
       "book": "model",
@@ -3247,7 +3247,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Blades Brown",
-      "updatedAt": "2026-11-12T23:28:13.355874+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686340+00:00"
     },
     {
       "book": "model",
@@ -3269,7 +3269,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Ford",
-      "updatedAt": "2026-11-12T23:28:13.355877+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686343+00:00"
     },
     {
       "book": "model",
@@ -3291,7 +3291,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Ford",
-      "updatedAt": "2026-11-12T23:28:13.355880+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686347+00:00"
     },
     {
       "book": "model",
@@ -3313,7 +3313,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Ford",
-      "updatedAt": "2026-11-12T23:28:13.355882+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686350+00:00"
     },
     {
       "book": "model",
@@ -3335,7 +3335,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Ford",
-      "updatedAt": "2026-11-12T23:28:13.355884+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686354+00:00"
     },
     {
       "book": "model",
@@ -3357,7 +3357,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alejandro Tosti",
-      "updatedAt": "2026-11-12T23:28:13.355887+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686357+00:00"
     },
     {
       "book": "model",
@@ -3379,7 +3379,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alejandro Tosti",
-      "updatedAt": "2026-11-12T23:28:13.355889+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686361+00:00"
     },
     {
       "book": "model",
@@ -3401,7 +3401,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alejandro Tosti",
-      "updatedAt": "2026-11-12T23:28:13.355891+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686364+00:00"
     },
     {
       "book": "model",
@@ -3423,7 +3423,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alejandro Tosti",
-      "updatedAt": "2026-11-12T23:28:13.355894+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686367+00:00"
     },
     {
       "book": "model",
@@ -3445,7 +3445,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Martin",
-      "updatedAt": "2026-11-12T23:28:13.355897+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686370+00:00"
     },
     {
       "book": "model",
@@ -3467,7 +3467,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Martin",
-      "updatedAt": "2026-11-12T23:28:13.355899+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686373+00:00"
     },
     {
       "book": "model",
@@ -3489,7 +3489,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Martin",
-      "updatedAt": "2026-11-12T23:28:13.355902+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686376+00:00"
     },
     {
       "book": "model",
@@ -3511,7 +3511,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Martin",
-      "updatedAt": "2026-11-12T23:28:13.355904+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686379+00:00"
     },
     {
       "book": "model",
@@ -3533,7 +3533,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Christo Lamprecht",
-      "updatedAt": "2026-11-12T23:28:13.355907+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686382+00:00"
     },
     {
       "book": "model",
@@ -3555,7 +3555,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Christo Lamprecht",
-      "updatedAt": "2026-11-12T23:28:13.355910+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686386+00:00"
     },
     {
       "book": "model",
@@ -3577,7 +3577,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Christo Lamprecht",
-      "updatedAt": "2026-11-12T23:28:13.355912+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686389+00:00"
     },
     {
       "book": "model",
@@ -3599,7 +3599,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Christo Lamprecht",
-      "updatedAt": "2026-11-12T23:28:13.355914+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686392+00:00"
     },
     {
       "book": "model",
@@ -3621,7 +3621,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Fishburn",
-      "updatedAt": "2026-11-12T23:28:13.355918+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686395+00:00"
     },
     {
       "book": "model",
@@ -3643,7 +3643,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Fishburn",
-      "updatedAt": "2026-11-12T23:28:13.355920+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686398+00:00"
     },
     {
       "book": "model",
@@ -3665,7 +3665,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Fishburn",
-      "updatedAt": "2026-11-12T23:28:13.355922+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686401+00:00"
     },
     {
       "book": "model",
@@ -3687,7 +3687,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Fishburn",
-      "updatedAt": "2026-11-12T23:28:13.355925+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686403+00:00"
     },
     {
       "book": "model",
@@ -3709,7 +3709,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Streelman",
-      "updatedAt": "2026-11-12T23:28:13.355928+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686407+00:00"
     },
     {
       "book": "model",
@@ -3731,7 +3731,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Streelman",
-      "updatedAt": "2026-11-12T23:28:13.355930+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686410+00:00"
     },
     {
       "book": "model",
@@ -3753,7 +3753,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Streelman",
-      "updatedAt": "2026-11-12T23:28:13.355932+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686413+00:00"
     },
     {
       "book": "model",
@@ -3775,7 +3775,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Streelman",
-      "updatedAt": "2026-11-12T23:28:13.355935+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686416+00:00"
     },
     {
       "book": "model",
@@ -3797,7 +3797,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rikuya Hoshino",
-      "updatedAt": "2026-11-12T23:28:13.355938+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686419+00:00"
     },
     {
       "book": "model",
@@ -3819,7 +3819,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rikuya Hoshino",
-      "updatedAt": "2026-11-12T23:28:13.355940+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686422+00:00"
     },
     {
       "book": "model",
@@ -3841,7 +3841,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rikuya Hoshino",
-      "updatedAt": "2026-11-12T23:28:13.355943+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686425+00:00"
     },
     {
       "book": "model",
@@ -3863,7 +3863,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rikuya Hoshino",
-      "updatedAt": "2026-11-12T23:28:13.355945+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686428+00:00"
     },
     {
       "book": "model",
@@ -3885,7 +3885,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Eric Cole",
-      "updatedAt": "2026-11-12T23:28:13.355948+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686432+00:00"
     },
     {
       "book": "model",
@@ -3907,7 +3907,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Eric Cole",
-      "updatedAt": "2026-11-12T23:28:13.355951+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686435+00:00"
     },
     {
       "book": "model",
@@ -3929,7 +3929,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Eric Cole",
-      "updatedAt": "2026-11-12T23:28:13.355953+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686438+00:00"
     },
     {
       "book": "model",
@@ -3951,7 +3951,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Eric Cole",
-      "updatedAt": "2026-11-12T23:28:13.355956+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686441+00:00"
     },
     {
       "book": "model",
@@ -3973,7 +3973,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jesper Svensson",
-      "updatedAt": "2026-11-12T23:28:13.355959+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686445+00:00"
     },
     {
       "book": "model",
@@ -3995,7 +3995,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jesper Svensson",
-      "updatedAt": "2026-11-12T23:28:13.355961+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686448+00:00"
     },
     {
       "book": "model",
@@ -4017,7 +4017,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jesper Svensson",
-      "updatedAt": "2026-11-12T23:28:13.355963+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686451+00:00"
     },
     {
       "book": "model",
@@ -4039,7 +4039,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jesper Svensson",
-      "updatedAt": "2026-11-12T23:28:13.355966+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686453+00:00"
     },
     {
       "book": "model",
@@ -4061,7 +4061,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alvaro Ortiz",
-      "updatedAt": "2026-11-12T23:28:13.355969+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686457+00:00"
     },
     {
       "book": "model",
@@ -4083,7 +4083,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alvaro Ortiz",
-      "updatedAt": "2026-11-12T23:28:13.355971+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686460+00:00"
     },
     {
       "book": "model",
@@ -4105,7 +4105,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alvaro Ortiz",
-      "updatedAt": "2026-11-12T23:28:13.355974+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686463+00:00"
     },
     {
       "book": "model",
@@ -4127,7 +4127,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Alvaro Ortiz",
-      "updatedAt": "2026-11-12T23:28:13.355976+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686465+00:00"
     },
     {
       "book": "model",
@@ -4149,7 +4149,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adrien Dumont de Chassart",
-      "updatedAt": "2026-11-12T23:28:13.355979+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686469+00:00"
     },
     {
       "book": "model",
@@ -4171,7 +4171,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adrien Dumont de Chassart",
-      "updatedAt": "2026-11-12T23:28:13.355982+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686472+00:00"
     },
     {
       "book": "model",
@@ -4193,7 +4193,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adrien Dumont de Chassart",
-      "updatedAt": "2026-11-12T23:28:13.355985+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686475+00:00"
     },
     {
       "book": "model",
@@ -4215,7 +4215,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adrien Dumont de Chassart",
-      "updatedAt": "2026-11-12T23:28:13.355987+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686478+00:00"
     },
     {
       "book": "model",
@@ -4237,7 +4237,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John Parry",
-      "updatedAt": "2026-11-12T23:28:13.355991+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686481+00:00"
     },
     {
       "book": "model",
@@ -4259,7 +4259,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John Parry",
-      "updatedAt": "2026-11-12T23:28:13.355993+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686485+00:00"
     },
     {
       "book": "model",
@@ -4281,7 +4281,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John Parry",
-      "updatedAt": "2026-11-12T23:28:13.355996+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686488+00:00"
     },
     {
       "book": "model",
@@ -4303,7 +4303,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John Parry",
-      "updatedAt": "2026-11-12T23:28:13.355998+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686491+00:00"
     },
     {
       "book": "model",
@@ -4325,7 +4325,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Trace Crowe",
-      "updatedAt": "2026-11-12T23:28:13.356001+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686495+00:00"
     },
     {
       "book": "model",
@@ -4347,7 +4347,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Trace Crowe",
-      "updatedAt": "2026-11-12T23:28:13.356004+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686498+00:00"
     },
     {
       "book": "model",
@@ -4369,7 +4369,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Trace Crowe",
-      "updatedAt": "2026-11-12T23:28:13.356006+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686501+00:00"
     },
     {
       "book": "model",
@@ -4391,7 +4391,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Trace Crowe",
-      "updatedAt": "2026-11-12T23:28:13.356008+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686504+00:00"
     },
     {
       "book": "model",
@@ -4413,7 +4413,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ricky Castillo",
-      "updatedAt": "2026-11-12T23:28:13.356011+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686507+00:00"
     },
     {
       "book": "model",
@@ -4435,7 +4435,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ricky Castillo",
-      "updatedAt": "2026-11-12T23:28:13.356013+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686510+00:00"
     },
     {
       "book": "model",
@@ -4457,7 +4457,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ricky Castillo",
-      "updatedAt": "2026-11-12T23:28:13.356016+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686513+00:00"
     },
     {
       "book": "model",
@@ -4479,7 +4479,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ricky Castillo",
-      "updatedAt": "2026-11-12T23:28:13.356018+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686516+00:00"
     },
     {
       "book": "model",
@@ -4501,7 +4501,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Neal Shipley",
-      "updatedAt": "2026-11-12T23:28:13.356021+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686519+00:00"
     },
     {
       "book": "model",
@@ -4523,7 +4523,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Neal Shipley",
-      "updatedAt": "2026-11-12T23:28:13.356024+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686522+00:00"
     },
     {
       "book": "model",
@@ -4545,7 +4545,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Neal Shipley",
-      "updatedAt": "2026-11-12T23:28:13.356026+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686525+00:00"
     },
     {
       "book": "model",
@@ -4567,7 +4567,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Neal Shipley",
-      "updatedAt": "2026-11-12T23:28:13.356028+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686528+00:00"
     },
     {
       "book": "model",
@@ -4589,7 +4589,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Doug Ghim",
-      "updatedAt": "2026-11-12T23:28:13.356031+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686532+00:00"
     },
     {
       "book": "model",
@@ -4611,7 +4611,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Doug Ghim",
-      "updatedAt": "2026-11-12T23:28:13.356033+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686536+00:00"
     },
     {
       "book": "model",
@@ -4633,7 +4633,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Doug Ghim",
-      "updatedAt": "2026-11-12T23:28:13.356036+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686539+00:00"
     },
     {
       "book": "model",
@@ -4655,7 +4655,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Doug Ghim",
-      "updatedAt": "2026-11-12T23:28:13.356039+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686542+00:00"
     },
     {
       "book": "model",
@@ -4677,7 +4677,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Christiaan Maas",
-      "updatedAt": "2026-11-12T23:28:13.356041+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686545+00:00"
     },
     {
       "book": "model",
@@ -4699,7 +4699,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Christiaan Maas",
-      "updatedAt": "2026-11-12T23:28:13.356044+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686549+00:00"
     },
     {
       "book": "model",
@@ -4721,7 +4721,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Christiaan Maas",
-      "updatedAt": "2026-11-12T23:28:13.356046+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686552+00:00"
     },
     {
       "book": "model",
@@ -4743,7 +4743,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Christiaan Maas",
-      "updatedAt": "2026-11-12T23:28:13.356049+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686554+00:00"
     },
     {
       "book": "model",
@@ -4765,7 +4765,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Phillips",
-      "updatedAt": "2026-11-12T23:28:13.356051+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686558+00:00"
     },
     {
       "book": "model",
@@ -4787,7 +4787,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Phillips",
-      "updatedAt": "2026-11-12T23:28:13.356053+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686561+00:00"
     },
     {
       "book": "model",
@@ -4809,7 +4809,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Phillips",
-      "updatedAt": "2026-11-12T23:28:13.356056+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686564+00:00"
     },
     {
       "book": "model",
@@ -4831,7 +4831,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Phillips",
-      "updatedAt": "2026-11-12T23:28:13.356058+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686567+00:00"
     },
     {
       "book": "model",
@@ -4853,7 +4853,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hayden Springer",
-      "updatedAt": "2026-11-12T23:28:13.356060+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686570+00:00"
     },
     {
       "book": "model",
@@ -4875,7 +4875,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hayden Springer",
-      "updatedAt": "2026-11-12T23:28:13.356063+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686573+00:00"
     },
     {
       "book": "model",
@@ -4897,7 +4897,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hayden Springer",
-      "updatedAt": "2026-11-12T23:28:13.356065+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686577+00:00"
     },
     {
       "book": "model",
@@ -4919,7 +4919,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hayden Springer",
-      "updatedAt": "2026-11-12T23:28:13.356067+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686580+00:00"
     },
     {
       "book": "model",
@@ -4941,7 +4941,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Lee Hodges",
-      "updatedAt": "2026-11-12T23:28:13.356070+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686583+00:00"
     },
     {
       "book": "model",
@@ -4963,7 +4963,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Lee Hodges",
-      "updatedAt": "2026-11-12T23:28:13.356072+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686586+00:00"
     },
     {
       "book": "model",
@@ -4985,7 +4985,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Lee Hodges",
-      "updatedAt": "2026-11-12T23:28:13.356074+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686589+00:00"
     },
     {
       "book": "model",
@@ -5007,7 +5007,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Lee Hodges",
-      "updatedAt": "2026-11-12T23:28:13.356076+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686592+00:00"
     },
     {
       "book": "model",
@@ -5029,7 +5029,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Kohles",
-      "updatedAt": "2026-11-12T23:28:13.356079+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686595+00:00"
     },
     {
       "book": "model",
@@ -5051,7 +5051,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Kohles",
-      "updatedAt": "2026-11-12T23:28:13.356081+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686598+00:00"
     },
     {
       "book": "model",
@@ -5073,7 +5073,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Kohles",
-      "updatedAt": "2026-11-12T23:28:13.356083+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686601+00:00"
     },
     {
       "book": "model",
@@ -5095,7 +5095,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Ben Kohles",
-      "updatedAt": "2026-11-12T23:28:13.356086+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686604+00:00"
     },
     {
       "book": "model",
@@ -5117,7 +5117,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sami V\u00e4lim\u00e4ki",
-      "updatedAt": "2026-11-12T23:28:13.356088+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686607+00:00"
     },
     {
       "book": "model",
@@ -5139,7 +5139,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sami V\u00e4lim\u00e4ki",
-      "updatedAt": "2026-11-12T23:28:13.356091+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686611+00:00"
     },
     {
       "book": "model",
@@ -5161,7 +5161,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sami V\u00e4lim\u00e4ki",
-      "updatedAt": "2026-11-12T23:28:13.356093+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686614+00:00"
     },
     {
       "book": "model",
@@ -5183,7 +5183,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sami V\u00e4lim\u00e4ki",
-      "updatedAt": "2026-11-12T23:28:13.356095+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686617+00:00"
     },
     {
       "book": "model",
@@ -5205,7 +5205,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Brendon Todd",
-      "updatedAt": "2026-11-12T23:28:13.356098+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686620+00:00"
     },
     {
       "book": "model",
@@ -5227,7 +5227,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Brendon Todd",
-      "updatedAt": "2026-11-12T23:28:13.356100+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686623+00:00"
     },
     {
       "book": "model",
@@ -5249,7 +5249,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Brendon Todd",
-      "updatedAt": "2026-11-12T23:28:13.356102+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686626+00:00"
     },
     {
       "book": "model",
@@ -5271,7 +5271,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Brendon Todd",
-      "updatedAt": "2026-11-12T23:28:13.356105+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686629+00:00"
     },
     {
       "book": "model",
@@ -5293,7 +5293,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "S\u00e9amus Power",
-      "updatedAt": "2026-11-12T23:28:13.356107+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686633+00:00"
     },
     {
       "book": "model",
@@ -5315,7 +5315,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "S\u00e9amus Power",
-      "updatedAt": "2026-11-12T23:28:13.356110+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686636+00:00"
     },
     {
       "book": "model",
@@ -5337,7 +5337,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "S\u00e9amus Power",
-      "updatedAt": "2026-11-12T23:28:13.356112+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686639+00:00"
     },
     {
       "book": "model",
@@ -5359,7 +5359,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "S\u00e9amus Power",
-      "updatedAt": "2026-11-12T23:28:13.356115+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686642+00:00"
     },
     {
       "book": "model",
@@ -5381,7 +5381,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Matt Kuchar",
-      "updatedAt": "2026-11-12T23:28:13.356117+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686645+00:00"
     },
     {
       "book": "model",
@@ -5403,7 +5403,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Matt Kuchar",
-      "updatedAt": "2026-11-12T23:28:13.356119+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686648+00:00"
     },
     {
       "book": "model",
@@ -5425,7 +5425,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Matt Kuchar",
-      "updatedAt": "2026-11-12T23:28:13.356121+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686651+00:00"
     },
     {
       "book": "model",
@@ -5447,7 +5447,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Matt Kuchar",
-      "updatedAt": "2026-11-12T23:28:13.356123+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686654+00:00"
     },
     {
       "book": "model",
@@ -5469,7 +5469,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Joel Dahmen",
-      "updatedAt": "2026-11-12T23:28:13.356126+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686658+00:00"
     },
     {
       "book": "model",
@@ -5491,7 +5491,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Joel Dahmen",
-      "updatedAt": "2026-11-12T23:28:13.356128+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686660+00:00"
     },
     {
       "book": "model",
@@ -5513,7 +5513,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Joel Dahmen",
-      "updatedAt": "2026-11-12T23:28:13.356130+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686663+00:00"
     },
     {
       "book": "model",
@@ -5535,7 +5535,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Joel Dahmen",
-      "updatedAt": "2026-11-12T23:28:13.356133+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686666+00:00"
     },
     {
       "book": "model",
@@ -5557,7 +5557,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Johnny Keefer",
-      "updatedAt": "2026-11-12T23:28:13.356135+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686670+00:00"
     },
     {
       "book": "model",
@@ -5579,7 +5579,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Johnny Keefer",
-      "updatedAt": "2026-11-12T23:28:13.356137+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686673+00:00"
     },
     {
       "book": "model",
@@ -5601,7 +5601,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Johnny Keefer",
-      "updatedAt": "2026-11-12T23:28:13.356140+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686676+00:00"
     },
     {
       "book": "model",
@@ -5623,7 +5623,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Johnny Keefer",
-      "updatedAt": "2026-11-12T23:28:13.356142+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686679+00:00"
     },
     {
       "book": "model",
@@ -5645,7 +5645,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Karl Vilips",
-      "updatedAt": "2026-11-12T23:28:13.356144+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686683+00:00"
     },
     {
       "book": "model",
@@ -5667,7 +5667,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Karl Vilips",
-      "updatedAt": "2026-11-12T23:28:13.356147+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686686+00:00"
     },
     {
       "book": "model",
@@ -5689,7 +5689,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Karl Vilips",
-      "updatedAt": "2026-11-12T23:28:13.356150+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686689+00:00"
     },
     {
       "book": "model",
@@ -5711,7 +5711,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Karl Vilips",
-      "updatedAt": "2026-11-12T23:28:13.356152+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686692+00:00"
     },
     {
       "book": "model",
@@ -5733,7 +5733,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Skinns",
-      "updatedAt": "2026-11-12T23:28:13.356155+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686696+00:00"
     },
     {
       "book": "model",
@@ -5755,7 +5755,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Skinns",
-      "updatedAt": "2026-11-12T23:28:13.356157+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686699+00:00"
     },
     {
       "book": "model",
@@ -5777,7 +5777,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Skinns",
-      "updatedAt": "2026-11-12T23:28:13.356159+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686702+00:00"
     },
     {
       "book": "model",
@@ -5799,7 +5799,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Skinns",
-      "updatedAt": "2026-11-12T23:28:13.356162+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686704+00:00"
     },
     {
       "book": "model",
@@ -5821,7 +5821,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Rodgers",
-      "updatedAt": "2026-11-12T23:28:13.356164+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686708+00:00"
     },
     {
       "book": "model",
@@ -5843,7 +5843,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Rodgers",
-      "updatedAt": "2026-11-12T23:28:13.356166+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686710+00:00"
     },
     {
       "book": "model",
@@ -5865,7 +5865,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Rodgers",
-      "updatedAt": "2026-11-12T23:28:13.356169+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686713+00:00"
     },
     {
       "book": "model",
@@ -5887,7 +5887,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Patrick Rodgers",
-      "updatedAt": "2026-11-12T23:28:13.356171+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686716+00:00"
     },
     {
       "book": "model",
@@ -5909,7 +5909,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Brian Harman",
-      "updatedAt": "2026-11-12T23:28:13.356182+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686720+00:00"
     },
     {
       "book": "model",
@@ -5931,7 +5931,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Brian Harman",
-      "updatedAt": "2026-11-12T23:28:13.356185+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686723+00:00"
     },
     {
       "book": "model",
@@ -5953,7 +5953,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Brian Harman",
-      "updatedAt": "2026-11-12T23:28:13.356187+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686725+00:00"
     },
     {
       "book": "model",
@@ -5975,7 +5975,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Brian Harman",
-      "updatedAt": "2026-11-12T23:28:13.356189+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686728+00:00"
     },
     {
       "book": "model",
@@ -5997,7 +5997,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Marco Penge",
-      "updatedAt": "2026-11-12T23:28:13.356192+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686731+00:00"
     },
     {
       "book": "model",
@@ -6019,7 +6019,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Marco Penge",
-      "updatedAt": "2026-11-12T23:28:13.356194+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686734+00:00"
     },
     {
       "book": "model",
@@ -6041,7 +6041,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Marco Penge",
-      "updatedAt": "2026-11-12T23:28:13.356197+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686737+00:00"
     },
     {
       "book": "model",
@@ -6063,7 +6063,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Marco Penge",
-      "updatedAt": "2026-11-12T23:28:13.356199+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686740+00:00"
     },
     {
       "book": "model",
@@ -6085,7 +6085,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adrien Saddier",
-      "updatedAt": "2026-11-12T23:28:13.356202+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686743+00:00"
     },
     {
       "book": "model",
@@ -6107,7 +6107,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adrien Saddier",
-      "updatedAt": "2026-11-12T23:28:13.356205+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686746+00:00"
     },
     {
       "book": "model",
@@ -6129,7 +6129,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adrien Saddier",
-      "updatedAt": "2026-11-12T23:28:13.356207+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686749+00:00"
     },
     {
       "book": "model",
@@ -6151,7 +6151,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adrien Saddier",
-      "updatedAt": "2026-11-12T23:28:13.356209+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686752+00:00"
     },
     {
       "book": "model",
@@ -6173,7 +6173,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Luke Clanton",
-      "updatedAt": "2026-11-12T23:28:13.356212+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686755+00:00"
     },
     {
       "book": "model",
@@ -6195,7 +6195,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Luke Clanton",
-      "updatedAt": "2026-11-12T23:28:13.356214+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686758+00:00"
     },
     {
       "book": "model",
@@ -6217,7 +6217,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Luke Clanton",
-      "updatedAt": "2026-11-12T23:28:13.356216+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686761+00:00"
     },
     {
       "book": "model",
@@ -6239,7 +6239,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Luke Clanton",
-      "updatedAt": "2026-11-12T23:28:13.356218+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686764+00:00"
     },
     {
       "book": "model",
@@ -6261,7 +6261,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jeffrey Kang",
-      "updatedAt": "2026-11-12T23:28:13.356221+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686767+00:00"
     },
     {
       "book": "model",
@@ -6283,7 +6283,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jeffrey Kang",
-      "updatedAt": "2026-11-12T23:28:13.356224+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686770+00:00"
     },
     {
       "book": "model",
@@ -6305,7 +6305,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jeffrey Kang",
-      "updatedAt": "2026-11-12T23:28:13.356226+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686773+00:00"
     },
     {
       "book": "model",
@@ -6327,7 +6327,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jeffrey Kang",
-      "updatedAt": "2026-11-12T23:28:13.356228+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686776+00:00"
     },
     {
       "book": "model",
@@ -6349,7 +6349,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "William Sides",
-      "updatedAt": "2026-11-12T23:28:13.356231+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686779+00:00"
     },
     {
       "book": "model",
@@ -6371,7 +6371,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "William Sides",
-      "updatedAt": "2026-11-12T23:28:13.356233+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686782+00:00"
     },
     {
       "book": "model",
@@ -6393,7 +6393,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "William Sides",
-      "updatedAt": "2026-11-12T23:28:13.356235+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686785+00:00"
     },
     {
       "book": "model",
@@ -6415,7 +6415,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "William Sides",
-      "updatedAt": "2026-11-12T23:28:13.356238+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686788+00:00"
     },
     {
       "book": "model",
@@ -6437,7 +6437,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rasmus Neergaard-Petersen",
-      "updatedAt": "2026-11-12T23:28:13.356241+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686792+00:00"
     },
     {
       "book": "model",
@@ -6459,7 +6459,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rasmus Neergaard-Petersen",
-      "updatedAt": "2026-11-12T23:28:13.356243+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686795+00:00"
     },
     {
       "book": "model",
@@ -6481,7 +6481,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rasmus Neergaard-Petersen",
-      "updatedAt": "2026-11-12T23:28:13.356245+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686797+00:00"
     },
     {
       "book": "model",
@@ -6503,7 +6503,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rasmus Neergaard-Petersen",
-      "updatedAt": "2026-11-12T23:28:13.356248+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686801+00:00"
     },
     {
       "book": "model",
@@ -6525,7 +6525,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hank Lebioda",
-      "updatedAt": "2026-11-12T23:28:13.356250+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686804+00:00"
     },
     {
       "book": "model",
@@ -6547,7 +6547,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hank Lebioda",
-      "updatedAt": "2026-11-12T23:28:13.356252+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686807+00:00"
     },
     {
       "book": "model",
@@ -6569,7 +6569,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hank Lebioda",
-      "updatedAt": "2026-11-12T23:28:13.356255+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686809+00:00"
     },
     {
       "book": "model",
@@ -6591,7 +6591,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Hank Lebioda",
-      "updatedAt": "2026-11-12T23:28:13.356257+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686812+00:00"
     },
     {
       "book": "model",
@@ -6613,7 +6613,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zac Blair",
-      "updatedAt": "2026-11-12T23:28:13.356259+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686815+00:00"
     },
     {
       "book": "model",
@@ -6635,7 +6635,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zac Blair",
-      "updatedAt": "2026-11-12T23:28:13.356262+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686818+00:00"
     },
     {
       "book": "model",
@@ -6657,7 +6657,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zac Blair",
-      "updatedAt": "2026-11-12T23:28:13.356264+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686821+00:00"
     },
     {
       "book": "model",
@@ -6679,7 +6679,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zac Blair",
-      "updatedAt": "2026-11-12T23:28:13.356266+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686824+00:00"
     },
     {
       "book": "model",
@@ -6701,7 +6701,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Dylan Wu",
-      "updatedAt": "2026-11-12T23:28:13.356268+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686827+00:00"
     },
     {
       "book": "model",
@@ -6723,7 +6723,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Dylan Wu",
-      "updatedAt": "2026-11-12T23:28:13.356271+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686830+00:00"
     },
     {
       "book": "model",
@@ -6745,7 +6745,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Dylan Wu",
-      "updatedAt": "2026-11-12T23:28:13.356273+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686833+00:00"
     },
     {
       "book": "model",
@@ -6767,7 +6767,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Dylan Wu",
-      "updatedAt": "2026-11-12T23:28:13.356275+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686836+00:00"
     },
     {
       "book": "model",
@@ -6789,7 +6789,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Koivun",
-      "updatedAt": "2026-11-12T23:28:13.356277+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686839+00:00"
     },
     {
       "book": "model",
@@ -6811,7 +6811,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Koivun",
-      "updatedAt": "2026-11-12T23:28:13.356279+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686842+00:00"
     },
     {
       "book": "model",
@@ -6833,7 +6833,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Koivun",
-      "updatedAt": "2026-11-12T23:28:13.356282+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686845+00:00"
     },
     {
       "book": "model",
@@ -6855,7 +6855,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jackson Koivun",
-      "updatedAt": "2026-11-12T23:28:13.356284+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686848+00:00"
     },
     {
       "book": "model",
@@ -6877,7 +6877,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Erik van Rooyen",
-      "updatedAt": "2026-11-12T23:28:13.356287+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686851+00:00"
     },
     {
       "book": "model",
@@ -6899,7 +6899,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Erik van Rooyen",
-      "updatedAt": "2026-11-12T23:28:13.356289+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686854+00:00"
     },
     {
       "book": "model",
@@ -6921,7 +6921,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Erik van Rooyen",
-      "updatedAt": "2026-11-12T23:28:13.356291+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686857+00:00"
     },
     {
       "book": "model",
@@ -6943,7 +6943,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Erik van Rooyen",
-      "updatedAt": "2026-11-12T23:28:13.356293+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686860+00:00"
     },
     {
       "book": "model",
@@ -6965,7 +6965,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Thomas Rosenmueller",
-      "updatedAt": "2026-11-12T23:28:13.356295+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686863+00:00"
     },
     {
       "book": "model",
@@ -6987,7 +6987,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Thomas Rosenmueller",
-      "updatedAt": "2026-11-12T23:28:13.356298+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686866+00:00"
     },
     {
       "book": "model",
@@ -7009,7 +7009,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Thomas Rosenmueller",
-      "updatedAt": "2026-11-12T23:28:13.356300+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686869+00:00"
     },
     {
       "book": "model",
@@ -7031,7 +7031,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Thomas Rosenmueller",
-      "updatedAt": "2026-11-12T23:28:13.356303+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686872+00:00"
     },
     {
       "book": "model",
@@ -7053,7 +7053,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Ventura",
-      "updatedAt": "2026-11-12T23:28:13.356305+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686875+00:00"
     },
     {
       "book": "model",
@@ -7075,7 +7075,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Ventura",
-      "updatedAt": "2026-11-12T23:28:13.356308+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686878+00:00"
     },
     {
       "book": "model",
@@ -7097,7 +7097,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Ventura",
-      "updatedAt": "2026-11-12T23:28:13.356310+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686881+00:00"
     },
     {
       "book": "model",
@@ -7119,7 +7119,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kristoffer Ventura",
-      "updatedAt": "2026-11-12T23:28:13.356312+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686884+00:00"
     },
     {
       "book": "model",
@@ -7141,7 +7141,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pierceson Coody",
-      "updatedAt": "2026-11-12T23:28:13.356314+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686887+00:00"
     },
     {
       "book": "model",
@@ -7163,7 +7163,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pierceson Coody",
-      "updatedAt": "2026-11-12T23:28:13.356317+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686890+00:00"
     },
     {
       "book": "model",
@@ -7185,7 +7185,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pierceson Coody",
-      "updatedAt": "2026-11-12T23:28:13.356319+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686893+00:00"
     },
     {
       "book": "model",
@@ -7207,7 +7207,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pierceson Coody",
-      "updatedAt": "2026-11-12T23:28:13.356321+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686896+00:00"
     },
     {
       "book": "model",
@@ -7229,7 +7229,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sam Stevens",
-      "updatedAt": "2026-11-12T23:28:13.356323+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686899+00:00"
     },
     {
       "book": "model",
@@ -7251,7 +7251,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sam Stevens",
-      "updatedAt": "2026-11-12T23:28:13.356325+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686902+00:00"
     },
     {
       "book": "model",
@@ -7273,7 +7273,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sam Stevens",
-      "updatedAt": "2026-11-12T23:28:13.356327+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686905+00:00"
     },
     {
       "book": "model",
@@ -7295,7 +7295,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sam Stevens",
-      "updatedAt": "2026-11-12T23:28:13.356330+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686908+00:00"
     },
     {
       "book": "model",
@@ -7317,7 +7317,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pontus Nyholm",
-      "updatedAt": "2026-11-12T23:28:13.356332+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686912+00:00"
     },
     {
       "book": "model",
@@ -7339,7 +7339,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pontus Nyholm",
-      "updatedAt": "2026-11-12T23:28:13.356334+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686914+00:00"
     },
     {
       "book": "model",
@@ -7361,7 +7361,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pontus Nyholm",
-      "updatedAt": "2026-11-12T23:28:13.356337+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686917+00:00"
     },
     {
       "book": "model",
@@ -7383,7 +7383,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Pontus Nyholm",
-      "updatedAt": "2026-11-12T23:28:13.356339+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686920+00:00"
     },
     {
       "book": "model",
@@ -7405,7 +7405,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Casey Russell",
-      "updatedAt": "2026-11-12T23:28:13.356341+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686923+00:00"
     },
     {
       "book": "model",
@@ -7427,7 +7427,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Casey Russell",
-      "updatedAt": "2026-11-12T23:28:13.356344+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686926+00:00"
     },
     {
       "book": "model",
@@ -7449,7 +7449,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Casey Russell",
-      "updatedAt": "2026-11-12T23:28:13.356346+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686929+00:00"
     },
     {
       "book": "model",
@@ -7471,7 +7471,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Casey Russell",
-      "updatedAt": "2026-11-12T23:28:13.356348+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686932+00:00"
     },
     {
       "book": "model",
@@ -7493,7 +7493,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John VanDerLaan",
-      "updatedAt": "2026-11-12T23:28:13.356351+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686935+00:00"
     },
     {
       "book": "model",
@@ -7515,7 +7515,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John VanDerLaan",
-      "updatedAt": "2026-11-12T23:28:13.356353+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686938+00:00"
     },
     {
       "book": "model",
@@ -7537,7 +7537,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John VanDerLaan",
-      "updatedAt": "2026-11-12T23:28:13.356355+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686941+00:00"
     },
     {
       "book": "model",
@@ -7559,7 +7559,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "John VanDerLaan",
-      "updatedAt": "2026-11-12T23:28:13.356358+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686943+00:00"
     },
     {
       "book": "model",
@@ -7581,7 +7581,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Roy",
-      "updatedAt": "2026-11-12T23:28:13.356360+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686947+00:00"
     },
     {
       "book": "model",
@@ -7603,7 +7603,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Roy",
-      "updatedAt": "2026-11-12T23:28:13.356362+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686950+00:00"
     },
     {
       "book": "model",
@@ -7625,7 +7625,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Roy",
-      "updatedAt": "2026-11-12T23:28:13.356365+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686952+00:00"
     },
     {
       "book": "model",
@@ -7647,7 +7647,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kevin Roy",
-      "updatedAt": "2026-11-12T23:28:13.356367+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686955+00:00"
     },
     {
       "book": "model",
@@ -7669,7 +7669,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rico Hoey",
-      "updatedAt": "2026-11-12T23:28:13.356369+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686959+00:00"
     },
     {
       "book": "model",
@@ -7691,7 +7691,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rico Hoey",
-      "updatedAt": "2026-11-12T23:28:13.356372+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686961+00:00"
     },
     {
       "book": "model",
@@ -7713,7 +7713,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rico Hoey",
-      "updatedAt": "2026-11-12T23:28:13.356374+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686964+00:00"
     },
     {
       "book": "model",
@@ -7735,7 +7735,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Rico Hoey",
-      "updatedAt": "2026-11-12T23:28:13.356376+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686967+00:00"
     },
     {
       "book": "model",
@@ -7757,7 +7757,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Putnam",
-      "updatedAt": "2026-11-12T23:28:13.356378+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686970+00:00"
     },
     {
       "book": "model",
@@ -7779,7 +7779,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Putnam",
-      "updatedAt": "2026-11-12T23:28:13.356381+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686974+00:00"
     },
     {
       "book": "model",
@@ -7801,7 +7801,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Putnam",
-      "updatedAt": "2026-11-12T23:28:13.356383+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686977+00:00"
     },
     {
       "book": "model",
@@ -7823,7 +7823,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Putnam",
-      "updatedAt": "2026-11-12T23:28:13.356385+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686979+00:00"
     },
     {
       "book": "model",
@@ -7845,7 +7845,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Austin Smotherman",
-      "updatedAt": "2026-11-12T23:28:13.356388+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686983+00:00"
     },
     {
       "book": "model",
@@ -7867,7 +7867,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Austin Smotherman",
-      "updatedAt": "2026-11-12T23:28:13.356390+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686986+00:00"
     },
     {
       "book": "model",
@@ -7889,7 +7889,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Austin Smotherman",
-      "updatedAt": "2026-11-12T23:28:13.356392+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686988+00:00"
     },
     {
       "book": "model",
@@ -7911,7 +7911,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Austin Smotherman",
-      "updatedAt": "2026-11-12T23:28:13.356395+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686991+00:00"
     },
     {
       "book": "model",
@@ -7933,7 +7933,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Thompson",
-      "updatedAt": "2026-11-12T23:28:13.356397+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686994+00:00"
     },
     {
       "book": "model",
@@ -7955,7 +7955,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Thompson",
-      "updatedAt": "2026-11-12T23:28:13.356399+00:00"
+      "updatedAt": "2026-11-13T04:42:29.686997+00:00"
     },
     {
       "book": "model",
@@ -7977,7 +7977,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Thompson",
-      "updatedAt": "2026-11-12T23:28:13.356401+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687000+00:00"
     },
     {
       "book": "model",
@@ -7999,7 +7999,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Michael Thompson",
-      "updatedAt": "2026-11-12T23:28:13.356404+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687003+00:00"
     },
     {
       "book": "model",
@@ -8021,7 +8021,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Peter Malnati",
-      "updatedAt": "2026-11-12T23:28:13.356407+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687006+00:00"
     },
     {
       "book": "model",
@@ -8043,7 +8043,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Peter Malnati",
-      "updatedAt": "2026-11-12T23:28:13.356409+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687009+00:00"
     },
     {
       "book": "model",
@@ -8065,7 +8065,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Peter Malnati",
-      "updatedAt": "2026-11-12T23:28:13.356411+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687012+00:00"
     },
     {
       "book": "model",
@@ -8087,7 +8087,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Peter Malnati",
-      "updatedAt": "2026-11-12T23:28:13.356413+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687014+00:00"
     },
     {
       "book": "model",
@@ -8109,7 +8109,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Blanchet",
-      "updatedAt": "2026-11-12T23:28:13.356416+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687017+00:00"
     },
     {
       "book": "model",
@@ -8131,7 +8131,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Blanchet",
-      "updatedAt": "2026-11-12T23:28:13.356418+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687020+00:00"
     },
     {
       "book": "model",
@@ -8153,7 +8153,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Blanchet",
-      "updatedAt": "2026-11-12T23:28:13.356421+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687023+00:00"
     },
     {
       "book": "model",
@@ -8175,7 +8175,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chandler Blanchet",
-      "updatedAt": "2026-11-12T23:28:13.356423+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687026+00:00"
     },
     {
       "book": "model",
@@ -8197,7 +8197,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Gordon Sargent",
-      "updatedAt": "2026-11-12T23:28:13.356426+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687029+00:00"
     },
     {
       "book": "model",
@@ -8219,7 +8219,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Gordon Sargent",
-      "updatedAt": "2026-11-12T23:28:13.356428+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687032+00:00"
     },
     {
       "book": "model",
@@ -8241,7 +8241,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Gordon Sargent",
-      "updatedAt": "2026-11-12T23:28:13.356430+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687035+00:00"
     },
     {
       "book": "model",
@@ -8263,7 +8263,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Gordon Sargent",
-      "updatedAt": "2026-11-12T23:28:13.356433+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687038+00:00"
     },
     {
       "book": "model",
@@ -8285,7 +8285,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Isaiah Salinda",
-      "updatedAt": "2026-11-12T23:28:13.356435+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687041+00:00"
     },
     {
       "book": "model",
@@ -8307,7 +8307,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Isaiah Salinda",
-      "updatedAt": "2026-11-12T23:28:13.356437+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687043+00:00"
     },
     {
       "book": "model",
@@ -8329,7 +8329,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Isaiah Salinda",
-      "updatedAt": "2026-11-12T23:28:13.356440+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687046+00:00"
     },
     {
       "book": "model",
@@ -8351,7 +8351,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Isaiah Salinda",
-      "updatedAt": "2026-11-12T23:28:13.356442+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687049+00:00"
     },
     {
       "book": "model",
@@ -8373,7 +8373,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sudarshan Yellamaraju",
-      "updatedAt": "2026-11-12T23:28:13.356444+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687052+00:00"
     },
     {
       "book": "model",
@@ -8395,7 +8395,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sudarshan Yellamaraju",
-      "updatedAt": "2026-11-12T23:28:13.356446+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687055+00:00"
     },
     {
       "book": "model",
@@ -8417,7 +8417,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sudarshan Yellamaraju",
-      "updatedAt": "2026-11-12T23:28:13.356449+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687058+00:00"
     },
     {
       "book": "model",
@@ -8439,7 +8439,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Sudarshan Yellamaraju",
-      "updatedAt": "2026-11-12T23:28:13.356451+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687061+00:00"
     },
     {
       "book": "model",
@@ -8461,7 +8461,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Vince Whaley",
-      "updatedAt": "2026-11-12T23:28:13.356453+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687064+00:00"
     },
     {
       "book": "model",
@@ -8483,7 +8483,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Vince Whaley",
-      "updatedAt": "2026-11-12T23:28:13.356455+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687067+00:00"
     },
     {
       "book": "model",
@@ -8505,7 +8505,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Vince Whaley",
-      "updatedAt": "2026-11-12T23:28:13.356458+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687070+00:00"
     },
     {
       "book": "model",
@@ -8527,7 +8527,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Vince Whaley",
-      "updatedAt": "2026-11-12T23:28:13.356460+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687073+00:00"
     },
     {
       "book": "model",
@@ -8549,7 +8549,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Novak",
-      "updatedAt": "2026-11-12T23:28:13.356462+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687076+00:00"
     },
     {
       "book": "model",
@@ -8571,7 +8571,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Novak",
-      "updatedAt": "2026-11-12T23:28:13.356464+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687079+00:00"
     },
     {
       "book": "model",
@@ -8593,7 +8593,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Novak",
-      "updatedAt": "2026-11-12T23:28:13.356467+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687082+00:00"
     },
     {
       "book": "model",
@@ -8615,7 +8615,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Andrew Novak",
-      "updatedAt": "2026-11-12T23:28:13.356469+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687085+00:00"
     },
     {
       "book": "model",
@@ -8637,7 +8637,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Danny Walker",
-      "updatedAt": "2026-11-12T23:28:13.356471+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687088+00:00"
     },
     {
       "book": "model",
@@ -8659,7 +8659,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Danny Walker",
-      "updatedAt": "2026-11-12T23:28:13.356474+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687091+00:00"
     },
     {
       "book": "model",
@@ -8681,7 +8681,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Danny Walker",
-      "updatedAt": "2026-11-12T23:28:13.356476+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687094+00:00"
     },
     {
       "book": "model",
@@ -8703,7 +8703,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Danny Walker",
-      "updatedAt": "2026-11-12T23:28:13.356478+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687097+00:00"
     },
     {
       "book": "model",
@@ -8725,7 +8725,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Haotong Li",
-      "updatedAt": "2026-11-12T23:28:13.356481+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687101+00:00"
     },
     {
       "book": "model",
@@ -8747,7 +8747,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Haotong Li",
-      "updatedAt": "2026-11-12T23:28:13.356483+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687104+00:00"
     },
     {
       "book": "model",
@@ -8769,7 +8769,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Haotong Li",
-      "updatedAt": "2026-11-12T23:28:13.356485+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687106+00:00"
     },
     {
       "book": "model",
@@ -8791,7 +8791,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Haotong Li",
-      "updatedAt": "2026-11-12T23:28:13.356488+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687109+00:00"
     },
     {
       "book": "model",
@@ -8813,7 +8813,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mark Hubbard",
-      "updatedAt": "2026-11-12T23:28:13.356491+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687113+00:00"
     },
     {
       "book": "model",
@@ -8835,7 +8835,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mark Hubbard",
-      "updatedAt": "2026-11-12T23:28:13.356493+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687116+00:00"
     },
     {
       "book": "model",
@@ -8857,7 +8857,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mark Hubbard",
-      "updatedAt": "2026-11-12T23:28:13.356495+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687119+00:00"
     },
     {
       "book": "model",
@@ -8879,7 +8879,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mark Hubbard",
-      "updatedAt": "2026-11-12T23:28:13.356497+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687121+00:00"
     },
     {
       "book": "model",
@@ -8901,7 +8901,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Nicholas Lindheim",
-      "updatedAt": "2026-11-12T23:28:13.356500+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687124+00:00"
     },
     {
       "book": "model",
@@ -8923,7 +8923,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Nicholas Lindheim",
-      "updatedAt": "2026-11-12T23:28:13.356502+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687127+00:00"
     },
     {
       "book": "model",
@@ -8945,7 +8945,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Nicholas Lindheim",
-      "updatedAt": "2026-11-12T23:28:13.356504+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687130+00:00"
     },
     {
       "book": "model",
@@ -8967,7 +8967,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Nicholas Lindheim",
-      "updatedAt": "2026-11-12T23:28:13.356506+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687133+00:00"
     },
     {
       "book": "model",
@@ -8989,7 +8989,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "William Mouw",
-      "updatedAt": "2026-11-12T23:28:13.356509+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687136+00:00"
     },
     {
       "book": "model",
@@ -9011,7 +9011,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "William Mouw",
-      "updatedAt": "2026-11-12T23:28:13.356511+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687139+00:00"
     },
     {
       "book": "model",
@@ -9033,7 +9033,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "William Mouw",
-      "updatedAt": "2026-11-12T23:28:13.356513+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687142+00:00"
     },
     {
       "book": "model",
@@ -9055,7 +9055,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "William Mouw",
-      "updatedAt": "2026-11-12T23:28:13.356515+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687145+00:00"
     },
     {
       "book": "model",
@@ -9077,7 +9077,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chad Ramey",
-      "updatedAt": "2026-11-12T23:28:13.356518+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687148+00:00"
     },
     {
       "book": "model",
@@ -9099,7 +9099,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chad Ramey",
-      "updatedAt": "2026-11-12T23:28:13.356520+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687151+00:00"
     },
     {
       "book": "model",
@@ -9121,7 +9121,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chad Ramey",
-      "updatedAt": "2026-11-12T23:28:13.356522+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687153+00:00"
     },
     {
       "book": "model",
@@ -9143,7 +9143,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Chad Ramey",
-      "updatedAt": "2026-11-12T23:28:13.356524+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687157+00:00"
     },
     {
       "book": "model",
@@ -9165,7 +9165,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mackenzie Hughes",
-      "updatedAt": "2026-11-12T23:28:13.356527+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687160+00:00"
     },
     {
       "book": "model",
@@ -9187,7 +9187,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mackenzie Hughes",
-      "updatedAt": "2026-11-12T23:28:13.356529+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687163+00:00"
     },
     {
       "book": "model",
@@ -9209,7 +9209,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mackenzie Hughes",
-      "updatedAt": "2026-11-12T23:28:13.356531+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687166+00:00"
     },
     {
       "book": "model",
@@ -9231,7 +9231,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mackenzie Hughes",
-      "updatedAt": "2026-11-12T23:28:13.356534+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687169+00:00"
     },
     {
       "book": "model",
@@ -9253,7 +9253,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Emilio Gonz\u00e1lez",
-      "updatedAt": "2026-11-12T23:28:13.356536+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687172+00:00"
     },
     {
       "book": "model",
@@ -9275,7 +9275,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Emilio Gonz\u00e1lez",
-      "updatedAt": "2026-11-12T23:28:13.356538+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687175+00:00"
     },
     {
       "book": "model",
@@ -9297,7 +9297,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Emilio Gonz\u00e1lez",
-      "updatedAt": "2026-11-12T23:28:13.356541+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687178+00:00"
     },
     {
       "book": "model",
@@ -9319,7 +9319,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Emilio Gonz\u00e1lez",
-      "updatedAt": "2026-11-12T23:28:13.356543+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687181+00:00"
     },
     {
       "book": "model",
@@ -9341,7 +9341,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zach Bauchou",
-      "updatedAt": "2026-11-12T23:28:13.356545+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687184+00:00"
     },
     {
       "book": "model",
@@ -9363,7 +9363,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zach Bauchou",
-      "updatedAt": "2026-11-12T23:28:13.356548+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687187+00:00"
     },
     {
       "book": "model",
@@ -9385,7 +9385,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zach Bauchou",
-      "updatedAt": "2026-11-12T23:28:13.356550+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687190+00:00"
     },
     {
       "book": "model",
@@ -9407,7 +9407,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zach Bauchou",
-      "updatedAt": "2026-11-12T23:28:13.356552+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687193+00:00"
     },
     {
       "book": "model",
@@ -9429,7 +9429,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Justin Lower",
-      "updatedAt": "2026-11-12T23:28:13.356554+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687196+00:00"
     },
     {
       "book": "model",
@@ -9451,7 +9451,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Justin Lower",
-      "updatedAt": "2026-11-12T23:28:13.356557+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687199+00:00"
     },
     {
       "book": "model",
@@ -9473,7 +9473,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Justin Lower",
-      "updatedAt": "2026-11-12T23:28:13.356559+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687201+00:00"
     },
     {
       "book": "model",
@@ -9495,7 +9495,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Justin Lower",
-      "updatedAt": "2026-11-12T23:28:13.356561+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687204+00:00"
     },
     {
       "book": "model",
@@ -9517,7 +9517,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Brice Garnett",
-      "updatedAt": "2026-11-12T23:28:13.356564+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687207+00:00"
     },
     {
       "book": "model",
@@ -9539,7 +9539,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Brice Garnett",
-      "updatedAt": "2026-11-12T23:28:13.356566+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687210+00:00"
     },
     {
       "book": "model",
@@ -9561,7 +9561,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Brice Garnett",
-      "updatedAt": "2026-11-12T23:28:13.356568+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687213+00:00"
     },
     {
       "book": "model",
@@ -9583,7 +9583,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Brice Garnett",
-      "updatedAt": "2026-11-12T23:28:13.356570+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687216+00:00"
     },
     {
       "book": "model",
@@ -9605,7 +9605,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aaron Wise",
-      "updatedAt": "2026-11-12T23:28:13.356573+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687219+00:00"
     },
     {
       "book": "model",
@@ -9627,7 +9627,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aaron Wise",
-      "updatedAt": "2026-11-12T23:28:13.356576+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687222+00:00"
     },
     {
       "book": "model",
@@ -9649,7 +9649,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aaron Wise",
-      "updatedAt": "2026-11-12T23:28:13.356578+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687225+00:00"
     },
     {
       "book": "model",
@@ -9671,7 +9671,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Aaron Wise",
-      "updatedAt": "2026-11-12T23:28:13.356580+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687228+00:00"
     },
     {
       "book": "model",
@@ -9693,7 +9693,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tommy Morrison",
-      "updatedAt": "2026-11-12T23:28:13.356583+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687242+00:00"
     },
     {
       "book": "model",
@@ -9715,7 +9715,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tommy Morrison",
-      "updatedAt": "2026-11-12T23:28:13.356585+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687245+00:00"
     },
     {
       "book": "model",
@@ -9737,7 +9737,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tommy Morrison",
-      "updatedAt": "2026-11-12T23:28:13.356587+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687248+00:00"
     },
     {
       "book": "model",
@@ -9759,7 +9759,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tommy Morrison",
-      "updatedAt": "2026-11-12T23:28:13.356590+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687251+00:00"
     },
     {
       "book": "model",
@@ -9781,7 +9781,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jordan Smith",
-      "updatedAt": "2026-11-12T23:28:13.356592+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687254+00:00"
     },
     {
       "book": "model",
@@ -9803,7 +9803,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jordan Smith",
-      "updatedAt": "2026-11-12T23:28:13.356594+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687257+00:00"
     },
     {
       "book": "model",
@@ -9825,7 +9825,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jordan Smith",
-      "updatedAt": "2026-11-12T23:28:13.356597+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687260+00:00"
     },
     {
       "book": "model",
@@ -9847,7 +9847,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jordan Smith",
-      "updatedAt": "2026-11-12T23:28:13.356599+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687262+00:00"
     },
     {
       "book": "model",
@@ -9869,7 +9869,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Marcelo Rozo",
-      "updatedAt": "2026-11-12T23:28:13.356601+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687265+00:00"
     },
     {
       "book": "model",
@@ -9891,7 +9891,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Marcelo Rozo",
-      "updatedAt": "2026-11-12T23:28:13.356604+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687268+00:00"
     },
     {
       "book": "model",
@@ -9913,7 +9913,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Marcelo Rozo",
-      "updatedAt": "2026-11-12T23:28:13.356606+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687271+00:00"
     },
     {
       "book": "model",
@@ -9935,7 +9935,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Marcelo Rozo",
-      "updatedAt": "2026-11-12T23:28:13.356608+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687274+00:00"
     },
     {
       "book": "model",
@@ -9957,7 +9957,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Taylor Moore",
-      "updatedAt": "2026-11-12T23:28:13.356610+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687277+00:00"
     },
     {
       "book": "model",
@@ -9979,7 +9979,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Taylor Moore",
-      "updatedAt": "2026-11-12T23:28:13.356613+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687280+00:00"
     },
     {
       "book": "model",
@@ -10001,7 +10001,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Taylor Moore",
-      "updatedAt": "2026-11-12T23:28:13.356615+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687283+00:00"
     },
     {
       "book": "model",
@@ -10023,7 +10023,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Taylor Moore",
-      "updatedAt": "2026-11-12T23:28:13.356617+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687285+00:00"
     },
     {
       "book": "model",
@@ -10045,7 +10045,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Davis Chatfield",
-      "updatedAt": "2026-11-12T23:28:13.356619+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687289+00:00"
     },
     {
       "book": "model",
@@ -10067,7 +10067,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Davis Chatfield",
-      "updatedAt": "2026-11-12T23:28:13.356622+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687292+00:00"
     },
     {
       "book": "model",
@@ -10089,7 +10089,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Davis Chatfield",
-      "updatedAt": "2026-11-12T23:28:13.356624+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687294+00:00"
     },
     {
       "book": "model",
@@ -10111,7 +10111,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Davis Chatfield",
-      "updatedAt": "2026-11-12T23:28:13.356626+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687297+00:00"
     },
     {
       "book": "model",
@@ -10133,7 +10133,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Nick Hardy",
-      "updatedAt": "2026-11-12T23:28:13.356629+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687300+00:00"
     },
     {
       "book": "model",
@@ -10155,7 +10155,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Nick Hardy",
-      "updatedAt": "2026-11-12T23:28:13.356631+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687303+00:00"
     },
     {
       "book": "model",
@@ -10177,7 +10177,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Nick Hardy",
-      "updatedAt": "2026-11-12T23:28:13.356633+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687306+00:00"
     },
     {
       "book": "model",
@@ -10199,7 +10199,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Nick Hardy",
-      "updatedAt": "2026-11-12T23:28:13.356635+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687309+00:00"
     },
     {
       "book": "model",
@@ -10221,7 +10221,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Max McGreevy",
-      "updatedAt": "2026-11-12T23:28:13.356638+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687312+00:00"
     },
     {
       "book": "model",
@@ -10243,7 +10243,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Max McGreevy",
-      "updatedAt": "2026-11-12T23:28:13.356640+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687315+00:00"
     },
     {
       "book": "model",
@@ -10265,7 +10265,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Max McGreevy",
-      "updatedAt": "2026-11-12T23:28:13.356642+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687318+00:00"
     },
     {
       "book": "model",
@@ -10287,7 +10287,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Max McGreevy",
-      "updatedAt": "2026-11-12T23:28:13.356645+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687320+00:00"
     },
     {
       "book": "model",
@@ -10309,7 +10309,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jimmy Stanger",
-      "updatedAt": "2026-11-12T23:28:13.356647+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687324+00:00"
     },
     {
       "book": "model",
@@ -10331,7 +10331,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jimmy Stanger",
-      "updatedAt": "2026-11-12T23:28:13.356650+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687326+00:00"
     },
     {
       "book": "model",
@@ -10353,7 +10353,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jimmy Stanger",
-      "updatedAt": "2026-11-12T23:28:13.356652+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687329+00:00"
     },
     {
       "book": "model",
@@ -10375,7 +10375,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Jimmy Stanger",
-      "updatedAt": "2026-11-12T23:28:13.356654+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687335+00:00"
     },
     {
       "book": "model",
@@ -10397,7 +10397,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Frankie Harris",
-      "updatedAt": "2026-11-12T23:28:13.356657+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687338+00:00"
     },
     {
       "book": "model",
@@ -10419,7 +10419,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Frankie Harris",
-      "updatedAt": "2026-11-12T23:28:13.356659+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687341+00:00"
     },
     {
       "book": "model",
@@ -10441,7 +10441,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Frankie Harris",
-      "updatedAt": "2026-11-12T23:28:13.356661+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687344+00:00"
     },
     {
       "book": "model",
@@ -10463,7 +10463,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Frankie Harris",
-      "updatedAt": "2026-11-12T23:28:13.356663+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687347+00:00"
     },
     {
       "book": "model",
@@ -10485,7 +10485,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adam Svensson",
-      "updatedAt": "2026-11-12T23:28:13.356666+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687350+00:00"
     },
     {
       "book": "model",
@@ -10507,7 +10507,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adam Svensson",
-      "updatedAt": "2026-11-12T23:28:13.356669+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687353+00:00"
     },
     {
       "book": "model",
@@ -10529,7 +10529,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adam Svensson",
-      "updatedAt": "2026-11-12T23:28:13.356671+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687356+00:00"
     },
     {
       "book": "model",
@@ -10551,7 +10551,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Adam Svensson",
-      "updatedAt": "2026-11-12T23:28:13.356673+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687359+00:00"
     },
     {
       "book": "model",
@@ -10573,7 +10573,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kensei Hirata",
-      "updatedAt": "2026-11-12T23:28:13.356675+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687362+00:00"
     },
     {
       "book": "model",
@@ -10595,7 +10595,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kensei Hirata",
-      "updatedAt": "2026-11-12T23:28:13.356678+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687365+00:00"
     },
     {
       "book": "model",
@@ -10617,7 +10617,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kensei Hirata",
-      "updatedAt": "2026-11-12T23:28:13.356680+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687368+00:00"
     },
     {
       "book": "model",
@@ -10639,7 +10639,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Kensei Hirata",
-      "updatedAt": "2026-11-12T23:28:13.356682+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687370+00:00"
     },
     {
       "book": "model",
@@ -10661,7 +10661,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "A.J. Ewart",
-      "updatedAt": "2026-11-12T23:28:13.356685+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687374+00:00"
     },
     {
       "book": "model",
@@ -10683,7 +10683,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "A.J. Ewart",
-      "updatedAt": "2026-11-12T23:28:13.356687+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687377+00:00"
     },
     {
       "book": "model",
@@ -10705,7 +10705,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "A.J. Ewart",
-      "updatedAt": "2026-11-12T23:28:13.356690+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687379+00:00"
     },
     {
       "book": "model",
@@ -10727,7 +10727,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "A.J. Ewart",
-      "updatedAt": "2026-11-12T23:28:13.356692+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687382+00:00"
     },
     {
       "book": "model",
@@ -10749,7 +10749,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mac Meissner",
-      "updatedAt": "2026-11-12T23:28:13.356694+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687385+00:00"
     },
     {
       "book": "model",
@@ -10771,7 +10771,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mac Meissner",
-      "updatedAt": "2026-11-12T23:28:13.356697+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687388+00:00"
     },
     {
       "book": "model",
@@ -10793,7 +10793,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mac Meissner",
-      "updatedAt": "2026-11-12T23:28:13.356699+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687391+00:00"
     },
     {
       "book": "model",
@@ -10815,7 +10815,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Mac Meissner",
-      "updatedAt": "2026-11-12T23:28:13.356701+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687394+00:00"
     },
     {
       "book": "model",
@@ -10837,7 +10837,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zecheng Dou",
-      "updatedAt": "2026-11-12T23:28:13.356703+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687398+00:00"
     },
     {
       "book": "model",
@@ -10859,7 +10859,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zecheng Dou",
-      "updatedAt": "2026-11-12T23:28:13.356706+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687400+00:00"
     },
     {
       "book": "model",
@@ -10881,7 +10881,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zecheng Dou",
-      "updatedAt": "2026-11-12T23:28:13.356708+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687403+00:00"
     },
     {
       "book": "model",
@@ -10903,7 +10903,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Zecheng Dou",
-      "updatedAt": "2026-11-12T23:28:13.356710+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687406+00:00"
     },
     {
       "book": "model",
@@ -10925,7 +10925,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Paul Peterson",
-      "updatedAt": "2026-11-12T23:28:13.356713+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687409+00:00"
     },
     {
       "book": "model",
@@ -10947,7 +10947,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Paul Peterson",
-      "updatedAt": "2026-11-12T23:28:13.356715+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687412+00:00"
     },
     {
       "book": "model",
@@ -10969,7 +10969,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Paul Peterson",
-      "updatedAt": "2026-11-12T23:28:13.356718+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687415+00:00"
     },
     {
       "book": "model",
@@ -10991,7 +10991,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Paul Peterson",
-      "updatedAt": "2026-11-12T23:28:13.356720+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687418+00:00"
     },
     {
       "book": "model",
@@ -11013,7 +11013,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "C.T. Pan",
-      "updatedAt": "2026-11-12T23:28:13.356722+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687421+00:00"
     },
     {
       "book": "model",
@@ -11035,7 +11035,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "C.T. Pan",
-      "updatedAt": "2026-11-12T23:28:13.356725+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687424+00:00"
     },
     {
       "book": "model",
@@ -11057,7 +11057,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "C.T. Pan",
-      "updatedAt": "2026-11-12T23:28:13.356727+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687427+00:00"
     },
     {
       "book": "model",
@@ -11079,7 +11079,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "C.T. Pan",
-      "updatedAt": "2026-11-12T23:28:13.356729+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687430+00:00"
     },
     {
       "book": "model",
@@ -11101,7 +11101,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tyler Duncan",
-      "updatedAt": "2026-11-12T23:28:13.356732+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687433+00:00"
     },
     {
       "book": "model",
@@ -11123,7 +11123,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tyler Duncan",
-      "updatedAt": "2026-11-12T23:28:13.356734+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687436+00:00"
     },
     {
       "book": "model",
@@ -11145,7 +11145,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tyler Duncan",
-      "updatedAt": "2026-11-12T23:28:13.356736+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687439+00:00"
     },
     {
       "book": "model",
@@ -11167,7 +11167,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Tyler Duncan",
-      "updatedAt": "2026-11-12T23:28:13.356738+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687442+00:00"
     },
     {
       "book": "model",
@@ -11189,7 +11189,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Lipsky",
-      "updatedAt": "2026-11-12T23:28:13.356741+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687445+00:00"
     },
     {
       "book": "model",
@@ -11211,7 +11211,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Lipsky",
-      "updatedAt": "2026-11-12T23:28:13.356743+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687448+00:00"
     },
     {
       "book": "model",
@@ -11233,7 +11233,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Lipsky",
-      "updatedAt": "2026-11-12T23:28:13.356745+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687451+00:00"
     },
     {
       "book": "model",
@@ -11255,7 +11255,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "David Lipsky",
-      "updatedAt": "2026-11-12T23:28:13.356748+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687454+00:00"
     },
     {
       "book": "model",
@@ -11277,7 +11277,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matthieu Pavon",
-      "updatedAt": "2026-11-12T23:28:13.356750+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687457+00:00"
     },
     {
       "book": "model",
@@ -11299,7 +11299,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matthieu Pavon",
-      "updatedAt": "2026-11-12T23:28:13.356752+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687460+00:00"
     },
     {
       "book": "model",
@@ -11321,7 +11321,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matthieu Pavon",
-      "updatedAt": "2026-11-12T23:28:13.356755+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687463+00:00"
     },
     {
       "book": "model",
@@ -11343,7 +11343,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Matthieu Pavon",
-      "updatedAt": "2026-11-12T23:28:13.356757+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687466+00:00"
     },
     {
       "book": "model",
@@ -11365,7 +11365,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Austin Eckroat",
-      "updatedAt": "2026-11-12T23:28:13.356759+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687469+00:00"
     },
     {
       "book": "model",
@@ -11387,7 +11387,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Austin Eckroat",
-      "updatedAt": "2026-11-12T23:28:13.356762+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687472+00:00"
     },
     {
       "book": "model",
@@ -11409,7 +11409,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Austin Eckroat",
-      "updatedAt": "2026-11-12T23:28:13.356764+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687475+00:00"
     },
     {
       "book": "model",
@@ -11431,7 +11431,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Austin Eckroat",
-      "updatedAt": "2026-11-12T23:28:13.356766+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687478+00:00"
     },
     {
       "book": "model",
@@ -11453,7 +11453,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Billy Horschel",
-      "updatedAt": "2026-11-12T23:28:13.356769+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687481+00:00"
     },
     {
       "book": "model",
@@ -11475,7 +11475,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Billy Horschel",
-      "updatedAt": "2026-11-12T23:28:13.356771+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687484+00:00"
     },
     {
       "book": "model",
@@ -11497,7 +11497,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Billy Horschel",
-      "updatedAt": "2026-11-12T23:28:13.356773+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687487+00:00"
     },
     {
       "book": "model",
@@ -11519,7 +11519,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Billy Horschel",
-      "updatedAt": "2026-11-12T23:28:13.356776+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687490+00:00"
     },
     {
       "book": "model",
@@ -11541,7 +11541,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Kevin Yu",
-      "updatedAt": "2026-11-12T23:28:13.356778+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687493+00:00"
     },
     {
       "book": "model",
@@ -11563,7 +11563,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Kevin Yu",
-      "updatedAt": "2026-11-12T23:28:13.356780+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687496+00:00"
     },
     {
       "book": "model",
@@ -11585,7 +11585,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Kevin Yu",
-      "updatedAt": "2026-11-12T23:28:13.356783+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687498+00:00"
     },
     {
       "book": "model",
@@ -11607,7 +11607,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Kevin Yu",
-      "updatedAt": "2026-11-12T23:28:13.356785+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687501+00:00"
     },
     {
       "book": "model",
@@ -11629,7 +11629,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Patton Kizzire",
-      "updatedAt": "2026-11-12T23:28:13.356788+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687504+00:00"
     },
     {
       "book": "model",
@@ -11651,7 +11651,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Patton Kizzire",
-      "updatedAt": "2026-11-12T23:28:13.356790+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687507+00:00"
     },
     {
       "book": "model",
@@ -11673,7 +11673,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Patton Kizzire",
-      "updatedAt": "2026-11-12T23:28:13.356792+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687510+00:00"
     },
     {
       "book": "model",
@@ -11695,7 +11695,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Patton Kizzire",
-      "updatedAt": "2026-11-12T23:28:13.356795+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687513+00:00"
     },
     {
       "book": "model",
@@ -11717,7 +11717,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Miles Russell",
-      "updatedAt": "2026-11-12T23:28:13.356798+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687516+00:00"
     },
     {
       "book": "model",
@@ -11739,7 +11739,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Miles Russell",
-      "updatedAt": "2026-11-12T23:28:13.356800+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687519+00:00"
     },
     {
       "book": "model",
@@ -11761,7 +11761,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Miles Russell",
-      "updatedAt": "2026-11-12T23:28:13.356802+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687522+00:00"
     },
     {
       "book": "model",
@@ -11783,7 +11783,7 @@
       "source": "field_only_baseline",
       "sport": "PGA",
       "subject": "Miles Russell",
-      "updatedAt": "2026-11-12T23:28:13.356804+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687525+00:00"
     },
     {
       "book": "model",
@@ -11805,7 +11805,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Lucas Glover",
-      "updatedAt": "2026-11-12T23:28:13.356807+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687528+00:00"
     },
     {
       "book": "model",
@@ -11827,7 +11827,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Lucas Glover",
-      "updatedAt": "2026-11-12T23:28:13.356809+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687531+00:00"
     },
     {
       "book": "model",
@@ -11849,7 +11849,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Lucas Glover",
-      "updatedAt": "2026-11-12T23:28:13.356812+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687534+00:00"
     },
     {
       "book": "model",
@@ -11871,7 +11871,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Lucas Glover",
-      "updatedAt": "2026-11-12T23:28:13.356814+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687537+00:00"
     },
     {
       "book": "model",
@@ -11893,7 +11893,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Joe Highsmith",
-      "updatedAt": "2026-11-12T23:28:13.356816+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687540+00:00"
     },
     {
       "book": "model",
@@ -11915,7 +11915,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Joe Highsmith",
-      "updatedAt": "2026-11-12T23:28:13.356819+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687544+00:00"
     },
     {
       "book": "model",
@@ -11937,7 +11937,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Joe Highsmith",
-      "updatedAt": "2026-11-12T23:28:13.356822+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687547+00:00"
     },
     {
       "book": "model",
@@ -11959,7 +11959,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Joe Highsmith",
-      "updatedAt": "2026-11-12T23:28:13.356824+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687550+00:00"
     },
     {
       "book": "model",
@@ -11981,7 +11981,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Dunlap",
-      "updatedAt": "2026-11-12T23:28:13.356826+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687553+00:00"
     },
     {
       "book": "model",
@@ -12003,7 +12003,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Dunlap",
-      "updatedAt": "2026-11-12T23:28:13.356829+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687556+00:00"
     },
     {
       "book": "model",
@@ -12025,7 +12025,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Dunlap",
-      "updatedAt": "2026-11-12T23:28:13.356831+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687558+00:00"
     },
     {
       "book": "model",
@@ -12047,7 +12047,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Nick Dunlap",
-      "updatedAt": "2026-11-12T23:28:13.356833+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687561+00:00"
     },
     {
       "book": "model",
@@ -12069,7 +12069,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Schenk",
-      "updatedAt": "2026-11-12T23:28:13.356836+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687565+00:00"
     },
     {
       "book": "model",
@@ -12091,7 +12091,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Schenk",
-      "updatedAt": "2026-11-12T23:28:13.356838+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687568+00:00"
     },
     {
       "book": "model",
@@ -12113,7 +12113,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Schenk",
-      "updatedAt": "2026-11-12T23:28:13.356840+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687570+00:00"
     },
     {
       "book": "model",
@@ -12135,7 +12135,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Adam Schenk",
-      "updatedAt": "2026-11-12T23:28:13.356842+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687573+00:00"
     },
     {
       "book": "model",
@@ -12157,7 +12157,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Riley",
-      "updatedAt": "2026-11-12T23:28:13.356845+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687576+00:00"
     },
     {
       "book": "model",
@@ -12179,7 +12179,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Riley",
-      "updatedAt": "2026-11-12T23:28:13.356847+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687579+00:00"
     },
     {
       "book": "model",
@@ -12201,7 +12201,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Riley",
-      "updatedAt": "2026-11-12T23:28:13.356849+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687582+00:00"
     },
     {
       "book": "model",
@@ -12223,7 +12223,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Davis Riley",
-      "updatedAt": "2026-11-12T23:28:13.356851+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687585+00:00"
     },
     {
       "book": "model",
@@ -12245,7 +12245,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Cam Davis",
-      "updatedAt": "2026-11-12T23:28:13.356854+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687588+00:00"
     },
     {
       "book": "model",
@@ -12267,7 +12267,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Cam Davis",
-      "updatedAt": "2026-11-12T23:28:13.356856+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687591+00:00"
     },
     {
       "book": "model",
@@ -12289,7 +12289,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Cam Davis",
-      "updatedAt": "2026-11-12T23:28:13.356858+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687594+00:00"
     },
     {
       "book": "model",
@@ -12311,7 +12311,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Cam Davis",
-      "updatedAt": "2026-11-12T23:28:13.356860+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687597+00:00"
     },
     {
       "book": "model",
@@ -12333,7 +12333,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rafael Campos",
-      "updatedAt": "2026-11-12T23:28:13.356863+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687600+00:00"
     },
     {
       "book": "model",
@@ -12355,7 +12355,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rafael Campos",
-      "updatedAt": "2026-11-12T23:28:13.356865+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687603+00:00"
     },
     {
       "book": "model",
@@ -12377,7 +12377,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rafael Campos",
-      "updatedAt": "2026-11-12T23:28:13.356867+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687606+00:00"
     },
     {
       "book": "model",
@@ -12399,7 +12399,7 @@
       "source": "masters_prediction_fallback",
       "sport": "PGA",
       "subject": "Rafael Campos",
-      "updatedAt": "2026-11-12T23:28:13.356870+00:00"
+      "updatedAt": "2026-11-13T04:42:29.687608+00:00"
     }
   ],
   "predictionMeta": {
