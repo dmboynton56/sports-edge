@@ -1,0 +1,22 @@
+{
+  "as_of": "2026-11-01T13:00:00Z",
+  "model_version": "nfl-v2-live-20261020",
+  "freshness": { "status": "stale", "source": "fixture", "updatedAt": "2026-11-01T13:00:00Z", "ageSeconds": 2332800 },
+  "status": "research",
+  "gaps": [
+    "NFL predictions are older than the current cycle.",
+    "One or more league feeds are stale or missing. Do not quote them as current."
+  ],
+  "leagues": [
+    {
+      "league": "NFL",
+      "as_of": "2026-11-01T13:00:00Z",
+      "model_version": "nfl-v2-live-20261020",
+      "freshness": { "status": "stale", "source": "fixture", "updatedAt": "2026-11-01T13:00:00Z", "ageSeconds": 2332800 },
+      "status": "research",
+      "last_publish": "2026-11-01T13:00:00Z",
+      "rowCount": 1,
+      "gaps": ["NFL predictions are older than the current cycle."]
+    }
+  ]
+}

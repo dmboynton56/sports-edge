@@ -55,6 +55,9 @@ jobs:
     - name: Run frontend unit tests
       run: npm test
 
+    - name: Run MCP evals without paid LLM keys
+      run: npm run eval:mcp
+
     - name: Lint frontend
       run: npm run lint
 

@@ -1,0 +1,22 @@
+{
+  "as_of": "2026-11-28T20:15:00Z",
+  "model_version": "mlb-hr-v1-heuristic",
+  "freshness": { "status": "fresh", "source": "fixture", "updatedAt": "2026-11-28T20:15:00Z", "ageSeconds": 60 },
+  "status": "candidate",
+  "gaps": ["MLB home-run rows are model probabilities and derived fair odds. They are not sportsbook prices, and no book EV is calculated."],
+  "league": "MLB",
+  "rows": [
+    {
+      "id": "hr-1",
+      "league": "MLB",
+      "player": "Example Slugger",
+      "team": "NYY",
+      "opponent": "BOS",
+      "market": "home_run",
+      "modelProbability": 0.084,
+      "fairOdds": "+1090",
+      "modelVersion": "mlb-hr-v1-heuristic",
+      "asOf": "2026-11-28T20:15:00Z"
+    }
+  ]
+}

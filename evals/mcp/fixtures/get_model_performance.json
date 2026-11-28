@@ -1,0 +1,25 @@
+{
+  "as_of": "2026-11-24T23:37:53.293Z",
+  "model_version": "v3",
+  "freshness": { "status": "fresh", "source": "fixture", "updatedAt": "2026-11-24T23:37:53.293Z", "ageSeconds": 3600 },
+  "status": "candidate",
+  "gaps": ["ROI is often negative. These are research metrics, not a profitable betting system."],
+  "records": [
+    {
+      "league": "NBA",
+      "modelVersion": "v3",
+      "season": "2025-26",
+      "market": "spread",
+      "sampleSize": 1175,
+      "roi": -0.07528409090909094,
+      "units": null,
+      "bets": 64,
+      "wins": 31,
+      "losses": 33,
+      "productionStatus": "candidate",
+      "gates": [{ "id": "strategy", "label": "Strategy ROI", "status": "blocked", "detail": "Best recorded ROI -7.5%." }]
+    }
+  ],
+  "backtests": [],
+  "note": "Sports Edge is a versioned prediction app. Negative or null ROI is expected on several surfaces; do not treat a number as a lock."
+}

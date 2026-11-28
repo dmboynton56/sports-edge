@@ -1,0 +1,50 @@
+{
+  "as_of": "2026-11-23T06:00:00Z",
+  "model_version": "nfl-v2-live-20261020",
+  "freshness": { "status": "fresh", "source": "fixture", "updatedAt": "2026-11-23T06:00:00Z", "ageSeconds": 400000 },
+  "status": "research",
+  "gaps": ["last_sunday is the most recent Sunday in America/Denver (2026-11-22)."],
+  "league": "NFL",
+  "window": "last_sunday",
+  "summaries": [
+    {
+      "market": "spread",
+      "modelVersion": "nfl-v2-live-20261020",
+      "sample": 2,
+      "wins": 1,
+      "losses": 1,
+      "pushes": 0,
+      "units": -0.09,
+      "hitRate": 0.5,
+      "roi": -0.045
+    }
+  ],
+  "games": [
+    {
+      "gameDate": "2026-11-22",
+      "homeTeam": "KC",
+      "awayTeam": "DEN",
+      "homeScore": 27,
+      "awayScore": 20,
+      "bookSpread": -7,
+      "modelSpread": -4,
+      "spreadResult": "loss",
+      "winnerResult": "win",
+      "units": -1,
+      "modelVersion": "nfl-v2-live-20261020"
+    },
+    {
+      "gameDate": "2026-11-22",
+      "homeTeam": "BUF",
+      "awayTeam": "HOU",
+      "homeScore": 24,
+      "awayScore": 17,
+      "bookSpread": -3,
+      "modelSpread": -5,
+      "spreadResult": "win",
+      "winnerResult": "win",
+      "units": 0.91,
+      "modelVersion": "nfl-v2-live-20261020"
+    }
+  ]
+}
