@@ -53,6 +53,7 @@ The dashboard exposes a **read-only** MCP server so any agent can query live sla
 - MCP: `https://sports-edge.drewboynton.com/api/mcp` (Streamable HTTP, no auth)
 - Skill: `https://sports-edge.drewboynton.com/skill/SKILL.md`
 - Docs and Claude Desktop / Cursor snippets: [`docs/mcp.md`](docs/mcp.md)
+- Fixture evals: `evals/mcp` (`npm test` there; Promptfoo is not a Next.js production dependency)
 
 Sports Edge is a versioned prediction app, not a betting system. Agent answers must cite as-of time, model version, and research vs production, and must not recommend a bet.
 

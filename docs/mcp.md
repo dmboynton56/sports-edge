@@ -81,8 +81,9 @@ npm run mcp:smoke -- http://localhost:3000
 Evals (fixture snapshots, no live data):
 
 ```sh
-cd web
-npm run eval:mcp
+cd evals/mcp
+npm ci
+npm test
 ```
 
-`llm-rubric` cases run only when `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is set. CI runs the deterministic assertions only.
+`web` also exposes `npm run eval:mcp`, which forwards to that package. `llm-rubric` cases run only when `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is set. CI runs the deterministic assertions only. Promptfoo stays in `evals/mcp`, not the Next.js production bundle.

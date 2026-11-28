@@ -10,7 +10,7 @@
     "lint:anti-slop": "oxlint -c oxlint.config.mts --tsconfig tsconfig.json .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "eval:mcp": "node ../evals/mcp/run.mjs",
+    "eval:mcp": "npm --prefix ../evals/mcp test",
     "mcp:smoke": "node scripts/mcp-smoke.mjs",
     "sync:performance": "node scripts/sync-performance-history.mjs"
   },
@@ -44,12 +44,10 @@
     "eslint": "^9",
     "eslint-config-next": "^16.4.2",
     "oxlint": "^1.78.0",
-    "promptfoo": "^0.126.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vite": "^6.4.1",
-    "vitest": "^5.0.5",
-    "yaml": "^2.9.1"
+    "vitest": "^5.0.5"
   },
   "overrides": {
     "tinypool": "^2.2.0"

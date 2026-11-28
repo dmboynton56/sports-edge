@@ -47,7 +47,9 @@ jobs:
       with:
         node-version: "22"
         cache: npm
-        cache-dependency-path: web/package-lock.json
+        cache-dependency-path: |
+          web/package-lock.json
+          evals/mcp/package-lock.json
 
     - name: Install frontend dependencies
       run: npm ci
@@ -55,8 +57,13 @@ jobs:
     - name: Run frontend unit tests
       run: npm test
 
+    - name: Install MCP eval dependencies
+      working-directory: ${{ github.workspace }}/evals/mcp
+      run: npm ci
+
     - name: Run MCP evals without paid LLM keys
-      run: npm run eval:mcp
+      working-directory: ${{ github.workspace }}/evals/mcp
+      run: npm test
 
     - name: Lint frontend
       run: npm run lint

@@ -1,0 +1,12 @@
+{
+  "name": "sports-edge-mcp-evals",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node run.mjs"
+  },
+  "devDependencies": {
+    "promptfoo": "^0.126.0",
+    "yaml": "^2.9.1"
+  }
+}
