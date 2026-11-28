@@ -1,0 +1,26 @@
+{
+  "as_of": "2026-11-28T13:06:11.528Z",
+  "model_version": "v3",
+  "freshness": { "status": "fresh", "source": "fixture", "updatedAt": "2026-11-28T13:06:11.528Z", "ageSeconds": 120 },
+  "status": "research",
+  "gaps": [],
+  "sort": "ev",
+  "league": "NBA",
+  "limit": 8,
+  "rows": [
+    {
+      "id": "nba-ml-home",
+      "league": "NBA",
+      "title": "HOU moneyline",
+      "homeTeam": "HOU",
+      "awayTeam": "PHI",
+      "market": "moneyline",
+      "line": null,
+      "modelProbability": 0.72,
+      "pointEdge": null,
+      "ev": 0.12,
+      "modelVersion": "v3",
+      "status": "research"
+    }
+  ]
+}

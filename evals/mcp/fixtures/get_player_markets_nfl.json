@@ -1,0 +1,22 @@
+{
+  "as_of": "2026-11-26T13:00:00Z",
+  "model_version": "nfl-anytime-td-v1",
+  "freshness": { "status": "fresh", "source": "fixture", "updatedAt": "2026-11-26T13:00:00Z", "ageSeconds": 2000 },
+  "status": "model-only",
+  "gaps": ["NFL anytime-TD rows are model probabilities and derived fair odds. They are not sportsbook prices, and no book EV is calculated."],
+  "league": "NFL",
+  "rows": [
+    {
+      "id": "nfl-td-1",
+      "league": "NFL",
+      "player": "Example Runner",
+      "team": "DEN",
+      "opponent": "KC",
+      "market": "anytime_td",
+      "modelProbability": 0.32,
+      "fairOdds": "+213",
+      "modelVersion": "nfl-anytime-td-v1",
+      "asOf": "2026-11-26T13:00:00Z"
+    }
+  ]
+}

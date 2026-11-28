@@ -10,9 +10,12 @@
     "lint:anti-slop": "oxlint -c oxlint.config.mts --tsconfig tsconfig.json .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "eval:mcp": "npm --prefix ../evals/mcp test",
+    "mcp:smoke": "node scripts/mcp-smoke.mjs",
     "sync:performance": "node scripts/sync-performance-history.mjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/server": "^2.4.0",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-select": "^2.2.6",
@@ -22,13 +25,16 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^1.16.0",
+    "mcp-handler": "^2.4.0",
     "next": "^16.4.2",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "recharts": "^3.8.1",
-    "tailwind-merge": "^3.6.0"
+    "tailwind-merge": "^3.6.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@modelcontextprotocol/client": "^2.4.0",
     "@oxlint/plugins": "^1.78.0",
     "@playwright/test": "^1.62.1",
     "@tailwindcss/postcss": "^4",

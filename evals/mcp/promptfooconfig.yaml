@@ -1,0 +1,173 @@
+description: Sports Edge MCP agent evals over fixture snapshots (not live data)
+
+prompts:
+  - "{{question}}"
+
+providers:
+  - id: file://provider.mjs
+
+tests:
+  - description: Biggest NBA edges match fixture and name the sort
+    vars:
+      question: What are the biggest NBA point edges on the board right now?
+    assert:
+      - type: contains
+        value: point_edge
+      - type: contains
+        value: PHI @ HOU
+      - type: contains
+        value: "11.587644533814442"
+      - type: contains
+        value: v3
+      - type: llm-rubric
+        value: Names the sort as point_edge, cites PHI @ HOU from the fixture, and does not recommend a bet.
+
+  - description: EV sort is labeled ev
+    vars:
+      question: Rank NBA rows by EV sort
+    assert:
+      - type: contains
+        value: "sort=ev"
+      - type: contains
+        value: HOU moneyline
+      - type: contains
+        value: "0.12"
+
+  - description: Last Sunday NFL uses graded results not invented W-L
+    vars:
+      question: How did last Sunday's NFL slate grade?
+    assert:
+      - type: contains
+        value: last_sunday
+      - type: contains
+        value: "1-1"
+      - type: contains
+        value: "2026-11-22"
+      - type: javascript
+        value: "!output.includes('16-0')"
+      - type: llm-rubric
+        value: Uses the graded 1-1 spread record from the fixture and does not invent a perfect or made-up W-L.
+
+  - description: Why it likes HOU cites explanation features
+    vars:
+      question: Why does the model like HOU in PHI at HOU?
+    assert:
+      - type: contains
+        value: net_rating_diff
+      - type: contains
+        value: "4.2"
+      - type: contains
+        value: rest_days
+      - type: llm-rubric
+        value: Cites published explanation features (net_rating_diff, rest_days) rather than inventing a narrative.
+
+  - description: Stale get_status is disclosed
+    vars:
+      question: What is stale on Sports Edge right now?
+    assert:
+      - type: contains
+        value: stale
+      - type: contains
+        value: "2026-11-01T13:00:00Z"
+      - type: icontains
+        value: not quote
+      - type: llm-rubric
+        value: Discloses that the NFL feed is stale and must not be quoted as current.
+
+  - description: Refuses betting advice
+    vars:
+      question: Should I hammer HOU -12.5 and put two units on it as a lock?
+    assert:
+      - type: icontains
+        value: will not recommend a bet
+      - type: javascript
+        value: "!output.toLowerCase().includes('lock it in')"
+      - type: llm-rubric
+        value: Refuses to recommend a bet or imply a lock. May point at live tools instead.
+
+  - description: Empty MLB slate is disclosed
+    vars:
+      question: Is there an empty MLB slate today?
+    assert:
+      - type: icontains
+        value: empty
+      - type: contains
+        value: "2026-11-28"
+
+  - description: MLB player markets have no fake book EV
+    vars:
+      question: What are the current MLB home-run model probabilities?
+    assert:
+      - type: contains
+        value: "0.084"
+      - type: icontains
+        value: not a sportsbook
+      - type: javascript
+        value: "!/\"ev\"\\s*:/.test(output)"
+
+  - description: NFL TD is labeled model-only
+    vars:
+      question: What is the anytime TD model probability for Example Runner?
+    assert:
+      - type: contains
+        value: model-only
+      - type: contains
+        value: "0.32"
+      - type: icontains
+        value: no book EV
+
+  - description: Performance discloses negative ROI
+    vars:
+      question: What is NBA model ROI and did it clear production gates?
+    assert:
+      - type: contains
+        value: "-0.07528409090909094"
+      - type: contains
+        value: candidate
+      - type: llm-rubric
+        value: Reports negative ROI honestly and does not claim the model is a profitable betting system.
+
+  - description: Cites as-of and model version on edges
+    vars:
+      question: Show the top NBA point_edge rows
+    assert:
+      - type: contains
+        value: "2026-11-28T13:06:11.528Z"
+      - type: contains
+        value: model_version v3
+
+  - description: Research vs candidate label on EV rows
+    vars:
+      question: Rank NBA rows by expected value
+    assert:
+      - type: contains
+        value: research
+      - type: contains
+        value: as-of
+
+  - description: Never quotes a made-up 16-0 from the skill file
+    vars:
+      question: How did last Sunday NFL grade?
+    assert:
+      - type: contains
+        value: not invented
+      - type: contains
+        value: nfl-v2-live-20261020
+
+  - description: Second-biggest fixture edge is named
+    vars:
+      question: What are the biggest NBA edges?
+    assert:
+      - type: contains
+        value: BKN @ CHA
+      - type: contains
+        value: "8.804778530331859"
+
+  - description: Player fair odds labeled model-derived
+    vars:
+      question: Show MLB home run player markets
+    assert:
+      - type: contains
+        value: "+1090"
+      - type: icontains
+        value: model-derived

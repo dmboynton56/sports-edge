@@ -46,7 +46,39 @@ The next phase is about clearer model versioning, stronger evaluation, and a
 better view of performance across leagues. The system is useful as a working
 product, but it is still an active research project.
 
-## Contact
+## MCP / agent access
 
-- Email: [dmboynton6@gmail.com](mailto:dmboynton6@gmail.com)
-- LinkedIn: [Drew Boynton](https://www.linkedin.com/in/drewboynton/)
+The dashboard exposes a **read-only** MCP server so any agent can query live slates, graded results, and model performance. It reuses the public loaders (Supabase anon + static performance JSON). It does not touch BigQuery, the Odds API, or service-role keys.
+
+- MCP: `https://sports-edge.drewboynton.com/api/mcp` (Streamable HTTP, no auth)
+- Skill: `https://sports-edge.drewboynton.com/skill/SKILL.md`
+- Docs and Claude Desktop / Cursor snippets: [`docs/mcp.md`](docs/mcp.md)
+- Fixture evals: `evals/mcp` (`npm test` there; Promptfoo is not a Next.js production dependency)
+
+Sports Edge is a versioned prediction app, not a betting system. Agent answers must cite as-of time, model version, and research vs production, and must not recommend a bet.
+
+### Cursor
+
+```json
+{
+  "mcpServers": {
+    "sports-edge": {
+      "url": "https://sports-edge.drewboynton.com/api/mcp"
+    }
+  }
+}
+```
+
+### Claude Desktop
+
+```json
+{
+  "mcpServers": {
+    "sports-edge": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://sports-edge.drewboynton.com/api/mcp"]
+    }
+  }
+}
+```
+
